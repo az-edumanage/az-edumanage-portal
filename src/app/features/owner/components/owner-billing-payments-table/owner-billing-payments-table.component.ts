@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { TABLE_COMPONENTS } from '../../../../shared/directives';
-import { Payment } from '../../owner-billing/models/owner-billing.models';
+import { Payment } from '../../models/owner-billing.models';
 
 @Component({
   selector: 'app-owner-billing-payments-table',

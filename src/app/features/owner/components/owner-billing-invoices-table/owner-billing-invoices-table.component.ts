@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { BadgeComponent } from '../../../../shared/ui';
 import { TABLE_COMPONENTS } from '../../../../shared/directives';
-import { Invoice } from '../../owner-billing/models/owner-billing.models';
+import { Invoice } from '../../models/owner-billing.models';
 
 @Component({
   selector: 'app-owner-billing-invoices-table',

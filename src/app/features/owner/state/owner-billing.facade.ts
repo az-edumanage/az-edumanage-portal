@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Invoice, Tab } from '../owner-billing/models/owner-billing.models';
+import { Invoice, Tab } from '../models/owner-billing.models';
 import { OwnerBillingStore } from './owner-billing.store';
 import { OwnerBillingDataService } from '../data-access/owner-billing-data.service';
 

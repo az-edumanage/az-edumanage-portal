@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { Tab } from '../../owner-billing/models/owner-billing.models';
+import { Tab } from '../../models/owner-billing.models';
 
 @Component({
   selector: 'app-owner-billing-filter-panel',

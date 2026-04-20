@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { OwnerBillingService } from '../owner-billing/services/owner-billing.service';
-import { Invoice } from '../owner-billing/models/owner-billing.models';
+import { OwnerBillingService } from './owner-billing.service';
+import { Invoice } from '../models/owner-billing.models';
 
 @Injectable({ providedIn: 'root' })
 export class OwnerBillingDataService {

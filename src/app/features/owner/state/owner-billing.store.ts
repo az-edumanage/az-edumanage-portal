@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { Tab, Invoice } from '../owner-billing/models/owner-billing.models';
+import { Tab, Invoice } from '../models/owner-billing.models';
 
 @Injectable({ providedIn: 'root' })
 export class OwnerBillingStore {
