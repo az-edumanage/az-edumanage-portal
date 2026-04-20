@@ -112,6 +112,8 @@
   - [x] Migrate additional list/screen derivations to store/facade for: `owner-audit-logs`, `owner-provisioning-list`, `owner-modules-list`, `tenant-schedule`, `owner-integrations-list`, `owner-plans-list`, `owner-subscriptions-list`, `owner-subscription-templates-list`, `owner-notifications-list`, `teacher-media`, `owner-usage-analytics`, `owner-monitoring`, `owner-plan-details`, `owner-module-details`, `tenant-room-details`, `owner-academic-structure-details`, `tenant-group-details`, `tenant-grade-details`.
   - [x] Migrate additional list/screen derivations to store/facade for: `tenant-group-attendance`, `tenant-group-broadcast`, `owner-settings`.
   - [x] Complete component-thinning and facade-only orchestration for: `owner-subscription-orders-list`.
+  - [x] Migrate create/edit screen orchestration to store/facade for: `tenant-student-create`, `tenant-teacher-create`.
+  - [x] Migrate edit screen orchestration to store/facade for: `owner-tenant-edit`.
   - [ ] Migrate remaining complex pages still hosting local orchestration logic.
 
 ## 8) Data-Access Tasks
@@ -123,6 +125,8 @@
   - [x] Move mock list data into data-access services for migrated list pages (owner/tenant slices above).
   - [x] Move mock payloads for `tenant-group-attendance`, `tenant-group-broadcast`, and `owner-settings` into feature data-access services.
   - [x] Remove duplicated `orders`/export action payload orchestration from `owner-subscription-orders-list.component` (now facade/data-access backed).
+  - [x] Move page-level submit/default payload orchestration from `tenant-student-create` and `tenant-teacher-create` into feature data-access services.
+  - [x] Move tenant edit payload/options orchestration from `owner-tenant-edit.component` into feature data-access service.
   - [ ] Move remaining page-level mock payloads from details/create flows into data-access.
 
 ## 9) Core Hardening Tasks

@@ -148,6 +148,13 @@ Close remaining migration gaps in state/data-access and final structure complian
 - [x] Migrate additional large page VM/data orchestration out of component (completed: `tenant-group-broadcast`).
 - [x] Migrate additional large page VM/data orchestration out of component (completed: `owner-settings`).
 - [x] Complete facade-driven orchestration cleanup for `owner-subscription-orders-list` (remove duplicated component logic, keep HTML/CSS unchanged).
+- [x] Migrate additional large page VM/data orchestration out of component (completed: `tenant-student-create`).
+- [x] Migrate additional large page VM/data orchestration out of component (completed: `tenant-teacher-create`).
+- [x] Migrate additional large page VM/data orchestration out of component (completed: `owner-tenant-edit`).
+- [x] Move submit/draft/default-data handling for `tenant-student-create` and `tenant-teacher-create` into feature data-access + facade.
+- [x] Move tenant edit fetch/update orchestration and selector options into `owner-tenant-edit` data-access + facade.
+- [x] Add store unit tests for `tenant-student-create` and `tenant-teacher-create`.
+- [x] Add store unit test for `owner-tenant-edit`.
 - [x] Move page-level mock payloads for `tenant-group-attendance`, `tenant-group-broadcast`, and `owner-settings` into data-access services.
 - [x] Add store tests for `tenant-group-attendance`, `tenant-group-broadcast`, and `owner-settings`; rerun quality gates.
 - [ ] Complete Task 7 pending items (`view-model derivations`, `facade UI APIs`) for remaining large components.
