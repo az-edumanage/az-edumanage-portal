@@ -3,6 +3,7 @@ import { CommonModule, TitleCasePipe, Location } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { DashboardService } from '../../../core/services/dashboard.service';
+import { OwnerApiService } from '../data-access/owner-api.service';
 
 @Component({
   selector: 'app-owner-tenant-details',
@@ -14,6 +15,7 @@ export class OwnerTenantDetailsComponent {
   private router = inject(Router);
   private location = inject(Location);
   private dashboardService = inject(DashboardService);
+  private ownerApi = inject(OwnerApiService);
   
   showPlanDropdown = signal(false);
   pendingPlanId = signal<string | null>(null);
@@ -66,14 +68,13 @@ export class OwnerTenantDetailsComponent {
     const newPlanId = this.pendingPlanId();
     if (newPlanId && !this.isUpgrading()) {
       this.isUpgrading.set(true);
-      
-      // Simulate API call
-      setTimeout(() => {
+
+      this.ownerApi.upgradeTenantPlan(this.tenant.id, newPlanId).subscribe(() => {
         this.tenant.planId = newPlanId;
         this.pendingPlanId.set(null);
         this.isUpgrading.set(false);
         console.log(`Plan officially upgraded to: ${newPlanId}`);
-      }, 1500);
+      });
     }
   }
 

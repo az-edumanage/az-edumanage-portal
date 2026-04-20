@@ -6,6 +6,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, Validators, AbstractCont
 import { Observable, of } from 'rxjs';
 import { delay, map, catchError } from 'rxjs/operators';
 import { TaskService } from '../../../core/services/task.service';
+import { TenantApiService } from '../data-access/tenant-api.service';
 
 @Component({
   selector: 'app-tenant-user-create',
@@ -18,6 +19,7 @@ export class TenantUserCreateComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private location = inject(Location);
   private taskService = inject(TaskService);
+  private tenantApi = inject(TenantApiService);
 
   isSubmitting = false;
   private isSuccess = false;
@@ -129,14 +131,14 @@ export class TenantUserCreateComponent implements OnInit, OnDestroy {
   onSubmit() {
     if (this.userForm.valid) {
       this.isSubmitting = true;
-      
-      setTimeout(() => {
-        console.log('User Created:', this.userForm.value);
+
+      this.tenantApi.createUser(this.userForm.getRawValue()).subscribe((payload) => {
+        console.log('User Created:', payload);
         this.isSuccess = true;
         this.taskService.removeTask(this.taskId);
         this.isSubmitting = false;
         this.router.navigate(['/tenant/users']);
-      }, 1500);
+      });
     } else {
       this.userForm.markAllAsTouched();
     }

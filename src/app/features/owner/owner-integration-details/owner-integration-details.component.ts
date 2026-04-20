@@ -4,6 +4,7 @@ import { RouterModule, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Integration } from '../owner-integrations-list/owner-integrations-list.component';
+import { OwnerApiService } from '../data-access/owner-api.service';
 
 interface IntegrationLog {
   id: string;
@@ -21,6 +22,7 @@ interface IntegrationLog {
 export class OwnerIntegrationDetailsComponent {
   private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
+  private ownerApi = inject(OwnerApiService);
   
   activeTab = signal<'overview' | 'configuration' | 'health' | 'logs'>('overview');
   showSecret = false;
@@ -80,13 +82,13 @@ export class OwnerIntegrationDetailsComponent {
     this.isCheckingHealth = true;
     this.healthStatus = 'Unknown';
     this.healthLog = 'Initializing connection...\nAuthenticating with provider...\nSending test payload...';
-    
-    setTimeout(() => {
+
+    this.ownerApi.runIntegrationHealthCheck(this.integration().id).subscribe(({ result }) => {
       this.isCheckingHealth = false;
-      this.healthStatus = 'Healthy';
-      this.lastHealthCheckResult = 'Connection successful. Latency: 45ms.';
-      this.healthLog += '\nReceived 200 OK.\nVerifying webhook signature... OK.\nHealth check completed successfully.';
-      this.integration.update(i => ({ ...i, lastHealthCheck: 'Just now' }));
-    }, 2000);
+      this.healthStatus = result.healthStatus;
+      this.lastHealthCheckResult = result.message;
+      this.healthLog += result.log;
+      this.integration.update((i) => ({ ...i, lastHealthCheck: result.lastHealthCheck }));
+    });
   }
 }

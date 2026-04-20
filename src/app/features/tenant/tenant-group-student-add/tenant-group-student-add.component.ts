@@ -4,6 +4,7 @@ import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { TaskService } from '../../../core/services/task.service';
+import { TenantApiService } from '../data-access/tenant-api.service';
 
 interface Student {
   id: string;
@@ -23,6 +24,7 @@ export class TenantGroupStudentAddComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private taskService = inject(TaskService);
+  private tenantApi = inject(TenantApiService);
 
   groupId = signal<string | null>(null);
   isSubmitting = signal(false);
@@ -109,13 +111,17 @@ export class TenantGroupStudentAddComponent implements OnInit, OnDestroy {
   onEnroll() {
     if (this.selectedStudent()) {
       this.isSubmitting.set(true);
-      setTimeout(() => {
-        console.log('Enrolled:', this.selectedStudent(), this.enrollForm.value);
+      const payload = {
+        ...this.enrollForm.getRawValue(),
+        student: this.selectedStudent(),
+      };
+      this.tenantApi.enrollStudentToGroup(payload).subscribe((response) => {
+        console.log('Enrolled:', response);
         this.isSuccess = true;
         this.taskService.removeTask(this.taskId);
         this.isSubmitting.set(false);
         this.router.navigate(['/tenant/groups', this.groupId()]);
-      }, 1500);
+      });
     }
   }
 

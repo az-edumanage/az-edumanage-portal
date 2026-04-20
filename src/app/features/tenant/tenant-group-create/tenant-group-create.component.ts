@@ -4,6 +4,7 @@ import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { TaskService } from '../../../core/services/task.service';
+import { TenantApiService } from '../data-access/tenant-api.service';
 
 @Component({
   selector: 'app-tenant-group-create',
@@ -16,6 +17,7 @@ export class TenantGroupCreateComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private taskService = inject(TaskService);
+  private tenantApi = inject(TenantApiService);
 
   isSubmitting = signal(false);
   groupId = signal<string | null>(null);
@@ -331,14 +333,13 @@ export class TenantGroupCreateComponent implements OnInit, OnDestroy {
         scheduleDays: this.selectedDays()
       };
 
-      // Simulate API call
-      setTimeout(() => {
-        console.log('Group Created:', payload);
+      this.tenantApi.createOrUpdateGroup(payload).subscribe((response) => {
+        console.log('Group Created:', response);
         this.isSuccess = true;
         this.taskService.removeTask(this.taskId);
         this.isSubmitting.set(false);
         this.router.navigate(['/tenant/groups']);
-      }, 1500);
+      });
     }
   }
 }

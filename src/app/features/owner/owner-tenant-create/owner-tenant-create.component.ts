@@ -4,6 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { TaskService } from '../../../core/services/task.service';
+import { OwnerApiService } from '../data-access/owner-api.service';
 
 @Component({
   selector: 'app-owner-tenant-create',
@@ -15,6 +16,7 @@ export class OwnerTenantCreateComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private taskService = inject(TaskService);
+  private ownerApi = inject(OwnerApiService);
 
   isSubmitting = signal(false);
   showPassword = signal(false);
@@ -251,15 +253,14 @@ export class OwnerTenantCreateComponent implements OnInit, OnDestroy {
   onSubmit() {
     if (this.tenantForm.valid) {
       this.isSubmitting.set(true);
-      
-      // Simulate API call
-      setTimeout(() => {
-        console.log('Tenant Created:', this.tenantForm.value);
+
+      this.ownerApi.createTenant(this.tenantForm.getRawValue()).subscribe((payload) => {
+        console.log('Tenant Created:', payload);
         this.isSuccess = true;
         this.taskService.removeTask(this.taskId);
         this.isSubmitting.set(false);
         this.router.navigate(['/owner/tenants']);
-      }, 2000);
+      });
     }
   }
 }

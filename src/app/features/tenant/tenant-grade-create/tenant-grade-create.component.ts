@@ -4,6 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { TaskService } from '../../../core/services/task.service';
+import { TenantApiService } from '../data-access/tenant-api.service';
 
 @Component({
   selector: 'app-tenant-grade-create',
@@ -15,6 +16,7 @@ export class TenantGradeCreateComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private location = inject(Location);
   private taskService = inject(TaskService);
+  private tenantApi = inject(TenantApiService);
 
   isSubmitting = signal(false);
   private isSuccess = false;
@@ -70,15 +72,14 @@ export class TenantGradeCreateComponent implements OnInit, OnDestroy {
   onSubmit() {
     if (this.gradeForm.valid) {
       this.isSubmitting.set(true);
-      
-      // Simulate API call
-      setTimeout(() => {
-        console.log('Grade Created:', this.gradeForm.value);
+
+      this.tenantApi.createGrade(this.gradeForm.getRawValue()).subscribe((payload) => {
+        console.log('Grade Created:', payload);
         this.isSuccess = true;
         this.taskService.removeTask(this.taskId);
         this.isSubmitting.set(false);
         this.router.navigate(['/tenant/grades']);
-      }, 1000);
+      });
     }
   }
 }

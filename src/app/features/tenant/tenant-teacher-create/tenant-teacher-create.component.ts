@@ -4,6 +4,7 @@ import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { TaskService } from '../../../core/services/task.service';
+import { TenantApiService } from '../data-access/tenant-api.service';
 
 @Component({
   selector: 'app-tenant-teacher-create',
@@ -17,6 +18,7 @@ export class TenantTeacherCreateComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private location = inject(Location);
   private taskService = inject(TaskService);
+  private tenantApi = inject(TenantApiService);
 
   isSubmitting = signal(false);
   showPassword = signal(false);
@@ -109,14 +111,14 @@ export class TenantTeacherCreateComponent implements OnInit, OnDestroy {
   onSubmit() {
     if (this.teacherForm.valid) {
       this.isSubmitting.set(true);
-      
-      setTimeout(() => {
-        console.log('Teacher Saved:', this.teacherForm.value);
+
+      this.tenantApi.createOrUpdateTeacher(this.teacherForm.getRawValue()).subscribe((payload) => {
+        console.log('Teacher Saved:', payload);
         this.isSuccess = true;
         this.taskService.removeTask(this.taskId);
         this.isSubmitting.set(false);
         this.router.navigate(['/tenant/teachers']);
-      }, 1500);
+      });
     }
   }
 }

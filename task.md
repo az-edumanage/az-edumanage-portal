@@ -9,7 +9,7 @@
 - [ ] Create migration branch (`feat/architecture-restructure`).
 - [ ] Add checkpoints: `phase-1`, `phase-2`, ... tags/commits.
 - [ ] Capture baseline screenshots for key pages (owner/tenant/teacher overview).
-- [ ] Add manual smoke checklist document for shell interactions.
+- [x] Add manual smoke checklist document for shell interactions.
 
 ## 2) Target Folder Setup
 - [x] Create `src/app/core/auth`.
@@ -114,7 +114,7 @@
 - [x] Create tenant repositories/services in `features/tenant/data-access`.
 - [x] Create teacher repositories/services in `features/teacher/data-access`.
 - [~] Migrate mock arrays and submit handlers out of page components.
-- [ ] Replace `setTimeout` simulated calls with facade repository methods.
+- [x] Replace `setTimeout` simulated calls with facade repository methods.
 
 ## 9) Core Hardening Tasks
 - [x] Add `core/guards/role.guard.ts`.
@@ -133,7 +133,7 @@
 - [x] `npm run lint`
 - [x] `npm run test -- --watch=false`
 - [x] Fix existing lint error(s) before continuing.
-- [~] Add at least one unit test per migrated facade/store.
+- [x] Add at least one unit test per migrated facade/store.
 
 ## 12) Visual Regression Checklist
 - [ ] Owner dashboard layout unchanged.

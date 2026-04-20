@@ -4,6 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { TaskService } from '../../../core/services/task.service';
+import { TenantApiService } from '../data-access/tenant-api.service';
 
 @Component({
   selector: 'app-tenant-student-create',
@@ -16,6 +17,7 @@ export class TenantStudentCreateComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private location = inject(Location);
   private taskService = inject(TaskService);
+  private tenantApi = inject(TenantApiService);
 
   isSubmitting = signal(false);
   private isSuccess = false;
@@ -86,14 +88,14 @@ export class TenantStudentCreateComponent implements OnInit, OnDestroy {
   onSubmit() {
     if (this.studentForm.valid) {
       this.isSubmitting.set(true);
-      
-      setTimeout(() => {
-        console.log('Student Enrolled:', this.studentForm.value);
+
+      this.tenantApi.enrollStudent(this.studentForm.getRawValue()).subscribe((payload) => {
+        console.log('Student Enrolled:', payload);
         this.isSuccess = true;
         this.taskService.removeTask(this.taskId);
         this.isSubmitting.set(false);
         this.router.navigate(['/tenant/students']);
-      }, 1500);
+      });
     }
   }
 }

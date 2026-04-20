@@ -4,6 +4,7 @@ import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { TaskService } from '../../../core/services/task.service';
+import { TenantApiService } from '../data-access/tenant-api.service';
 
 @Component({
   selector: 'app-tenant-room-booking',
@@ -16,6 +17,7 @@ export class TenantRoomBookingComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private taskService = inject(TaskService);
+  private tenantApi = inject(TenantApiService);
 
   roomId = signal<string | null>(null);
   roomName = signal('Room 101');
@@ -73,13 +75,13 @@ export class TenantRoomBookingComponent implements OnInit, OnDestroy {
   onSubmit() {
     if (this.bookingForm.valid) {
       this.isSubmitting.set(true);
-      setTimeout(() => {
-        console.log('Booking Confirmed:', this.bookingForm.value);
+      this.tenantApi.bookRoom(this.bookingForm.getRawValue()).subscribe((payload) => {
+        console.log('Booking Confirmed:', payload);
         this.isSuccess = true;
         this.taskService.removeTask(this.taskId);
         this.isSubmitting.set(false);
         this.router.navigate(['/tenant/rooms', this.roomId()]);
-      }, 1500);
+      });
     }
   }
 }

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators, AbstractControl } from '@angular/forms';
+import { OwnerApiService } from '../data-access/owner-api.service';
 
 @Component({
   selector: 'app-owner-tenant-edit',
@@ -14,6 +15,7 @@ export class OwnerTenantEditComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private ownerApi = inject(OwnerApiService);
 
   tenantId = '';
   isSubmitting = signal(false);
@@ -63,28 +65,11 @@ export class OwnerTenantEditComponent implements OnInit {
 
   ngOnInit() {
     this.tenantId = this.route.snapshot.params['id'];
-    
-    // Simulate fetching tenant data
-    setTimeout(() => {
-      const mockData = {
-        centerName: 'Bright Future Academy',
-        tenantType: 'Educational Center',
-        subdomain: 'brightfuture',
-        domain: '.remix.com',
-        industry: 'K-12 School',
-        contactName: 'John Doe',
-        contactEmail: 'admin@brightfuture.edu',
-        contactPhone: '+20 123 456 7890',
-        address: '123 Education St',
-        city: 'Cairo',
-        country: 'Egypt',
-        planId: 'enterprise',
-        isTrial: true,
-        trialDays: 14
-      };
+
+    this.ownerApi.fetchTenantForEdit(this.tenantId).subscribe((mockData) => {
       this.tenantForm.patchValue(mockData);
       this.tenantName.set(mockData.centerName);
-    }, 500);
+    });
   }
 
   onCancel() {
@@ -94,11 +79,14 @@ export class OwnerTenantEditComponent implements OnInit {
   onSubmit() {
     if (this.tenantForm.valid) {
       this.isSubmitting.set(true);
-      setTimeout(() => {
-        console.log('Tenant Updated:', this.tenantForm.getRawValue());
+
+      this.ownerApi
+        .updateTenant(this.tenantId, this.tenantForm.getRawValue())
+        .subscribe(({ payload }) => {
+        console.log('Tenant Updated:', payload);
         this.isSubmitting.set(false);
         this.router.navigate(['/owner/tenants', this.tenantId]);
-      }, 1500);
+      });
     }
   }
 

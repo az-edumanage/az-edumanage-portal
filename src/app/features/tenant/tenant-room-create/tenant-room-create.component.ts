@@ -4,6 +4,7 @@ import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { TaskService } from '../../../core/services/task.service';
+import { TenantApiService } from '../data-access/tenant-api.service';
 
 @Component({
   selector: 'app-tenant-room-create',
@@ -16,6 +17,7 @@ export class TenantRoomCreateComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private taskService = inject(TaskService);
+  private tenantApi = inject(TenantApiService);
 
   isSubmitting = signal(false);
   roomId = signal<string | null>(null);
@@ -101,14 +103,13 @@ export class TenantRoomCreateComponent implements OnInit, OnDestroy {
   onSubmit() {
     if (this.roomForm.valid) {
       this.isSubmitting.set(true);
-      // Simulate API call
-      setTimeout(() => {
-        console.log('Room Saved:', this.roomForm.value);
+      this.tenantApi.createOrUpdateRoom(this.roomForm.getRawValue()).subscribe((payload) => {
+        console.log('Room Saved:', payload);
         this.isSuccess = true;
         this.taskService.removeTask(this.taskId);
         this.isSubmitting.set(false);
         this.router.navigate(['/tenant/rooms']);
-      }, 1500);
+      });
     }
   }
 }

@@ -4,6 +4,7 @@ import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { TaskService } from '../../../core/services/task.service';
+import { TenantApiService } from '../data-access/tenant-api.service';
 
 @Component({
   selector: 'app-tenant-group-exam-create',
@@ -16,6 +17,7 @@ export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private taskService = inject(TaskService);
+  private tenantApi = inject(TenantApiService);
 
   groupId = signal<string | null>(null);
   isSubmitting = signal(false);
@@ -74,13 +76,13 @@ export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
   onSubmit() {
     if (this.examForm.valid) {
       this.isSubmitting.set(true);
-      setTimeout(() => {
-        console.log('Exam Created:', this.examForm.value);
+      this.tenantApi.createGroupExam(this.examForm.getRawValue()).subscribe((payload) => {
+        console.log('Exam Created:', payload);
         this.isSuccess = true;
         this.taskService.removeTask(this.taskId);
         this.isSubmitting.set(false);
         this.router.navigate(['/tenant/groups', this.groupId()]);
-      }, 1500);
+      });
     }
   }
 }
