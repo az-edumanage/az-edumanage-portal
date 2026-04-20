@@ -170,3 +170,8 @@
 ## 14) Incremental Structure Alignment
 - [x] Batch 1: Move remaining route-level `features/owner/owner-*` page folders into `features/owner/pages/*` (move-only + import fixes, no HTML/CSS changes).
 - [x] Re-run lint/test/build after relocation batch.
+- [x] Batch 2: Move remaining route-level `features/tenant/tenant-*` page folders into `features/tenant/pages/*` (move-only + import fixes, no HTML/CSS changes).
+- [x] Remove leftover unused tenant legacy container (`tenant-group-create`) after relocation.
+- [x] Re-run lint/test/build after tenant relocation batch.
+- [ ] Batch 3: Move remaining route-level `features/teacher/teacher-*` page folders into `features/teacher/pages/*` (move-only + import fixes, no HTML/CSS changes).
+- [ ] Re-run lint/test/build after teacher relocation batch.

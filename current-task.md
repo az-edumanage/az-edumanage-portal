@@ -168,3 +168,17 @@ Close remaining migration gaps in state/data-access and final structure complian
 - [x] Complete Task 8 pending item (move remaining mock arrays/submit handlers from pages).
 - [ ] Validate and close Definition of Done: structure compliance + shared/native/feature categorization.
 - [x] Run final lint/test/build and mark remaining checklist items complete.
+
+---
+
+# Current Task (Next)
+
+## Goal
+Complete strict structure compliance by relocating teacher route-level pages into `features/teacher/pages/*`.
+
+## Checklist
+- [x] Relocate tenant route-level `tenant-*` pages to `tenant/pages/*` and stabilize imports/routes.
+- [x] Remove unused tenant legacy container (`tenant-group-create`) after relocation.
+- [x] Re-run lint/test/build after tenant relocation batch.
+- [ ] Relocate teacher route-level `teacher-*` pages to `teacher/pages/*` and stabilize imports/routes.
+- [ ] Re-run lint/test/build and close Definition of Done (`Codebase matches STRUCTURE.md`).
