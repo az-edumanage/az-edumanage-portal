@@ -1,94 +1,64 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Integration } from '../models/owner-integrations.models';
-import { OwnerApiService } from '../data-access/owner-api.service';
-
-interface IntegrationLog {
-  id: string;
-  timestamp: string;
-  action: string;
-  status: 'Success' | 'Error';
-  details: string;
-}
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { OwnerIntegrationDetailsFacade } from '../state/owner-integration-details.facade';
+import { OwnerIntegrationLog } from '../models/owner-integration-details.models';
 
 @Component({
   selector: 'app-owner-integration-details',
   standalone: true,
   imports: [CommonModule, RouterModule, MatIconModule, FormsModule, ReactiveFormsModule],
   templateUrl: './owner-integration-details.component.html'})
-export class OwnerIntegrationDetailsComponent {
-  private route = inject(ActivatedRoute);
-  private fb = inject(FormBuilder);
-  private ownerApi = inject(OwnerApiService);
-  
-  activeTab = signal<'overview' | 'configuration' | 'health' | 'logs'>('overview');
-  showSecret = false;
-  isCheckingHealth = false;
-  healthStatus: 'Unknown' | 'Healthy' | 'Unhealthy' = 'Unknown';
-  lastHealthCheckResult = '';
-  healthLog = '';
+export class OwnerIntegrationDetailsComponent implements OnInit {
+  private readonly facade = inject(OwnerIntegrationDetailsFacade);
 
-  integration = signal<Integration>({
-    id: 'int-stripe',
-    name: 'Stripe Payments',
-    provider: 'Stripe',
-    type: 'Payment',
-    status: 'Connected',
-    mode: 'Live',
-    lastHealthCheck: '2 mins ago',
-    icon: 'payments',
-    description: 'Process credit card payments and manage subscriptions.'
-  });
+  readonly activeTab = this.facade.activeTab;
+  readonly integration = this.facade.integration;
+  readonly configForm = this.facade.configForm;
 
-  configForm: FormGroup;
-
-  logs: IntegrationLog[] = [
-    { id: 'log-1', timestamp: 'Feb 21, 2026 11:30:05 AM', action: 'Health Check', status: 'Success', details: 'Connection verified successfully.' },
-    { id: 'log-2', timestamp: 'Feb 21, 2026 11:25:00 AM', action: 'Configuration Update', status: 'Success', details: 'Updated webhook secret.' },
-    { id: 'log-3', timestamp: 'Feb 20, 2026 04:15:22 PM', action: 'API Request', status: 'Error', details: 'Timeout connecting to provider.' },
-    { id: 'log-4', timestamp: 'Feb 20, 2026 02:00:00 PM', action: 'Integration Enabled', status: 'Success', details: 'Switched from Test to Live mode.' }
-  ];
-
-  constructor() {
-    this.configForm = this.fb.group({
-      isLive: [true],
-      apiKey: ['pk_live_51M...', Validators.required],
-      secretKey: ['sk_live_51M...', Validators.required],
-      webhookSecret: ['whsec_...']
-    });
+  get logs(): OwnerIntegrationLog[] {
+    return this.facade.logs();
   }
 
-  toggleStatus() {
-    const newStatus = this.integration().status === 'Connected' ? 'Not Configured' : 'Connected';
-    this.integration.update(i => ({ ...i, status: newStatus }));
+  get showSecret(): boolean {
+    return this.facade.showSecret;
   }
 
-  saveConfig() {
-    if (this.configForm.valid) {
-      console.log('Saving config:', this.configForm.value);
-      // Update integration mode based on form
-      this.integration.update(i => ({ 
-        ...i, 
-        mode: this.configForm.get('isLive')?.value ? 'Live' : 'Test' 
-      }));
-      alert('Configuration saved successfully.');
-    }
+  set showSecret(value: boolean) {
+    this.facade.showSecret = value;
   }
 
-  runHealthCheck() {
-    this.isCheckingHealth = true;
-    this.healthStatus = 'Unknown';
-    this.healthLog = 'Initializing connection...\nAuthenticating with provider...\nSending test payload...';
+  get isCheckingHealth(): boolean {
+    return this.facade.isCheckingHealth;
+  }
 
-    this.ownerApi.runIntegrationHealthCheck(this.integration().id).subscribe(({ result }) => {
-      this.isCheckingHealth = false;
-      this.healthStatus = result.healthStatus;
-      this.lastHealthCheckResult = result.message;
-      this.healthLog += result.log;
-      this.integration.update((i) => ({ ...i, lastHealthCheck: result.lastHealthCheck }));
-    });
+  get healthStatus() {
+    return this.facade.healthStatus;
+  }
+
+  get lastHealthCheckResult(): string {
+    return this.facade.lastHealthCheckResult;
+  }
+
+  get healthLog(): string {
+    return this.facade.healthLog;
+  }
+
+  ngOnInit(): void {
+    this.facade.initialize();
+  }
+
+  toggleStatus(): void {
+    this.facade.toggleStatus();
+  }
+
+  saveConfig(): void {
+    this.facade.saveConfig();
+  }
+
+  runHealthCheck(): void {
+    this.facade.runHealthCheck();
   }
 }

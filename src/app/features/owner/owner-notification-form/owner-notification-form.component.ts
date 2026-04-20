@@ -1,9 +1,9 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { TaskService } from '../../../core/services/task.service';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { OwnerNotificationFormFacade } from '../state/owner-notification-form.facade';
 
 @Component({
   selector: 'app-owner-notification-form',
@@ -12,60 +12,23 @@ import { TaskService } from '../../../core/services/task.service';
   templateUrl: './owner-notification-form.component.html',
   styleUrl: './owner-notification-form.component.css'})
 export class OwnerNotificationFormComponent implements OnInit, OnDestroy {
-  private fb = new FormBuilder();
-  private router = inject(Router);
-  private taskService = inject(TaskService);
+  private readonly facade = inject(OwnerNotificationFormFacade);
 
-  private isSuccess = false;
-  private taskId = 'create-notification-task';
+  readonly notificationForm = this.facade.notificationForm;
 
-  notificationForm = this.fb.group({
-    title: ['', Validators.required],
-    message: ['', Validators.required],
-    type: ['Announcement'],
-    priority: ['Medium'],
-    targetType: ['all'],
-    scheduleType: ['now']
-  });
-
-  ngOnInit() {
-    // Restore task data if exists
-    const savedTask = this.taskService.getTask(this.taskId);
-    if (savedTask && savedTask.data) {
-      this.notificationForm.patchValue(savedTask.data);
-      // Remove task from service after restoring
-      this.taskService.removeTask(this.taskId);
-    }
+  ngOnInit(): void {
+    this.facade.initialize();
   }
 
-  ngOnDestroy() {
-    // Save task if form has data and was not successfully submitted
-    const value = this.notificationForm.value;
-    const hasData = value.title !== '' || value.message !== '';
-    
-    if (hasData && !this.isSuccess) {
-      this.taskService.addTask({
-        id: this.taskId,
-        type: 'form',
-        label: `Drafting Notification: ${value.title || 'New Notification'}`,
-        route: '/owner/notifications/create',
-        data: value
-      });
-    }
+  ngOnDestroy(): void {
+    this.facade.onDestroy();
   }
 
-  onCancel() {
-    this.isSuccess = true;
-    this.taskService.removeTask(this.taskId);
-    this.router.navigate(['/owner/notifications']);
+  onCancel(): void {
+    this.facade.onCancel();
   }
 
-  onSave() {
-    if (this.notificationForm.valid) {
-      console.log('Saving notification:', this.notificationForm.value);
-      this.isSuccess = true;
-      this.taskService.removeTask(this.taskId);
-      this.router.navigate(['/owner/notifications']);
-    }
+  onSave(): void {
+    this.facade.onSave();
   }
 }

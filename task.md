@@ -106,8 +106,8 @@
 - [x] Create `features/tenant/state/tenant.store.ts`.
 - [x] Create `features/teacher/state/teacher.facade.ts`.
 - [x] Create `features/teacher/state/teacher.store.ts`.
-- [~] Move view-model derivations from large components into stores/computed selectors.
-- [~] Expose UI-friendly APIs from facades only.
+- [x] Move view-model derivations from large components into stores/computed selectors.
+- [x] Expose UI-friendly APIs from facades only.
   - [x] Migrate list/screen derivations to store/facade for: `owner-tenants-list`, `owner-users-list`, `owner-overview`.
   - [x] Migrate additional list/screen derivations to store/facade for: `owner-audit-logs`, `owner-provisioning-list`, `owner-modules-list`, `tenant-schedule`, `owner-integrations-list`, `owner-plans-list`, `owner-subscriptions-list`, `owner-subscription-templates-list`, `owner-notifications-list`, `teacher-media`, `owner-usage-analytics`, `owner-monitoring`, `owner-plan-details`, `owner-module-details`, `tenant-room-details`, `owner-academic-structure-details`, `tenant-group-details`, `tenant-grade-details`.
   - [x] Migrate additional list/screen derivations to store/facade for: `tenant-group-attendance`, `tenant-group-broadcast`, `owner-settings`.
@@ -115,13 +115,13 @@
   - [x] Migrate create/edit screen orchestration to store/facade for: `tenant-student-create`, `tenant-teacher-create`.
   - [x] Migrate edit screen orchestration to store/facade for: `owner-tenant-edit`.
   - [x] Migrate create/edit screen orchestration to store/facade for: `owner-plan-create`, `tenant-group-exam-create`, `tenant-room-create`, `tenant-group-student-add`.
-  - [ ] Migrate remaining complex pages still hosting local orchestration logic.
+  - [x] Migrate remaining complex pages still hosting local orchestration logic (`owner-tenant-create`, `tenant-group-create`, `tenant-grade-create`, `tenant-user-create`, `tenant-room-booking`, `owner-user-form`, `owner-notification-form`, `owner-provisioning-settings`, `owner-security`, `owner-tenant-details`, `owner-integration-details`).
 
 ## 8) Data-Access Tasks
 - [x] Create owner repositories/services in `features/owner/data-access`.
 - [x] Create tenant repositories/services in `features/tenant/data-access`.
 - [x] Create teacher repositories/services in `features/teacher/data-access`.
-- [~] Migrate mock arrays and submit handlers out of page components.
+- [x] Migrate mock arrays and submit handlers out of page components.
 - [x] Replace `setTimeout` simulated calls with facade repository methods.
   - [x] Move mock list data into data-access services for migrated list pages (owner/tenant slices above).
   - [x] Move mock payloads for `tenant-group-attendance`, `tenant-group-broadcast`, and `owner-settings` into feature data-access services.
@@ -129,7 +129,7 @@
   - [x] Move page-level submit/default payload orchestration from `tenant-student-create` and `tenant-teacher-create` into feature data-access services.
   - [x] Move tenant edit payload/options orchestration from `owner-tenant-edit.component` into feature data-access service.
   - [x] Move page-level payload/options/submit orchestration from `owner-plan-create`, `tenant-group-exam-create`, `tenant-room-create`, and `tenant-group-student-add` into feature data-access services.
-  - [ ] Move remaining page-level mock payloads from details/create flows into data-access.
+  - [x] Move remaining page-level mock payloads from details/create flows into data-access.
 
 ## 9) Core Hardening Tasks
 - [x] Add `core/guards/role.guard.ts`.

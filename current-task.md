@@ -164,7 +164,7 @@ Close remaining migration gaps in state/data-access and final structure complian
 - [x] Add store unit tests for `owner-plan-create`, `tenant-group-exam-create`, `tenant-room-create`, and `tenant-group-student-add`.
 - [x] Move page-level mock payloads for `tenant-group-attendance`, `tenant-group-broadcast`, and `owner-settings` into data-access services.
 - [x] Add store tests for `tenant-group-attendance`, `tenant-group-broadcast`, and `owner-settings`; rerun quality gates.
-- [ ] Complete Task 7 pending items (`view-model derivations`, `facade UI APIs`) for remaining large components.
-- [ ] Complete Task 8 pending item (move remaining mock arrays/submit handlers from pages).
+- [x] Complete Task 7 pending items (`view-model derivations`, `facade UI APIs`) for remaining large components.
+- [x] Complete Task 8 pending item (move remaining mock arrays/submit handlers from pages).
 - [ ] Validate and close Definition of Done: structure compliance + shared/native/feature categorization.
-- [ ] Run final lint/test/build and mark remaining checklist items complete.
+- [x] Run final lint/test/build and mark remaining checklist items complete.

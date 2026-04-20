@@ -2,6 +2,9 @@ export interface TenantGroupSelectorOption {
   id: string;
   name: string;
   subtitle?: string;
+  subject?: string;
+  level?: string;
+  type?: string;
 }
 
 export interface TenantGroupPayload {

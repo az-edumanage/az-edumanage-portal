@@ -1,10 +1,9 @@
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { TaskService } from '../../../core/services/task.service';
-import { TenantApiService } from '../data-access/tenant-api.service';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { TenantGradeCreateFacade } from '../state/tenant-grade-create.facade';
 
 @Component({
   selector: 'app-tenant-grade-create',
@@ -12,74 +11,28 @@ import { TenantApiService } from '../data-access/tenant-api.service';
   imports: [CommonModule, RouterModule, MatIconModule, FormsModule, ReactiveFormsModule],
   templateUrl: './tenant-grade-create.component.html'})
 export class TenantGradeCreateComponent implements OnInit, OnDestroy {
-  private fb = inject(FormBuilder);
-  private router = inject(Router);
-  private location = inject(Location);
-  private taskService = inject(TaskService);
-  private tenantApi = inject(TenantApiService);
+  private readonly facade = inject(TenantGradeCreateFacade);
 
-  isSubmitting = signal(false);
-  private isSuccess = false;
-  private taskId = 'create-grade-task';
+  readonly isSubmitting = this.facade.isSubmitting;
+  readonly gradeForm = this.facade.gradeForm;
 
-  gradeForm = this.fb.group({
-    name: ['', [Validators.required, Validators.minLength(2)]],
-    level: ['Secondary', Validators.required],
-    description: ['']
-  });
-
-  ngOnInit() {
-    // Restore task data if exists
-    const savedTask = this.taskService.getTask(this.taskId);
-    if (savedTask && savedTask.data) {
-      this.gradeForm.patchValue(savedTask.data as Record<string, unknown>);
-      // Remove task from service after restoring
-      this.taskService.removeTask(this.taskId);
-    }
+  ngOnInit(): void {
+    this.facade.initialize();
   }
 
-  ngOnDestroy() {
-    // Save task if form has data and was not successfully submitted
-    const value = this.gradeForm.value;
-    const hasData = value.name !== '' || value.description !== '' || value.level !== 'Secondary';
-    
-    if (hasData && !this.isSuccess && !this.isSubmitting()) {
-      this.taskService.addTask({
-        id: this.taskId,
-        type: 'form',
-        label: `Creating Grade: ${value.name || 'New Grade'}`,
-        route: '/tenant/grades/create',
-        data: value
-      });
-    }
+  ngOnDestroy(): void {
+    this.facade.onDestroy();
   }
 
-  resetForm() {
-    if (confirm('Are you sure you want to clear all fields?')) {
-      this.gradeForm.reset({
-        level: 'Secondary'
-      });
-      this.taskService.removeTask(this.taskId);
-    }
+  resetForm(): void {
+    this.facade.resetForm();
   }
 
-  goBack() {
-    this.isSuccess = true;
-    this.taskService.removeTask(this.taskId);
-    this.location.back();
+  goBack(): void {
+    this.facade.goBack();
   }
 
-  onSubmit() {
-    if (this.gradeForm.valid) {
-      this.isSubmitting.set(true);
-
-      this.tenantApi.createGrade(this.gradeForm.getRawValue()).subscribe((payload) => {
-        console.log('Grade Created:', payload);
-        this.isSuccess = true;
-        this.taskService.removeTask(this.taskId);
-        this.isSubmitting.set(false);
-        this.router.navigate(['/tenant/grades']);
-      });
-    }
+  onSubmit(): void {
+    this.facade.onSubmit();
   }
 }

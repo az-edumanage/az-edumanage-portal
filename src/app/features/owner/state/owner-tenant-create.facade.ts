@@ -48,6 +48,31 @@ export class OwnerTenantCreateFacade {
   readonly cities = this.data.cities;
   readonly countries = this.data.countries;
 
+  readonly filteredTenantTypes = computed(() => {
+    const query = this.tenantTypeSearchQuery().toLowerCase();
+    return this.tenantTypes.filter((type) => type.toLowerCase().includes(query));
+  });
+
+  readonly filteredIndustries = computed(() => {
+    const query = this.industrySearchQuery().toLowerCase();
+    return this.industries.filter((industry) => industry.toLowerCase().includes(query));
+  });
+
+  readonly filteredPlans = computed(() => {
+    const query = this.planSearchQuery().toLowerCase();
+    return this.plans.filter((plan) => plan.name.toLowerCase().includes(query));
+  });
+
+  readonly filteredCities = computed(() => {
+    const query = this.citySearchQuery().toLowerCase();
+    return this.cities.filter((city) => city.toLowerCase().includes(query));
+  });
+
+  readonly filteredCountries = computed(() => {
+    const query = this.countrySearchQuery().toLowerCase();
+    return this.countries.filter((country) => country.toLowerCase().includes(query));
+  });
+
   readonly selectedPlanName = computed(() => {
     const planId = this.tenantForm.get('planId')?.value;
     const plan = this.plans.find((item) => item.id === planId);

@@ -1,10 +1,9 @@
-import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { FormsModule, ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
-import { TaskService } from '../../../core/services/task.service';
-import { OwnerApiService } from '../data-access/owner-api.service';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { OwnerTenantCreateFacade } from '../state/owner-tenant-create.facade';
 
 @Component({
   selector: 'app-owner-tenant-create',
@@ -13,254 +12,90 @@ import { OwnerApiService } from '../data-access/owner-api.service';
   templateUrl: './owner-tenant-create.component.html',
   styleUrl: './owner-tenant-create.component.css'})
 export class OwnerTenantCreateComponent implements OnInit, OnDestroy {
-  private fb = inject(FormBuilder);
-  private router = inject(Router);
-  private taskService = inject(TaskService);
-  private ownerApi = inject(OwnerApiService);
+  private readonly facade = inject(OwnerTenantCreateFacade);
 
-  isSubmitting = signal(false);
-  showPassword = signal(false);
-  showTenantTypeDropdown = signal(false);
-  tenantTypeSearchQuery = signal('');
-  showIndustryDropdown = signal(false);
-  industrySearchQuery = signal('');
-  showPlanDropdown = signal(false);
-  planSearchQuery = signal('');
-  showDomainDropdown = signal(false);
-  showCityDropdown = signal(false);
-  citySearchQuery = signal('');
-  showCountryDropdown = signal(false);
-  countrySearchQuery = signal('');
-  showCustomizationMenu = signal(false);
-  
-  private isSuccess = false;
-  private taskId = 'create-tenant-task';
+  readonly isSubmitting = this.facade.isSubmitting;
+  readonly showTenantTypeDropdown = this.facade.showTenantTypeDropdown;
+  readonly tenantTypeSearchQuery = this.facade.tenantTypeSearchQuery;
+  readonly showIndustryDropdown = this.facade.showIndustryDropdown;
+  readonly industrySearchQuery = this.facade.industrySearchQuery;
+  readonly showPlanDropdown = this.facade.showPlanDropdown;
+  readonly planSearchQuery = this.facade.planSearchQuery;
+  readonly showDomainDropdown = this.facade.showDomainDropdown;
+  readonly showCityDropdown = this.facade.showCityDropdown;
+  readonly citySearchQuery = this.facade.citySearchQuery;
+  readonly showCountryDropdown = this.facade.showCountryDropdown;
+  readonly countrySearchQuery = this.facade.countrySearchQuery;
+  readonly showCustomizationMenu = this.facade.showCustomizationMenu;
 
-  existingTenants = [
-    { name: 'Cairo Excellence Academy', subdomain: 'cairo-excellence', email: 'contact@cairo-excellence.com', phone: '+201000000001' },
-    { name: 'Alexandria Language School', subdomain: 'alex-lang', email: 'info@alex-lang.com', phone: '+201000000002' }
-  ];
+  readonly plans = this.facade.plans;
+  readonly tenantTypes = this.facade.tenantTypes;
+  readonly industries = this.facade.industries;
+  readonly domains = this.facade.domains;
+  readonly cities = this.facade.cities;
+  readonly countries = this.facade.countries;
 
-  checkExisting(field: 'name' | 'subdomain' | 'email' | 'phone'): ValidatorFn {
-    return (control: AbstractControl): ValidationErrors | null => {
-      if (!control.value) return null;
-      const exists = this.existingTenants.find(item => item[field].toLowerCase() === control.value.toLowerCase());
-      if (exists) {
-        return { alreadyExists: { source: exists.name } };
-      }
-      return null;
-    };
+  readonly filteredTenantTypes = this.facade.filteredTenantTypes;
+  readonly filteredIndustries = this.facade.filteredIndustries;
+  readonly filteredPlans = this.facade.filteredPlans;
+  readonly filteredCities = this.facade.filteredCities;
+  readonly filteredCountries = this.facade.filteredCountries;
+
+  readonly tenantForm = this.facade.tenantForm;
+
+  ngOnInit(): void {
+    this.facade.initialize();
   }
 
-  plans = [
-    { id: 'starter', name: 'Starter', price: '$49/mo', popular: false },
-    { id: 'pro', name: 'Professional', price: '$149/mo', popular: true },
-    { id: 'enterprise', name: 'Enterprise', price: 'Custom', popular: false }
-  ];
-
-  tenantTypes = [
-    'School',
-    'Educational Center',
-    'Individual Tutor',
-    'Corporate Training',
-    'University',
-    'Bootcamp',
-    'Online Academy'
-  ];
-
-  industries = [
-    'K-12 School',
-    'Language Center',
-    'Higher Education',
-    'Vocational Training',
-    'Other'
-  ];
-
-  domains = [
-    '.remix.com',
-    '.academy.com',
-    '.edu.com',
-    '.school.com'
-  ];
-
-  cities = [
-    'Cairo',
-    'Alexandria',
-    'Giza',
-    'Dubai',
-    'Abu Dhabi',
-    'Riyadh',
-    'Jeddah',
-    'Amman',
-    'Beirut'
-  ];
-
-  countries = [
-    'Egypt',
-    'United Arab Emirates',
-    'Saudi Arabia',
-    'Jordan',
-    'Lebanon',
-    'Kuwait',
-    'Qatar'
-  ];
-
-  filteredTenantTypes = computed(() => {
-    const query = this.tenantTypeSearchQuery().toLowerCase();
-    return this.tenantTypes.filter(type => type.toLowerCase().includes(query));
-  });
-
-  filteredIndustries = computed(() => {
-    const query = this.industrySearchQuery().toLowerCase();
-    return this.industries.filter(industry => industry.toLowerCase().includes(query));
-  });
-
-  filteredPlans = computed(() => {
-    const query = this.planSearchQuery().toLowerCase();
-    return this.plans.filter(plan => plan.name.toLowerCase().includes(query));
-  });
-
-  filteredCities = computed(() => {
-    const query = this.citySearchQuery().toLowerCase();
-    return this.cities.filter(city => city.toLowerCase().includes(query));
-  });
-
-  filteredCountries = computed(() => {
-    const query = this.countrySearchQuery().toLowerCase();
-    return this.countries.filter(country => country.toLowerCase().includes(query));
-  });
+  ngOnDestroy(): void {
+    this.facade.onDestroy();
+  }
 
   getSelectedPlanName(): string {
-    const planId = this.tenantForm.get('planId')?.value;
-    const plan = this.plans.find(p => p.id === planId);
-    return plan ? plan.name : '';
+    return this.facade.selectedPlanName();
   }
 
-  selectTenantType(type: string) {
-    this.tenantForm.patchValue({ tenantType: type });
-    this.showTenantTypeDropdown.set(false);
-    this.tenantTypeSearchQuery.set('');
+  selectTenantType(type: string): void {
+    this.facade.selectTenantType(type);
   }
 
-  openCustomizationMenu(event: Event) {
-    event.preventDefault();
-    event.stopPropagation();
-    this.showCustomizationMenu.set(true);
+  openCustomizationMenu(event: Event): void {
+    this.facade.openCustomizationMenu(event);
   }
 
-  closeCustomizationMenu() {
-    this.showCustomizationMenu.set(false);
+  closeCustomizationMenu(): void {
+    this.facade.closeCustomizationMenu();
   }
 
-  selectIndustry(industry: string) {
-    this.tenantForm.patchValue({ industry: industry });
-    this.showIndustryDropdown.set(false);
-    this.industrySearchQuery.set('');
+  selectIndustry(industry: string): void {
+    this.facade.selectIndustry(industry);
   }
 
-  selectPlan(planId: string) {
-    this.tenantForm.patchValue({ planId: planId });
-    this.showPlanDropdown.set(false);
-    this.planSearchQuery.set('');
+  selectPlan(planId: string): void {
+    this.facade.selectPlan(planId);
   }
 
-  selectDomain(domain: string) {
-    this.tenantForm.patchValue({ domain: domain });
-    this.showDomainDropdown.set(false);
+  selectDomain(domain: string): void {
+    this.facade.selectDomain(domain);
   }
 
-  selectCity(city: string) {
-    this.tenantForm.patchValue({ city: city });
-    this.showCityDropdown.set(false);
-    this.citySearchQuery.set('');
+  selectCity(city: string): void {
+    this.facade.selectCity(city);
   }
 
-  selectCountry(country: string) {
-    this.tenantForm.patchValue({ country: country });
-    this.showCountryDropdown.set(false);
-    this.countrySearchQuery.set('');
+  selectCountry(country: string): void {
+    this.facade.selectCountry(country);
   }
 
-  tenantForm = this.fb.group({
-    centerName: ['', [Validators.required, Validators.minLength(3), this.checkExisting('name')]],
-    tenantType: ['', Validators.required],
-    subdomain: ['', [Validators.required, Validators.pattern('^[a-z0-9-]+$'), this.checkExisting('subdomain')]],
-    domain: ['.remix.com', Validators.required],
-    industry: ['', Validators.required],
-    contactName: [''],
-    contactEmail: ['', [Validators.email, this.checkExisting('email')]],
-    contactPhone: ['', [this.checkExisting('phone')]],
-    address: [''],
-    city: [''],
-    country: [''],
-    planId: ['', Validators.required],
-    isTrial: [true],
-    trialDays: [14, [Validators.required, Validators.min(1), Validators.pattern('^[0-9]*$')]],
-    region: ['me-south-1'],
-    autoProvision: [true],
-    sendInvite: [true],
-    onboardingLink: [false],
-    sendOnboardingWhatsapp: [false],
-    sendOnboardingEmail: [false]
-  });
-
-  ngOnInit() {
-    // Restore task data if exists
-    const savedTask = this.taskService.getTask(this.taskId);
-    if (savedTask && savedTask.data) {
-      this.tenantForm.patchValue(savedTask.data);
-      // Remove task from service after restoring
-      this.taskService.removeTask(this.taskId);
-    }
+  onCancel(): void {
+    this.facade.onCancel();
   }
 
-  ngOnDestroy() {
-    // Save task if form has data and was not successfully submitted
-    const value = this.tenantForm.value;
-    const hasData = value.centerName !== '' || value.subdomain !== '';
-    
-    if (hasData && !this.isSuccess && !this.isSubmitting()) {
-      this.taskService.addTask({
-        id: this.taskId,
-        type: 'form',
-        label: `Provisioning: ${value.centerName || 'New Tenant'}`,
-        route: '/owner/tenants/create',
-        data: value
-      });
-    }
+  onReset(): void {
+    this.facade.onReset();
   }
 
-  onCancel() {
-    this.isSuccess = true;
-    this.taskService.removeTask(this.taskId);
-    this.router.navigate(['/owner/tenants']);
-  }
-
-  onReset() {
-    this.tenantForm.reset({
-      domain: '.remix.com',
-      isTrial: true,
-      trialDays: 14,
-      region: 'me-south-1',
-      autoProvision: true,
-      sendInvite: true,
-      onboardingLink: false,
-      sendOnboardingWhatsapp: false,
-      sendOnboardingEmail: false
-    });
-  }
-
-  onSubmit() {
-    if (this.tenantForm.valid) {
-      this.isSubmitting.set(true);
-
-      this.ownerApi.createTenant(this.tenantForm.getRawValue()).subscribe((payload) => {
-        console.log('Tenant Created:', payload);
-        this.isSuccess = true;
-        this.taskService.removeTask(this.taskId);
-        this.isSubmitting.set(false);
-        this.router.navigate(['/owner/tenants']);
-      });
-    }
+  onSubmit(): void {
+    this.facade.onSubmit();
   }
 }
