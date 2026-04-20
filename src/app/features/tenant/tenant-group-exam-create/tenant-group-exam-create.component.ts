@@ -1,10 +1,9 @@
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router, ActivatedRoute } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { TaskService } from '../../../core/services/task.service';
-import { TenantApiService } from '../data-access/tenant-api.service';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { TenantGroupExamCreateFacade } from '../state/tenant-group-exam-create.facade';
 
 @Component({
   selector: 'app-tenant-group-exam-create',
@@ -13,76 +12,27 @@ import { TenantApiService } from '../data-access/tenant-api.service';
   templateUrl: './tenant-group-exam-create.component.html',
   styleUrl: './tenant-group-exam-create.component.css'})
 export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
-  private fb = inject(FormBuilder);
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
-  private taskService = inject(TaskService);
-  private tenantApi = inject(TenantApiService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly facade = inject(TenantGroupExamCreateFacade);
 
-  groupId = signal<string | null>(null);
-  isSubmitting = signal(false);
+  readonly groupId = this.facade.groupId;
+  readonly isSubmitting = this.facade.isSubmitting;
+  readonly examForm = this.facade.examForm;
 
-  private isSuccess = false;
-  private taskId = '';
-
-  examForm = this.fb.group({
-    title: ['', [Validators.required, Validators.minLength(3)]],
-    date: [new Date().toISOString().split('T')[0], Validators.required],
-    duration: [60, [Validators.required, Validators.min(1)]],
-    instructions: [''],
-    saveToCenterBank: [true],
-    saveToMyMedia: [true],
-    shuffleQuestions: [true],
-    showResultsImmediately: [false],
-    allowRetakes: [false]
-  });
-
-  ngOnInit() {
-    const groupId = this.route.snapshot.paramMap.get('id');
-    this.groupId.set(groupId);
-    this.taskId = `create-exam-group-${groupId}`;
-
-    // Restore task data if exists
-    const savedTask = this.taskService.getTask(this.taskId);
-    if (savedTask && savedTask.data) {
-      this.examForm.patchValue(savedTask.data as Record<string, unknown>);
-      // Remove task from service after restoring
-      this.taskService.removeTask(this.taskId);
-    }
+  ngOnInit(): void {
+    this.facade.initialize(this.route.snapshot.paramMap.get('id'));
   }
 
-  ngOnDestroy() {
-    // Save task if form has data and was not successfully submitted
-    const value = this.examForm.value;
-    const hasData = value.title !== '' || value.instructions !== '';
-    
-    if (hasData && !this.isSuccess && !this.isSubmitting()) {
-      this.taskService.addTask({
-        id: this.taskId,
-        type: 'form',
-        label: `Creating Exam: ${value.title || 'New Exam'}`,
-        route: this.router.url,
-        data: value
-      });
-    }
+  ngOnDestroy(): void {
+    this.facade.onDestroy(this.router.url);
   }
 
-  onCancel() {
-    this.isSuccess = true;
-    this.taskService.removeTask(this.taskId);
-    this.router.navigate(['/tenant/groups', this.groupId()]);
+  onCancel(): void {
+    this.facade.onCancel();
   }
 
-  onSubmit() {
-    if (this.examForm.valid) {
-      this.isSubmitting.set(true);
-      this.tenantApi.createGroupExam(this.examForm.getRawValue()).subscribe((payload) => {
-        console.log('Exam Created:', payload);
-        this.isSuccess = true;
-        this.taskService.removeTask(this.taskId);
-        this.isSubmitting.set(false);
-        this.router.navigate(['/tenant/groups', this.groupId()]);
-      });
-    }
+  onSubmit(): void {
+    this.facade.onSubmit();
   }
 }

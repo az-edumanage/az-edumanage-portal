@@ -151,10 +151,17 @@ Close remaining migration gaps in state/data-access and final structure complian
 - [x] Migrate additional large page VM/data orchestration out of component (completed: `tenant-student-create`).
 - [x] Migrate additional large page VM/data orchestration out of component (completed: `tenant-teacher-create`).
 - [x] Migrate additional large page VM/data orchestration out of component (completed: `owner-tenant-edit`).
+- [x] Migrate additional large page VM/data orchestration out of component (completed: `owner-plan-create`).
+- [x] Migrate additional large page VM/data orchestration out of component (completed: `tenant-group-exam-create`).
+- [x] Migrate additional large page VM/data orchestration out of component (completed: `tenant-room-create`).
+- [x] Migrate additional large page VM/data orchestration out of component (completed: `tenant-group-student-add`).
 - [x] Move submit/draft/default-data handling for `tenant-student-create` and `tenant-teacher-create` into feature data-access + facade.
 - [x] Move tenant edit fetch/update orchestration and selector options into `owner-tenant-edit` data-access + facade.
+- [x] Move page-level plan create/edit payload/options/validator data into `owner-plan-create` data-access + facade.
+- [x] Move page-level submit/draft payload handling for `tenant-group-exam-create`, `tenant-room-create`, and `tenant-group-student-add` into feature data-access + facades.
 - [x] Add store unit tests for `tenant-student-create` and `tenant-teacher-create`.
 - [x] Add store unit test for `owner-tenant-edit`.
+- [x] Add store unit tests for `owner-plan-create`, `tenant-group-exam-create`, `tenant-room-create`, and `tenant-group-student-add`.
 - [x] Move page-level mock payloads for `tenant-group-attendance`, `tenant-group-broadcast`, and `owner-settings` into data-access services.
 - [x] Add store tests for `tenant-group-attendance`, `tenant-group-broadcast`, and `owner-settings`; rerun quality gates.
 - [ ] Complete Task 7 pending items (`view-model derivations`, `facade UI APIs`) for remaining large components.

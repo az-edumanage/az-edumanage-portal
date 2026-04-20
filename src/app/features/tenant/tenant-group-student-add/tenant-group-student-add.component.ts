@@ -1,17 +1,10 @@
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router, ActivatedRoute } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { TaskService } from '../../../core/services/task.service';
-import { TenantApiService } from '../data-access/tenant-api.service';
-
-interface Student {
-  id: string;
-  name: string;
-  email: string;
-  grade: string;
-}
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { TenantGroupStudent } from '../models/tenant-group-student-add.models';
+import { TenantGroupStudentAddFacade } from '../state/tenant-group-student-add.facade';
 
 @Component({
   selector: 'app-tenant-group-student-add',
@@ -20,114 +13,38 @@ interface Student {
   templateUrl: './tenant-group-student-add.component.html',
   styleUrl: './tenant-group-student-add.component.css'})
 export class TenantGroupStudentAddComponent implements OnInit, OnDestroy {
-  private fb = inject(FormBuilder);
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
-  private taskService = inject(TaskService);
-  private tenantApi = inject(TenantApiService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly facade = inject(TenantGroupStudentAddFacade);
 
-  groupId = signal<string | null>(null);
-  isSubmitting = signal(false);
-  selectedStudent = signal<Student | null>(null);
-  
-  private isSuccess = false;
-  private taskId = '';
+  readonly groupId = this.facade.groupId;
+  readonly isSubmitting = this.facade.isSubmitting;
+  readonly selectedStudent = this.facade.selectedStudent;
+  readonly filteredStudents = this.facade.filteredStudents;
+  readonly enrollForm = this.facade.enrollForm;
 
-  allStudents: Student[] = [
-    { id: '101', name: 'Ahmed Ali', email: 'ahmed@example.com', grade: 'Grade 12' },
-    { id: '102', name: 'Sara Mohamed', email: 'sara@example.com', grade: 'Grade 12' },
-    { id: '103', name: 'Omar Hassan', email: 'omar@example.com', grade: 'Grade 11' },
-    { id: '104', name: 'Laila Mahmoud', email: 'laila@example.com', grade: 'Grade 12' },
-    { id: '105', name: 'Youssef Ibrahim', email: 'youssef@example.com', grade: 'Grade 10' },
-  ];
-  
-  filteredStudents = signal<Student[]>([]);
-
-  enrollForm = this.fb.group({
-    enrollDate: [new Date().toISOString().split('T')[0], Validators.required],
-    discount: [0, [Validators.min(0), Validators.max(100)]],
-    sendNotification: [true],
-    generateInitialInvoice: [true]
-  });
-
-  ngOnInit() {
-    const groupId = this.route.snapshot.paramMap.get('id');
-    this.groupId.set(groupId);
-    this.taskId = `enroll-student-group-${groupId}`;
-    this.filteredStudents.set(this.allStudents);
-
-    // Restore task data if exists
-    const savedTask = this.taskService.getTask(this.taskId);
-    if (savedTask && savedTask.data) {
-      const data = savedTask.data as Record<string, unknown>;
-      const formData = data['form'] as Record<string, unknown>;
-      this.enrollForm.patchValue(formData);
-      if (data['selectedStudent']) {
-        this.selectedStudent.set(data['selectedStudent'] as Student);
-      }
-      // Remove task from service after restoring
-      this.taskService.removeTask(this.taskId);
-    }
+  ngOnInit(): void {
+    this.facade.initialize(this.route.snapshot.paramMap.get('id'));
   }
 
-  ngOnDestroy() {
-    // Save task if form has data or student selected and was not successfully submitted
-    const value = this.enrollForm.value;
-    const hasData = this.selectedStudent() !== null;
-    
-    if (hasData && !this.isSuccess && !this.isSubmitting()) {
-      this.taskService.addTask({
-        id: this.taskId,
-        type: 'form',
-        label: `Enrolling Student: ${this.selectedStudent()?.name || 'Unknown'}`,
-        route: this.router.url,
-        data: {
-          form: value,
-          selectedStudent: this.selectedStudent()
-        }
-      });
-    }
+  ngOnDestroy(): void {
+    this.facade.onDestroy(this.router.url);
   }
 
-  onSearch(event: Event) {
-    const query = (event.target as HTMLInputElement).value.toLowerCase();
-    if (!query) {
-      this.filteredStudents.set(this.allStudents);
-      return;
-    }
-    this.filteredStudents.set(
-      this.allStudents.filter(s => 
-        s.name.toLowerCase().includes(query) || 
-        s.email.toLowerCase().includes(query) || 
-        s.id.includes(query)
-      )
-    );
+  onSearch(event: Event): void {
+    const query = (event.target as HTMLInputElement).value;
+    this.facade.onSearch(query);
   }
 
-  selectStudent(student: Student) {
-    this.selectedStudent.set(student);
+  selectStudent(student: TenantGroupStudent): void {
+    this.facade.selectStudent(student);
   }
 
-  onEnroll() {
-    if (this.selectedStudent()) {
-      this.isSubmitting.set(true);
-      const payload = {
-        ...this.enrollForm.getRawValue(),
-        student: this.selectedStudent(),
-      };
-      this.tenantApi.enrollStudentToGroup(payload).subscribe((response) => {
-        console.log('Enrolled:', response);
-        this.isSuccess = true;
-        this.taskService.removeTask(this.taskId);
-        this.isSubmitting.set(false);
-        this.router.navigate(['/tenant/groups', this.groupId()]);
-      });
-    }
+  onEnroll(): void {
+    this.facade.onEnroll();
   }
 
-  onCancel() {
-    this.isSuccess = true;
-    this.taskService.removeTask(this.taskId);
-    this.router.navigate(['/tenant/groups', this.groupId()]);
+  onCancel(): void {
+    this.facade.onCancel();
   }
 }
