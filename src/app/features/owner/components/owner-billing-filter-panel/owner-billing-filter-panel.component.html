@@ -1,0 +1,187 @@
+<div class="border-b border-slate-200 dark:border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+  <nav class="flex gap-6 overflow-x-auto" aria-label="Tabs">
+    <button
+      (click)="setTab('invoices')"
+      class="pb-4 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+      [class.border-indigo-500]="activeTab() === 'invoices'"
+      [class.text-indigo-600]="activeTab() === 'invoices'"
+      [class.dark:text-indigo-400]="activeTab() === 'invoices'"
+      [class.border-transparent]="activeTab() !== 'invoices'"
+      [class.text-slate-500]="activeTab() !== 'invoices'"
+      [class.hover:text-slate-700]="activeTab() !== 'invoices'"
+      [class.dark:hover:text-slate-300]="activeTab() !== 'invoices'"
+    >
+      Invoices
+    </button>
+    <button
+      (click)="setTab('payments')"
+      class="pb-4 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+      [class.border-indigo-500]="activeTab() === 'payments'"
+      [class.text-indigo-600]="activeTab() === 'payments'"
+      [class.dark:text-indigo-400]="activeTab() === 'payments'"
+      [class.border-transparent]="activeTab() !== 'payments'"
+      [class.text-slate-500]="activeTab() !== 'payments'"
+      [class.hover:text-slate-700]="activeTab() !== 'payments'"
+      [class.dark:hover:text-slate-300]="activeTab() !== 'payments'"
+    >
+      Payments
+    </button>
+    <button
+      (click)="setTab('failed')"
+      class="pb-4 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex items-center gap-2"
+      [class.border-red-500]="activeTab() === 'failed'"
+      [class.text-red-600]="activeTab() === 'failed'"
+      [class.dark:text-red-400]="activeTab() === 'failed'"
+      [class.border-transparent]="activeTab() !== 'failed'"
+      [class.text-slate-500]="activeTab() !== 'failed'"
+      [class.hover:text-slate-700]="activeTab() !== 'failed'"
+      [class.dark:hover:text-slate-300]="activeTab() !== 'failed'"
+    >
+      Failed Payments
+      <span class="px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-bold">12</span>
+    </button>
+    <button
+      (click)="setTab('refunds')"
+      class="pb-4 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+      [class.border-indigo-500]="activeTab() === 'refunds'"
+      [class.text-indigo-600]="activeTab() === 'refunds'"
+      [class.dark:text-indigo-400]="activeTab() === 'refunds'"
+      [class.border-transparent]="activeTab() !== 'refunds'"
+      [class.text-slate-500]="activeTab() !== 'refunds'"
+      [class.hover:text-slate-700]="activeTab() !== 'refunds'"
+      [class.dark:hover:text-slate-300]="activeTab() !== 'refunds'"
+    >
+      Refunds
+    </button>
+    <button
+      (click)="setTab('reports')"
+      class="pb-4 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+      [class.border-indigo-500]="activeTab() === 'reports'"
+      [class.text-indigo-600]="activeTab() === 'reports'"
+      [class.dark:text-indigo-400]="activeTab() === 'reports'"
+      [class.border-transparent]="activeTab() !== 'reports'"
+      [class.text-slate-500]="activeTab() !== 'reports'"
+      [class.hover:text-slate-700]="activeTab() !== 'reports'"
+      [class.dark:hover:text-slate-300]="activeTab() !== 'reports'"
+    >
+      Reports
+    </button>
+    <button
+      (click)="setTab('settings')"
+      class="pb-4 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+      [class.border-indigo-500]="activeTab() === 'settings'"
+      [class.text-indigo-600]="activeTab() === 'settings'"
+      [class.dark:text-indigo-400]="activeTab() === 'settings'"
+      [class.border-transparent]="activeTab() !== 'settings'"
+      [class.text-slate-500]="activeTab() !== 'settings'"
+      [class.hover:text-slate-700]="activeTab() !== 'settings'"
+      [class.dark:hover:text-slate-300]="activeTab() !== 'settings'"
+    >
+      Settings
+    </button>
+  </nav>
+
+  <div class="flex items-center gap-2 pb-4">
+    @if (isFiltered()) {
+      <button
+        (click)="resetFilters.emit()"
+        class="h-9 px-3 flex items-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-red-600 transition-colors rounded-lg text-[10px] font-bold uppercase tracking-widest"
+        title="Clear all filters"
+      >
+        <mat-icon class="text-sm">close</mat-icon>
+        Reset
+      </button>
+    }
+    <div class="relative h-9">
+      <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</mat-icon>
+      <input
+        type="text"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="onSearchQueryChange($event)"
+        placeholder="Search..."
+        class="h-full pl-9 pr-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full lg:w-64"
+      >
+    </div>
+
+    <div class="relative">
+      <button
+        (click)="toggleAdvancedFilters()"
+        class="h-9 w-9 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 hover:text-indigo-600 transition-colors"
+        [class.bg-indigo-600/10]="showAdvancedFilters()"
+        [class.border-indigo-200]="showAdvancedFilters()"
+        title="Advanced Filters"
+      >
+        <mat-icon class="text-sm">filter_alt</mat-icon>
+      </button>
+
+      @if (showAdvancedFilters()) {
+        <div class="absolute right-0 top-full mt-2 z-50 w-80 bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl animate-in fade-in slide-in-from-top-2 duration-200">
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Advanced Filters</h4>
+            <button (click)="closeAdvancedFilters()" class="text-slate-500 hover:text-slate-500">
+              <mat-icon class="text-sm">close</mat-icon>
+            </button>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label for="status-select" class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Status</label>
+              <select
+                id="status-select"
+                [ngModel]="filterStatus()"
+                (ngModelChange)="onFilterStatusChange($event)"
+                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="All">All Statuses</option>
+                <option value="Paid">Paid</option>
+                <option value="Unpaid">Unpaid</option>
+                <option value="Overdue">Overdue</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label for="min-amount-input" class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Min Amount</label>
+                <input
+                  id="min-amount-input"
+                  type="number"
+                  [ngModel]="filterMinAmount()"
+                  (ngModelChange)="onFilterMinAmountChange($event)"
+                  placeholder="0.00"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+              </div>
+              <div>
+                <label for="max-amount-input" class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Max Amount</label>
+                <input
+                  id="max-amount-input"
+                  type="number"
+                  [ngModel]="filterMaxAmount()"
+                  (ngModelChange)="onFilterMaxAmountChange($event)"
+                  placeholder="10000.00"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+              </div>
+            </div>
+
+            <div class="pt-2 flex gap-2">
+              <button
+                (click)="resetFilters.emit()"
+                class="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-200 transition-colors"
+              >
+                Reset
+              </button>
+              <button
+                (click)="closeAdvancedFilters()"
+                class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-500/20"
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

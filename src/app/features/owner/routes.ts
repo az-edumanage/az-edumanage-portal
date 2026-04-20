@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { OwnerOverviewComponent } from './owner-overview/owner-overview.component';
 import { OwnerTenantsListComponent } from './owner-tenants-list/owner-tenants-list.component';
-import { OwnerTenantCreateComponent } from './owner-tenant-create/owner-tenant-create.component';
+import { OwnerTenantCreatePageComponent } from './pages/owner-tenant-create/owner-tenant-create-page.component';
 import { OwnerTenantDetailsComponent } from './owner-tenant-details/owner-tenant-details.component';
 import { OwnerTenantEditComponent } from './owner-tenant-edit/owner-tenant-edit.component';
 import { OwnerPlansListComponent } from './owner-plans-list/owner-plans-list.component';
@@ -14,7 +14,7 @@ import { OwnerSubscriptionTemplatesListComponent } from './owner-subscription-te
 import { OwnerSubscriptionTemplateDetailsComponent } from './owner-subscription-template-details/owner-subscription-template-details.component';
 import { OwnerSubscriptionOrdersListComponent } from './owner-subscription-orders-list/owner-subscription-orders-list.component';
 import { OwnerSubscriptionOrderDetailsComponent } from './owner-subscription-order-details/owner-subscription-order-details.component';
-import { OwnerBillingComponent } from './owner-billing/owner-billing.component';
+import { OwnerBillingPageComponent } from './pages/owner-billing/owner-billing-page.component';
 import { OwnerInvoiceDetailsComponent } from './owner-invoice-details/owner-invoice-details.component';
 import { OwnerModulesListComponent } from './owner-modules-list/owner-modules-list.component';
 import { OwnerModuleDetailsComponent } from './owner-module-details/owner-module-details.component';
@@ -39,7 +39,7 @@ import { OwnerSettingsComponent } from './owner-settings/owner-settings.componen
 export const OWNER_ROUTES: Routes = [
   { path: 'overview', component: OwnerOverviewComponent },
   { path: 'tenants', component: OwnerTenantsListComponent },
-  { path: 'tenants/create', component: OwnerTenantCreateComponent },
+  { path: 'tenants/create', component: OwnerTenantCreatePageComponent },
   { path: 'tenants/:id', component: OwnerTenantDetailsComponent },
   { path: 'tenants/:id/edit', component: OwnerTenantEditComponent },
   { path: 'plans', component: OwnerPlansListComponent },
@@ -69,7 +69,7 @@ export const OWNER_ROUTES: Routes = [
   },
   { path: 'subscriptions/create', component: OwnerSubscriptionCreateComponent },
   { path: 'subscriptions/:id', component: OwnerSubscriptionDetailsComponent },
-  { path: 'billing', component: OwnerBillingComponent },
+  { path: 'billing', component: OwnerBillingPageComponent },
   { path: 'billing/invoices/:id', component: OwnerInvoiceDetailsComponent },
   { path: 'modules', component: OwnerModulesListComponent },
   { path: 'modules/mod-acad', component: OwnerAcademicStructureDetailsComponent },

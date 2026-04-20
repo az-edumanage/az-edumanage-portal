@@ -1,0 +1,60 @@
+<p class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{{ label() }}</p>
+<button
+  type="button"
+  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 cursor-pointer flex justify-between items-center transition-all"
+  (click)="onToggle()"
+>
+  <span [class.text-slate-500]="!selectedValue()">
+    {{ selectedValue() || placeholder() }}
+  </span>
+  <mat-icon class="text-slate-500">arrow_drop_down</mat-icon>
+</button>
+
+@if (isOpen()) {
+  <button
+    type="button"
+    class="fixed inset-0 z-10 w-full h-full cursor-default"
+    (click)="onClose()"
+    aria-label="Close dropdown"
+  ></button>
+
+  <div
+    class="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+    role="listbox"
+    [id]="dropdownId()"
+  >
+    <div class="p-2 border-b border-slate-200 dark:border-slate-700">
+      <div class="relative">
+        <mat-icon class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</mat-icon>
+        <input
+          type="text"
+          [value]="searchQuery()"
+          [placeholder]="searchPlaceholder()"
+          class="w-full pl-8 pr-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          (input)="onSearchInput($event)"
+          (click)="$event.stopPropagation()"
+          (keydown)="$event.stopPropagation()"
+        >
+      </div>
+    </div>
+
+    <div class="max-h-48 overflow-y-auto">
+      @for (option of filteredOptions(); track option) {
+        <button
+          type="button"
+          class="w-full px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer flex items-center justify-between transition-colors"
+          (click)="onSelect(option)"
+        >
+          <span class="text-slate-700 dark:text-slate-300">{{ option }}</span>
+          @if (selectedValue() === option) {
+            <mat-icon class="text-indigo-600 text-sm">check</mat-icon>
+          }
+        </button>
+      }
+
+      @if (filteredOptions().length === 0) {
+        <div class="px-3 py-4 text-sm text-center text-slate-500">{{ emptyStateText() }}</div>
+      }
+    </div>
+  </div>
+}

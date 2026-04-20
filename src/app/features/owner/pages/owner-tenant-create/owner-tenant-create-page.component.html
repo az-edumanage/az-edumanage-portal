@@ -1,0 +1,499 @@
+
+    <div class="max-w-4xl mx-auto space-y-6">
+      <!-- Header -->
+      <div class="flex items-center justify-between">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+            <a routerLink="/owner/tenants" class="hover:text-indigo-600 transition-colors">Tenants</a>
+            <mat-icon class="text-[10px]">chevron_right</mat-icon>
+            <span>Provision New Center</span>
+          </div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Create New Tenant</h2>
+        </div>
+        <div class="flex gap-3">
+          <button 
+            type="button"
+            (click)="onReset()"
+            class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
+          >
+            <mat-icon class="text-sm">refresh</mat-icon>
+            Reset
+          </button>
+          <button 
+            (click)="onCancel()"
+            class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            (click)="onSubmit()"
+            [disabled]="tenantForm.invalid || isSubmitting()"
+            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+          >
+            @if (isSubmitting()) {
+              <mat-icon class="animate-spin text-sm">sync</mat-icon>
+              Provisioning...
+            } @else {
+              <mat-icon class="text-sm">rocket_launch</mat-icon>
+              Provision Tenant
+            }
+          </button>
+        </div>
+      </div>
+
+      <form [formGroup]="tenantForm" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Form Section -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Basic Information -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <mat-icon class="text-sm">business</mat-icon>
+              Tenant Information
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="md:col-span-2">
+                <label for="centerName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tenant Name</label>
+                <div class="relative">
+                  <input 
+                    id="centerName"
+                    type="text" 
+                    formControlName="centerName"
+                    placeholder="e.g. Cairo Excellence Academy"
+                    class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border rounded-lg text-sm outline-none transition-all pr-10"
+                    [class.border-red-500]="tenantForm.get('centerName')?.hasError('alreadyExists')"
+                    [class.focus:ring-red-500]="tenantForm.get('centerName')?.hasError('alreadyExists')"
+                    [class.border-green-500]="tenantForm.get('centerName')?.valid && tenantForm.get('centerName')?.value"
+                    [class.focus:ring-green-500]="tenantForm.get('centerName')?.valid && tenantForm.get('centerName')?.value"
+                    [class.border-slate-200]="!tenantForm.get('centerName')?.hasError('alreadyExists') && !(tenantForm.get('centerName')?.valid && tenantForm.get('centerName')?.value)"
+                    [class.dark:border-slate-700]="!tenantForm.get('centerName')?.hasError('alreadyExists') && !(tenantForm.get('centerName')?.valid && tenantForm.get('centerName')?.value)"
+                    [class.focus:ring-indigo-500]="!tenantForm.get('centerName')?.hasError('alreadyExists') && !(tenantForm.get('centerName')?.valid && tenantForm.get('centerName')?.value)"
+                    [class.focus:ring-2]="true"
+                  >
+                  @if (tenantForm.get('centerName')?.valid && tenantForm.get('centerName')?.value) {
+                    <mat-icon class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500 text-[18px]">check_circle</mat-icon>
+                  }
+                </div>
+                @if (tenantForm.get('centerName')?.hasError('alreadyExists')) {
+                  <p class="mt-1 text-xs text-red-500">This name is already used by {{ tenantForm.get('centerName')?.getError('alreadyExists').source }}</p>
+                }
+              </div>
+
+              <div class="md:col-span-2 relative">
+                <app-owner-searchable-dropdown
+                  label="Tenant Type"
+                  placeholder="Select Tenant Type"
+                  searchPlaceholder="Search types..."
+                  emptyStateText="No types found"
+                  dropdownId="tenant-type-listbox"
+                  [options]="tenantTypes"
+                  [selectedValue]="tenantForm.get('tenantType')?.value || ''"
+                  [searchQuery]="tenantTypeSearchQuery()"
+                  [isOpen]="showTenantTypeDropdown()"
+                  (toggled)="toggleTenantTypeDropdown()"
+                  (closed)="closeTenantTypeDropdown()"
+                  (searchQueryChange)="setTenantTypeSearchQuery($event)"
+                  (optionSelected)="selectTenantType($event)"
+                />
+              </div>
+              
+              <div class="md:col-span-2">
+                <label for="subdomain" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Subdomain</label>
+                <div class="flex rounded-lg transition-all border bg-slate-50 dark:bg-slate-800"
+                  [class.border-red-500]="tenantForm.get('subdomain')?.hasError('alreadyExists')"
+                  [class.focus-within:ring-red-500]="tenantForm.get('subdomain')?.hasError('alreadyExists')"
+                  [class.border-green-500]="tenantForm.get('subdomain')?.valid && tenantForm.get('subdomain')?.value"
+                  [class.focus-within:ring-green-500]="tenantForm.get('subdomain')?.valid && tenantForm.get('subdomain')?.value"
+                  [class.border-slate-200]="!tenantForm.get('subdomain')?.hasError('alreadyExists') && !(tenantForm.get('subdomain')?.valid && tenantForm.get('subdomain')?.value)"
+                  [class.dark:border-slate-700]="!tenantForm.get('subdomain')?.hasError('alreadyExists') && !(tenantForm.get('subdomain')?.valid && tenantForm.get('subdomain')?.value)"
+                  [class.focus-within:ring-indigo-500]="!tenantForm.get('subdomain')?.hasError('alreadyExists') && !(tenantForm.get('subdomain')?.valid && tenantForm.get('subdomain')?.value)"
+                  [class.focus-within:ring-2]="true"
+                >
+                  <div class="flex-1 relative">
+                    <input 
+                      id="subdomain"
+                      type="text" 
+                      formControlName="subdomain"
+                      placeholder="cairo-academy"
+                      class="w-full px-3 py-2 bg-transparent text-sm focus:outline-none pr-10"
+                    >
+                    @if (tenantForm.get('subdomain')?.valid && tenantForm.get('subdomain')?.value) {
+                      <mat-icon class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500 text-[18px]">check_circle</mat-icon>
+                    }
+                  </div>
+                  <div class="relative border-l border-slate-200 dark:border-slate-700">
+                    <app-owner-domain-dropdown
+                      [domains]="domains"
+                      [selectedDomain]="tenantForm.get('domain')?.value || ''"
+                      [isOpen]="showDomainDropdown()"
+                      (toggled)="toggleDomainDropdown()"
+                      (closed)="closeDomainDropdown()"
+                      (domainSelected)="selectDomain($event)"
+                    />
+                  </div>
+                </div>
+                @if (tenantForm.get('subdomain')?.hasError('alreadyExists')) {
+                  <p class="mt-1 text-xs text-red-500">This subdomain is already used by {{ tenantForm.get('subdomain')?.getError('alreadyExists').source }}</p>
+                }
+                @if (tenantForm.get('subdomain')?.valid && tenantForm.get('subdomain')?.value) {
+                  <div class="mt-1.5 flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <mat-icon class="text-[14px]">share</mat-icon>
+                    <a [href]="'https://' + tenantForm.get('subdomain')?.value + tenantForm.get('domain')?.value + '/onboard/up'" target="_blank" class="hover:underline font-medium">
+                      https://{{ tenantForm.get('subdomain')?.value }}{{ tenantForm.get('domain')?.value }}/onboard/up
+                    </a>
+                  </div>
+                }
+              </div>
+
+              <div class="md:col-span-2 relative">
+                <app-owner-searchable-dropdown
+                  label="Industry / Type"
+                  placeholder="Select Industry"
+                  searchPlaceholder="Search industries..."
+                  emptyStateText="No industries found"
+                  dropdownId="industry-listbox"
+                  [options]="industries"
+                  [selectedValue]="tenantForm.get('industry')?.value || ''"
+                  [searchQuery]="industrySearchQuery()"
+                  [isOpen]="showIndustryDropdown()"
+                  (toggled)="toggleIndustryDropdown()"
+                  (closed)="closeIndustryDropdown()"
+                  (searchQueryChange)="setIndustrySearchQuery($event)"
+                  (optionSelected)="selectIndustry($event)"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Information -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <mat-icon class="text-sm">contact_mail</mat-icon>
+              Contact Info
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="md:col-span-2">
+                <label for="contactName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+                <input 
+                  id="contactName"
+                  type="text" 
+                  formControlName="contactName"
+                  placeholder="John Doe"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                >
+              </div>
+
+              <div>
+                <label for="contactEmail" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Contact Email</label>
+                <div class="relative">
+                  <input 
+                    id="contactEmail"
+                    type="email" 
+                    formControlName="contactEmail"
+                    placeholder="contact@center.com"
+                    class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border rounded-lg text-sm outline-none transition-all pr-10"
+                    [class.border-red-500]="tenantForm.get('contactEmail')?.hasError('alreadyExists')"
+                    [class.focus:ring-red-500]="tenantForm.get('contactEmail')?.hasError('alreadyExists')"
+                    [class.border-green-500]="tenantForm.get('contactEmail')?.valid && tenantForm.get('contactEmail')?.value"
+                    [class.focus:ring-green-500]="tenantForm.get('contactEmail')?.valid && tenantForm.get('contactEmail')?.value"
+                    [class.border-slate-200]="!tenantForm.get('contactEmail')?.hasError('alreadyExists') && !(tenantForm.get('contactEmail')?.valid && tenantForm.get('contactEmail')?.value)"
+                    [class.dark:border-slate-700]="!tenantForm.get('contactEmail')?.hasError('alreadyExists') && !(tenantForm.get('contactEmail')?.valid && tenantForm.get('contactEmail')?.value)"
+                    [class.focus:ring-indigo-500]="!tenantForm.get('contactEmail')?.hasError('alreadyExists') && !(tenantForm.get('contactEmail')?.valid && tenantForm.get('contactEmail')?.value)"
+                    [class.focus:ring-2]="true"
+                  >
+                  @if (tenantForm.get('contactEmail')?.valid && tenantForm.get('contactEmail')?.value) {
+                    <mat-icon class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500 text-[18px]">check_circle</mat-icon>
+                  }
+                </div>
+                @if (tenantForm.get('contactEmail')?.hasError('alreadyExists')) {
+                  <p class="mt-1 text-xs text-red-500">This email is already used by {{ tenantForm.get('contactEmail')?.getError('alreadyExists').source }}</p>
+                }
+              </div>
+              
+              <div>
+                <label for="contactPhone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Phone Number</label>
+                <div class="relative">
+                  <input 
+                    id="contactPhone"
+                    type="tel" 
+                    formControlName="contactPhone"
+                    placeholder="+20 123 456 7890"
+                    class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border rounded-lg text-sm outline-none transition-all pr-10"
+                    [class.border-red-500]="tenantForm.get('contactPhone')?.hasError('alreadyExists')"
+                    [class.focus:ring-red-500]="tenantForm.get('contactPhone')?.hasError('alreadyExists')"
+                    [class.border-green-500]="tenantForm.get('contactPhone')?.valid && tenantForm.get('contactPhone')?.value"
+                    [class.focus:ring-green-500]="tenantForm.get('contactPhone')?.valid && tenantForm.get('contactPhone')?.value"
+                    [class.border-slate-200]="!tenantForm.get('contactPhone')?.hasError('alreadyExists') && !(tenantForm.get('contactPhone')?.valid && tenantForm.get('contactPhone')?.value)"
+                    [class.dark:border-slate-700]="!tenantForm.get('contactPhone')?.hasError('alreadyExists') && !(tenantForm.get('contactPhone')?.valid && tenantForm.get('contactPhone')?.value)"
+                    [class.focus:ring-indigo-500]="!tenantForm.get('contactPhone')?.hasError('alreadyExists') && !(tenantForm.get('contactPhone')?.valid && tenantForm.get('contactPhone')?.value)"
+                    [class.focus:ring-2]="true"
+                  >
+                  @if (tenantForm.get('contactPhone')?.valid && tenantForm.get('contactPhone')?.value) {
+                    <mat-icon class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500 text-[18px]">check_circle</mat-icon>
+                  }
+                </div>
+                @if (tenantForm.get('contactPhone')?.hasError('alreadyExists')) {
+                  <p class="mt-1 text-xs text-red-500">This phone number is already used by {{ tenantForm.get('contactPhone')?.getError('alreadyExists').source }}</p>
+                }
+              </div>
+
+              <div class="md:col-span-2">
+                <label for="address" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Address</label>
+                <input 
+                  id="address"
+                  type="text" 
+                  formControlName="address"
+                  placeholder="123 Education St"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                >
+              </div>
+
+              <div class="relative">
+                <app-owner-searchable-dropdown
+                  label="City"
+                  placeholder="Select City"
+                  searchPlaceholder="Search cities..."
+                  emptyStateText="No cities found"
+                  dropdownId="city-listbox"
+                  [options]="cities"
+                  [selectedValue]="tenantForm.get('city')?.value || ''"
+                  [searchQuery]="citySearchQuery()"
+                  [isOpen]="showCityDropdown()"
+                  (toggled)="toggleCityDropdown()"
+                  (closed)="closeCityDropdown()"
+                  (searchQueryChange)="setCitySearchQuery($event)"
+                  (optionSelected)="selectCity($event)"
+                />
+              </div>
+
+              <div class="relative">
+                <app-owner-searchable-dropdown
+                  label="Country"
+                  placeholder="Select Country"
+                  searchPlaceholder="Search countries..."
+                  emptyStateText="No countries found"
+                  dropdownId="country-listbox"
+                  [options]="countries"
+                  [selectedValue]="tenantForm.get('country')?.value || ''"
+                  [searchQuery]="countrySearchQuery()"
+                  [isOpen]="showCountryDropdown()"
+                  (toggled)="toggleCountryDropdown()"
+                  (closed)="closeCountryDropdown()"
+                  (searchQueryChange)="setCountrySearchQuery($event)"
+                  (optionSelected)="selectCountry($event)"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar Options -->
+        <div class="space-y-6">
+          <!-- Plan & Billing -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 id="planLabel" class="text-sm font-bold text-slate-500 uppercase tracking-wider">Subscription Plan</h3>
+            
+            <div class="relative">
+              <app-owner-plan-dropdown
+                [plans]="plans"
+                [selectedPlanId]="tenantForm.get('planId')?.value || ''"
+                [selectedPlanName]="selectedPlanName()"
+                [isOpen]="showPlanDropdown()"
+                [searchQuery]="planSearchQuery()"
+                (toggled)="togglePlanDropdown()"
+                (closed)="closePlanDropdown()"
+                (searchQueryChange)="setPlanSearchQuery($event)"
+                (planSelected)="selectPlan($event)"
+              />
+            </div>
+
+            @if (tenantForm.get('planId')?.value) {
+              <div class="pt-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                <button 
+                  type="button"
+                  (click)="openCustomizationMenu($event)"
+                  class="w-full px-4 py-2 bg-indigo-600/10 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/30 rounded-lg text-sm font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors flex items-center justify-center gap-2"
+                >
+                  <mat-icon class="text-sm">tune</mat-icon>
+                  Customize features
+                </button>
+              </div>
+            }
+
+            <div class="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" formControlName="isTrial" class="rounded border-slate-200 text-indigo-600">
+                <span class="text-slate-700 dark:text-slate-300">Start with Trial</span>
+              </label>
+
+              @if (tenantForm.get('isTrial')?.value) {
+                <div class="animate-in fade-in slide-in-from-top-2 duration-200">
+                  <label for="trialDays" class="block text-xs font-bold text-slate-500 uppercase mb-1">Trial Days</label>
+                  <input 
+                    id="trialDays"
+                    type="number" 
+                    formControlName="trialDays"
+                    placeholder="14"
+                    min="1"
+                    step="1"
+                    class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  >
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Provisioning Settings -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Provisioning</h3>
+            
+            <div>
+              <label for="region" class="block text-xs font-bold text-slate-500 uppercase mb-1">Data Region</label>
+              <select id="region" formControlName="region" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+                <option value="us-east-1">US East (N. Virginia)</option>
+                <option value="eu-central-1">Europe (Frankfurt)</option>
+                <option value="me-south-1">Middle East (Bahrain)</option>
+              </select>
+            </div>
+
+            <div class="space-y-3 pt-2">
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" formControlName="autoProvision" class="rounded border-slate-200 text-indigo-600">
+                <span class="text-slate-700 dark:text-slate-300">Auto-provision Database</span>
+              </label>
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" formControlName="sendInvite" class="rounded border-slate-200 text-indigo-600">
+                <span class="text-slate-700 dark:text-slate-300">Send Welcome Email</span>
+              </label>
+              <div class="space-y-2">
+                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" formControlName="onboardingLink" class="rounded border-slate-200 text-indigo-600">
+                  <span class="text-slate-700 dark:text-slate-300">Send Onboarding Link</span>
+                </label>
+                
+                @if (tenantForm.get('onboardingLink')?.value) {
+                  <div class="pl-6 space-y-2 relative animate-in fade-in slide-in-from-top-1 duration-200">
+                    <!-- Tree line -->
+                    <div class="absolute left-[9px] top-0 bottom-3 w-px bg-slate-200 dark:bg-slate-700"></div>
+                    
+                    <label class="flex items-center gap-2 text-sm cursor-pointer relative">
+                      <div class="absolute -left-[15px] top-1/2 w-3 h-px bg-slate-200 dark:bg-slate-700"></div>
+                      <input type="checkbox" formControlName="sendOnboardingWhatsapp" class="rounded border-slate-200 text-indigo-600">
+                      <span class="text-slate-500 dark:text-slate-500">WhatsApp</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-sm cursor-pointer relative">
+                      <div class="absolute -left-[15px] top-1/2 w-3 h-px bg-slate-200 dark:bg-slate-700"></div>
+                      <input type="checkbox" formControlName="sendOnboardingEmail" class="rounded border-slate-200 text-indigo-600">
+                      <span class="text-slate-500 dark:text-slate-500">Email</span>
+                    </label>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Customization Side Menu -->
+    @if (showCustomizationMenu()) {
+      <div class="fixed inset-0 flex justify-end" style="z-index: 9999;">
+        <!-- Backdrop -->
+        <div 
+          class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity animate-in fade-in duration-200 cursor-pointer"
+          (click)="closeCustomizationMenu()"
+          (keydown.enter)="closeCustomizationMenu()"
+          tabindex="0"
+          role="button"
+          aria-label="Close customization menu"
+        ></div>
+        
+        <!-- Drawer -->
+        <div class="relative w-[30%] min-w-[320px] max-w-[400px] h-full bg-white dark:bg-slate-900 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+          <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900 dark:text-white">Customize Features</h2>
+              <p class="text-sm text-slate-500 dark:text-slate-500">Override plan defaults for this tenant</p>
+            </div>
+            <button 
+              (click)="closeCustomizationMenu()"
+              class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          
+          <div class="flex-1 overflow-y-auto p-6 space-y-8">
+            <!-- Discount Section -->
+            <div class="space-y-4">
+              <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Discount</h3>
+              <div class="space-y-3">
+                <div>
+                  <label for="drawerDiscountType" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Discount Type</label>
+                  <select id="drawerDiscountType" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                    <option value="none">No Discount</option>
+                    <option value="percentage">Percentage (%)</option>
+                    <option value="fixed">Fixed Amount</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="drawerDiscountValue" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Value</label>
+                  <input id="drawerDiscountValue" type="number" placeholder="0" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                </div>
+              </div>
+            </div>
+
+            <!-- Additional Modules Section -->
+            <div class="space-y-4">
+              <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Additional Modules</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-500">Select extra modules to include beyond the base plan.</p>
+              
+              <div class="space-y-2">
+                <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                  <input type="checkbox" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+                  <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Advanced Analytics</span>
+                </label>
+                <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                  <input type="checkbox" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+                  <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Parent Portal</span>
+                </label>
+                <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                  <input type="checkbox" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+                  <span class="text-sm font-medium text-slate-700 dark:text-slate-300">LMS</span>
+                </label>
+                <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                  <input type="checkbox" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+                  <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Question Bank</span>
+                </label>
+              </div>
+            </div>
+            
+            <!-- Usage Limits Override -->
+            <div class="space-y-4">
+              <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Usage Limits Override</h3>
+              <div class="space-y-3">
+                <div>
+                  <label for="extraStorage" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Extra Storage (GB)</label>
+                  <input id="extraStorage" type="number" placeholder="0" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                </div>
+                <div>
+                  <label for="extraBranches" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Extra Branches</label>
+                  <input id="extraBranches" type="number" placeholder="0" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="p-6 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+            <button 
+              (click)="closeCustomizationMenu()"
+              class="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20"
+            >
+              Apply Customizations
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  

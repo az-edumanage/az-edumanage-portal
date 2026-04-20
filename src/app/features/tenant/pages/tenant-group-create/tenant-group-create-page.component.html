@@ -1,0 +1,285 @@
+
+    <div class="max-w-4xl mx-auto space-y-6">
+      <!-- Header -->
+      <div class="flex items-center justify-between">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+            <a routerLink="/tenant/groups" class="hover:text-indigo-600 transition-colors">Groups</a>
+            <mat-icon class="text-[10px]">chevron_right</mat-icon>
+            <span>{{ isEditMode() ? 'Edit Group Settings' : 'Create New Academic Group' }}</span>
+          </div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ isEditMode() ? 'Edit Group' : 'Create New Group' }}</h2>
+        </div>
+        <div class="flex gap-3">
+          <button 
+            (click)="onCancel()"
+            class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            (click)="onSubmit()"
+            [disabled]="groupForm.invalid || isSubmitting()"
+            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+          >
+            @if (isSubmitting()) {
+              <mat-icon class="animate-spin text-sm">sync</mat-icon>
+              {{ isEditMode() ? 'Saving...' : 'Creating...' }}
+            } @else {
+              <mat-icon class="text-sm">{{ isEditMode() ? 'save' : 'add_circle' }}</mat-icon>
+              {{ isEditMode() ? 'Save Changes' : 'Create Group' }}
+            }
+          </button>
+        </div>
+      </div>
+
+      <form [formGroup]="groupForm" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Form Section -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Basic Information -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <mat-icon class="text-sm">info</mat-icon>
+              Basic Information
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="md:col-span-2">
+                <label for="groupName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Group Name</label>
+                <input 
+                  id="groupName"
+                  type="text" 
+                  formControlName="name"
+                  placeholder="e.g. Physics G12-Advanced"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                >
+              </div>
+              
+              <div class="relative">
+                <app-tenant-group-searchable-selector
+                  triggerId="teacherBtn"
+                  label="Assigned Teacher"
+                  placeholder="Select Teacher ..."
+                  searchPlaceholder="Search teachers..."
+                  emptyText="No teachers found"
+                  footerIcon="person_add"
+                  footerLabel="Add New Teacher"
+                  footerRouterLink="/tenant/teachers/create"
+                  [selectedValue]="groupForm.get('teacher')?.value || ''"
+                  [isOpen]="showTeacherDropdown()"
+                  [options]="filteredTeachers()"
+                  [searchQuery]="teacherSearchQuery()"
+                  (toggled)="toggleTeacherDropdown()"
+                  (searchQueryChanged)="setTeacherSearchQuery($event)"
+                  (selected)="selectTeacher($event)"
+                />
+              </div>
+
+              <div class="relative">
+                <app-tenant-group-owned-by-selector
+                  [selectedValue]="groupForm.get('ownedBy')?.value || ''"
+                  [isOpen]="showOwnedByDropdown()"
+                  (toggled)="toggleOwnedByDropdown()"
+                  (selected)="selectOwnedBy($event)"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Academic Classification -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <mat-icon class="text-sm">school</mat-icon>
+              Academic Classification
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="relative">
+                <app-tenant-group-searchable-selector
+                  triggerId="gradeBtn"
+                  label="Grade / Level"
+                  placeholder="Select Grade ..."
+                  searchPlaceholder="Search grades..."
+                  emptyText="No grades found"
+                  footerIcon="add"
+                  footerLabel="Add New Grade"
+                  footerRouterLink="/tenant/grades/create"
+                  [selectedValue]="groupForm.get('grade')?.value || ''"
+                  [isOpen]="showGradeDropdown()"
+                  [options]="filteredGrades()"
+                  [searchQuery]="gradeSearchQuery()"
+                  (toggled)="toggleGradeDropdown()"
+                  (searchQueryChanged)="setGradeSearchQuery($event)"
+                  (selected)="selectGrade($event)"
+                />
+              </div>
+
+              <div class="relative">
+                <app-tenant-group-searchable-selector
+                  triggerId="subjectBtn"
+                  label="Subject"
+                  placeholder="Select Subject ..."
+                  searchPlaceholder="Search subjects..."
+                  emptyText="No subjects found"
+                  footerIcon="add_circle"
+                  footerButton="Add New Subject"
+                  [selectedValue]="groupForm.get('subject')?.value || ''"
+                  [isOpen]="showSubjectDropdown()"
+                  [options]="filteredSubjects()"
+                  [searchQuery]="subjectSearchQuery()"
+                  (toggled)="toggleSubjectDropdown()"
+                  (searchQueryChanged)="setSubjectSearchQuery($event)"
+                  (selected)="selectSubject($event)"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Schedule & Location -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <mat-icon class="text-sm">schedule</mat-icon>
+              Schedule & Location
+            </h3>
+            
+            <app-tenant-group-schedule-section
+              [groupForm]="groupForm"
+              [days]="days"
+              [selectedDays]="selectedDays()"
+              (dayToggled)="onDayToggle($event)"
+              (timeTypeChanged)="onTimeTypeChange($event)"
+            />
+
+            <!-- 4. Room & Capacity -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+               <div class="relative">
+                <app-tenant-group-searchable-selector
+                  triggerId="roomBtn"
+                  label="Room / Lab"
+                  placeholder="Select Room ..."
+                  searchPlaceholder="Search rooms..."
+                  emptyText="No rooms found"
+                  footerIcon="add_location"
+                  footerLabel="Add New Room"
+                  footerRouterLink="/tenant/rooms/create"
+                  [selectedValue]="groupForm.get('room')?.value || ''"
+                  [isOpen]="showRoomDropdown()"
+                  [options]="filteredRooms()"
+                  [searchQuery]="roomSearchQuery()"
+                  (toggled)="toggleRoomDropdown()"
+                  (searchQueryChanged)="setRoomSearchQuery($event)"
+                  (selected)="selectRoom($event)"
+                />
+              </div>
+               
+               <div>
+                <label for="capacity" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Max Capacity</label>
+                <input 
+                  id="capacity"
+                  type="number" 
+                  formControlName="capacity"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                >
+              </div>
+            </div>
+
+            <!-- 5. Specific Duration -->
+              @if (groupForm.get('hasSpecificDuration')?.value) {
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-200 pt-4 border-t border-slate-200 dark:border-slate-800">
+                  <div>
+                    <label for="startDate" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">From Date</label>
+                    <input 
+                      id="startDate"
+                      type="date" 
+                      formControlName="startDate"
+                      class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    >
+                  </div>
+                  <div>
+                    <label for="endDate" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">To Date</label>
+                    <input 
+                      id="endDate"
+                      type="date" 
+                      formControlName="endDate"
+                      class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    >
+                  </div>
+                </div>
+              }
+          </div>
+        </div>
+
+        <!-- Sidebar Options -->
+        <div class="space-y-6">
+          <!-- Pricing & Billing -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Fees & Billing</h3>
+            
+            <div>
+              <label for="fees" class="block text-xs font-bold text-slate-500 uppercase mb-1">Monthly Fees (EGP)</label>
+              <input 
+                id="fees"
+                type="number" 
+                formControlName="fees"
+                placeholder="500"
+                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
+              >
+            </div>
+
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" formControlName="autoInvoice" class="rounded border-slate-200 text-indigo-600">
+              <span class="text-slate-700 dark:text-slate-300">Auto-generate monthly invoices</span>
+            </label>
+          </div>
+
+          <!-- Group Settings -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Settings</h3>
+            
+            <div class="space-y-3">
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" formControlName="allowSelfEnroll" class="rounded border-slate-200 text-indigo-600">
+                <span class="text-slate-700 dark:text-slate-300">Allow student self-enrollment</span>
+              </label>
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" formControlName="hasSpecificDuration" class="rounded border-slate-200 text-indigo-600">
+                <span class="text-slate-700 dark:text-slate-300 font-medium text-indigo-600">Specific duration</span>
+              </label>
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" formControlName="requireApproval" class="rounded border-slate-200 text-indigo-600">
+                <span class="text-slate-700 dark:text-slate-300">Require teacher approval</span>
+              </label>
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" formControlName="isActive" class="rounded border-slate-200 text-indigo-600">
+                <span class="text-slate-700 dark:text-slate-300">Group is active</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions Footer -->
+        <div class="lg:col-span-3 flex items-center justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-800 mt-4">
+          <button 
+            type="button"
+            (click)="onCancel()"
+            class="px-6 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            (click)="onSubmit()"
+            [disabled]="groupForm.invalid || isSubmitting()"
+            class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+          >
+            @if (isSubmitting()) {
+              <mat-icon class="animate-spin text-sm">sync</mat-icon>
+              {{ isEditMode() ? 'Saving...' : 'Creating...' }}
+            } @else {
+              <mat-icon class="text-sm">{{ isEditMode() ? 'save' : 'add_circle' }}</mat-icon>
+              {{ isEditMode() ? 'Save Changes' : 'Create Group' }}
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  

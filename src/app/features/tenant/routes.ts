@@ -5,7 +5,7 @@ import { TenantStudentCreateComponent } from './tenant-student-create/tenant-stu
 import { TenantTeachersComponent } from './tenant-teachers/tenant-teachers.component';
 import { TenantTeacherCreateComponent } from './tenant-teacher-create/tenant-teacher-create.component';
 import { TenantGroupsComponent } from './tenant-groups/tenant-groups.component';
-import { TenantGroupCreateComponent } from './tenant-group-create/tenant-group-create.component';
+import { TenantGroupCreatePageComponent } from './pages/tenant-group-create/tenant-group-create-page.component';
 import { TenantGroupDetailsComponent } from './tenant-group-details/tenant-group-details.component';
 import { TenantGroupStudentAddComponent } from './tenant-group-student-add/tenant-group-student-add.component';
 import { TenantGroupAttendanceComponent } from './tenant-group-attendance/tenant-group-attendance.component';
@@ -32,9 +32,9 @@ export const TENANT_ROUTES: Routes = [
   { path: 'teachers/:id/settings', component: TenantTeacherCreateComponent },
   { path: 'teachers/:id/messages', component: TenantDashboardComponent },
   { path: 'groups', component: TenantGroupsComponent },
-  { path: 'groups/create', component: TenantGroupCreateComponent },
+  { path: 'groups/create', component: TenantGroupCreatePageComponent },
   { path: 'groups/:id', component: TenantGroupDetailsComponent },
-  { path: 'groups/:id/edit', component: TenantGroupCreateComponent },
+  { path: 'groups/:id/edit', component: TenantGroupCreatePageComponent },
   { path: 'groups/:id/enroll', component: TenantGroupStudentAddComponent },
   { path: 'groups/:id/attendance', component: TenantGroupAttendanceComponent },
   { path: 'groups/:id/exam', component: TenantGroupExamCreateComponent },

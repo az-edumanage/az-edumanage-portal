@@ -1,0 +1,500 @@
+
+    <div class="space-y-6">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Billing & Revenue</h2>
+          <p class="text-slate-500 dark:text-slate-500 text-sm">Monitor financial health, invoices, and payment gateways.</p>
+        </div>
+        <div class="flex gap-3">
+          <app-button variant="outline" size="md">
+            <mat-icon class="text-sm mr-2">download</mat-icon>
+            Export Reports
+          </app-button>
+          <app-button variant="primary" size="md">
+            <mat-icon class="text-sm mr-2">settings</mat-icon>
+            Configure Gateway
+          </app-button>
+        </div>
+      </div>
+
+      <!-- Dashboard Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <!-- Total Revenue -->
+        <app-card class="p-4">
+          <div class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Total Revenue</div>
+          <div class="text-xl font-bold text-slate-900 dark:text-white">$142,300</div>
+          <div class="text-xs text-green-600 flex items-center gap-1 mt-1">
+            <mat-icon class="text-xs">trending_up</mat-icon> +12%
+          </div>
+        </app-card>
+        
+        <!-- MRR -->
+        <app-card class="p-4">
+          <div class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">MRR</div>
+          <div class="text-xl font-bold text-slate-900 dark:text-white">$118,500</div>
+          <div class="text-xs text-green-600 flex items-center gap-1 mt-1">
+            <mat-icon class="text-xs">trending_up</mat-icon> +8.4%
+          </div>
+        </app-card>
+
+        <!-- Churned Revenue -->
+        <app-card class="p-4">
+          <div class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Churned</div>
+          <div class="text-xl font-bold text-slate-900 dark:text-white">$2,400</div>
+          <div class="text-xs text-red-600 flex items-center gap-1 mt-1">
+            <mat-icon class="text-xs">trending_down</mat-icon> -1.2%
+          </div>
+        </app-card>
+
+        <!-- Failed Payments -->
+        <app-card class="p-4">
+          <div class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Failed</div>
+          <div class="text-xl font-bold text-red-600">$850</div>
+          <div class="text-xs text-slate-500 mt-1">12 transactions</div>
+        </app-card>
+
+        <!-- Refunds -->
+        <app-card class="p-4">
+          <div class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Refunds</div>
+          <div class="text-xl font-bold text-slate-900 dark:text-white">$320</div>
+          <div class="text-xs text-slate-500 mt-1">4 processed</div>
+        </app-card>
+
+        <!-- Growth -->
+        <app-card class="p-4">
+          <div class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Growth</div>
+          <div class="text-xl font-bold text-green-600">+15.3%</div>
+          <div class="text-xs text-slate-500 mt-1">vs last month</div>
+        </app-card>
+      </div>
+
+      <app-owner-billing-filter-panel
+        [activeTab]="activeTab()"
+        [isFiltered]="isFiltered()"
+        [searchQuery]="searchQuery()"
+        [showAdvancedFilters]="showAdvancedFilters()"
+        [filterStatus]="filterStatus()"
+        [filterMinAmount]="filterMinAmount()"
+        [filterMaxAmount]="filterMaxAmount()"
+        (activeTabChange)="setActiveTab($event)"
+        (resetFilters)="resetFilters()"
+        (searchQueryChange)="setSearchQuery($event)"
+        (showAdvancedFiltersChange)="setShowAdvancedFilters($event)"
+        (filterStatusChange)="setFilterStatus($event)"
+        (filterMinAmountChange)="setFilterMinAmount($event)"
+        (filterMaxAmountChange)="setFilterMaxAmount($event)"
+      />
+
+      <!-- Tab Content -->
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden min-h-[400px]">
+        
+        <!-- Filter Indicator -->
+        @if (tenantFilter()) {
+          <div class="px-6 py-3 bg-indigo-600/10 dark:bg-indigo-900/20 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-300">
+              <mat-icon class="text-sm">filter_list</mat-icon>
+              <span>Showing results for: <strong>{{ tenantFilter() }}</strong></span>
+            </div>
+            <button (click)="clearTenantFilter()" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-wider">
+              Clear Filter
+            </button>
+          </div>
+        }
+
+        <!-- Invoices Tab -->
+        @if (activeTab() === 'invoices') {
+          <app-owner-billing-invoices-table
+            [invoices]="filteredInvoices()"
+            (copyValue)="copyToClipboard($event)"
+            (viewProof)="viewProof($event)"
+            (initiateRefund)="initiateRefund($event)"
+          />
+        }
+
+        <!-- Refund Confirmation Modal -->
+        @if (showRefundModal()) {
+          <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+              <div class="p-6 text-center">
+                <div class="w-16 h-16 bg-red-50 dark:bg-red-900/30 rounded-full flex items-center justify-center text-red-600 mx-auto mb-4">
+                  <mat-icon class="text-3xl">warning</mat-icon>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Confirm Refund</h3>
+                <p class="text-slate-500 dark:text-slate-500 mb-6">
+                  Are you sure you want to refund invoice <strong>{{ invoiceToRefund()?.id }}</strong> for <strong>{{ invoiceToRefund()?.tenant }}</strong>? 
+                  This action will change the status to Refunded and create a refund record.
+                </p>
+                <div class="flex gap-3">
+                  <app-button 
+                    variant="secondary"
+                    size="md"
+                    (click)="closeRefundModal()"
+                    class="flex-1"
+                  >
+                    Cancel
+                  </app-button>
+                  <app-button 
+                    variant="destructive"
+                    size="md"
+                    (click)="confirmRefund()"
+                    class="flex-1"
+                  >
+                    Confirm Refund
+                  </app-button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Proof Preview Modal -->
+        @if (showProofModal()) {
+          <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div class="bg-white dark:bg-slate-900 w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+              <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-lg bg-indigo-600/10 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600">
+                    <mat-icon>receipt_long</mat-icon>
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-slate-900 dark:text-white">Payment Proof Review</h3>
+                    <p class="text-xs text-slate-500">Invoice: {{ selectedInvoice()?.id }} • {{ selectedInvoice()?.tenant }}</p>
+                  </div>
+                </div>
+                <button (click)="closeProofModal()" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+              <div class="p-8 bg-slate-100 dark:bg-slate-950 min-h-[400px] flex items-center justify-center">
+                <!-- Simulated Document Preview -->
+                <div class="w-full max-w-lg aspect-[1/1.414] bg-white shadow-xl p-12 space-y-8 relative">
+                  <div class="flex justify-between items-start">
+                    <div class="w-24 h-8 bg-slate-200"></div>
+                    <div class="w-32 h-4 bg-slate-100"></div>
+                  </div>
+                  <div class="space-y-4">
+                    <div class="w-full h-4 bg-slate-100"></div>
+                    <div class="w-3/4 h-4 bg-slate-100"></div>
+                  </div>
+                  <div class="pt-12 space-y-6">
+                    <div class="flex justify-between border-b border-slate-200 pb-4">
+                      <div class="w-32 h-4 bg-slate-200"></div>
+                      <div class="w-16 h-4 bg-slate-900"></div>
+                    </div>
+                    <div class="flex justify-between">
+                      <div class="w-32 h-4 bg-slate-200"></div>
+                      <div class="w-16 h-4 bg-slate-900"></div>
+                    </div>
+                  </div>
+                  <div class="absolute bottom-12 right-12 w-24 h-24 border-4 border-indigo-100 rounded-full flex items-center justify-center">
+                     <mat-icon class="text-indigo-200 text-4xl">verified</mat-icon>
+                  </div>
+                </div>
+              </div>
+              <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 flex justify-between items-center">
+                <div class="text-xs text-slate-500">
+                  Uploaded on: Jan 16, 2024 • 1.2 MB
+                </div>
+                <div class="flex gap-3">
+                  @if (selectedInvoice()?.status !== 'Paid') {
+                    <button 
+                      (click)="rejectProof()"
+                      class="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                    >
+                      Reject Proof
+                    </button>
+                    <button 
+                      (click)="confirmPayment()"
+                      class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-bold transition-colors shadow-lg shadow-green-500/20"
+                    >
+                      Confirm & Mark as Paid
+                    </button>
+                  } @else {
+	                    <button (click)="closeProofModal()" class="px-6 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-bold transition-colors">
+                      Close
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Payments Tab -->
+        @if (activeTab() === 'payments') {
+          <app-owner-billing-payments-table
+            [payments]="filteredPayments()"
+            (copyValue)="copyToClipboard($event)"
+          />
+        }
+
+        <!-- Failed Payments Tab -->
+        @if (activeTab() === 'failed') {
+          <div class="overflow-x-auto">
+            <table appTable>
+              <thead appTableHeader>
+                <tr>
+                  <th appTableHead>Tenant</th>
+                  <th appTableHead>Amount</th>
+                  <th appTableHead>Reason</th>
+                  <th appTableHead>Retry Count</th>
+                  <th appTableHead>Last Attempt</th>
+                  <th appTableHead>Grace Period End</th>
+                  <th appTableHead class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody appTableBody>
+                @for (fail of filteredFailedPayments(); track fail.id) {
+                  <tr appTableRow>
+                    <td appTableCell class="font-medium text-slate-900 dark:text-white">
+                      <button 
+                        (click)="copyToClipboard(fail.tenant)"
+                        class="hover:text-indigo-600 transition-colors focus:outline-none focus:underline text-left"
+                        title="Click to copy tenant name"
+                      >
+                        {{ fail.tenant }}
+                      </button>
+                    </td>
+                    <td appTableCell class="font-medium text-slate-900 dark:text-white">\${{ fail.amount }}</td>
+                    <td appTableCell class="text-red-500 text-xs font-mono">{{ fail.reason }}</td>
+                    <td appTableCell class="text-slate-500 dark:text-slate-500">{{ fail.retryCount }} / 3</td>
+                    <td appTableCell class="text-slate-500">{{ fail.lastAttempt }}</td>
+                    <td appTableCell class="text-amber-600 font-medium">{{ fail.gracePeriodEnd }}</td>
+                    <td appTableCell class="text-right">
+                      <button class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 font-medium text-xs border border-indigo-200 dark:border-indigo-800 px-2 py-1 rounded hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30">
+                        Retry
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        <!-- Refunds Tab -->
+        @if (activeTab() === 'refunds') {
+          <div class="overflow-x-auto">
+            <table appTable>
+              <thead appTableHeader>
+                <tr>
+                  <th appTableHead>Refund ID</th>
+                  <th appTableHead>Tenant</th>
+                  <th appTableHead>Original Invoice</th>
+                  <th appTableHead>Amount</th>
+                  <th appTableHead>Reason</th>
+                  <th appTableHead>Date</th>
+                </tr>
+              </thead>
+              <tbody appTableBody>
+                @for (ref of filteredRefunds(); track ref.id) {
+                  <tr appTableRow>
+                    <td appTableCell class="font-medium text-slate-900 dark:text-white">
+                      <button 
+                        (click)="copyToClipboard(ref.id)"
+                        class="hover:text-indigo-600 transition-colors focus:outline-none focus:underline"
+                        title="Click to copy ID"
+                      >
+                        {{ ref.id }}
+                      </button>
+                    </td>
+                    <td appTableCell class="text-slate-500 dark:text-slate-500">
+                      <button 
+                        (click)="copyToClipboard(ref.tenant)"
+                        class="hover:text-indigo-600 transition-colors focus:outline-none focus:underline text-left"
+                        title="Click to copy tenant name"
+                      >
+                        {{ ref.tenant }}
+                      </button>
+                    </td>
+                    <td appTableCell class="text-slate-500">{{ ref.originalInvoice }}</td>
+                    <td appTableCell class="font-medium text-slate-900 dark:text-white">\${{ ref.amount }}</td>
+                    <td appTableCell class="text-slate-500 dark:text-slate-500">{{ ref.reason }}</td>
+                    <td appTableCell class="text-slate-500">{{ ref.date }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        <!-- Settings Tab -->
+        @if (activeTab() === 'settings') {
+          <div class="p-6 space-y-8">
+            <!-- Payment Gateways -->
+            <div>
+              <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Payment Gateways</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                      <mat-icon class="text-indigo-600">payment</mat-icon>
+                      <span class="font-bold text-slate-900 dark:text-white">Stripe</span>
+                    </div>
+                    <div class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" checked class="sr-only peer">
+                      <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                    </div>
+                  </div>
+                  <div class="space-y-3">
+                    <div>
+                      <div class="block text-xs font-medium text-slate-500 mb-1">Publishable Key</div>
+                      <input type="text" value="pk_test_..." class="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-sm font-mono text-slate-500 dark:text-slate-500">
+                    </div>
+                    <div>
+                      <div class="block text-xs font-medium text-slate-500 mb-1">Secret Key</div>
+                      <input type="password" value="sk_test_..." class="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-sm font-mono text-slate-500 dark:text-slate-500">
+                    </div>
+                    <div>
+                      <div class="block text-xs font-medium text-slate-500 mb-1">Webhook Secret</div>
+                      <input type="password" value="whsec_..." class="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-sm font-mono text-slate-500 dark:text-slate-500">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                      <mat-icon class="text-indigo-600">account_balance_wallet</mat-icon>
+                      <span class="font-bold text-slate-900 dark:text-white">PayPal</span>
+                    </div>
+                    <div class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" class="sr-only peer">
+                      <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                    </div>
+                  </div>
+                  <div class="space-y-3 opacity-50">
+                    <div>
+                      <div class="block text-xs font-medium text-slate-500 mb-1">Client ID</div>
+                      <input type="text" disabled class="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-sm font-mono text-slate-500 dark:text-slate-500">
+                    </div>
+                    <div>
+                      <div class="block text-xs font-medium text-slate-500 mb-1">Secret</div>
+                      <input type="password" disabled class="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-sm font-mono text-slate-500 dark:text-slate-500">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tax Configuration -->
+            <div>
+              <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Tax Configuration</h3>
+              <div class="p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 max-w-2xl">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Default VAT %</div>
+                    <input type="number" value="14" class="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                  </div>
+                  <div>
+                    <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tax ID</div>
+                    <input type="text" value="EG-123-456-789" class="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                  </div>
+                  <div class="col-span-2">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+                      <span class="text-sm text-slate-700 dark:text-slate-300">Apply tax automatically based on tenant region</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Reports Tab -->
+        @if (activeTab() === 'reports') {
+          <div class="p-6 space-y-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Financial Performance Analysis</h3>
+                <p class="text-xs text-slate-500">Monthly breakdown of revenue, refunds, and growth trends.</p>
+              </div>
+              <button 
+                (click)="generateReport()"
+                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20 flex items-center gap-2"
+              >
+                <mat-icon class="text-sm">analytics</mat-icon>
+                Generate Latest Report
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <!-- Report Table -->
+              <div class="lg:col-span-2 overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900">
+                <table appTable>
+                  <thead appTableHeader>
+                    <tr>
+                      <th appTableHead>Month</th>
+                      <th appTableHead>Revenue</th>
+                      <th appTableHead>Refunds</th>
+                      <th appTableHead>Net Revenue</th>
+                      <th appTableHead>Growth</th>
+                    </tr>
+                  </thead>
+                  <tbody appTableBody>
+                    @for (report of monthlyReports(); track report.month) {
+                      <tr appTableRow>
+                        <td appTableCell class="font-medium text-slate-900 dark:text-white">{{ report.month }}</td>
+                        <td appTableCell class="text-slate-500 dark:text-slate-500">\${{ report.revenue.toLocaleString() }}</td>
+                        <td appTableCell class="text-red-500">-\${{ report.refunds.toLocaleString() }}</td>
+                        <td appTableCell class="font-bold text-slate-900 dark:text-white">\${{ report.netRevenue.toLocaleString() }}</td>
+                        <td appTableCell>
+                          <div class="flex items-center gap-1" 
+                            [class.text-green-600]="report.status === 'up'" 
+                            [class.text-red-600]="report.status === 'down'"
+                            [class.text-slate-500]="report.status === 'stable'"
+                          >
+                            <mat-icon class="text-sm">{{ report.status === 'up' ? 'trending_up' : report.status === 'down' ? 'trending_down' : 'trending_flat' }}</mat-icon>
+                            <span class="font-medium">{{ report.growth > 0 ? '+' : '' }}{{ report.growth }}%</span>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Visual Summary -->
+              <div class="space-y-6">
+                <div class="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                  <h4 class="text-xs font-bold text-slate-500 mb-6 uppercase tracking-widest">Revenue Trend</h4>
+                  <div class="h-48 flex items-end gap-2 px-2">
+                    @for (report of monthlyReports().slice(-6); track report.month) {
+                      <div class="flex-1 flex flex-col items-center gap-2 group">
+                        <div 
+                          class="w-full bg-indigo-500/20 group-hover:bg-indigo-600 transition-all rounded-t-md relative"
+                          [style.height.%]="(report.netRevenue / maxRevenue()) * 100"
+                        >
+                          <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                            \${{ report.netRevenue.toLocaleString() }}
+                          </div>
+                        </div>
+                        <span class="text-[8px] font-bold text-slate-500 uppercase tracking-tighter">{{ report.month.split(' ')[0] }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <div class="p-6 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-500/20 text-white">
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
+                      <mat-icon>insights</mat-icon>
+                    </div>
+                    <div>
+                      <div class="text-[10px] font-bold uppercase tracking-widest opacity-80">Annual Growth</div>
+                      <div class="text-xl font-bold">+24.5%</div>
+                    </div>
+                  </div>
+                  <p class="text-xs leading-relaxed opacity-90">
+                    Your revenue has increased by 24.5% compared to the previous year. Refunds are down by 12% in the last quarter.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  

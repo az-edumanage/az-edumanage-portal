@@ -1,0 +1,56 @@
+<div class="overflow-x-auto">
+  <table appTable>
+    <thead appTableHeader>
+      <tr>
+        <th appTableHead>Payment ID</th>
+        <th appTableHead>Tenant</th>
+        <th appTableHead>Amount</th>
+        <th appTableHead>Method</th>
+        <th appTableHead>Reference</th>
+        <th appTableHead>Status</th>
+        <th appTableHead>Date</th>
+      </tr>
+    </thead>
+    <tbody appTableBody>
+      @for (pay of payments(); track pay.id) {
+        <tr appTableRow>
+          <td appTableCell class="font-medium text-slate-900 dark:text-white">
+            <button
+              (click)="copyValue.emit(pay.id)"
+              class="hover:text-indigo-600 transition-colors focus:outline-none focus:underline"
+              title="Click to copy ID"
+            >
+              {{ pay.id }}
+            </button>
+          </td>
+          <td appTableCell class="text-slate-500 dark:text-slate-500">
+            <a [routerLink]="['/owner/tenants', pay.tenantId]" class="hover:text-indigo-600 transition-colors font-medium" title="View tenant details">
+              {{ pay.tenant }}
+            </a>
+          </td>
+          <td appTableCell class="font-medium text-slate-900 dark:text-white">\${{ pay.amount }}</td>
+          <td appTableCell class="text-slate-500 dark:text-slate-500 flex items-center gap-2">
+            <mat-icon class="text-sm text-slate-500">credit_card</mat-icon>
+            {{ pay.method }}
+          </td>
+          <td appTableCell class="text-xs font-mono text-slate-500">{{ pay.ref }}</td>
+          <td appTableCell>
+            <span class="px-2 py-1 rounded-full text-xs font-medium"
+              [class.bg-green-100]="pay.status === 'Success'"
+              [class.text-green-700]="pay.status === 'Success'"
+              [class.dark:bg-green-900/30]="pay.status === 'Success'"
+              [class.dark:text-green-400]="pay.status === 'Success'"
+              [class.bg-red-100]="pay.status === 'Failed'"
+              [class.text-red-700]="pay.status === 'Failed'"
+              [class.dark:bg-red-900/30]="pay.status === 'Failed'"
+              [class.dark:text-red-400]="pay.status === 'Failed'"
+            >
+              {{ pay.status }}
+            </span>
+          </td>
+          <td appTableCell class="text-slate-500">{{ pay.date }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

@@ -86,17 +86,17 @@
   - [x] `features/teacher/data-access`
 
 ## 6) High-Priority Feature Page Splits
-  - [ ] Split `owner-billing` page:
-  - [ ] Keep container in `features/owner/pages/owner-billing`.
-  - [ ] Extract filter panel to `components`.
-  - [ ] Extract each tab table to `components`.
-  - [ ] Move data logic to facade/data-access.
-  - [ ] Split `owner-tenant-create` page:
-  - [ ] Extract dropdown/select blocks to `components`.
-  - [ ] Move submit logic to facade.
-  - [ ] Split `tenant-group-create` page:
-  - [ ] Extract schedule section and selectors to `components`.
-  - [ ] Move draft/task restore flow to facade.
+  - [x] Split `owner-billing` page:
+  - [x] Keep container in `features/owner/pages/owner-billing`.
+  - [x] Extract filter panel to `components`.
+  - [x] Extract each tab table to `components`.
+  - [x] Move data logic to facade/data-access.
+  - [x] Split `owner-tenant-create` page:
+  - [x] Extract dropdown/select blocks to `components`.
+  - [x] Move submit logic to facade.
+  - [x] Split `tenant-group-create` page:
+  - [x] Extract schedule section and selectors to `components`.
+  - [x] Move draft/task restore flow to facade.
   - [ ] Split `owner-subscription-orders-list` page into page + table/filter/modals components.
 
 ## 7) State and Facade Tasks
@@ -106,14 +106,14 @@
 - [x] Create `features/tenant/state/tenant.store.ts`.
 - [x] Create `features/teacher/state/teacher.facade.ts`.
 - [x] Create `features/teacher/state/teacher.store.ts`.
-- [ ] Move view-model derivations from large components into stores/computed selectors.
-- [ ] Expose UI-friendly APIs from facades only.
+- [~] Move view-model derivations from large components into stores/computed selectors.
+- [~] Expose UI-friendly APIs from facades only.
 
 ## 8) Data-Access Tasks
 - [x] Create owner repositories/services in `features/owner/data-access`.
 - [x] Create tenant repositories/services in `features/tenant/data-access`.
 - [x] Create teacher repositories/services in `features/teacher/data-access`.
-- [ ] Migrate mock arrays and submit handlers out of page components.
+- [~] Migrate mock arrays and submit handlers out of page components.
 - [ ] Replace `setTimeout` simulated calls with facade repository methods.
 
 ## 9) Core Hardening Tasks
@@ -133,7 +133,7 @@
 - [x] `npm run lint`
 - [x] `npm run test -- --watch=false`
 - [x] Fix existing lint error(s) before continuing.
-- [ ] Add at least one unit test per migrated facade/store.
+- [~] Add at least one unit test per migrated facade/store.
 
 ## 12) Visual Regression Checklist
 - [ ] Owner dashboard layout unchanged.
