@@ -109,7 +109,7 @@
 - [~] Move view-model derivations from large components into stores/computed selectors.
 - [~] Expose UI-friendly APIs from facades only.
   - [x] Migrate list/screen derivations to store/facade for: `owner-tenants-list`, `owner-users-list`, `owner-overview`.
-  - [x] Migrate additional list/screen derivations to store/facade for: `owner-audit-logs`, `owner-provisioning-list`, `owner-modules-list`, `tenant-schedule`, `owner-integrations-list`, `owner-plans-list`, `owner-subscriptions-list`.
+  - [x] Migrate additional list/screen derivations to store/facade for: `owner-audit-logs`, `owner-provisioning-list`, `owner-modules-list`, `tenant-schedule`, `owner-integrations-list`, `owner-plans-list`, `owner-subscriptions-list`, `owner-subscription-templates-list`, `owner-notifications-list`, `teacher-media`, `owner-usage-analytics`, `owner-monitoring`.
   - [ ] Migrate remaining complex pages still hosting local orchestration logic.
 
 ## 8) Data-Access Tasks

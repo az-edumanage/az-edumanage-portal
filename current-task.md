@@ -133,6 +133,11 @@ Close remaining migration gaps in state/data-access and final structure complian
 - [x] Migrate additional large page VM/data orchestration out of component (completed: `owner-integrations-list`).
 - [x] Migrate additional large page VM/data orchestration out of component (completed: `owner-plans-list`).
 - [x] Migrate additional large page VM/data orchestration out of component (completed: `owner-subscriptions-list`).
+- [x] Migrate additional large page VM/data orchestration out of component (completed: `owner-subscription-templates-list`).
+- [x] Migrate additional large page VM/data orchestration out of component (completed: `owner-notifications-list`).
+- [x] Migrate additional large page VM/data orchestration out of component (completed: `teacher-media`).
+- [x] Migrate additional large page VM/data orchestration out of component (completed: `owner-usage-analytics`).
+- [x] Migrate additional large page VM/data orchestration out of component (completed: `owner-monitoring`).
 - [ ] Complete Task 7 pending items (`view-model derivations`, `facade UI APIs`) for remaining large components.
 - [ ] Complete Task 8 pending item (move remaining mock arrays/submit handlers from pages).
 - [ ] Validate and close Definition of Done: structure compliance + shared/native/feature categorization.
