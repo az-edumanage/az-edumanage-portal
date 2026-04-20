@@ -1,0 +1,107 @@
+
+    <div class="space-y-6">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Subscription Templates</h2>
+          <p class="text-slate-500 dark:text-slate-500 text-sm">Manage reusable subscription contract templates and configurations.</p>
+        </div>
+        <div class="flex gap-3">
+          <button routerLink="/owner/subscriptions/create" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20">
+            <mat-icon class="text-sm">add</mat-icon>
+            Create Template
+          </button>
+        </div>
+      </div>
+
+      <!-- Templates Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (template of templates(); track template.id) {
+          <div 
+            class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group overflow-hidden cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            (click)="viewDetails(template.id)"
+            (keydown.enter)="viewDetails(template.id)"
+            tabindex="0"
+            role="button"
+            [aria-label]="'View details for ' + template.name"
+          >
+            <div class="p-5 space-y-4">
+              <div class="flex items-start justify-between">
+                <div class="w-10 h-10 rounded-lg bg-indigo-600/10 dark:bg-indigo-900/30 flex items-center justify-center">
+                  <mat-icon class="text-indigo-600 dark:text-indigo-400">description</mat-icon>
+                </div>
+                <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                  [class.bg-green-100]="template.status === 'Active'"
+                  [class.text-green-700]="template.status === 'Active'"
+                  [class.bg-slate-100]="template.status === 'Draft'"
+                  [class.text-slate-700]="template.status === 'Draft'"
+                >
+                  {{ template.status }}
+                </span>
+              </div>
+              
+              <div>
+                <h3 class="font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 transition-colors">{{ template.name }}</h3>
+                <p class="text-xs text-slate-500 mt-1">ID: {{ template.id }}</p>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4 pt-2">
+                <div class="space-y-1">
+                  <span class="text-[10px] text-slate-500 uppercase font-bold">Cycle</span>
+                  <div class="flex items-center gap-1 text-sm text-slate-700 dark:text-slate-300">
+                    <mat-icon class="text-xs">schedule</mat-icon>
+                    {{ template.billingCycle }}
+                  </div>
+                </div>
+                <div class="space-y-1">
+                  <span class="text-[10px] text-slate-500 uppercase font-bold">Grace Period</span>
+                  <div class="flex items-center gap-1 text-sm text-slate-700 dark:text-slate-300">
+                    <mat-icon class="text-xs">event_repeat</mat-icon>
+                    {{ template.gracePeriod }} Days
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-4 pt-2 border-t border-slate-200 dark:border-slate-800">
+                <div class="flex items-center gap-1 text-xs text-slate-500">
+                  <mat-icon class="text-sm">layers</mat-icon>
+                  {{ template.plansCount }} Plans
+                </div>
+                <div class="flex items-center gap-1 text-xs text-slate-500">
+                  <mat-icon class="text-sm">payments</mat-icon>
+                  {{ template.paymentMethodsCount }} Methods
+                </div>
+                @if (template.discount !== 'None') {
+                  <div class="flex items-center gap-1 text-xs text-emerald-600 font-medium">
+                    <mat-icon class="text-sm">sell</mat-icon>
+                    {{ template.discount }}
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="px-5 py-3 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-2">
+              <button 
+                (click)="editTemplate(template.id); $event.stopPropagation()"
+                class="p-1.5 text-slate-500 hover:text-indigo-600 transition-colors"
+                title="Edit Template"
+              >
+                <mat-icon class="text-lg">edit</mat-icon>
+              </button>
+              <button 
+                (click)="deleteTemplate(template); $event.stopPropagation()"
+                class="p-1.5 transition-colors"
+                [class.text-slate-300]="template.hasActiveSubscriptions"
+                [class.cursor-not-allowed]="template.hasActiveSubscriptions"
+                [class.text-slate-500]="!template.hasActiveSubscriptions"
+                [class.hover:text-red-600]="!template.hasActiveSubscriptions"
+                [title]="template.hasActiveSubscriptions ? 'Cannot delete: Template has active tenant subscriptions' : 'Delete Template'"
+              >
+                <mat-icon class="text-lg">delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  

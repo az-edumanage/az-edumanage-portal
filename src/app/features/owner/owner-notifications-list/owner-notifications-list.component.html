@@ -1,0 +1,121 @@
+
+    <div class="space-y-6">
+      <!-- Header -->
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Platform Notifications</h2>
+          <p class="text-slate-500 dark:text-slate-500 text-sm">Broadcast announcements, maintenance alerts, and security updates to tenants.</p>
+        </div>
+        <div class="flex gap-3">
+          <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            <mat-icon class="text-sm">filter_list</mat-icon>
+            Filter
+          </button>
+          <a routerLink="/owner/notifications/create" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20">
+            <mat-icon class="text-sm">add</mat-icon>
+            Create Notification
+          </a>
+        </div>
+      </div>
+
+      <!-- Stats Summary -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Sent This Month</p>
+          <p class="text-2xl font-bold text-slate-900 dark:text-white">24</p>
+        </div>
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Scheduled</p>
+          <p class="text-2xl font-bold text-indigo-600">3</p>
+        </div>
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Avg. Open Rate</p>
+          <p class="text-2xl font-bold text-emerald-600">78.4%</p>
+        </div>
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Active Banners</p>
+          <p class="text-2xl font-bold text-amber-500">1</p>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500">
+              <tr>
+                <th class="px-6 py-3 font-medium">Notification Title</th>
+                <th class="px-6 py-3 font-medium">Type</th>
+                <th class="px-6 py-3 font-medium">Target</th>
+                <th class="px-6 py-3 font-medium">Channels</th>
+                <th class="px-6 py-3 font-medium">Status</th>
+                <th class="px-6 py-3 font-medium">Created Date</th>
+                <th class="px-6 py-3 font-medium text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+              @for (item of notifications(); track item.id) {
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <td class="px-6 py-4">
+                    <div class="flex flex-col">
+                      <span class="font-medium text-slate-900 dark:text-white">{{ item.title }}</span>
+                      <span class="text-xs text-slate-500">By {{ item.createdBy }}</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                      [class.bg-blue-100]="item.type === 'Announcement'"
+                      [class.text-blue-700]="item.type === 'Announcement'"
+                      [class.bg-amber-100]="item.type === 'Maintenance'"
+                      [class.text-amber-700]="item.type === 'Maintenance'"
+                      [class.bg-red-100]="item.type === 'Security'"
+                      [class.text-red-700]="item.type === 'Security'"
+                      [class.bg-emerald-100]="item.type === 'Billing'"
+                      [class.text-emerald-700]="item.type === 'Billing'"
+                    >
+                      {{ item.type }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ item.target }}</td>
+                  <td class="px-6 py-4">
+                    <div class="flex gap-1">
+                      @for (channel of item.channels; track channel) {
+                        <mat-icon class="text-xs text-slate-500" [title]="channel">
+                          {{ channel === 'In-App' ? 'notifications' : channel === 'Email' ? 'email' : 'sms' }}
+                        </mat-icon>
+                      }
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="flex items-center gap-1.5">
+                      <span class="w-1.5 h-1.5 rounded-full"
+                        [class.bg-slate-400]="item.status === 'Draft'"
+                        [class.bg-blue-500]="item.status === 'Scheduled'"
+                        [class.bg-green-500]="item.status === 'Sent'"
+                        [class.bg-red-500]="item.status === 'Cancelled'"
+                      ></span>
+                      {{ item.status }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-slate-500">{{ item.createdDate }}</td>
+                  <td class="px-6 py-4 text-right">
+                    <div class="flex justify-end gap-2">
+                      <a [routerLink]="['/owner/notifications', item.id]" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-500 hover:text-indigo-600 transition-colors">
+                        <mat-icon class="text-sm">visibility</mat-icon>
+                      </a>
+                      <button class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-500 hover:text-indigo-600 transition-colors">
+                        <mat-icon class="text-sm">edit</mat-icon>
+                      </button>
+                      <button class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-500 hover:text-indigo-600 transition-colors">
+                        <mat-icon class="text-sm">content_copy</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  

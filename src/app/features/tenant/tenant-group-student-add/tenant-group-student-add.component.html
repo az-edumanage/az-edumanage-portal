@@ -1,0 +1,151 @@
+
+    <div class="max-w-4xl mx-auto space-y-6">
+      <!-- Header -->
+      <div class="flex items-center justify-between">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+            <a routerLink="/tenant/groups" class="hover:text-indigo-600 transition-colors">Groups</a>
+            <mat-icon class="text-[10px]">chevron_right</mat-icon>
+            <a [routerLink]="['/tenant/groups', groupId()]" class="hover:text-indigo-600 transition-colors">Group Details</a>
+            <mat-icon class="text-[10px]">chevron_right</mat-icon>
+            <span>Enroll Student</span>
+          </div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Enroll Student in Group</h2>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Search & Select Section -->
+        <div class="lg:col-span-2 space-y-6">
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                <mat-icon class="text-sm">search</mat-icon>
+                Find Student
+              </h3>
+              <a routerLink="/tenant/students/create" class="text-xs font-bold text-indigo-600 hover:underline">Create New Student</a>
+            </div>
+            
+            <div class="relative">
+              <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">search</mat-icon>
+              <input 
+                type="text" 
+                placeholder="Search by name, email or ID..."
+                (input)="onSearch($event)"
+                class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+              >
+            </div>
+
+            <!-- Search Results -->
+            <div class="space-y-2 max-h-64 overflow-y-auto pr-2">
+              @for (student of filteredStudents(); track student.id) {
+                <button 
+                  type="button"
+                  (click)="selectStudent(student)"
+                  class="w-full flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors text-left"
+                  [class.border-indigo-500]="selectedStudent()?.id === student.id"
+                  [class.bg-indigo-600/10]="selectedStudent()?.id === student.id"
+                >
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold">
+                      {{ student.name.charAt(0) }}
+                    </div>
+                    <div>
+                      <p class="text-sm font-medium text-slate-900 dark:text-white">{{ student.name }}</p>
+                      <p class="text-[10px] text-slate-500">{{ student.email }} • {{ student.grade }}</p>
+                    </div>
+                  </div>
+                  @if (selectedStudent()?.id === student.id) {
+                    <mat-icon class="text-indigo-600 text-sm">check_circle</mat-icon>
+                  }
+                </button>
+              } @empty {
+                <div class="text-center py-8 text-slate-500">
+                  <mat-icon class="text-4xl mb-2">person_search</mat-icon>
+                  <p class="text-sm">Search for a student to enroll</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Enrollment Options Sidebar -->
+        <div class="space-y-6">
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Enrollment Options</h3>
+            
+            <form [formGroup]="enrollForm" class="space-y-4">
+              <div>
+                <label for="enrollDate" class="block text-xs font-bold text-slate-500 uppercase mb-1">Enrollment Date</label>
+                <input 
+                  id="enrollDate"
+                  type="date" 
+                  formControlName="enrollDate"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
+                >
+              </div>
+
+              <div>
+                <label for="discount" class="block text-xs font-bold text-slate-500 uppercase mb-1">Discount (%)</label>
+                <input 
+                  id="discount"
+                  type="number" 
+                  formControlName="discount"
+                  placeholder="0"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
+                >
+              </div>
+
+              <div class="space-y-3 pt-2">
+                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" formControlName="sendNotification" class="rounded border-slate-200 text-indigo-600">
+                  <span class="text-slate-700 dark:text-slate-300">Notify student & parent</span>
+                </label>
+                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" formControlName="generateInitialInvoice" class="rounded border-slate-200 text-indigo-600">
+                  <span class="text-slate-700 dark:text-slate-300">Generate initial invoice</span>
+                </label>
+              </div>
+            </form>
+
+            <div class="pt-6 border-t border-slate-200 dark:border-slate-800">
+              <button 
+                (click)="onEnroll()"
+                [disabled]="!selectedStudent() || isSubmitting()"
+                class="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2"
+              >
+                @if (isSubmitting()) {
+                  <mat-icon class="animate-spin text-sm">sync</mat-icon>
+                  Enrolling...
+                } @else {
+                  <mat-icon class="text-sm">how_to_reg</mat-icon>
+                  Confirm Enrollment
+                }
+              </button>
+              <button 
+                (click)="onCancel()"
+                class="w-full mt-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+
+          @if (selectedStudent(); as student) {
+            <div class="bg-indigo-600/10 dark:bg-indigo-900/20 p-6 rounded-xl border border-indigo-100 dark:border-indigo-900/30 animate-in fade-in zoom-in duration-200">
+              <h4 class="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-3">Selected Student</h4>
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">
+                  {{ student.name.charAt(0) }}
+                </div>
+                <div>
+                  <p class="text-sm font-bold text-slate-900 dark:text-white">{{ student.name }}</p>
+                  <p class="text-xs text-slate-500">{{ student.grade }}</p>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  

@@ -1,0 +1,305 @@
+
+    <div class="space-y-6 pb-12">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <button routerLink="/owner/modules" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-500 transition-colors">
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 flex items-center justify-center">
+              <mat-icon class="text-2xl">school</mat-icon>
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                Academic Structure
+                <span class="px-2 py-0.5 rounded text-xs font-medium border bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/10 dark:text-emerald-400 dark:border-emerald-800">
+                  Core Business
+                </span>
+              </h2>
+              <p class="text-slate-500 dark:text-slate-500 text-sm">CORE_ACAD</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex gap-3">
+          <button class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20">
+            <mat-icon class="text-sm">save</mat-icon>
+            Save Changes
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="border-b border-slate-200 dark:border-slate-800">
+        <nav class="flex gap-6 overflow-x-auto" aria-label="Tabs">
+          @for (tab of tabs; track tab.id) {
+            <button 
+              (click)="activeTab.set(tab.id)"
+              class="pb-4 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+              [class.border-indigo-500]="activeTab() === tab.id"
+              [class.text-indigo-600]="activeTab() === tab.id"
+              [class.dark:text-indigo-400]="activeTab() === tab.id"
+              [class.border-transparent]="activeTab() !== tab.id"
+              [class.text-slate-500]="activeTab() !== tab.id"
+              [class.hover:text-slate-700]="activeTab() !== tab.id"
+              [class.dark:hover:text-slate-300]="activeTab() !== tab.id"
+            >
+              {{ tab.label }}
+            </button>
+          }
+        </nav>
+      </div>
+
+      <!-- Content -->
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm min-h-[400px]">
+        
+        <!-- Settings Tab (Current Content) -->
+        @if (activeTab() === 'settings') {
+          <div class="p-6 space-y-8">
+            <!-- Features Section -->
+            <div class="space-y-4">
+              <div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Features</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-500">Enable or disable specific capabilities within this module.</p>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                @for (feature of features(); track feature.id) {
+                  <label class="flex items-center gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all cursor-pointer group">
+                    <div class="relative flex items-center">
+                      <input 
+                        type="checkbox" 
+                        [(ngModel)]="feature.enabled"
+                        class="w-5 h-5 rounded border-slate-200 text-indigo-600 focus:ring-indigo-500 transition-all"
+                      >
+                    </div>
+                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                      {{ feature.label }}
+                    </span>
+                  </label>
+                }
+              </div>
+            </div>
+
+            <!-- Limits Section -->
+            <div class="space-y-4 pt-6 border-t border-slate-200 dark:border-slate-800">
+              <div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Limits / Rules</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-500">Define system constraints and business rules for this module.</p>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                @for (limit of limits(); track limit.id) {
+                  <div class="space-y-2">
+                    <label [for]="limit.id" class="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      {{ limit.label }}
+                    </label>
+                    <div class="relative">
+                      <input 
+                        [id]="limit.id"
+                        type="number" 
+                        [(ngModel)]="limit.value"
+                        class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                      >
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Overview Tab -->
+        @if (activeTab() === 'overview') {
+          <div class="p-6 space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Module Information</h3>
+                <div class="space-y-4">
+                  <div>
+                    <div class="text-sm font-medium text-slate-500 dark:text-slate-500">Description</div>
+                    <div class="text-slate-900 dark:text-white mt-1">Manage academic years, terms, levels, and classes.</div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <div class="text-sm font-medium text-slate-500 dark:text-slate-500">Created At</div>
+                      <div class="text-slate-900 dark:text-white mt-1">Jan 12, 2023</div>
+                    </div>
+                    <div>
+                      <div class="text-sm font-medium text-slate-500 dark:text-slate-500">Last Updated</div>
+                      <div class="text-slate-900 dark:text-white mt-1">2 days ago</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Global Status</h3>
+                <div class="p-4 rounded-lg border bg-green-50 border-green-200 dark:bg-green-900/10 dark:border-green-900/30">
+                  <div class="flex items-center gap-3 mb-2">
+                    <mat-icon class="text-green-600 dark:text-green-400">check_circle</mat-icon>
+                    <span class="font-bold text-lg text-green-900 dark:text-green-100">Enabled</span>
+                  </div>
+                  <p class="text-sm text-green-700 dark:text-green-300">
+                    This module is active and available for assignment.
+                  </p>
+                </div>
+
+                <div class="mt-6">
+                  <div class="text-sm font-medium text-slate-500 dark:text-slate-500 mb-2">Active Tenants</div>
+                  <div class="text-3xl font-bold text-slate-900 dark:text-white">124</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Plan Assignment Tab -->
+        @if (activeTab() === 'plans') {
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Availability by Plan</h3>
+              <p class="text-sm text-slate-500">Control which plans include this module by default.</p>
+            </div>
+
+            <div class="space-y-4">
+              @for (plan of availablePlans; track plan.name) {
+                <div class="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <div class="flex items-center gap-4">
+                    <input type="checkbox" 
+                      [checked]="true"
+                      [disabled]="true"
+                      class="w-5 h-5 rounded border-slate-200 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
+                    >
+                    <div>
+                      <div class="font-medium text-slate-900 dark:text-white">{{ plan.name }}</div>
+                      <div class="text-xs text-slate-500">{{ plan.tenantCount }} active tenants</div>
+                    </div>
+                  </div>
+                  <div class="text-sm text-slate-500">
+                    Mandatory for all plans
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Tenant Overrides Tab -->
+        @if (activeTab() === 'overrides') {
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Tenant Overrides</h3>
+                <p class="text-sm text-slate-500">Exceptions to the default plan rules.</p>
+              </div>
+              <button class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                <mat-icon class="text-sm">add</mat-icon>
+                Add Override
+              </button>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th class="px-6 py-3 font-medium">Tenant</th>
+                    <th class="px-6 py-3 font-medium">Plan</th>
+                    <th class="px-6 py-3 font-medium">Override</th>
+                    <th class="px-6 py-3 font-medium">Reason</th>
+                    <th class="px-6 py-3 font-medium">Expiry</th>
+                    <th class="px-6 py-3 font-medium text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                  @for (override of overrides; track override.tenantName) {
+                    <tr>
+                      <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">{{ override.tenantName }}</td>
+                      <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ override.plan }}</td>
+                      <td class="px-6 py-4">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium"
+                          [class.bg-green-100]="override.status === 'Forced Enabled'"
+                          [class.text-green-700]="override.status === 'Forced Enabled'"
+                          [class.dark:bg-green-900/30]="override.status === 'Forced Enabled'"
+                          [class.dark:text-green-400]="override.status === 'Forced Enabled'"
+                          [class.bg-red-100]="override.status === 'Forced Disabled'"
+                          [class.text-red-700]="override.status === 'Forced Disabled'"
+                          [class.dark:bg-red-900/30]="override.status === 'Forced Disabled'"
+                          [class.dark:text-red-400]="override.status === 'Forced Disabled'"
+                        >
+                          {{ override.status }}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ override.reason }}</td>
+                      <td class="px-6 py-4 text-slate-500">{{ override.expiryDate || 'Never' }}</td>
+                      <td class="px-6 py-4 text-right">
+                        <button class="text-red-600 hover:text-red-800 font-medium text-xs">Remove</button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        <!-- Dependencies Tab -->
+        @if (activeTab() === 'dependencies') {
+          <div class="p-6">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Module Dependencies</h3>
+            
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6 flex gap-3">
+              <mat-icon class="text-indigo-600 dark:text-blue-400">info</mat-icon>
+              <div class="text-sm text-blue-800 dark:text-blue-200">
+                <p class="font-bold">Dependency Rules</p>
+                <p>Disabling this module may affect other modules that depend on it. Ensure all dependent modules are handled before disabling.</p>
+              </div>
+            </div>
+
+            <div class="space-y-6">
+              <div>
+                <h4 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-3">Depends On</h4>
+                <p class="text-slate-500 italic">No dependencies.</p>
+              </div>
+
+              <div>
+                <h4 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-3">Required By</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  @for (req of ['Students Management', 'Scheduling & Timetable', 'Exams & Grades']; track req) {
+                    <div class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+                      <mat-icon class="text-slate-500">extension</mat-icon>
+                      <span class="text-slate-700 dark:text-slate-300 font-medium">{{ req }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Change Log Tab -->
+        @if (activeTab() === 'changelog') {
+          <div class="p-6">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-6">Audit Log</h3>
+            
+            <div class="relative border-l border-slate-200 dark:border-slate-700 ml-3 space-y-8">
+              @for (log of changeLogs; track log.date) {
+                <div class="relative pl-8">
+                  <div class="absolute -left-1.5 top-1.5 w-3 h-3 rounded-full bg-slate-200 dark:bg-slate-700 border-2 border-white dark:border-slate-900"></div>
+                  <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 mb-1">
+                    <span class="text-sm font-bold text-slate-900 dark:text-white">{{ log.action }}</span>
+                    <span class="text-xs text-slate-500">{{ log.date }}</span>
+                  </div>
+                  <p class="text-sm text-slate-500 dark:text-slate-500 mb-1">{{ log.details }}</p>
+                  <div class="flex items-center gap-2 text-xs text-slate-500">
+                    <mat-icon class="text-[14px] w-[14px] h-[14px]">person</mat-icon>
+                    {{ log.user }}
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+      </div>
+    </div>
+  

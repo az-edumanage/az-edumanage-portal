@@ -1,0 +1,70 @@
+
+    @if (taskService.activeTasks().length > 0) {
+      <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-auto min-w-[300px] max-w-md animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div class="bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-700/50 shadow-2xl rounded-2xl p-2 flex items-center gap-3">
+          
+          <!-- Dropdown Trigger / Active Task Indicator -->
+          <div class="relative flex-1">
+            <button 
+              (click)="toggleDropdown()"
+              class="w-full flex items-center justify-between gap-3 px-4 py-2 bg-slate-800 dark:bg-slate-700 border border-slate-700 dark:border-slate-600 rounded-xl hover:border-indigo-500/50 transition-all group"
+            >
+              <div class="flex items-center gap-2 overflow-hidden">
+                <mat-icon class="text-indigo-400 text-sm shrink-0">pending_actions</mat-icon>
+                <span class="text-xs font-bold text-slate-200 truncate uppercase tracking-wider">
+                  {{ taskService.activeTasks().length }} Pending Tasks
+                </span>
+              </div>
+              <mat-icon class="text-slate-500 text-sm transition-transform duration-200" [class.rotate-180]="isDropdownOpen()">expand_more</mat-icon>
+            </button>
+
+            <!-- Dropdown Menu -->
+            @if (isDropdownOpen()) {
+              <div class="absolute bottom-full mb-3 left-0 w-full bg-slate-900 dark:bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-bottom">
+                <div class="p-2 max-h-64 overflow-y-auto no-scrollbar space-y-1">
+                  @for (task of taskService.activeTasks(); track task.id) {
+                    <div class="flex items-center gap-2 p-1 rounded-xl hover:bg-slate-800 dark:hover:bg-slate-700 transition-colors group">
+                      <button 
+                        (click)="navigateToTask(task)"
+                        class="flex-1 text-left px-3 py-2"
+                      >
+                        <div class="text-xs font-bold text-slate-200 group-hover:text-indigo-400 transition-colors">{{ task.label }}</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5">{{ task.type }}</div>
+                      </button>
+                      <button 
+                        (click)="taskService.removeTask(task.id)"
+                        class="p-2 hover:bg-red-500/20 text-slate-500 hover:text-red-400 rounded-lg transition-all"
+                        title="Discard task"
+                      >
+                        <mat-icon class="text-sm">delete_outline</mat-icon>
+                      </button>
+                    </div>
+                  }
+                </div>
+                <div class="p-2 border-t border-slate-700 bg-slate-950/50">
+                  <button 
+                    (click)="clearAll()"
+                    class="w-full py-2 text-[10px] font-bold text-slate-500 hover:text-red-400 uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+                  >
+                    <mat-icon class="text-xs">clear_all</mat-icon>
+                    Clear All Tasks
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Quick Action: Discard All (Optional, kept clean) -->
+          <div class="h-8 w-px bg-slate-700 mx-1"></div>
+          
+          <button 
+            (click)="taskService.clearAll()"
+            class="p-2 text-slate-500 hover:text-white transition-colors"
+            title="Clear all"
+          >
+            <mat-icon class="text-sm">close</mat-icon>
+          </button>
+        </div>
+      </div>
+    }
+  

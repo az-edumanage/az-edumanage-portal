@@ -1,0 +1,474 @@
+
+    <div class="space-y-6 pb-12">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <button routerLink="/owner/modules" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-500 transition-colors">
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center"
+              [class.bg-emerald-100]="module().category === 'Core Business'"
+              [class.text-emerald-600]="module().category === 'Core Business'"
+              [class.dark:bg-emerald-900/30]="module().category === 'Core Business'"
+              [class.dark:text-emerald-400]="module().category === 'Core Business'"
+              [class.bg-blue-100]="module().category === 'Core System'"
+              [class.text-indigo-600]="module().category === 'Core System'"
+              [class.dark:bg-blue-900/30]="module().category === 'Core System'"
+              [class.dark:text-blue-400]="module().category === 'Core System'"
+              [class.bg-amber-100]="module().category === 'Advanced'"
+              [class.text-amber-600]="module().category === 'Advanced'"
+              [class.dark:bg-amber-900/30]="module().category === 'Advanced'"
+              [class.dark:text-amber-400]="module().category === 'Advanced'"
+            >
+              <mat-icon class="text-2xl">{{ module().icon }}</mat-icon>
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                {{ module().name }}
+                <span class="px-2 py-0.5 rounded text-xs font-medium border"
+                  [class.bg-emerald-50]="module().category === 'Core Business'"
+                  [class.text-emerald-700]="module().category === 'Core Business'"
+                  [class.border-emerald-200]="module().category === 'Core Business'"
+                  [class.dark:bg-emerald-900/10]="module().category === 'Core Business'"
+                  [class.dark:text-emerald-400]="module().category === 'Core Business'"
+                  [class.dark:border-emerald-800]="module().category === 'Core Business'"
+                  
+                  [class.bg-blue-50]="module().category === 'Core System'"
+                  [class.text-blue-700]="module().category === 'Core System'"
+                  [class.border-blue-200]="module().category === 'Core System'"
+                  [class.dark:bg-blue-900/10]="module().category === 'Core System'"
+                  [class.dark:text-blue-400]="module().category === 'Core System'"
+                  [class.dark:border-blue-800]="module().category === 'Core System'"
+
+                  [class.bg-amber-50]="module().category === 'Advanced'"
+                  [class.text-amber-700]="module().category === 'Advanced'"
+                  [class.border-amber-200]="module().category === 'Advanced'"
+                  [class.dark:bg-amber-900/10]="module().category === 'Advanced'"
+                  [class.dark:text-amber-400]="module().category === 'Advanced'"
+                  [class.dark:border-amber-800]="module().category === 'Advanced'"
+                >
+                  {{ module().category }}
+                </span>
+              </h2>
+              <p class="text-slate-500 dark:text-slate-500 text-sm">{{ module().code }}</p>
+            </div>
+          </div>
+        </div>
+        
+        @if (module().category === 'Advanced') {
+          <div class="flex gap-3">
+            <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+              <mat-icon class="text-sm">edit</mat-icon>
+              Edit Module
+            </button>
+            <button 
+              (click)="toggleStatus()"
+              class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
+              [class.bg-red-600]="module().status === 'Enabled'"
+              [class.hover:bg-red-700]="module().status === 'Enabled'"
+              [class.text-white]="module().status === 'Enabled'"
+              [class.bg-green-600]="module().status === 'Disabled'"
+              [class.hover:bg-green-700]="module().status === 'Disabled'"
+              [class.text-white]="module().status === 'Disabled'"
+            >
+              <mat-icon class="text-sm">{{ module().status === 'Enabled' ? 'block' : 'check_circle' }}</mat-icon>
+              {{ module().status === 'Enabled' ? 'Disable Module' : 'Enable Module' }}
+            </button>
+          </div>
+        }
+      </div>
+
+      <!-- Tabs -->
+      <div class="border-b border-slate-200 dark:border-slate-800">
+        <nav class="flex gap-6 overflow-x-auto" aria-label="Tabs">
+          <button 
+            (click)="activeTab.set('overview')"
+            class="pb-4 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+            [class.border-indigo-500]="activeTab() === 'overview'"
+            [class.text-indigo-600]="activeTab() === 'overview'"
+            [class.dark:text-indigo-400]="activeTab() === 'overview'"
+            [class.border-transparent]="activeTab() !== 'overview'"
+            [class.text-slate-500]="activeTab() !== 'overview'"
+            [class.hover:text-slate-700]="activeTab() !== 'overview'"
+            [class.dark:hover:text-slate-300]="activeTab() !== 'overview'"
+          >
+            Overview
+          </button>
+          <button 
+            (click)="activeTab.set('settings')"
+            class="pb-4 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+            [class.border-indigo-500]="activeTab() === 'settings'"
+            [class.text-indigo-600]="activeTab() === 'settings'"
+            [class.dark:text-indigo-400]="activeTab() === 'settings'"
+            [class.border-transparent]="activeTab() !== 'settings'"
+            [class.text-slate-500]="activeTab() !== 'settings'"
+            [class.hover:text-slate-700]="activeTab() !== 'settings'"
+            [class.dark:hover:text-slate-300]="activeTab() !== 'settings'"
+          >
+            Settings
+          </button>
+          <button 
+            (click)="activeTab.set('plans')"
+            class="pb-4 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+            [class.border-indigo-500]="activeTab() === 'plans'"
+            [class.text-indigo-600]="activeTab() === 'plans'"
+            [class.dark:text-indigo-400]="activeTab() === 'plans'"
+            [class.border-transparent]="activeTab() !== 'plans'"
+            [class.text-slate-500]="activeTab() !== 'plans'"
+            [class.hover:text-slate-700]="activeTab() !== 'plans'"
+            [class.dark:hover:text-slate-300]="activeTab() !== 'plans'"
+          >
+            Plan Assignment
+          </button>
+          <button 
+            (click)="activeTab.set('overrides')"
+            class="pb-4 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+            [class.border-indigo-500]="activeTab() === 'overrides'"
+            [class.text-indigo-600]="activeTab() === 'overrides'"
+            [class.dark:text-indigo-400]="activeTab() === 'overrides'"
+            [class.border-transparent]="activeTab() !== 'overrides'"
+            [class.text-slate-500]="activeTab() !== 'overrides'"
+            [class.hover:text-slate-700]="activeTab() !== 'overrides'"
+            [class.dark:hover:text-slate-300]="activeTab() !== 'overrides'"
+          >
+            Tenant Overrides
+          </button>
+          <button 
+            (click)="activeTab.set('dependencies')"
+            class="pb-4 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+            [class.border-indigo-500]="activeTab() === 'dependencies'"
+            [class.text-indigo-600]="activeTab() === 'dependencies'"
+            [class.dark:text-indigo-400]="activeTab() === 'dependencies'"
+            [class.border-transparent]="activeTab() !== 'dependencies'"
+            [class.text-slate-500]="activeTab() !== 'dependencies'"
+            [class.hover:text-slate-700]="activeTab() !== 'dependencies'"
+            [class.dark:hover:text-slate-300]="activeTab() !== 'dependencies'"
+          >
+            Dependencies
+          </button>
+          <button 
+            (click)="activeTab.set('changelog')"
+            class="pb-4 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+            [class.border-indigo-500]="activeTab() === 'changelog'"
+            [class.text-indigo-600]="activeTab() === 'changelog'"
+            [class.dark:text-indigo-400]="activeTab() === 'changelog'"
+            [class.border-transparent]="activeTab() !== 'changelog'"
+            [class.text-slate-500]="activeTab() !== 'changelog'"
+            [class.hover:text-slate-700]="activeTab() !== 'changelog'"
+            [class.dark:hover:text-slate-300]="activeTab() !== 'changelog'"
+          >
+            Change Log
+          </button>
+        </nav>
+      </div>
+
+      <!-- Content -->
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm min-h-[400px]">
+        
+        <!-- Settings Tab -->
+        @if (activeTab() === 'settings') {
+          <div class="p-6 space-y-8">
+            <!-- Features Section -->
+            <div class="space-y-4">
+              <div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Feature Catalog</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-500">Select which features are available when this module is activated.</p>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                @for (feature of features(); track feature.id) {
+                  <label class="flex items-center gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all cursor-pointer group">
+                    <div class="relative flex items-center">
+                      <input 
+                        type="checkbox" 
+                        [(ngModel)]="feature.enabled"
+                        class="w-5 h-5 rounded border-slate-200 text-indigo-600 focus:ring-indigo-500 transition-all"
+                      >
+                    </div>
+                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                      {{ feature.label }}
+                    </span>
+                  </label>
+                }
+              </div>
+            </div>
+
+            <!-- Limits Section -->
+            <div class="space-y-4 pt-6 border-t border-slate-200 dark:border-slate-800">
+              <div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Limits / Rules</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-500">Define system constraints and business rules for this module.</p>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                @for (limit of limits(); track limit.id) {
+                  @if (limit.type === 'boolean') {
+                    <div class="flex items-center h-full pt-4">
+                      <label class="flex items-center gap-3 p-4 w-full rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all cursor-pointer group">
+                        <input 
+                          type="checkbox" 
+                          [(ngModel)]="limit.value"
+                          class="w-5 h-5 rounded border-slate-200 text-indigo-600 focus:ring-indigo-500 transition-all"
+                        >
+                        <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                          {{ limit.label }}
+                        </span>
+                      </label>
+                    </div>
+                  } @else {
+                    <div class="space-y-2">
+                      <label [for]="limit.id" class="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        {{ limit.label }}
+                      </label>
+                      <div class="relative">
+                        <input 
+                          [id]="limit.id"
+                          type="number" 
+                          [(ngModel)]="limit.value"
+                          class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                        >
+                      </div>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Overview Tab -->
+        @if (activeTab() === 'overview') {
+          <div class="p-6 space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Module Information</h3>
+                <div class="space-y-4">
+                  <div>
+                    <div class="text-sm font-medium text-slate-500 dark:text-slate-500">Description</div>
+                    <div class="text-slate-900 dark:text-white mt-1">{{ module().description }}</div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <div class="text-sm font-medium text-slate-500 dark:text-slate-500">Created At</div>
+                      <div class="text-slate-900 dark:text-white mt-1">Jan 12, 2023</div>
+                    </div>
+                    <div>
+                      <div class="text-sm font-medium text-slate-500 dark:text-slate-500">Last Updated</div>
+                      <div class="text-slate-900 dark:text-white mt-1">{{ module().lastUpdated }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Global Status</h3>
+                <div class="p-4 rounded-lg border"
+                  [class.bg-green-50]="module().status === 'Enabled'"
+                  [class.border-green-200]="module().status === 'Enabled'"
+                  [class.dark:bg-green-900/10]="module().status === 'Enabled'"
+                  [class.dark:border-green-900/30]="module().status === 'Enabled'"
+                  [class.bg-slate-50]="module().status === 'Disabled'"
+                  [class.border-slate-200]="module().status === 'Disabled'"
+                  [class.dark:bg-slate-800]="module().status === 'Disabled'"
+                  [class.dark:border-slate-700]="module().status === 'Disabled'"
+                >
+                  <div class="flex items-center gap-3 mb-2">
+                    <mat-icon
+                      [class.text-green-600]="module().status === 'Enabled'"
+                      [class.dark:text-green-400]="module().status === 'Enabled'"
+                      [class.text-slate-500]="module().status === 'Disabled'"
+                    >
+                      {{ module().status === 'Enabled' ? 'check_circle' : 'cancel' }}
+                    </mat-icon>
+                    <span class="font-bold text-lg"
+                      [class.text-green-900]="module().status === 'Enabled'"
+                      [class.dark:text-green-100]="module().status === 'Enabled'"
+                      [class.text-slate-900]="module().status === 'Disabled'"
+                      [class.dark:text-slate-100]="module().status === 'Disabled'"
+                    >
+                      {{ module().status }}
+                    </span>
+                  </div>
+                  <p class="text-sm"
+                    [class.text-green-700]="module().status === 'Enabled'"
+                    [class.dark:text-green-300]="module().status === 'Enabled'"
+                    [class.text-slate-500]="module().status === 'Disabled'"
+                    [class.dark:text-slate-500]="module().status === 'Disabled'"
+                  >
+                    {{ module().status === 'Enabled' ? 'This module is active and available for assignment.' : 'This module is globally disabled. No tenants can access it.' }}
+                  </p>
+                </div>
+
+                <div class="mt-6">
+                  <div class="text-sm font-medium text-slate-500 dark:text-slate-500 mb-2">Active Tenants</div>
+                  <div class="text-3xl font-bold text-slate-900 dark:text-white">{{ module().activeTenantsCount }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Plan Assignment Tab -->
+        @if (activeTab() === 'plans') {
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Availability by Plan</h3>
+              <p class="text-sm text-slate-500">Control which plans include this module by default.</p>
+            </div>
+
+            <div class="space-y-4">
+              @for (plan of availablePlans; track plan.name) {
+                <div class="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <div class="flex items-center gap-4">
+                    <input type="checkbox" 
+                      [checked]="module().includedInPlans.includes(plan.name)"
+                      [disabled]="module().category !== 'Advanced'"
+                      class="w-5 h-5 rounded border-slate-200 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
+                    >
+                    <div>
+                      <div class="font-medium text-slate-900 dark:text-white">{{ plan.name }}</div>
+                      <div class="text-xs text-slate-500">{{ plan.tenantCount }} active tenants</div>
+                    </div>
+                  </div>
+                  <div class="text-sm text-slate-500">
+                    {{ module().category !== 'Advanced' ? 'Mandatory for all plans' : (module().includedInPlans.includes(plan.name) ? 'Included' : 'Not Included') }}
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Tenant Overrides Tab -->
+        @if (activeTab() === 'overrides') {
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Tenant Overrides</h3>
+                <p class="text-sm text-slate-500">Exceptions to the default plan rules.</p>
+              </div>
+              <button class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                <mat-icon class="text-sm">add</mat-icon>
+                Add Override
+              </button>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th class="px-6 py-3 font-medium">Tenant</th>
+                    <th class="px-6 py-3 font-medium">Plan</th>
+                    <th class="px-6 py-3 font-medium">Override</th>
+                    <th class="px-6 py-3 font-medium">Reason</th>
+                    <th class="px-6 py-3 font-medium">Expiry</th>
+                    <th class="px-6 py-3 font-medium text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                  @for (override of overrides; track override.tenantName) {
+                    <tr>
+                      <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">{{ override.tenantName }}</td>
+                      <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ override.plan }}</td>
+                      <td class="px-6 py-4">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium"
+                          [class.bg-green-100]="override.status === 'Forced Enabled'"
+                          [class.text-green-700]="override.status === 'Forced Enabled'"
+                          [class.dark:bg-green-900/30]="override.status === 'Forced Enabled'"
+                          [class.dark:text-green-400]="override.status === 'Forced Enabled'"
+                          [class.bg-red-100]="override.status === 'Forced Disabled'"
+                          [class.text-red-700]="override.status === 'Forced Disabled'"
+                          [class.dark:bg-red-900/30]="override.status === 'Forced Disabled'"
+                          [class.dark:text-red-400]="override.status === 'Forced Disabled'"
+                        >
+                          {{ override.status }}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ override.reason }}</td>
+                      <td class="px-6 py-4 text-slate-500">{{ override.expiryDate || 'Never' }}</td>
+                      <td class="px-6 py-4 text-right">
+                        <button class="text-red-600 hover:text-red-800 font-medium text-xs">Remove</button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        <!-- Dependencies Tab -->
+        @if (activeTab() === 'dependencies') {
+          <div class="p-6">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Module Dependencies</h3>
+            
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6 flex gap-3">
+              <mat-icon class="text-indigo-600 dark:text-blue-400">info</mat-icon>
+              <div class="text-sm text-blue-800 dark:text-blue-200">
+                <p class="font-bold">Dependency Rules</p>
+                <p>Disabling this module may affect other modules that depend on it. Ensure all dependent modules are handled before disabling.</p>
+              </div>
+            </div>
+
+            <div class="space-y-6">
+              <div>
+                <h4 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-3">Depends On</h4>
+                @if (dependencies.dependsOn.length > 0) {
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @for (dep of dependencies.dependsOn; track dep) {
+                      <div class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+                        <mat-icon class="text-slate-500">extension</mat-icon>
+                        <span class="text-slate-700 dark:text-slate-300 font-medium">{{ dep }}</span>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <p class="text-slate-500 italic">No dependencies.</p>
+                }
+              </div>
+
+              <div>
+                <h4 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-3">Required By</h4>
+                @if (dependencies.requiredBy.length > 0) {
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @for (req of dependencies.requiredBy; track req) {
+                      <div class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+                        <mat-icon class="text-slate-500">extension</mat-icon>
+                        <span class="text-slate-700 dark:text-slate-300 font-medium">{{ req }}</span>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <p class="text-slate-500 italic">No other modules require this module.</p>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Change Log Tab -->
+        @if (activeTab() === 'changelog') {
+          <div class="p-6">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-6">Audit Log</h3>
+            
+            <div class="relative border-l border-slate-200 dark:border-slate-700 ml-3 space-y-8">
+              @for (log of changeLogs; track log.date) {
+                <div class="relative pl-8">
+                  <div class="absolute -left-1.5 top-1.5 w-3 h-3 rounded-full bg-slate-200 dark:bg-slate-700 border-2 border-white dark:border-slate-900"></div>
+                  <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 mb-1">
+                    <span class="text-sm font-bold text-slate-900 dark:text-white">{{ log.action }}</span>
+                    <span class="text-xs text-slate-500">{{ log.date }}</span>
+                  </div>
+                  <p class="text-sm text-slate-500 dark:text-slate-500 mb-1">{{ log.details }}</p>
+                  <div class="flex items-center gap-2 text-xs text-slate-500">
+                    <mat-icon class="text-[14px] w-[14px] h-[14px]">person</mat-icon>
+                    {{ log.user }}
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+      </div>
+    </div>
+  

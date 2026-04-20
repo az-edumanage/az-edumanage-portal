@@ -1,0 +1,123 @@
+
+    <div class="h-[calc(100vh-12rem)] flex flex-col gap-6">
+      <!-- Header -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+            <a routerLink="/tenant/groups" class="hover:text-indigo-600 transition-colors">Groups</a>
+            <mat-icon class="text-[10px]">chevron_right</mat-icon>
+            <a [routerLink]="['/tenant/groups', groupId()]" class="hover:text-indigo-600 transition-colors">Physics G12-A</a>
+            <mat-icon class="text-[10px]">chevron_right</mat-icon>
+            <span>Broadcast & Community</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Group Broadcast</h2>
+            <div class="flex items-center gap-2 px-2 py-0.5 bg-indigo-100 text-indigo-600 text-[10px] font-bold uppercase rounded-full">
+              <div class="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse"></div>
+              Live Community
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button (click)="isPublic.set(!isPublic())" 
+            class="px-4 py-2 border rounded-lg text-sm font-medium transition-all flex items-center gap-2"
+            [class.bg-indigo-600/10]="isPublic()"
+            [class.border-indigo-200]="isPublic()"
+            [class.text-indigo-600]="isPublic()"
+            [class.bg-white]="!isPublic()"
+            [class.border-slate-200]="!isPublic()"
+            [class.text-slate-500]="!isPublic()"
+          >
+            <mat-icon class="text-sm">{{ isPublic() ? 'public' : 'group' }}</mat-icon>
+            {{ isPublic() ? 'Public (All G12)' : 'Group Only' }}
+          </button>
+          <button (click)="goLive()" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-rose-500/20 flex items-center gap-2">
+            <mat-icon class="text-sm">videocam</mat-icon>
+            Go Live
+          </button>
+        </div>
+      </div>
+
+      <div class="flex-1 flex gap-6 overflow-hidden">
+        <!-- Chat Area -->
+        <div class="flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden">
+          <!-- Messages -->
+          <div class="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/50 dark:bg-slate-950/20">
+            @for (msg of messages(); track msg.id) {
+              <div class="flex flex-col" [class.items-end]="msg.isMe">
+                <div class="flex items-center gap-2 mb-1" [class.flex-row-reverse]="msg.isMe">
+                  <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ msg.sender }}</span>
+                  <span class="text-[10px] text-slate-300">{{ msg.time }}</span>
+                </div>
+                <div 
+                  class="max-w-[80%] p-3 rounded-2xl text-sm shadow-sm"
+                  [class.bg-indigo-600]="msg.isMe"
+                  [class.text-white]="msg.isMe"
+                  [class.rounded-tr-none]="msg.isMe"
+                  [class.bg-white]="!msg.isMe"
+                  [class.dark:bg-slate-800]="!msg.isMe"
+                  [class.text-slate-700]="!msg.isMe"
+                  [class.dark:text-slate-300]="!msg.isMe"
+                  [class.rounded-tl-none]="!msg.isMe"
+                  [class.border]="!msg.isMe"
+                  [class.border-slate-200]="!msg.isMe"
+                  [class.dark:border-slate-700]="!msg.isMe"
+                >
+                  {{ msg.text }}
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Input -->
+          <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+            <div class="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700">
+              <button class="p-2 text-slate-500 hover:text-indigo-600 transition-colors">
+                <mat-icon>add_circle_outline</mat-icon>
+              </button>
+              <input 
+                type="text" 
+                [(ngModel)]="newMessage"
+                (keyup.enter)="sendMessage()"
+                placeholder="Type a broadcast message..."
+                class="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 dark:text-slate-300 px-2"
+              >
+              <button (click)="sendMessage()" class="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                <mat-icon class="text-sm">send</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar: Active Students -->
+        <div class="w-72 hidden lg:flex flex-col gap-6">
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Online Students</h3>
+              <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full">12</span>
+            </div>
+            <div class="space-y-3">
+              @for (student of onlineStudents(); track student) {
+                <div class="flex items-center gap-3">
+                  <div class="relative">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold">
+                      {{ student.charAt(0) }}
+                    </div>
+                    <div class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full"></div>
+                  </div>
+                  <span class="text-xs font-medium text-slate-700 dark:text-slate-300">{{ student }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="bg-indigo-600 rounded-2xl p-6 text-white space-y-3">
+            <h4 class="font-bold text-sm">Broadcast Tips</h4>
+            <p class="text-xs text-indigo-100 leading-relaxed">
+              Use broadcast to share important updates, quick quizzes, or start a live session to answer questions in real-time.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  

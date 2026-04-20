@@ -1,0 +1,191 @@
+
+    <div class="max-w-4xl mx-auto space-y-6">
+      <!-- Breadcrumbs & Header -->
+      <div class="flex items-center justify-between">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+            <a routerLink="/owner/notifications" class="hover:text-indigo-600 transition-colors">Notifications</a>
+            <mat-icon class="text-[10px]">chevron_right</mat-icon>
+            <span>Create New</span>
+          </div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Create Platform Notification</h2>
+        </div>
+        <div class="flex gap-3">
+          <button 
+            (click)="onCancel()"
+            class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            (click)="onSave()"
+            [disabled]="notificationForm.invalid"
+            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20"
+          >
+            Save & Schedule
+          </button>
+        </div>
+      </div>
+
+      <form [formGroup]="notificationForm" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <div>
+              <label for="title" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Notification Title</label>
+              <input 
+                id="title"
+                type="text" 
+                formControlName="title"
+                placeholder="e.g. Scheduled System Maintenance"
+                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+              >
+            </div>
+
+            <div>
+              <label for="message" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Message Body (Rich Text)</label>
+              <div class="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                <div class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-2 flex gap-2">
+                  <button type="button" class="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"><mat-icon class="text-sm">format_bold</mat-icon></button>
+                  <button type="button" class="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"><mat-icon class="text-sm">format_italic</mat-icon></button>
+                  <button type="button" class="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"><mat-icon class="text-sm">format_list_bulleted</mat-icon></button>
+                  <button type="button" class="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"><mat-icon class="text-sm">link</mat-icon></button>
+                </div>
+                <textarea 
+                  id="message"
+                  formControlName="message"
+                  rows="10"
+                  placeholder="Write your message here..."
+                  class="w-full px-3 py-2 bg-white dark:bg-slate-900 border-none text-sm focus:ring-0 outline-none resize-none"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Targeting & Audience</h3>
+            
+            <div class="space-y-4">
+              <div>
+                <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Target Audience</div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    [class.border-indigo-500]="notificationForm.get('targetType')?.value === 'all'"
+                    [class.bg-indigo-600/10]="notificationForm.get('targetType')?.value === 'all'"
+                  >
+                    <input type="radio" formControlName="targetType" value="all" class="text-indigo-600">
+                    <span class="text-sm font-medium">All Tenants</span>
+                  </label>
+                  <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    [class.border-indigo-500]="notificationForm.get('targetType')?.value === 'plan'"
+                    [class.bg-indigo-600/10]="notificationForm.get('targetType')?.value === 'plan'"
+                  >
+                    <input type="radio" formControlName="targetType" value="plan" class="text-indigo-600">
+                    <span class="text-sm font-medium">By Plan</span>
+                  </label>
+                  <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    [class.border-indigo-500]="notificationForm.get('targetType')?.value === 'specific'"
+                    [class.bg-indigo-600/10]="notificationForm.get('targetType')?.value === 'specific'"
+                  >
+                    <input type="radio" formControlName="targetType" value="specific" class="text-indigo-600">
+                    <span class="text-sm font-medium">Specific</span>
+                  </label>
+                </div>
+              </div>
+
+              @if (notificationForm.get('targetType')?.value === 'plan') {
+                <div>
+                  <label for="plans" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Select Plans</label>
+                  <select id="plans" multiple class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+                    <option>Starter</option>
+                    <option>Professional</option>
+                    <option>Enterprise</option>
+                  </select>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar Options -->
+        <div class="space-y-6">
+          <!-- Configuration -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Configuration</h3>
+            
+            <div>
+              <label for="type" class="block text-xs font-bold text-slate-500 uppercase mb-1">Notification Type</label>
+              <select id="type" formControlName="type" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+                <option value="Announcement">Announcement</option>
+                <option value="Maintenance">Maintenance</option>
+                <option value="Security">Security</option>
+                <option value="Billing">Billing</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="priority" class="block text-xs font-bold text-slate-500 uppercase mb-1">Priority</label>
+              <select id="priority" formControlName="priority" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+                <option value="Critical">Critical</option>
+              </select>
+            </div>
+
+            <div class="space-y-3 pt-2">
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" class="rounded border-slate-200 text-indigo-600">
+                In-App Banner
+              </label>
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" class="rounded border-slate-200 text-indigo-600" checked>
+                Email Notification
+              </label>
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" class="rounded border-slate-200 text-indigo-600">
+                SMS Alert
+              </label>
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" class="rounded border-slate-200 text-indigo-600">
+                Persistent (Sticky)
+              </label>
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" class="rounded border-slate-200 text-indigo-600">
+                Require Acknowledgment
+              </label>
+            </div>
+          </div>
+
+          <!-- Scheduling -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Scheduling</h3>
+            
+            <div class="space-y-3">
+              <label class="flex items-center gap-3 p-2 border border-slate-200 dark:border-slate-800 rounded-lg cursor-pointer">
+                <input type="radio" formControlName="scheduleType" value="now" class="text-indigo-600">
+                <span class="text-sm">Send Immediately</span>
+              </label>
+              <label class="flex items-center gap-3 p-2 border border-slate-200 dark:border-slate-800 rounded-lg cursor-pointer">
+                <input type="radio" formControlName="scheduleType" value="later" class="text-indigo-600">
+                <span class="text-sm">Schedule for Later</span>
+              </label>
+            </div>
+
+            @if (notificationForm.get('scheduleType')?.value === 'later') {
+              <div>
+                <label for="schedule-date" class="block text-xs font-bold text-slate-500 uppercase mb-1">Schedule Date</label>
+                <input id="schedule-date" type="datetime-local" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+              </div>
+            }
+
+            <div>
+              <label for="expiration-date" class="block text-xs font-bold text-slate-500 uppercase mb-1">Expiration Date</label>
+              <input id="expiration-date" type="date" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+              <p class="text-[10px] text-slate-500 mt-1">Notification will be hidden after this date.</p>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  

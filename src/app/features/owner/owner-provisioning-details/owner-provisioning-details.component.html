@@ -1,0 +1,162 @@
+
+    <div class="max-w-5xl mx-auto space-y-6 pb-12">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <button routerLink="/owner/provisioning" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-500 transition-colors">
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+          <div>
+            <div class="flex items-center gap-3">
+              <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Provisioning Job #{{ job().id.split('-')[1] }}</h2>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                [class.bg-green-100]="job().status === 'Completed'"
+                [class.text-green-700]="job().status === 'Completed'"
+                [class.dark:bg-green-900/30]="job().status === 'Completed'"
+                [class.dark:text-green-400]="job().status === 'Completed'"
+                
+                [class.bg-blue-100]="job().status === 'In Progress'"
+                [class.text-blue-700]="job().status === 'In Progress'"
+                [class.dark:bg-blue-900/30]="job().status === 'In Progress'"
+                [class.dark:text-blue-400]="job().status === 'In Progress'"
+                
+                [class.bg-amber-100]="job().status === 'Pending'"
+                [class.text-amber-700]="job().status === 'Pending'"
+                [class.dark:bg-amber-900/30]="job().status === 'Pending'"
+                [class.dark:text-amber-400]="job().status === 'Pending'"
+
+                [class.bg-red-100]="job().status === 'Failed'"
+                [class.text-red-700]="job().status === 'Failed'"
+                [class.dark:bg-red-900/30]="job().status === 'Failed'"
+                [class.dark:text-red-400]="job().status === 'Failed'"
+              >
+                @if (job().status === 'In Progress') {
+                  <mat-icon class="text-[14px] w-[14px] h-[14px] animate-spin">sync</mat-icon>
+                }
+                {{ job().status }}
+              </span>
+            </div>
+            <p class="text-slate-500 dark:text-slate-500 text-sm">Started on {{ job().createdDate }}</p>
+          </div>
+        </div>
+        
+        <div class="flex gap-3">
+          @if (job().status === 'Failed') {
+            <button class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20">
+              <mat-icon class="text-sm">replay</mat-icon>
+              Retry Job
+            </button>
+          }
+          @if (job().status === 'In Progress' || job().status === 'Pending') {
+            <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg text-sm font-medium transition-colors">
+              <mat-icon class="text-sm">cancel</mat-icon>
+              Cancel Job
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Job Info Card -->
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+        <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Job Information</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div>
+            <div class="text-sm font-medium text-slate-500 dark:text-slate-500">Tenant</div>
+            <div class="text-slate-900 dark:text-white font-medium mt-1">{{ job().tenantName }}</div>
+            <div class="text-xs text-slate-500">{{ job().tenantEmail }}</div>
+          </div>
+          <div>
+            <div class="text-sm font-medium text-slate-500 dark:text-slate-500">Plan</div>
+            <div class="mt-1">
+              <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
+                {{ job().plan }}
+              </span>
+            </div>
+          </div>
+          <div>
+            <div class="text-sm font-medium text-slate-500 dark:text-slate-500">Triggered By</div>
+            <div class="text-slate-900 dark:text-white font-medium mt-1">{{ job().triggeredBy }}</div>
+          </div>
+          <div>
+            <div class="text-sm font-medium text-slate-500 dark:text-slate-500">Duration</div>
+            <div class="text-slate-900 dark:text-white font-medium mt-1">{{ job().duration }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Execution Steps -->
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Execution Steps</h3>
+        </div>
+        
+        <div class="p-6">
+          <div class="relative">
+            <!-- Vertical Line -->
+            <div class="absolute left-6 top-4 bottom-4 w-px bg-slate-200 dark:bg-slate-800"></div>
+
+            <div class="space-y-8">
+              @for (step of job().steps; track step.name) {
+                <div class="relative flex gap-6">
+                  <!-- Status Icon -->
+                  <div class="relative z-10 flex-shrink-0 w-12 h-12 rounded-full border-4 border-white dark:border-slate-900 flex items-center justify-center"
+                    [class.bg-green-100]="step.status === 'Completed'"
+                    [class.text-green-600]="step.status === 'Completed'"
+                    [class.dark:bg-green-900/30]="step.status === 'Completed'"
+                    [class.dark:text-green-400]="step.status === 'Completed'"
+                    
+                    [class.bg-blue-100]="step.status === 'In Progress'"
+                    [class.text-indigo-600]="step.status === 'In Progress'"
+                    [class.dark:bg-blue-900/30]="step.status === 'In Progress'"
+                    [class.dark:text-blue-400]="step.status === 'In Progress'"
+                    
+                    [class.bg-slate-100]="step.status === 'Pending'"
+                    [class.text-slate-500]="step.status === 'Pending'"
+                    [class.dark:bg-slate-800]="step.status === 'Pending'"
+                    [class.dark:text-slate-500]="step.status === 'Pending'"
+
+                    [class.bg-red-100]="step.status === 'Failed'"
+                    [class.text-red-600]="step.status === 'Failed'"
+                    [class.dark:bg-red-900/30]="step.status === 'Failed'"
+                    [class.dark:text-red-400]="step.status === 'Failed'"
+                  >
+                    <mat-icon>
+                      @if (step.status === 'Completed') { check }
+                      @else if (step.status === 'In Progress') { sync }
+                      @else if (step.status === 'Failed') { error }
+                      @else { circle }
+                    </mat-icon>
+                  </div>
+
+                  <!-- Content -->
+                  <div class="flex-grow pt-1">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                      <h4 class="font-bold text-slate-900 dark:text-white"
+                        [class.text-slate-500]="step.status === 'Pending'"
+                        [class.dark:text-slate-500]="step.status === 'Pending'"
+                      >
+                        {{ step.name }}
+                      </h4>
+                      @if (step.timestamp) {
+                        <span class="text-xs text-slate-500 font-mono">{{ step.timestamp }}</span>
+                      }
+                    </div>
+                    
+                    @if (step.details) {
+                      <p class="text-sm text-slate-500 dark:text-slate-500 mb-2">{{ step.details }}</p>
+                    }
+
+                    @if (step.error) {
+                      <div class="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-lg text-sm text-red-700 dark:text-red-300 font-mono">
+                        Error: {{ step.error }}
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  

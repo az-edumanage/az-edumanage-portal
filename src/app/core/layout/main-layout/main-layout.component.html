@@ -1,0 +1,26 @@
+
+    <div class="h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300 flex flex-col overflow-hidden">
+      <div class="flex-1 flex relative overflow-hidden">
+        <!-- Sidebar -->
+        <app-sidebar />
+
+        <!-- Main Content Wrapper -->
+        <div 
+          class="flex-1 transition-all duration-300 flex flex-col overflow-hidden"
+          [class.pl-64]="!collapsed()"
+          [class.pl-20]="collapsed()"
+        >
+          <!-- Topbar -->
+          <app-topbar class="shrink-0" />
+
+          <!-- Page Content -->
+          <main class="flex-1 p-6 overflow-y-auto overflow-x-hidden custom-scrollbar">
+            <router-outlet />
+          </main>
+
+          <!-- Task Bar -->
+          <app-task-bar class="shrink-0" />
+        </div>
+      </div>
+    </div>
+  

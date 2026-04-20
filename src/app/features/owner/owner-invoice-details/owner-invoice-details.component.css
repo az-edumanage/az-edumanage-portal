@@ -1,0 +1,21 @@
+
+    @media print {
+      :host {
+        display: block;
+        background: white;
+        color: black;
+      }
+      .print\\:hidden {
+        display: none !important;
+      }
+      .print\\:shadow-none {
+        box-shadow: none !important;
+      }
+      .print\\:border-none {
+        border: none !important;
+      }
+      .print\\:rounded-none {
+        border-radius: 0 !important;
+      }
+    }
+  

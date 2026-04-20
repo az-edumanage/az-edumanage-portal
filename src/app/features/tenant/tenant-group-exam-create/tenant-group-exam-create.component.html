@@ -1,0 +1,162 @@
+
+    <div class="max-w-4xl mx-auto space-y-6">
+      <!-- Header -->
+      <div class="flex items-center justify-between">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+            <a routerLink="/tenant/groups" class="hover:text-indigo-600 transition-colors">Groups</a>
+            <mat-icon class="text-[10px]">chevron_right</mat-icon>
+            <a [routerLink]="['/tenant/groups', groupId()]" class="hover:text-indigo-600 transition-colors">Physics G12-A</a>
+            <mat-icon class="text-[10px]">chevron_right</mat-icon>
+            <span>Create Exam</span>
+          </div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">New Group Exam</h2>
+        </div>
+        <div class="flex gap-3">
+          <button 
+            (click)="onCancel()"
+            class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            (click)="onSubmit()"
+            [disabled]="examForm.invalid || isSubmitting()"
+            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+          >
+            @if (isSubmitting()) {
+              <mat-icon class="animate-spin text-sm">sync</mat-icon>
+              Creating...
+            } @else {
+              <mat-icon class="text-sm">assignment</mat-icon>
+              Create & Publish
+            }
+          </button>
+        </div>
+      </div>
+
+      <form [formGroup]="examForm" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Form Section -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Basic Information -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <mat-icon class="text-sm">info</mat-icon>
+              Exam Details
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="md:col-span-2">
+                <label for="examTitle" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Exam Title</label>
+                <input 
+                  id="examTitle"
+                  type="text" 
+                  formControlName="title"
+                  placeholder="e.g. Mid-term Physics Quiz"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                >
+              </div>
+              
+              <div>
+                <label for="examDate" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Exam Date</label>
+                <input 
+                  id="examDate"
+                  type="date" 
+                  formControlName="date"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                >
+              </div>
+
+              <div>
+                <label for="duration" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Duration (Minutes)</label>
+                <input 
+                  id="duration"
+                  type="number" 
+                  formControlName="duration"
+                  placeholder="60"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                >
+              </div>
+
+              <div class="md:col-span-2">
+                <label for="instructions" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Instructions</label>
+                <textarea 
+                  id="instructions"
+                  formControlName="instructions"
+                  rows="3"
+                  placeholder="Enter instructions for students..."
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Questions Section Placeholder -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                <mat-icon class="text-sm">quiz</mat-icon>
+                Questions
+              </h3>
+              <button type="button" class="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">
+                <mat-icon class="text-xs">add</mat-icon>
+                Add Question
+              </button>
+            </div>
+            
+            <div class="p-8 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl text-center space-y-2">
+              <mat-icon class="text-4xl text-slate-300">post_add</mat-icon>
+              <p class="text-sm text-slate-500">No questions added yet. Start by adding a new question or importing from bank.</p>
+              <div class="flex justify-center gap-3 pt-2">
+                <button type="button" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-bold text-slate-500 dark:text-slate-500 hover:bg-slate-200 transition-colors">
+                  Manual Entry
+                </button>
+                <button type="button" class="px-3 py-1.5 bg-indigo-600/10 dark:bg-indigo-900/40 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-100 transition-colors">
+                  Import from Bank
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar Options -->
+        <div class="space-y-6">
+          <!-- Storage Options -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Save Options</h3>
+            
+            <div class="space-y-3">
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" formControlName="saveToCenterBank" class="rounded border-slate-200 text-indigo-600">
+                <span class="text-slate-700 dark:text-slate-300">Save to Center Question Bank</span>
+              </label>
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" formControlName="saveToMyMedia" class="rounded border-slate-200 text-indigo-600">
+                <span class="text-slate-700 dark:text-slate-300">Save to My Media (Exams)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Exam Settings -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Settings</h3>
+            
+            <div class="space-y-3">
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" formControlName="shuffleQuestions" class="rounded border-slate-200 text-indigo-600">
+                <span class="text-slate-700 dark:text-slate-300">Shuffle questions</span>
+              </label>
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" formControlName="showResultsImmediately" class="rounded border-slate-200 text-indigo-600">
+                <span class="text-slate-700 dark:text-slate-300">Show results immediately</span>
+              </label>
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" formControlName="allowRetakes" class="rounded border-slate-200 text-indigo-600">
+                <span class="text-slate-700 dark:text-slate-300">Allow retakes</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  

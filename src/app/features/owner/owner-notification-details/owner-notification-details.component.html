@@ -1,0 +1,127 @@
+
+    <div class="max-w-6xl mx-auto space-y-6">
+      <!-- Header -->
+      <div class="flex items-center justify-between">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+            <a routerLink="/owner/notifications" class="hover:text-indigo-600 transition-colors">Notifications</a>
+            <mat-icon class="text-[10px]">chevron_right</mat-icon>
+            <span>Details</span>
+          </div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Notification Performance</h2>
+        </div>
+        <div class="flex gap-3">
+          <button class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition-colors">
+            Duplicate
+          </button>
+          <button class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-red-500/20">
+            Cancel Delivery
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Stats & Content -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Performance Grid -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Targeted</p>
+              <p class="text-2xl font-bold text-slate-900 dark:text-white">1,248</p>
+              <p class="text-[10px] text-slate-500 mt-1">Total Tenants</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Delivered</p>
+              <p class="text-2xl font-bold text-indigo-600">1,242</p>
+              <p class="text-[10px] text-slate-500 mt-1">99.5% Success</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Opened</p>
+              <p class="text-2xl font-bold text-emerald-600">986</p>
+              <p class="text-[10px] text-slate-500 mt-1">79.4% Open Rate</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Acknowledged</p>
+              <p class="text-2xl font-bold text-indigo-600">412</p>
+              <p class="text-[10px] text-slate-500 mt-1">33.1% Response</p>
+            </div>
+          </div>
+
+          <!-- Message Preview -->
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+              <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300">Message Content</h3>
+            </div>
+            <div class="p-6 space-y-4">
+              <h4 class="text-xl font-bold text-slate-900 dark:text-white">Scheduled System Maintenance</h4>
+              <div class="prose dark:prose-invert max-w-none text-slate-500 dark:text-slate-500">
+                <p>Dear Partners,</p>
+                <p>We will be performing scheduled system maintenance on <strong>Sunday, May 26th, from 02:00 AM to 04:00 AM UTC</strong>. During this window, the platform may experience intermittent connectivity issues.</p>
+                <p>What to expect:</p>
+                <ul>
+                  <li>Brief downtime of the student portal.</li>
+                  <li>Delayed synchronization of attendance records.</li>
+                  <li>Improved database performance following the update.</li>
+                </ul>
+                <p>Thank you for your patience.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metadata Sidebar -->
+        <div class="space-y-6">
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Notification Info</h3>
+            
+            <div class="space-y-4">
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-slate-500 uppercase">Status</span>
+                <span class="px-2 py-1 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-full uppercase">Scheduled</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-slate-500 uppercase">Type</span>
+                <span class="text-sm font-medium">Maintenance</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-slate-500 uppercase">Priority</span>
+                <span class="text-sm font-medium text-amber-500">High</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-slate-500 uppercase">Created By</span>
+                <span class="text-sm font-medium">System Admin</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-slate-500 uppercase">Created Date</span>
+                <span class="text-sm font-medium">May 20, 2024</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-slate-500 uppercase">Scheduled For</span>
+                <span class="text-sm font-medium">May 26, 2024</span>
+              </div>
+            </div>
+
+            <div class="pt-6 border-t border-slate-200 dark:border-slate-800">
+              <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Delivery Channels</h4>
+              <div class="flex flex-wrap gap-2">
+                <span class="flex items-center gap-1.5 px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-xs">
+                  <mat-icon class="text-sm">notifications</mat-icon> In-App
+                </span>
+                <span class="flex items-center gap-1.5 px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-xs">
+                  <mat-icon class="text-sm">email</mat-icon> Email
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Targeting</h3>
+            <div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+              <p class="text-sm font-medium">All Tenants</p>
+              <p class="text-xs text-slate-500 mt-1">Broadcast to every active center on the platform.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  

@@ -1,0 +1,161 @@
+
+    <div class="max-w-3xl mx-auto space-y-8 pb-12">
+      <!-- Header -->
+      <div class="flex items-center gap-4">
+        <button routerLink="/owner/users" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-500 transition-colors">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ isEditMode ? 'Edit User' : 'Create New User' }}</h2>
+          <p class="text-slate-500 dark:text-slate-500 text-sm">{{ isEditMode ? 'Update user details and permissions.' : 'Add a new staff member to the platform.' }}</p>
+        </div>
+      </div>
+
+      <form [formGroup]="userForm" (ngSubmit)="saveUser()" class="space-y-8">
+        
+        <!-- Basic Info -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">User Information</h3>
+          </div>
+          <div class="p-6 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label for="fullName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+                <input id="fullName" type="text" formControlName="fullName" class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+              </div>
+              <div>
+                <label for="email" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
+                <input id="email" type="email" formControlName="email" class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+              </div>
+              <div>
+                <label for="phone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Phone Number (Optional)</label>
+                <input id="phone" type="tel" formControlName="phone" class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+              </div>
+              <div>
+                <label for="expiryDate" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Account Expiry (Optional)</label>
+                <input id="expiryDate" type="date" formControlName="expiryDate" class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Role & Security -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Role & Security</h3>
+          </div>
+          <div class="p-6 space-y-6">
+            <div>
+              <label for="role" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Assign Role</label>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label class="relative flex flex-col p-4 border rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                  [class.border-purple-500]="userForm.get('role')?.value === 'Super Admin'"
+                  [class.bg-purple-50]="userForm.get('role')?.value === 'Super Admin'"
+                  [class.dark:bg-purple-900/10]="userForm.get('role')?.value === 'Super Admin'"
+                  [class.border-slate-200]="userForm.get('role')?.value !== 'Super Admin'"
+                  [class.dark:border-slate-700]="userForm.get('role')?.value !== 'Super Admin'"
+                >
+                  <input type="radio" formControlName="role" value="Super Admin" class="sr-only">
+                  <span class="font-semibold text-slate-900 dark:text-white mb-1">Super Admin</span>
+                  <span class="text-xs text-slate-500">Full access to all system features and settings.</span>
+                </label>
+
+                <label class="relative flex flex-col p-4 border rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                  [class.border-blue-500]="userForm.get('role')?.value === 'Support Agent'"
+                  [class.bg-blue-50]="userForm.get('role')?.value === 'Support Agent'"
+                  [class.dark:bg-blue-900/10]="userForm.get('role')?.value === 'Support Agent'"
+                  [class.border-slate-200]="userForm.get('role')?.value !== 'Support Agent'"
+                  [class.dark:border-slate-700]="userForm.get('role')?.value !== 'Support Agent'"
+                >
+                  <input type="radio" formControlName="role" value="Support Agent" class="sr-only">
+                  <span class="font-semibold text-slate-900 dark:text-white mb-1">Support Agent</span>
+                  <span class="text-xs text-slate-500">Manage tenants, view logs, and handle tickets.</span>
+                </label>
+
+                <label class="relative flex flex-col p-4 border rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                  [class.border-emerald-500]="userForm.get('role')?.value === 'Billing Manager'"
+                  [class.bg-emerald-50]="userForm.get('role')?.value === 'Billing Manager'"
+                  [class.dark:bg-emerald-900/10]="userForm.get('role')?.value === 'Billing Manager'"
+                  [class.border-slate-200]="userForm.get('role')?.value !== 'Billing Manager'"
+                  [class.dark:border-slate-700]="userForm.get('role')?.value !== 'Billing Manager'"
+                >
+                  <input type="radio" formControlName="role" value="Billing Manager" class="sr-only">
+                  <span class="font-semibold text-slate-900 dark:text-white mb-1">Billing Manager</span>
+                  <span class="text-xs text-slate-500">Access to invoices, payments, and subscriptions.</span>
+                </label>
+
+                <label class="relative flex flex-col p-4 border rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                  [class.border-slate-500]="userForm.get('role')?.value === 'Developer'"
+                  [class.bg-slate-50]="userForm.get('role')?.value === 'Developer'"
+                  [class.dark:bg-slate-800]="userForm.get('role')?.value === 'Developer'"
+                  [class.border-slate-200]="userForm.get('role')?.value !== 'Developer'"
+                  [class.dark:border-slate-700]="userForm.get('role')?.value !== 'Developer'"
+                >
+                  <input type="radio" formControlName="role" value="Developer" class="sr-only">
+                  <span class="font-semibold text-slate-900 dark:text-white mb-1">Developer</span>
+                  <span class="text-xs text-slate-500">Access to API logs, webhooks, and integrations.</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+              <div>
+                <div class="font-medium text-slate-900 dark:text-white">Require MFA</div>
+                <div class="text-sm text-slate-500">Force user to set up Multi-Factor Authentication on next login.</div>
+              </div>
+              <div class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" formControlName="requireMfa" class="sr-only peer">
+                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+              </div>
+            </div>
+
+            <div>
+              <label for="ipRestriction" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">IP Restriction (Optional)</label>
+              <input id="ipRestriction" type="text" formControlName="ipRestriction" placeholder="e.g. 192.168.1.1, 10.0.0.0/24" class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+              <p class="text-xs text-slate-500 mt-1">Comma separated list of allowed IP addresses or CIDR blocks.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Permissions Preview -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Effective Permissions</h3>
+          </div>
+          <div class="p-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              @for (perm of getPermissionsForRole(userForm.get('role')?.value); track perm) {
+                <div class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                  <mat-icon class="text-green-500 text-sm">check</mat-icon>
+                  {{ perm }}
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-between pt-4">
+          @if (isEditMode) {
+            <button type="button" class="px-6 py-2.5 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg font-medium transition-colors">
+              Suspend User
+            </button>
+          } @else {
+            <div></div>
+          }
+          
+          <div class="flex gap-3">
+            <button type="button" (click)="onCancel()" class="px-6 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg font-medium transition-colors">
+              Cancel
+            </button>
+            <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium shadow-sm shadow-indigo-500/20 transition-colors flex items-center gap-2">
+              <mat-icon>save</mat-icon>
+              {{ isEditMode ? 'Update User' : 'Create User' }}
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  

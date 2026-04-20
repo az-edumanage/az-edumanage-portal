@@ -1,0 +1,58 @@
+import { Routes } from '@angular/router';
+import { TenantDashboardComponent } from './tenant-dashboard/tenant-dashboard.component';
+import { TenantStudentsComponent } from './tenant-students/tenant-students.component';
+import { TenantStudentCreateComponent } from './tenant-student-create/tenant-student-create.component';
+import { TenantTeachersComponent } from './tenant-teachers/tenant-teachers.component';
+import { TenantTeacherCreateComponent } from './tenant-teacher-create/tenant-teacher-create.component';
+import { TenantGroupsComponent } from './tenant-groups/tenant-groups.component';
+import { TenantGroupCreateComponent } from './tenant-group-create/tenant-group-create.component';
+import { TenantGroupDetailsComponent } from './tenant-group-details/tenant-group-details.component';
+import { TenantGroupStudentAddComponent } from './tenant-group-student-add/tenant-group-student-add.component';
+import { TenantGroupAttendanceComponent } from './tenant-group-attendance/tenant-group-attendance.component';
+import { TenantGroupExamCreateComponent } from './tenant-group-exam-create/tenant-group-exam-create.component';
+import { TenantGroupBroadcastComponent } from './tenant-group-broadcast/tenant-group-broadcast.component';
+import { TenantRoomsComponent } from './tenant-rooms/tenant-rooms.component';
+import { TenantRoomCreateComponent } from './tenant-room-create/tenant-room-create.component';
+import { TenantRoomDetailsComponent } from './tenant-room-details/tenant-room-details.component';
+import { TenantRoomBookingComponent } from './tenant-room-booking/tenant-room-booking.component';
+import { TenantGradesComponent } from './tenant-grades/tenant-grades.component';
+import { TenantGradeCreateComponent } from './tenant-grade-create/tenant-grade-create.component';
+import { TenantGradeDetailsComponent } from './tenant-grade-details/tenant-grade-details.component';
+import { TenantUsersComponent } from './tenant-users/tenant-users.component';
+import { TenantUserCreateComponent } from './tenant-user-create/tenant-user-create.component';
+import { TenantScheduleComponent } from './tenant-schedule/tenant-schedule.component';
+
+export const TENANT_ROUTES: Routes = [
+  { path: 'overview', component: TenantDashboardComponent },
+  { path: 'students', component: TenantStudentsComponent },
+  { path: 'students/create', component: TenantStudentCreateComponent },
+  { path: 'teachers', component: TenantTeachersComponent },
+  { path: 'teachers/create', component: TenantTeacherCreateComponent },
+  { path: 'teachers/:id/edit', component: TenantTeacherCreateComponent },
+  { path: 'teachers/:id/settings', component: TenantTeacherCreateComponent },
+  { path: 'teachers/:id/messages', component: TenantDashboardComponent },
+  { path: 'groups', component: TenantGroupsComponent },
+  { path: 'groups/create', component: TenantGroupCreateComponent },
+  { path: 'groups/:id', component: TenantGroupDetailsComponent },
+  { path: 'groups/:id/edit', component: TenantGroupCreateComponent },
+  { path: 'groups/:id/enroll', component: TenantGroupStudentAddComponent },
+  { path: 'groups/:id/attendance', component: TenantGroupAttendanceComponent },
+  { path: 'groups/:id/exam', component: TenantGroupExamCreateComponent },
+  { path: 'groups/:id/broadcast', component: TenantGroupBroadcastComponent },
+  { path: 'rooms', component: TenantRoomsComponent },
+  { path: 'rooms/create', component: TenantRoomCreateComponent },
+  { path: 'rooms/:id', component: TenantRoomDetailsComponent },
+  { path: 'rooms/:id/edit', component: TenantRoomCreateComponent },
+  { path: 'rooms/:id/book', component: TenantRoomBookingComponent },
+  { path: 'grades', component: TenantGradesComponent },
+  { path: 'grades/create', component: TenantGradeCreateComponent },
+  { path: 'grades/:id', component: TenantGradeDetailsComponent },
+  { path: 'users', component: TenantUsersComponent },
+  { path: 'users/create', component: TenantUserCreateComponent },
+  { path: 'schedule', component: TenantScheduleComponent },
+  { path: 'attendance', component: TenantDashboardComponent },
+  { path: 'exams', component: TenantDashboardComponent },
+  { path: 'billing', component: TenantDashboardComponent },
+  { path: 'reports', component: TenantDashboardComponent },
+  { path: 'settings', component: TenantDashboardComponent },
+];

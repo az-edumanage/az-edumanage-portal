@@ -1,0 +1,114 @@
+
+    <div class="space-y-6">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Academic Schedule</h2>
+          <p class="text-slate-500 dark:text-slate-500 text-sm">Weekly timetable for all groups and facilities.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm">
+            <mat-icon class="text-sm">print</mat-icon>
+            Print Schedule
+          </button>
+          <button class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20">
+            <mat-icon class="text-sm">add</mat-icon>
+            Add Session
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex flex-wrap gap-4 items-center" [formGroup]="filterForm">
+          <div class="flex-1 min-w-[200px]">
+            <label for="filter-teacher" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Filter by Teacher</label>
+            <select id="filter-teacher" formControlName="teacher" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+              <option value="">All Teachers</option>
+              @for (teacher of teachers(); track teacher) {
+                <option [value]="teacher">{{ teacher }}</option>
+              }
+            </select>
+          </div>
+          <div class="flex-1 min-w-[200px]">
+            <label for="filter-room" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Filter by Room</label>
+            <select id="filter-room" formControlName="room" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+              <option value="">All Rooms</option>
+              @for (room of rooms(); track room) {
+                <option [value]="room">{{ room }}</option>
+              }
+            </select>
+          </div>
+          <div class="flex-1 min-w-[200px]">
+            <label for="filter-day" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Filter by Day</label>
+            <select id="filter-day" formControlName="day" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+              <option value="">Full Week</option>
+              @for (day of days; track day) {
+                <option [value]="day">{{ day }}</option>
+              }
+            </select>
+          </div>
+          @if (activeFiltersCount() > 0) {
+            <button (click)="resetFilters()" class="mt-5 flex items-center gap-1.5 px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl text-xs font-bold transition-all whitespace-nowrap">
+              <mat-icon class="text-sm">restart_alt</mat-icon>
+              Reset
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Schedule Grid -->
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <div class="min-w-[1000px]">
+            <!-- Grid Header (Days) -->
+            <div class="grid grid-cols-8 border-b border-slate-200 dark:border-slate-800">
+              <div class="p-4 bg-slate-50/50 dark:bg-slate-800/30 border-r border-slate-200 dark:border-slate-800"></div>
+              @for (day of days; track day) {
+                <div class="p-4 text-center font-bold text-slate-900 dark:text-white text-sm border-r border-slate-200 dark:border-slate-800 last:border-r-0">
+                  {{ day }}
+                </div>
+              }
+            </div>
+
+            <!-- Grid Body (Time Slots) -->
+            <div class="relative">
+              @for (time of timeSlots; track time) {
+                <div class="grid grid-cols-8 border-b border-slate-50 dark:border-slate-800/50 last:border-b-0 group">
+                  <div class="p-4 text-right text-[10px] font-bold text-slate-500 uppercase border-r border-slate-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/10">
+                    {{ time }}
+                  </div>
+                  @for (day of days; track day) {
+                    <div class="relative p-2 min-h-[100px] border-r border-slate-50 dark:border-slate-800/50 last:border-r-0 group-hover:bg-slate-50/30 dark:group-hover:bg-slate-800/5 transition-colors">
+                      @for (session of getSessionsFor(day, time); track session.id) {
+                        <div 
+                          [class]="session.color"
+                          class="absolute inset-x-1 top-1 p-2 rounded-lg shadow-sm border border-white/20 dark:border-black/10 z-10 hover:scale-[1.02] transition-transform cursor-pointer group/session"
+                        >
+                          <div class="flex justify-between items-start mb-1">
+                            <span class="text-[10px] font-bold uppercase tracking-wider opacity-80">{{ session.startTime }}</span>
+                            <button class="opacity-0 group-hover/session:opacity-100 transition-opacity">
+                              <mat-icon class="text-[10px]">more_vert</mat-icon>
+                            </button>
+                          </div>
+                          <div class="font-bold text-xs truncate mb-0.5">{{ session.groupName }}</div>
+                          <div class="flex items-center gap-1 text-[9px] opacity-90 truncate">
+                            <mat-icon class="text-[10px]">person</mat-icon>
+                            {{ session.teacherName }}
+                          </div>
+                          <div class="flex items-center gap-1 text-[9px] opacity-90 truncate">
+                            <mat-icon class="text-[10px]">location_on</mat-icon>
+                            {{ session.roomName }}
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  

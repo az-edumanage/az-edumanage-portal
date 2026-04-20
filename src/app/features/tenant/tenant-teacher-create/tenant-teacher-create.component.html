@@ -1,0 +1,210 @@
+
+    <div class="max-w-4xl mx-auto space-y-6 pb-24">
+      <!-- Header -->
+      <div class="flex items-center justify-between">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+            <button (click)="goBack()" class="hover:text-indigo-600 transition-colors flex items-center gap-1">
+              <mat-icon class="text-sm">arrow_back</mat-icon>
+              Teachers
+            </button>
+            <mat-icon class="text-[10px]">chevron_right</mat-icon>
+            <span>{{ isEditMode() ? 'Edit Teacher Profile' : 'Onboard New Teacher' }}</span>
+          </div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ isEditMode() ? 'Edit Teacher' : 'Add New Teacher' }}</h2>
+        </div>
+        <div class="flex gap-3">
+          <button 
+            (click)="resetForm()"
+            class="px-4 py-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 rounded-lg text-sm font-medium transition-all"
+          >
+            Reset
+          </button>
+          <button 
+            (click)="goBack()"
+            class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            (click)="onSubmit()"
+            [disabled]="teacherForm.invalid || isSubmitting()"
+            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+          >
+            @if (isSubmitting()) {
+              <mat-icon class="animate-spin text-sm">sync</mat-icon>
+              Saving...
+            } @else {
+              <mat-icon class="text-sm">{{ isEditMode() ? 'save' : 'person_add' }}</mat-icon>
+              {{ isEditMode() ? 'Save Changes' : 'Add Teacher' }}
+            }
+          </button>
+        </div>
+      </div>
+
+      <form [formGroup]="teacherForm" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Form Section -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Professional Information -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <mat-icon class="text-sm">school</mat-icon>
+              Professional Profile
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="md:col-span-2">
+                <label for="fullName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+                <input 
+                  id="fullName"
+                  type="text" 
+                  formControlName="fullName"
+                  placeholder="e.g. Dr. Ahmed Zewail"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                >
+              </div>
+              
+              <div>
+                <label for="email" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Work Email</label>
+                <input 
+                  id="email"
+                  type="email" 
+                  formControlName="email"
+                  placeholder="teacher@center.edu"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                >
+              </div>
+
+              <div>
+                <label for="phone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Phone Number</label>
+                <input 
+                  id="phone"
+                  type="tel" 
+                  formControlName="phone"
+                  placeholder="+20 123 456 7890"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                >
+              </div>
+
+              <div>
+                <label for="subject" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Primary Subject</label>
+                <select id="subject" formControlName="subject" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                  <option value="Physics">Physics</option>
+                  <option value="Mathematics">Mathematics</option>
+                  <option value="Chemistry">Chemistry</option>
+                  <option value="Biology">Biology</option>
+                  <option value="English">English</option>
+                  <option value="Arabic">Arabic</option>
+                  <option value="History">History</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="qualification" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Highest Qualification</label>
+                <input 
+                  id="qualification"
+                  type="text" 
+                  formControlName="qualification"
+                  placeholder="e.g. PhD in Physics"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Account Security -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <mat-icon class="text-sm">lock</mat-icon>
+              Account Access
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="password" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Initial Password</label>
+                <div class="relative">
+                  <input 
+                    id="password"
+                    [type]="showPassword() ? 'text' : 'password'" 
+                    formControlName="password"
+                    class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  >
+                  <button 
+                    type="button"
+                    (click)="showPassword.set(!showPassword())"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-500 transition-colors"
+                  >
+                    <mat-icon class="text-sm">{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="flex items-end pb-2">
+                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" formControlName="forcePasswordChange" class="rounded border-slate-200 text-indigo-600">
+                  <span class="text-slate-700 dark:text-slate-300">Force password change on first login</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar Options -->
+        <div class="space-y-6">
+          <!-- Employment Status -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Employment</h3>
+            
+            <div>
+              <label for="status" class="block text-xs font-bold text-slate-500 uppercase mb-1">Status</label>
+              <select id="status" formControlName="status" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+                <option value="Active">Active</option>
+                <option value="On Leave">On Leave</option>
+                <option value="Part-time">Part-time</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="joinDate" class="block text-xs font-bold text-slate-500 uppercase mb-1">Join Date</label>
+              <input 
+                id="joinDate"
+                type="date" 
+                formControlName="joinDate"
+                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm"
+              >
+            </div>
+          </div>
+
+          <!-- Permissions & Roles -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Permissions</h3>
+            
+            <div class="space-y-3">
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" formControlName="canManageAttendance" class="rounded border-slate-200 text-indigo-600">
+                <span class="text-slate-700 dark:text-slate-300">Can manage attendance</span>
+              </label>
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" formControlName="canManageExams" class="rounded border-slate-200 text-indigo-600">
+                <span class="text-slate-700 dark:text-slate-300">Can manage exams & grades</span>
+              </label>
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" formControlName="canMessageStudents" class="rounded border-slate-200 text-indigo-600">
+                <span class="text-slate-700 dark:text-slate-300">Can message students</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Notifications -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Onboarding</h3>
+            
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" formControlName="sendWelcomeEmail" class="rounded border-slate-200 text-indigo-600">
+              <span class="text-slate-700 dark:text-slate-300">Send welcome email with credentials</span>
+            </label>
+          </div>
+        </div>
+      </form>
+    </div>
+  

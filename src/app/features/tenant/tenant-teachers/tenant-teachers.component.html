@@ -1,0 +1,357 @@
+
+    <div class="space-y-6 relative min-h-[600px]">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Teachers Faculty</h2>
+          <p class="text-slate-500 dark:text-slate-500 text-sm">Manage teaching staff and department assignments.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-1 shadow-sm h-10">
+            <button 
+              (click)="viewMode.set('grid')"
+              [class.bg-indigo-600/10]="viewMode() === 'grid'"
+              [class.text-indigo-600]="viewMode() === 'grid'"
+              [class.text-slate-500]="viewMode() !== 'grid'"
+              class="h-full px-2 rounded-md transition-all flex items-center justify-center"
+              title="Grid View"
+            >
+              <mat-icon class="text-sm block">grid_view</mat-icon>
+            </button>
+            <button 
+              (click)="viewMode.set('list')"
+              [class.bg-indigo-600/10]="viewMode() === 'list'"
+              [class.text-indigo-600]="viewMode() === 'list'"
+              [class.text-slate-500]="viewMode() !== 'list'"
+              class="h-full px-2 rounded-md transition-all flex items-center justify-center"
+              title="List View"
+            >
+              <mat-icon class="text-sm block">view_list</mat-icon>
+            </button>
+          </div>
+          <a routerLink="/tenant/teachers/create" class="flex items-center gap-2 px-4 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20">
+            <mat-icon class="text-sm">person_add</mat-icon>
+            Add Teacher
+          </a>
+        </div>
+      </div>
+
+      <!-- Search & Filter Bar -->
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex flex-col md:flex-row gap-4 items-center">
+          <div class="flex-1 w-full relative">
+            <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</mat-icon>
+            <input 
+              type="text" 
+              [(ngModel)]="searchQuery"
+              placeholder="Search teachers by name, subject or email..."
+              class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+            >
+          </div>
+          
+          <div class="flex items-center gap-3 w-full md:w-auto relative">
+            <div class="relative">
+              <button 
+                (click)="toggleFilterPanel()"
+                [class.bg-indigo-600/10]="showFilterPanel() || activeFiltersCount() > 0"
+                [class.text-indigo-600]="showFilterPanel() || activeFiltersCount() > 0"
+                [class.border-indigo-200]="showFilterPanel() || activeFiltersCount() > 0"
+                class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all whitespace-nowrap"
+              >
+                <mat-icon class="text-sm">filter_list</mat-icon>
+                Advanced Filters
+                @if (activeFiltersCount() > 0) {
+                  <span class="flex items-center justify-center min-w-[20px] h-5 px-1 bg-indigo-600 text-white text-[10px] rounded-full shadow-sm shadow-indigo-500/40">
+                    {{ activeFiltersCount() }}
+                  </span>
+                }
+                <mat-icon class="text-xs transition-transform duration-200" [class.rotate-180]="showFilterPanel()">expand_more</mat-icon>
+              </button>
+
+              <!-- Dropdown Panel -->
+              @if (showFilterPanel()) {
+                <div class="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50 p-5 space-y-5 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                  <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                    <h3 class="font-bold text-slate-900 dark:text-white text-sm">Filter Options</h3>
+                    <button (click)="clearAdvancedFilters()" class="text-[10px] font-bold text-red-600 hover:text-red-700 uppercase tracking-wider">Reset</button>
+                  </div>
+
+                  <div class="space-y-4">
+                    <div [formGroup]="filterForm">
+                      <label for="filter-subject" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Subject</label>
+                      <select 
+                        id="filter-subject"
+                        formControlName="subject"
+                        class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                      >
+                        <option value="">All Subjects</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Biology">Biology</option>
+                        <option value="English">English</option>
+                        <option value="Arabic">Arabic</option>
+                      </select>
+                    </div>
+
+                    <div [formGroup]="filterForm">
+                      <label for="filter-status" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Status</label>
+                      <select 
+                        id="filter-status"
+                        formControlName="status"
+                        class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                      >
+                        <option value="">All Statuses</option>
+                        <option value="Active">Active</option>
+                        <option value="On Leave">On Leave</option>
+                        <option value="Inactive">Inactive</option>
+                      </select>
+                    </div>
+
+                    <div [formGroup]="filterForm">
+                      <label for="filter-sort" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Sort By</label>
+                      <select 
+                        id="filter-sort"
+                        formControlName="sortBy"
+                        class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                      >
+                        <option value="name">Name (A-Z)</option>
+                        <option value="date-desc">Newest First</option>
+                        <option value="date-asc">Oldest First</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="pt-2">
+                    <button 
+                      (click)="toggleFilterPanel()"
+                      class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-lg shadow-indigo-500/20"
+                    >
+                      Apply Filters
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+
+            @if (activeFiltersCount() > 0 || searchQuery()) {
+              <button 
+                (click)="clearAllFilters()"
+                class="flex items-center gap-1.5 px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl text-xs font-bold transition-all whitespace-nowrap"
+              >
+                <mat-icon class="text-sm">restart_alt</mat-icon>
+                Reset All
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Grid/List -->
+      @if (filteredTeachers().length > 0) {
+        @if (viewMode() === 'grid') {
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-300">
+            @for (teacher of filteredTeachers(); track teacher.id) {
+              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 hover:shadow-md transition-all group relative">
+                <div class="flex items-start justify-between mb-4">
+                  <div class="w-12 h-12 rounded-2xl bg-indigo-600/10 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-lg">
+                    {{ teacher.name.charAt(0) }}
+                  </div>
+                  <span class="px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider"
+                    [class.bg-emerald-100]="teacher.status === 'Active'"
+                    [class.text-emerald-700]="teacher.status === 'Active'"
+                    [class.bg-amber-100]="teacher.status === 'On Leave'"
+                    [class.text-amber-700]="teacher.status === 'On Leave'"
+                    [class.bg-slate-100]="teacher.status === 'Inactive'"
+                    [class.text-slate-500]="teacher.status === 'Inactive'"
+                  >
+                    {{ teacher.status }}
+                  </span>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ teacher.name }}</h3>
+                <p class="text-xs text-slate-500 mb-4">{{ teacher.email }}</p>
+                
+                <div class="flex items-center gap-2 mb-6">
+                  <div class="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase">
+                    {{ teacher.subject }}
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
+                  <span class="text-[10px] text-slate-500 uppercase font-bold">Joined {{ teacher.joinDate }}</span>
+                  <div class="flex gap-2 relative">
+                    <button 
+                      (click)="openChat(teacher)"
+                      class="p-1.5 text-slate-500 hover:text-indigo-600 transition-colors"
+                      title="Send Message"
+                    >
+                      <mat-icon class="text-sm">mail</mat-icon>
+                    </button>
+                    <button 
+                      (click)="toggleSettings($event, teacher.id)"
+                      class="p-1.5 text-slate-500 hover:text-indigo-600 transition-colors"
+                      title="Teacher Settings"
+                    >
+                      <mat-icon class="text-sm">settings</mat-icon>
+                    </button>
+
+                    <!-- Settings Dropdown -->
+                    @if (activeSettingsId() === teacher.id) {
+                      <div class="absolute bottom-full right-0 mb-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                        <button 
+                          [routerLink]="['/tenant/teachers', teacher.id, 'edit']"
+                          class="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                        >
+                          <mat-icon class="text-sm">edit</mat-icon>
+                          Edit Profile
+                        </button>
+                        <div class="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
+                        <button 
+                          (click)="updateStatus(teacher.id, 'Active')"
+                          class="w-full flex items-center gap-3 px-4 py-2 text-sm text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                        >
+                          <mat-icon class="text-sm">check_circle</mat-icon>
+                          Set as Active
+                        </button>
+                        <button 
+                          (click)="updateStatus(teacher.id, 'Inactive')"
+                          class="w-full flex items-center gap-3 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                        >
+                          <mat-icon class="text-sm">block</mat-icon>
+                          Set as Inactive
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden animate-in fade-in duration-300">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Teacher</th>
+                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Subject</th>
+                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Status</th>
+                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Joined</th>
+                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px] text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                  @for (teacher of filteredTeachers(); track teacher.id) {
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                      <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                          <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-xs">
+                            {{ teacher.name.charAt(0) }}
+                          </div>
+                          <div>
+                            <div class="font-bold text-slate-900 dark:text-white">{{ teacher.name }}</div>
+                            <div class="text-xs text-slate-500">{{ teacher.email }}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <span class="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-md text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider">
+                          {{ teacher.subject }}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4">
+                        <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                          [class.bg-emerald-100]="teacher.status === 'Active'"
+                          [class.text-emerald-700]="teacher.status === 'Active'"
+                          [class.bg-amber-100]="teacher.status === 'On Leave'"
+                          [class.text-amber-700]="teacher.status === 'On Leave'"
+                          [class.bg-slate-100]="teacher.status === 'Inactive'"
+                          [class.text-slate-500]="teacher.status === 'Inactive'"
+                        >
+                          {{ teacher.status }}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ teacher.joinDate }}</td>
+                      <td class="px-6 py-4 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                          <button (click)="openChat(teacher)" class="p-2 text-indigo-600 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="Message">
+                            <mat-icon class="text-sm block">mail</mat-icon>
+                          </button>
+                          <button [routerLink]="['/tenant/teachers', teacher.id, 'edit']" class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Edit">
+                            <mat-icon class="text-sm block">edit</mat-icon>
+                          </button>
+                          <button (click)="updateStatus(teacher.id, 'Inactive')" class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-colors" title="Deactivate">
+                            <mat-icon class="text-sm block">block</mat-icon>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      } @else {
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center">
+          <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+            <mat-icon class="text-slate-500">search_off</mat-icon>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white">No teachers found</h3>
+          <p class="text-slate-500 dark:text-slate-500 text-sm max-w-xs mx-auto mt-1">We couldn't find any teachers matching your current search and filter criteria.</p>
+          <button (click)="clearAllFilters()" class="mt-6 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-all">
+            Clear All Filters
+          </button>
+        </div>
+      }
+
+      <!-- Floating Chat Window -->
+      @if (activeChatTeacher(); as teacher) {
+        <div class="fixed bottom-6 right-6 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col z-[100] animate-in slide-in-from-bottom-10 duration-300">
+          <!-- Chat Header -->
+          <div class="p-4 bg-indigo-600 text-white rounded-t-2xl flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs">
+                {{ teacher.name.charAt(0) }}
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm font-bold truncate">{{ teacher.name }}</p>
+                <p class="text-[10px] opacity-80 uppercase tracking-wider font-medium">Online</p>
+              </div>
+            </div>
+            <button (click)="activeChatTeacher.set(null)" class="p-1 hover:bg-white/10 rounded-lg transition-colors">
+              <mat-icon class="text-sm">close</mat-icon>
+            </button>
+          </div>
+
+          <!-- Chat Messages Area -->
+          <div class="flex-1 h-64 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-950/50">
+            <div class="flex justify-start">
+              <div class="max-w-[80%] p-3 bg-white dark:bg-slate-800 rounded-2xl rounded-tl-none shadow-sm text-sm text-slate-700 dark:text-slate-300">
+                Hello! How can I help you today?
+              </div>
+            </div>
+            <div class="flex justify-end">
+              <div class="max-w-[80%] p-3 bg-indigo-600 text-white rounded-2xl rounded-tr-none shadow-sm text-sm">
+                I wanted to check the schedule for next week.
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat Input -->
+          <div class="p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 rounded-b-2xl">
+            <div class="flex gap-2">
+              <input 
+                type="text" 
+                placeholder="Type a message..." 
+                class="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+              >
+              <button class="p-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors">
+                <mat-icon class="text-sm">send</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  

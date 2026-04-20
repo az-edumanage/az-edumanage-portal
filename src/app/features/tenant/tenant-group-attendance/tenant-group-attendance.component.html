@@ -1,0 +1,118 @@
+
+    <div class="space-y-6">
+      <!-- Header -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+            <a routerLink="/tenant/groups" class="hover:text-indigo-600 transition-colors">Groups</a>
+            <mat-icon class="text-[10px]">chevron_right</mat-icon>
+            <a [routerLink]="['/tenant/groups', groupId()]" class="hover:text-indigo-600 transition-colors">Physics G12-A</a>
+            <mat-icon class="text-[10px]">chevron_right</mat-icon>
+            <span>Attendance Tracking</span>
+          </div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Session Attendance</h2>
+          <p class="text-slate-500 dark:text-slate-500 text-sm">Mark attendance for today's session: {{ today | date:'fullDate' }}</p>
+        </div>
+        <div class="flex gap-2">
+          <button (click)="saveAttendance()" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2">
+            <mat-icon class="text-sm">save</mat-icon>
+            Save Attendance
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Summary -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Present Today</p>
+          <h4 class="text-2xl font-bold text-emerald-600">{{ presentCount() }}</h4>
+        </div>
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Absent Today</p>
+          <h4 class="text-2xl font-bold text-rose-600">{{ absentCount() }}</h4>
+        </div>
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Attendance Rate</p>
+          <h4 class="text-2xl font-bold text-indigo-600">{{ attendanceRate() }}%</h4>
+        </div>
+      </div>
+
+      <!-- Students List -->
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <h3 class="font-bold text-slate-900 dark:text-white">Student List</h3>
+          <div class="flex gap-2">
+            <button (click)="markAll(true)" class="text-xs font-bold text-emerald-600 hover:underline uppercase">Mark All Present</button>
+            <span class="text-slate-300">|</span>
+            <button (click)="markAll(false)" class="text-xs font-bold text-rose-600 hover:underline uppercase">Mark All Absent</button>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
+              <tr>
+                <th class="px-6 py-3 font-medium">Student</th>
+                <th class="px-6 py-3 font-medium">Overall Attendance</th>
+                <th class="px-6 py-3 font-medium text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+              @for (student of students(); track student.id) {
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-500 font-bold text-xs">
+                        {{ student.name.charAt(0) }}
+                      </div>
+                      <div>
+                        <p class="font-medium text-slate-900 dark:text-white">{{ student.name }}</p>
+                        <p class="text-[10px] text-slate-500">ID: {{ student.id }}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      <div class="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden max-w-[100px]">
+                        <div class="h-full bg-indigo-500" [style.width.%]="student.attendanceRate"></div>
+                      </div>
+                      <span class="text-xs font-medium text-slate-500 dark:text-slate-500">{{ student.attendedSessions }}/{{ student.totalSessions }} ({{ student.attendanceRate }}%)</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center justify-center gap-4">
+                      <label class="flex items-center gap-2 cursor-pointer group">
+                        <input type="radio" [name]="'status-' + student.id" [checked]="student.isPresent" (change)="toggleAttendance(student.id, true)" class="hidden">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all"
+                          [class.bg-emerald-100]="student.isPresent"
+                          [class.border-emerald-500]="student.isPresent"
+                          [class.text-emerald-600]="student.isPresent"
+                          [class.border-slate-200]="!student.isPresent"
+                          [class.text-slate-300]="!student.isPresent"
+                        >
+                          <mat-icon>check</mat-icon>
+                        </div>
+                        <span class="text-[10px] font-bold uppercase" [class.text-emerald-600]="student.isPresent" [class.text-slate-500]="!student.isPresent">Present</span>
+                      </label>
+                      <label class="flex items-center gap-2 cursor-pointer group">
+                        <input type="radio" [name]="'status-' + student.id" [checked]="!student.isPresent" (change)="toggleAttendance(student.id, false)" class="hidden">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all"
+                          [class.bg-rose-100]="!student.isPresent"
+                          [class.border-rose-500]="!student.isPresent"
+                          [class.text-rose-600]="!student.isPresent"
+                          [class.border-slate-200]="student.isPresent"
+                          [class.text-slate-300]="student.isPresent"
+                        >
+                          <mat-icon>close</mat-icon>
+                        </div>
+                        <span class="text-[10px] font-bold uppercase" [class.text-rose-600]="!student.isPresent" [class.text-slate-500]="student.isPresent">Absent</span>
+                      </label>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  

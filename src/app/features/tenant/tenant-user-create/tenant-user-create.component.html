@@ -1,0 +1,222 @@
+
+    <div class="max-w-3xl mx-auto space-y-6 pb-24">
+      <!-- Header -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <button 
+            (click)="goBack()"
+            class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500"
+            title="Go Back"
+          >
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+          <div>
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Add New User</h2>
+            <p class="text-slate-500 dark:text-slate-500 text-sm">Create a new team member and assign their role.</p>
+          </div>
+        </div>
+
+        <button 
+          (click)="resetForm()"
+          class="flex items-center gap-2 px-4 py-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 rounded-xl text-xs font-bold transition-all uppercase tracking-wider"
+        >
+          <mat-icon class="text-sm">restart_alt</mat-icon>
+          Reset Fields
+        </button>
+      </div>
+
+      <!-- Form Card -->
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="p-6 sm:p-8 space-y-8">
+          
+          <!-- Basic Information Section -->
+          <div class="space-y-6">
+            <div class="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-slate-800">
+              <mat-icon class="text-indigo-600 text-sm">person</mat-icon>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Basic Information</h3>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div class="space-y-1.5">
+                <label for="fullName" class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Full Name</label>
+                <div class="relative">
+                  <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">badge</mat-icon>
+                  <input 
+                    id="fullName"
+                    type="text" 
+                    formControlName="fullName"
+                    placeholder="e.g. Ahmed Ali"
+                    class="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    [class.border-red-500]="userForm.get('fullName')?.touched && userForm.get('fullName')?.invalid"
+                  >
+                  @if (userForm.get('fullName')?.pending) {
+                    <mat-icon class="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-600 text-sm animate-spin">sync</mat-icon>
+                  } @else if (userForm.get('fullName')?.valid && userForm.get('fullName')?.value) {
+                    <mat-icon class="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500 text-sm">check_circle</mat-icon>
+                  }
+                </div>
+                @if (userForm.get('fullName')?.touched && userForm.get('fullName')?.errors?.['required']) {
+                  <p class="text-[10px] text-red-500 font-medium">Full name is required</p>
+                }
+                @if (userForm.get('fullName')?.errors?.['duplicateName']) {
+                  <p class="text-[10px] text-red-500 font-medium">This name is already registered in the system</p>
+                }
+              </div>
+
+              <div class="space-y-1.5">
+                <label for="email" class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
+                <div class="relative">
+                  <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">mail</mat-icon>
+                  <input 
+                    id="email"
+                    type="email" 
+                    formControlName="email"
+                    placeholder="e.g. ahmed@example.com"
+                    class="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    [class.border-red-500]="userForm.get('email')?.touched && userForm.get('email')?.invalid"
+                  >
+                  @if (userForm.get('email')?.pending) {
+                    <mat-icon class="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-600 text-sm animate-spin">sync</mat-icon>
+                  } @else if (userForm.get('email')?.valid && userForm.get('email')?.value) {
+                    <mat-icon class="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500 text-sm">check_circle</mat-icon>
+                  }
+                </div>
+                @if (userForm.get('email')?.touched && userForm.get('email')?.errors?.['required']) {
+                  <p class="text-[10px] text-red-500 font-medium">Email is required</p>
+                }
+                @if (userForm.get('email')?.touched && userForm.get('email')?.errors?.['email']) {
+                  <p class="text-[10px] text-red-500 font-medium">Please enter a valid email</p>
+                }
+                @if (userForm.get('email')?.errors?.['duplicateEmail']) {
+                  <p class="text-[10px] text-red-500 font-medium">This email is already in use</p>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Role & Permissions Section -->
+          <div class="space-y-6">
+            <div class="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-slate-800">
+              <mat-icon class="text-indigo-600 text-sm">security</mat-icon>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Role & Permissions</h3>
+            </div>
+
+            <div class="space-y-4">
+              <div class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Assigned Role</div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                @for (role of roles; track role.id) {
+                  <button 
+                    type="button"
+                    (click)="userForm.get('role')?.setValue(role.id)"
+                    [class.ring-2]="userForm.get('role')?.value === role.id"
+                    [class.ring-indigo-500]="userForm.get('role')?.value === role.id"
+                    [class.bg-indigo-600/10]="userForm.get('role')?.value === role.id"
+                    [class.dark:bg-indigo-900/20]="userForm.get('role')?.value === role.id"
+                    [class.border-indigo-200]="userForm.get('role')?.value === role.id"
+                    class="p-4 text-left border border-slate-200 dark:border-slate-800 rounded-xl hover:border-indigo-300 transition-all group"
+                  >
+                    <div class="flex items-center justify-between mb-2">
+                      <div class="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+                        [class.bg-indigo-100]="userForm.get('role')?.value === role.id"
+                        [class.dark:bg-indigo-800]="userForm.get('role')?.value === role.id"
+                        [class.bg-slate-100]="userForm.get('role')?.value !== role.id"
+                        [class.dark:bg-slate-800]="userForm.get('role')?.value !== role.id"
+                      >
+                        <mat-icon class="text-sm" [class.text-indigo-600]="userForm.get('role')?.value === role.id">{{ role.icon }}</mat-icon>
+                      </div>
+                      @if (userForm.get('role')?.value === role.id) {
+                        <mat-icon class="text-indigo-600 text-sm">check_circle</mat-icon>
+                      }
+                    </div>
+                    <div class="font-bold text-sm text-slate-900 dark:text-white">{{ role.label }}</div>
+                    <div class="text-[10px] text-slate-500 mt-1 leading-tight">{{ role.description }}</div>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Initial Status</div>
+              <div class="flex flex-wrap gap-3">
+                @for (status of statuses; track status.id) {
+                  <button 
+                    type="button"
+                    (click)="userForm.get('status')?.setValue(status.id)"
+                    [class.bg-indigo-600]="userForm.get('status')?.value === status.id"
+                    [class.text-white]="userForm.get('status')?.value === status.id"
+                    [class.bg-white]="userForm.get('status')?.value !== status.id"
+                    [class.dark:bg-slate-800]="userForm.get('status')?.value !== status.id"
+                    [class.text-slate-500]="userForm.get('status')?.value !== status.id"
+                    [class.border-indigo-600]="userForm.get('status')?.value === status.id"
+                    [class.border-slate-200]="userForm.get('status')?.value !== status.id"
+                    class="px-4 py-2 border rounded-full text-xs font-bold transition-all flex items-center gap-2"
+                  >
+                    <div class="w-2 h-2 rounded-full" [class.bg-white]="userForm.get('status')?.value === status.id" [class]="status.color"></div>
+                    {{ status.label }}
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Password Section (Optional for new users) -->
+          <div class="space-y-6">
+            <div class="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-slate-800">
+              <mat-icon class="text-indigo-600 text-sm">lock</mat-icon>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Security</h3>
+            </div>
+
+            <div class="space-y-4">
+              <div class="flex items-center gap-3">
+                <input 
+                  type="checkbox" 
+                  id="sendInvite" 
+                  formControlName="sendInvite"
+                  class="w-4 h-4 rounded border-slate-200 text-indigo-600 focus:ring-indigo-500"
+                >
+                <label for="sendInvite" class="text-sm text-slate-700 dark:text-slate-300">Send an invitation email with login instructions</label>
+              </div>
+
+              @if (!userForm.get('sendInvite')?.value) {
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div class="space-y-1.5">
+                    <label for="password" class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Temporary Password</label>
+                    <input 
+                      id="password"
+                      type="password" 
+                      formControlName="password"
+                      placeholder="••••••••"
+                      class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    >
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-800">
+            <button 
+              type="button"
+              (click)="goBack()"
+              class="px-6 py-2.5 text-slate-500 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-sm font-bold transition-all"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit"
+              [disabled]="userForm.invalid || isSubmitting || userForm.pending"
+              class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+            >
+              @if (isSubmitting) {
+                <mat-icon class="animate-spin text-sm">sync</mat-icon>
+                Creating...
+              } @else {
+                Create User
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  

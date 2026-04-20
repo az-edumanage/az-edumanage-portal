@@ -1,0 +1,122 @@
+
+    <div class="max-w-2xl mx-auto space-y-6">
+      <!-- Header -->
+      <div class="flex items-center justify-between">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+            <a routerLink="/tenant/rooms" class="hover:text-indigo-600 transition-colors">Rooms</a>
+            <mat-icon class="text-[10px]">chevron_right</mat-icon>
+            <a [routerLink]="['/tenant/rooms', roomId()]" class="hover:text-indigo-600 transition-colors">{{ roomName() }}</a>
+            <mat-icon class="text-[10px]">chevron_right</mat-icon>
+            <span>Book Room</span>
+          </div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">New Booking</h2>
+        </div>
+      </div>
+
+      <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="md:col-span-2">
+              <label for="purpose" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Purpose / Event Name</label>
+              <input 
+                id="purpose"
+                type="text" 
+                formControlName="purpose"
+                placeholder="e.g. Physics G12 Extra Session"
+                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+              >
+            </div>
+
+            <div>
+              <label for="date" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Date</label>
+              <input 
+                id="date"
+                type="date" 
+                formControlName="date"
+                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+              >
+            </div>
+
+            <div>
+              <label for="teacher" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Teacher / Organizer</label>
+              <select 
+                id="teacher"
+                formControlName="teacher"
+                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+              >
+                <option value="">Select Teacher</option>
+                <option value="1">Dr. Ahmed Zewail</option>
+                <option value="2">Prof. Mona Helmy</option>
+                <option value="3">Mr. Khaled Said</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="startTime" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Start Time</label>
+              <input 
+                id="startTime"
+                type="time" 
+                formControlName="startTime"
+                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+              >
+            </div>
+
+            <div>
+              <label for="endTime" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">End Time</label>
+              <input 
+                id="endTime"
+                type="time" 
+                formControlName="endTime"
+                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+              >
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" formControlName="isRecurring" class="rounded border-slate-200 text-indigo-600 focus:ring-indigo-500">
+                <span class="text-slate-700 dark:text-slate-300">This is a recurring booking</span>
+              </label>
+            </div>
+
+            @if (bookingForm.get('isRecurring')?.value) {
+              <div class="md:col-span-2 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Recurrence Settings</p>
+                <div class="flex flex-wrap gap-2">
+                  @for (day of ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']; track day) {
+                    <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 cursor-pointer transition-all">
+                      <input type="checkbox" class="rounded border-slate-200 text-indigo-600 focus:ring-indigo-500">
+                      <span class="text-xs font-medium text-slate-500 dark:text-slate-500">{{ day }}</span>
+                    </label>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3">
+          <button 
+            type="button"
+            (click)="onCancel()"
+            class="px-6 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit"
+            [disabled]="bookingForm.invalid || isSubmitting()"
+            class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+          >
+            @if (isSubmitting()) {
+              <mat-icon class="animate-spin text-sm">sync</mat-icon>
+              Booking...
+            } @else {
+              <mat-icon class="text-sm">event_available</mat-icon>
+              Confirm Booking
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  

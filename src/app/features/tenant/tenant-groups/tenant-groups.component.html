@@ -1,0 +1,265 @@
+
+    <div class="space-y-6">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Academic Groups</h2>
+          <p class="text-slate-500 dark:text-slate-500 text-sm">Organize students into classes and manage schedules.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-1 shadow-sm h-10">
+            <button 
+              (click)="viewMode.set('grid')"
+              [class.bg-indigo-600/10]="viewMode() === 'grid'"
+              [class.text-indigo-600]="viewMode() === 'grid'"
+              [class.text-slate-500]="viewMode() !== 'grid'"
+              class="h-full px-2 rounded-md transition-all flex items-center justify-center"
+              title="Grid View"
+            >
+              <mat-icon class="text-sm block">grid_view</mat-icon>
+            </button>
+            <button 
+              (click)="viewMode.set('list')"
+              [class.bg-indigo-600/10]="viewMode() === 'list'"
+              [class.text-indigo-600]="viewMode() === 'list'"
+              [class.text-slate-500]="viewMode() !== 'list'"
+              class="h-full px-2 rounded-md transition-all flex items-center justify-center"
+              title="List View"
+            >
+              <mat-icon class="text-sm block">view_list</mat-icon>
+            </button>
+          </div>
+          <a routerLink="/tenant/groups/create" class="flex items-center gap-2 px-4 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20">
+            <mat-icon class="text-sm">group_add</mat-icon>
+            Create Group
+          </a>
+        </div>
+      </div>
+
+      <!-- Search & Filter Bar -->
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex flex-col md:flex-row gap-4 items-center">
+          <div class="flex-1 w-full relative">
+            <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</mat-icon>
+            <input 
+              type="text" 
+              [(ngModel)]="searchQuery"
+              placeholder="Search groups by name, subject, teacher or room..."
+              class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+            >
+          </div>
+          
+          <div class="flex items-center gap-3 w-full md:w-auto relative">
+            <div class="relative">
+              <button 
+                (click)="toggleFilterPanel()"
+                [class.bg-indigo-600/10]="showFilterPanel() || activeFiltersCount() > 0"
+                [class.text-indigo-600]="showFilterPanel() || activeFiltersCount() > 0"
+                [class.border-indigo-200]="showFilterPanel() || activeFiltersCount() > 0"
+                class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all whitespace-nowrap"
+              >
+                <mat-icon class="text-sm">filter_list</mat-icon>
+                Advanced Filters
+                @if (activeFiltersCount() > 0) {
+                  <span class="flex items-center justify-center min-w-[20px] h-5 px-1 bg-indigo-600 text-white text-[10px] rounded-full shadow-sm shadow-indigo-500/40">
+                    {{ activeFiltersCount() }}
+                  </span>
+                }
+                <mat-icon class="text-xs transition-transform duration-200" [class.rotate-180]="showFilterPanel()">expand_more</mat-icon>
+              </button>
+
+              <!-- Dropdown Panel -->
+              @if (showFilterPanel()) {
+                <div class="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50 p-5 space-y-5 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                  <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                    <h3 class="font-bold text-slate-900 dark:text-white text-sm">Filter Options</h3>
+                    <button (click)="clearAdvancedFilters()" class="text-[10px] font-bold text-red-600 hover:text-red-700 uppercase tracking-wider">Reset</button>
+                  </div>
+
+                  <div class="space-y-4">
+                    <div [formGroup]="filterForm">
+                      <label for="filter-subject" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Subject</label>
+                      <select 
+                        id="filter-subject"
+                        formControlName="subject"
+                        class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                      >
+                        <option value="">All Subjects</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Biology">Biology</option>
+                      </select>
+                    </div>
+
+                    <div [formGroup]="filterForm">
+                      <label for="filter-teacher" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Teacher</label>
+                      <select 
+                        id="filter-teacher"
+                        formControlName="teacher"
+                        class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                      >
+                        <option value="">All Teachers</option>
+                        <option value="Dr. Ahmed Zewail">Dr. Ahmed Zewail</option>
+                        <option value="Prof. Mona Helmy">Prof. Mona Helmy</option>
+                        <option value="Mr. Khaled Said">Mr. Khaled Said</option>
+                        <option value="Ms. Fatma Ali">Ms. Fatma Ali</option>
+                      </select>
+                    </div>
+
+                    <div [formGroup]="filterForm">
+                      <label for="filter-sort" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Sort By</label>
+                      <select 
+                        id="filter-sort"
+                        formControlName="sortBy"
+                        class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                      >
+                        <option value="name">Name (A-Z)</option>
+                        <option value="students-desc">Students (High to Low)</option>
+                        <option value="students-asc">Students (Low to High)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="pt-2">
+                    <button 
+                      (click)="toggleFilterPanel()"
+                      class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-lg shadow-indigo-500/20"
+                    >
+                      Apply Filters
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+
+            @if (activeFiltersCount() > 0 || searchQuery()) {
+              <button 
+                (click)="clearAllFilters()"
+                class="flex items-center gap-1.5 px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl text-xs font-bold transition-all whitespace-nowrap"
+              >
+                <mat-icon class="text-sm">restart_alt</mat-icon>
+                Reset All
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Grid/List -->
+      @if (filteredGroups().length > 0) {
+        @if (viewMode() === 'grid') {
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-300">
+            @for (group of filteredGroups(); track group.id) {
+              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden group hover:border-indigo-500 transition-all">
+                <div class="p-6">
+                  <div class="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ group.name }}</h3>
+                      <p class="text-xs text-indigo-600 dark:text-indigo-400 font-bold uppercase">{{ group.subject }}</p>
+                    </div>
+                    <div class="flex -space-x-2">
+                      @for (i of [1,2,3]; track i) {
+                        <div class="w-8 h-8 rounded-full border-2 border-white dark:border-slate-900 bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold">
+                          U{{i}}
+                        </div>
+                      }
+                      <div class="w-8 h-8 rounded-full border-2 border-white dark:border-slate-900 bg-indigo-600/10 dark:bg-indigo-900/40 flex items-center justify-center text-[10px] font-bold text-indigo-600">
+                        +{{ group.studentsCount - 3 }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-4 mt-6">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
+                        <mat-icon class="text-slate-500 text-sm">person</mat-icon>
+                      </div>
+                      <div>
+                        <p class="text-[10px] text-slate-500 uppercase font-bold">Teacher</p>
+                        <p class="text-xs font-medium text-slate-700 dark:text-slate-300">{{ group.teacher }}</p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
+                        <mat-icon class="text-slate-500 text-sm">meeting_room</mat-icon>
+                      </div>
+                      <div>
+                        <p class="text-[10px] text-slate-500 uppercase font-bold">Room</p>
+                        <p class="text-xs font-medium text-slate-700 dark:text-slate-300">{{ group.room }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="px-6 py-3 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                  <div class="flex items-center gap-2 text-xs text-slate-500">
+                    <mat-icon class="text-sm">schedule</mat-icon>
+                    {{ group.schedule }}
+                  </div>
+                  <a [routerLink]="['/tenant/groups', group.id]" class="text-xs font-bold text-indigo-600 hover:text-indigo-600 uppercase tracking-wider">Manage</a>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden animate-in fade-in duration-300">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Group Name</th>
+                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Subject</th>
+                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Teacher</th>
+                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Room</th>
+                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px] text-center">Students</th>
+                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px] text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                  @for (group of filteredGroups(); track group.id) {
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                      <td class="px-6 py-4">
+                        <span class="font-bold text-slate-900 dark:text-white">{{ group.name }}</span>
+                      </td>
+                      <td class="px-6 py-4">
+                        <span class="px-2 py-1 bg-indigo-600/10 dark:bg-indigo-900/20 text-indigo-600 rounded text-[10px] font-bold uppercase tracking-wider">
+                          {{ group.subject }}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ group.teacher }}</td>
+                      <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ group.room }}</td>
+                      <td class="px-6 py-4 text-center">
+                        <span class="font-medium text-slate-900 dark:text-white">{{ group.studentsCount }}</span>
+                      </td>
+                      <td class="px-6 py-4 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                          <a [routerLink]="['/tenant/groups', group.id]" class="p-2 text-indigo-600 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="Manage">
+                            <mat-icon class="text-sm block">settings</mat-icon>
+                          </a>
+                          <button class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Edit">
+                            <mat-icon class="text-sm block">edit</mat-icon>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      } @else {
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center">
+          <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+            <mat-icon class="text-slate-500">search_off</mat-icon>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white">No groups found</h3>
+          <p class="text-slate-500 dark:text-slate-500 text-sm max-w-xs mx-auto mt-1">We couldn't find any academic groups matching your current search and filter criteria.</p>
+          <button (click)="clearAllFilters()" class="mt-6 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-all">
+            Clear All Filters
+          </button>
+        </div>
+      }
+    </div>
+  

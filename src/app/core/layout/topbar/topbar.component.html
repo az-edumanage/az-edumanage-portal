@@ -1,0 +1,64 @@
+
+    <header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 transition-colors duration-300 shadow-sm">
+      <!-- Left: Toggle & Title -->
+      <div class="flex items-center gap-4">
+        <app-button 
+          variant="ghost" 
+          size="icon" 
+          (click)="toggleSidebar()" 
+          class="!text-slate-500"
+        >
+          <mat-icon>menu</mat-icon>
+        </app-button>
+        
+        <h1 class="text-lg font-semibold text-slate-900 dark:text-white hidden sm:block">
+          {{ pageTitle() }}
+        </h1>
+      </div>
+
+      <!-- Right: Actions -->
+      <div class="flex items-center gap-3">
+        <!-- Role Switcher (Demo Only) -->
+        <div class="hidden md:flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1 mr-4">
+          @for (role of roles; track role) {
+            <button 
+              (click)="setRole(role)"
+              class="px-3 py-1 text-xs font-medium rounded-md transition-all capitalize"
+              [class.bg-white]="currentRole() === role"
+              [class.text-indigo-600]="currentRole() === role"
+              [class.shadow-sm]="currentRole() === role"
+              [class.dark:bg-slate-700]="currentRole() === role"
+              [class.dark:text-indigo-400]="currentRole() === role"
+              [class.text-slate-500]="currentRole() !== role"
+            >
+              {{ role }}
+            </button>
+          }
+        </div>
+
+        <!-- Theme Toggle -->
+        <app-button 
+          variant="ghost" 
+          size="icon" 
+          (click)="toggleTheme()" 
+          class="!text-slate-500 rounded-full"
+          [title]="theme() === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+        >
+          <mat-icon>{{ theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
+        </app-button>
+
+        <!-- Notifications -->
+        <div class="relative">
+          <app-button variant="ghost" size="icon" class="!text-slate-500 rounded-full">
+            <mat-icon>notifications</mat-icon>
+          </app-button>
+          <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+        </div>
+
+        <!-- Profile -->
+        <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-sm border border-indigo-200 dark:border-indigo-800">
+          {{ currentRole().substring(0,1).toUpperCase() }}
+        </div>
+      </div>
+    </header>
+  

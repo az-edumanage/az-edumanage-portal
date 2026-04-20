@@ -1,0 +1,100 @@
+
+    <div class="space-y-6">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Plans Management</h2>
+          <p class="text-slate-500 dark:text-slate-500 text-sm">Define and manage your SaaS product tiers and limits.</p>
+        </div>
+        <button routerLink="/owner/plans/create" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20 self-start sm:self-auto">
+          <mat-icon class="text-sm">add</mat-icon>
+          Create New Plan
+        </button>
+      </div>
+
+      <!-- Plans Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (plan of plans(); track plan.id) {
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col group hover:border-indigo-500 dark:hover:border-indigo-500 transition-all">
+            <!-- Plan Header -->
+            <div class="p-6 border-b border-slate-200 dark:border-slate-800 relative">
+              <div class="flex justify-between items-start mb-4 relative z-10">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium border"
+                  [class.bg-green-100]="plan.status === 'Active'"
+                  [class.text-green-700]="plan.status === 'Active'"
+                  [class.border-green-200]="plan.status === 'Active'"
+                  [class.dark:bg-green-900/30]="plan.status === 'Active'"
+                  [class.dark:text-green-400]="plan.status === 'Active'"
+                  [class.dark:border-green-800]="plan.status === 'Active'"
+                  [class.bg-slate-100]="plan.status === 'Archived'"
+                  [class.text-slate-700]="plan.status === 'Archived'"
+                  [class.border-slate-200]="plan.status === 'Archived'"
+                  [class.dark:bg-slate-800]="plan.status === 'Archived'"
+                  [class.dark:text-slate-500]="plan.status === 'Archived'"
+                  [class.dark:border-slate-700]="plan.status === 'Archived'"
+                >
+                  {{ plan.status }}
+                </span>
+                <div class="flex gap-2 items-center">
+                  <button [routerLink]="['/owner/plans', plan.id, 'edit']" class="p-1 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" title="Edit">
+                    <mat-icon class="text-lg">edit</mat-icon>
+                  </button>
+                  <label class="relative inline-flex items-center cursor-pointer" [title]="plan.status === 'Active' ? 'Deactivate Plan' : 'Activate Plan'">
+                    <input type="checkbox" [checked]="plan.status === 'Active'" (change)="togglePlanStatus(plan)" class="sr-only peer">
+                    <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-green-500"></div>
+                  </label>
+                </div>
+              </div>
+              
+              <!-- Clickable Area for Details -->
+              <a [routerLink]="['/owner/plans', plan.id]" class="absolute inset-0 z-0" aria-label="View plan details"></a>
+
+              <div class="relative z-10 pointer-events-none">
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-1 group-hover:text-indigo-600 transition-colors">{{ plan.name }}</h3>
+                <div class="flex items-baseline gap-1">
+                  <span class="text-2xl font-bold text-slate-900 dark:text-white">{{ plan.currency }}{{ plan.monthlyPrice }}</span>
+                  <span class="text-sm text-slate-500">/mo</span>
+                </div>
+                <div class="text-xs text-slate-500 mt-1">
+                  {{ plan.currency }}{{ plan.yearlyPrice }} /year (Save {{ calculateSavings(plan) }}%)
+                </div>
+              </div>
+            </div>
+
+            <!-- Plan Limits -->
+            <a [routerLink]="['/owner/plans', plan.id]" class="p-6 flex-1 space-y-4 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-slate-500 dark:text-slate-500 flex items-center gap-2">
+                  <mat-icon class="text-slate-500 text-sm">school</mat-icon> Max Students
+                </span>
+                <span class="font-medium text-slate-900 dark:text-white">{{ plan.maxStudents | number }}</span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-slate-500 dark:text-slate-500 flex items-center gap-2">
+                  <mat-icon class="text-slate-500 text-sm">cloud</mat-icon> Storage
+                </span>
+                <span class="font-medium text-slate-900 dark:text-white">{{ plan.maxStorage }} GB</span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-slate-500 dark:text-slate-500 flex items-center gap-2">
+                  <mat-icon class="text-slate-500 text-sm">timer</mat-icon> Trial Period
+                </span>
+                <span class="font-medium text-slate-900 dark:text-white">{{ plan.trialDays }} Days</span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-slate-500 dark:text-slate-500 flex items-center gap-2">
+                  <mat-icon class="text-slate-500 text-sm">visibility</mat-icon> Visibility
+                </span>
+                <span class="font-medium text-slate-900 dark:text-white">{{ plan.visibility }}</span>
+              </div>
+            </a>
+
+            <!-- Footer -->
+            <a [routerLink]="['/owner/plans', plan.id]" class="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 text-xs text-center text-slate-500 hover:text-indigo-600 transition-colors">
+              ID: {{ plan.id }}
+            </a>
+          </div>
+        }
+      </div>
+    </div>
+  

@@ -1,0 +1,164 @@
+
+    <div class="p-8 space-y-12 max-w-7xl mx-auto">
+      <header>
+        <h1 class="text-4xl font-bold tracking-tight text-slate-900 dark:text-white">Design System</h1>
+        <p class="mt-2 text-lg text-slate-500 dark:text-slate-500">Core components and styles for the Education Manager platform.</p>
+      </header>
+
+      <!-- Typography -->
+      <section class="space-y-4">
+        <h2 class="text-2xl font-semibold border-b pb-2 border-slate-200 dark:border-slate-800">Typography</h2>
+        <div class="space-y-4">
+          <div>
+            <p class="text-xs text-slate-500 mb-1">Heading 1</p>
+            <h1 class="text-4xl font-bold">The quick brown fox jumps over the lazy dog</h1>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 mb-1">Heading 2</p>
+            <h2 class="text-3xl font-semibold">The quick brown fox jumps over the lazy dog</h2>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 mb-1">Heading 3</p>
+            <h3 class="text-2xl font-medium">The quick brown fox jumps over the lazy dog</h3>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 mb-1">Body Text</p>
+            <p class="text-base text-slate-500 dark:text-slate-500">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            </p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 mb-1">Mono Text</p>
+            <p class="font-mono text-sm">const education = "manager";</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Colors -->
+      <section class="space-y-4">
+        <h2 class="text-2xl font-semibold border-b pb-2 border-slate-200 dark:border-slate-800">Colors</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div class="space-y-2">
+            <div class="h-12 bg-indigo-600 rounded-lg"></div>
+            <p class="text-xs font-medium">Indigo 600 (Primary)</p>
+          </div>
+          <div class="space-y-2">
+            <div class="h-12 bg-emerald-600 rounded-lg"></div>
+            <p class="text-xs font-medium">Emerald 600 (Success)</p>
+          </div>
+          <div class="space-y-2">
+            <div class="h-12 bg-amber-500 rounded-lg"></div>
+            <p class="text-xs font-medium">Amber 500 (Warning)</p>
+          </div>
+          <div class="space-y-2">
+            <div class="h-12 bg-rose-600 rounded-lg"></div>
+            <p class="text-xs font-medium">Rose 600 (Danger)</p>
+          </div>
+          <div class="space-y-2">
+            <div class="h-12 bg-slate-900 rounded-lg"></div>
+            <p class="text-xs font-medium">Slate 900 (Neutral)</p>
+          </div>
+          <div class="space-y-2">
+            <div class="h-12 bg-slate-50 border border-slate-200 rounded-lg"></div>
+            <p class="text-xs font-medium">Slate 50 (Background)</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Buttons -->
+      <section class="space-y-4">
+        <h2 class="text-2xl font-semibold border-b pb-2 border-slate-200 dark:border-slate-800">Buttons</h2>
+        <div class="flex flex-wrap gap-4">
+          <button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors shadow-sm">
+            Primary Button
+          </button>
+          <button class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            Secondary Button
+          </button>
+          <button class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-medium transition-colors shadow-sm">
+            Danger Button
+          </button>
+          <button class="px-4 py-2 bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 rounded-lg font-medium hover:bg-indigo-600/20 transition-colors">
+            Ghost Button
+          </button>
+          <button class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium">
+            <mat-icon class="text-sm">add</mat-icon>
+            Icon Button
+          </button>
+        </div>
+      </section>
+
+      <!-- Cards -->
+      <section class="space-y-4">
+        <h2 class="text-2xl font-semibold border-b pb-2 border-slate-200 dark:border-slate-800">Cards</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <h3 class="font-semibold text-lg mb-2">Standard Card</h3>
+            <p class="text-slate-500 dark:text-slate-500 text-sm">This is a standard card used for grouping content.</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+              <h3 class="font-semibold">Card with Header</h3>
+            </div>
+            <div class="p-6">
+              <p class="text-slate-500 dark:text-slate-500 text-sm">Content goes here.</p>
+            </div>
+          </div>
+          <div class="bg-gradient-to-br from-indigo-600 to-violet-700 p-6 rounded-xl text-white shadow-lg">
+            <h3 class="font-semibold text-lg mb-2">Accent Card</h3>
+            <p class="text-indigo-100 text-sm">Used for highlighting important actions or information.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Form Controls -->
+      <section class="space-y-4">
+        <h2 class="text-2xl font-semibold border-b pb-2 border-slate-200 dark:border-slate-800">Form Controls</h2>
+        <div class="max-w-md space-y-4">
+          <div class="space-y-1">
+            <label for="input-showcase" class="text-sm font-medium text-slate-700 dark:text-slate-300">Input Label</label>
+            <input id="input-showcase" type="text" placeholder="Placeholder text" class="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+          </div>
+          <div class="space-y-1">
+            <label for="select-showcase" class="text-sm font-medium text-slate-700 dark:text-slate-300">Select Label</label>
+            <select id="select-showcase" class="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+              <option>Option 1</option>
+              <option>Option 2</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tables -->
+      <section class="space-y-4">
+        <h2 class="text-2xl font-semibold border-b pb-2 border-slate-200 dark:border-slate-800">Tables</h2>
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500">
+              <tr>
+                <th class="px-6 py-3 font-medium">Name</th>
+                <th class="px-6 py-3 font-medium">Role</th>
+                <th class="px-6 py-3 font-medium">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+              <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">John Doe</td>
+                <td class="px-6 py-4 text-slate-500 dark:text-slate-500">Administrator</td>
+                <td class="px-6 py-4">
+                  <span class="px-2 py-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 rounded-full text-xs font-medium">Active</span>
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">Jane Smith</td>
+                <td class="px-6 py-4 text-slate-500 dark:text-slate-500">Teacher</td>
+                <td class="px-6 py-4">
+                  <span class="px-2 py-1 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 rounded-full text-xs font-medium">Pending</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  

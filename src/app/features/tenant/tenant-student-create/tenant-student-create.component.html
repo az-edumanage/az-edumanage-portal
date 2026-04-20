@@ -1,0 +1,203 @@
+
+    <div class="max-w-4xl mx-auto space-y-6 pb-24">
+      <!-- Header -->
+      <div class="flex items-center justify-between">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+            <button (click)="goBack()" class="hover:text-indigo-600 transition-colors flex items-center gap-1">
+              <mat-icon class="text-sm">arrow_back</mat-icon>
+              Students
+            </button>
+            <mat-icon class="text-[10px]">chevron_right</mat-icon>
+            <span>Enroll New Student</span>
+          </div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Add New Student</h2>
+        </div>
+        <div class="flex gap-3">
+          <button 
+            (click)="resetForm()"
+            class="px-4 py-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 rounded-lg text-sm font-medium transition-all"
+          >
+            Reset
+          </button>
+          <button 
+            (click)="goBack()"
+            class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            (click)="onSubmit()"
+            [disabled]="studentForm.invalid || isSubmitting()"
+            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+          >
+            @if (isSubmitting()) {
+              <mat-icon class="animate-spin text-sm">sync</mat-icon>
+              Saving...
+            } @else {
+              <mat-icon class="text-sm">person_add</mat-icon>
+              Enroll Student
+            }
+          </button>
+        </div>
+      </div>
+
+      <form [formGroup]="studentForm" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Form Section -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Personal Information -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <mat-icon class="text-sm">badge</mat-icon>
+              Personal Information
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="md:col-span-2">
+                <label for="fullName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+                <input 
+                  id="fullName"
+                  type="text" 
+                  formControlName="fullName"
+                  placeholder="e.g. Ahmed Hassan"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                >
+              </div>
+              
+              <div>
+                <label for="email" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
+                <input 
+                  id="email"
+                  type="email" 
+                  formControlName="email"
+                  placeholder="ahmed@example.com"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                >
+              </div>
+
+              <div>
+                <label for="phone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Phone Number</label>
+                <input 
+                  id="phone"
+                  type="tel" 
+                  formControlName="phone"
+                  placeholder="+20 123 456 7890"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                >
+              </div>
+
+              <div>
+                <label for="birthDate" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Date of Birth</label>
+                <input 
+                  id="birthDate"
+                  type="date" 
+                  formControlName="birthDate"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                >
+              </div>
+
+              <div>
+                <label for="gender" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Gender</label>
+                <select id="gender" formControlName="gender" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Parent / Guardian Information -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <mat-icon class="text-sm">family_restroom</mat-icon>
+              Parent / Guardian Details
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="parentName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Parent Name</label>
+                <input 
+                  id="parentName"
+                  type="text" 
+                  formControlName="parentName"
+                  placeholder="Hassan Ali"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                >
+              </div>
+              
+              <div>
+                <label for="parentPhone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Parent Phone</label>
+                <input 
+                  id="parentPhone"
+                  type="tel" 
+                  formControlName="parentPhone"
+                  placeholder="+20 123 456 7890"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                >
+              </div>
+
+              <div class="md:col-span-2">
+                <label for="address" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Residential Address</label>
+                <textarea 
+                  id="address"
+                  formControlName="address"
+                  rows="2"
+                  placeholder="123 Education St, Cairo"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar Options -->
+        <div class="space-y-6">
+          <!-- Academic Details -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Academic Details</h3>
+            
+            <div>
+              <label for="grade" class="block text-xs font-bold text-slate-500 uppercase mb-1">Grade Level</label>
+              <select id="grade" formControlName="grade" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+                <option value="Grade 10">Grade 10</option>
+                <option value="Grade 11">Grade 11</option>
+                <option value="Grade 12">Grade 12</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="enrollmentType" class="block text-xs font-bold text-slate-500 uppercase mb-1">Enrollment Type</label>
+              <select id="enrollmentType" formControlName="enrollmentType" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+                <option value="Full-time">Full-time</option>
+                <option value="Part-time">Part-time</option>
+                <option value="Evening">Evening</option>
+              </select>
+            </div>
+
+            <div class="pt-2">
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" formControlName="isActive" class="rounded border-slate-200 text-indigo-600">
+                <span class="text-slate-700 dark:text-slate-300">Active Enrollment</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Notification Settings -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Notifications</h3>
+            
+            <div class="space-y-3">
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" formControlName="notifyParent" class="rounded border-slate-200 text-indigo-600">
+                <span class="text-slate-700 dark:text-slate-300">Notify Parent via Email</span>
+              </label>
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" formControlName="notifySMS" class="rounded border-slate-200 text-indigo-600">
+                <span class="text-slate-700 dark:text-slate-300">Send SMS Welcome</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  
