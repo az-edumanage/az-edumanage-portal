@@ -12,7 +12,7 @@ import { OwnerSubscriptionDetailsComponent } from './owner-subscription-details/
 import { OwnerSubscriptionCreateComponent } from './owner-subscription-create/owner-subscription-create.component';
 import { OwnerSubscriptionTemplatesListComponent } from './owner-subscription-templates-list/owner-subscription-templates-list.component';
 import { OwnerSubscriptionTemplateDetailsComponent } from './owner-subscription-template-details/owner-subscription-template-details.component';
-import { OwnerSubscriptionOrdersListComponent } from './owner-subscription-orders-list/owner-subscription-orders-list.component';
+import { OwnerSubscriptionOrdersPageComponent } from './pages/owner-subscription-orders/owner-subscription-orders-page.component';
 import { OwnerSubscriptionOrderDetailsComponent } from './owner-subscription-order-details/owner-subscription-order-details.component';
 import { OwnerBillingPageComponent } from './pages/owner-billing/owner-billing-page.component';
 import { OwnerInvoiceDetailsComponent } from './owner-invoice-details/owner-invoice-details.component';
@@ -61,7 +61,7 @@ export const OWNER_ROUTES: Routes = [
   },
   {
     path: 'subscriptions/orders',
-    component: OwnerSubscriptionOrdersListComponent,
+    component: OwnerSubscriptionOrdersPageComponent,
   },
   {
     path: 'subscriptions/orders/:id',

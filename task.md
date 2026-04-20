@@ -97,7 +97,7 @@
   - [x] Split `tenant-group-create` page:
   - [x] Extract schedule section and selectors to `components`.
   - [x] Move draft/task restore flow to facade.
-  - [ ] Split `owner-subscription-orders-list` page into page + table/filter/modals components.
+  - [x] Split `owner-subscription-orders-list` page into page + table/filter/modals components.
 
 ## 7) State and Facade Tasks
 - [x] Create `features/owner/state/owner.facade.ts`.
