@@ -1,19 +1,12 @@
-import { Component, signal, HostListener, computed, inject } from '@angular/core';
+import { Component, DestroyRef, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { startWith } from 'rxjs/operators';
-
-interface Teacher {
-  id: string;
-  name: string;
-  email: string;
-  subject: string;
-  status: 'Active' | 'On Leave' | 'Inactive';
-  joinDate: string;
-}
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { startWith } from 'rxjs';
+import { TenantTeachersFacade } from '../state/tenant-teachers.facade';
+import { Teacher } from '../models/tenant-teachers.models';
 
 @Component({
   selector: 'app-tenant-teachers',
@@ -21,111 +14,66 @@ interface Teacher {
   imports: [CommonModule, RouterModule, MatIconModule, FormsModule, ReactiveFormsModule],
   templateUrl: './tenant-teachers.component.html'})
 export class TenantTeachersComponent {
-  private fb = inject(FormBuilder);
+  private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly facade = inject(TenantTeachersFacade);
 
-  searchQuery = signal('');
-  showFilterPanel = signal(false);
-  viewMode = signal<'grid' | 'list'>('grid');
-  
-  filterForm = this.fb.group({
+  readonly searchQuery = this.facade.searchQuery;
+  readonly showFilterPanel = this.facade.showFilterPanel;
+  readonly viewMode = this.facade.viewMode;
+  readonly teachers = this.facade.teachers;
+  readonly activeSettingsId = this.facade.activeSettingsId;
+  readonly activeChatTeacher = this.facade.activeChatTeacher;
+  readonly activeFiltersCount = this.facade.activeFiltersCount;
+  readonly filteredTeachers = this.facade.filteredTeachers;
+
+  readonly filterForm = this.fb.group({
     subject: [''],
     status: [''],
-    sortBy: ['name']
+    sortBy: ['name'],
   });
 
-  // Convert form value changes to a signal for reactivity in computed signals
-  filterValues = toSignal(
-    this.filterForm.valueChanges.pipe(startWith(this.filterForm.value)),
-    { initialValue: this.filterForm.value }
-  );
-
-  teachers = signal<Teacher[]>([
-    { id: '1', name: 'Dr. Ahmed Zewail', email: 'zewail@center.edu', subject: 'Physics', status: 'Active', joinDate: 'Jan 2022' },
-    { id: '2', name: 'Prof. Mona Helmy', email: 'mona@center.edu', subject: 'Mathematics', status: 'Active', joinDate: 'Mar 2022' },
-    { id: '3', name: 'Mr. Khaled Said', email: 'khaled@center.edu', subject: 'Chemistry', status: 'On Leave', joinDate: 'Jun 2022' },
-    { id: '4', name: 'Ms. Fatma Ali', email: 'fatma@center.edu', subject: 'Biology', status: 'Active', joinDate: 'Sep 2022' },
-  ]);
-
-  activeSettingsId = signal<string | null>(null);
-  activeChatTeacher = signal<Teacher | null>(null);
-
-  activeFiltersCount = computed(() => {
-    let count = 0;
-    const values = this.filterValues();
-    if (values.subject) count++;
-    if (values.status) count++;
-    if (values.sortBy !== 'name') count++;
-    return count;
-  });
-
-  filteredTeachers = computed(() => {
-    const query = this.searchQuery().toLowerCase();
-    const filters = this.filterValues();
-    
-    const result = this.teachers().filter(teacher => {
-      const matchesSearch = !query || 
-        teacher.name.toLowerCase().includes(query) || 
-        teacher.subject.toLowerCase().includes(query) ||
-        teacher.email.toLowerCase().includes(query);
-      
-      const matchesSubject = !filters.subject || teacher.subject === filters.subject;
-      const matchesStatus = !filters.status || teacher.status === filters.status;
-
-      return matchesSearch && matchesSubject && matchesStatus;
-    });
-
-    // Sorting
-    if (filters.sortBy === 'name') {
-      result.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (filters.sortBy === 'date-desc') {
-      result.sort((a, b) => new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime());
-    } else if (filters.sortBy === 'date-asc') {
-      result.sort((a, b) => new Date(a.joinDate).getTime() - new Date(b.joinDate).getTime());
-    }
-
-    return result;
-  });
-
-  toggleFilterPanel() {
-    this.showFilterPanel.update(v => !v);
+  constructor() {
+    this.filterForm.valueChanges
+      .pipe(startWith(this.filterForm.value), takeUntilDestroyed(this.destroyRef))
+      .subscribe((value) => {
+        this.facade.setFilters(value.subject ?? '', value.status ?? '', value.sortBy ?? 'name');
+      });
   }
 
-  clearAllFilters() {
-    this.searchQuery.set('');
+  toggleFilterPanel(): void {
+    this.facade.toggleFilterPanel();
+  }
+
+  clearAllFilters(): void {
+    this.facade.clearAllFilters();
     this.clearAdvancedFilters();
   }
 
-  clearAdvancedFilters() {
+  clearAdvancedFilters(): void {
+    this.facade.clearAdvancedFilters();
     this.filterForm.reset({
       subject: '',
       status: '',
-      sortBy: 'name'
+      sortBy: 'name',
     });
   }
 
-  toggleSettings(event: Event, id: string) {
+  toggleSettings(event: Event, id: string): void {
     event.stopPropagation();
-    if (this.activeSettingsId() === id) {
-      this.activeSettingsId.set(null);
-    } else {
-      this.activeSettingsId.set(id);
-    }
+    this.facade.toggleSettings(id);
   }
 
   @HostListener('document:click')
-  closeSettings() {
-    this.activeSettingsId.set(null);
+  closeSettings(): void {
+    this.facade.closeSettings();
   }
 
-  openChat(teacher: Teacher) {
-    this.activeChatTeacher.set(teacher);
+  openChat(teacher: Teacher): void {
+    this.facade.openChat(teacher);
   }
 
-  updateStatus(id: string, status: 'Active' | 'Inactive') {
-    this.teachers.update(list => 
-      list.map(t => t.id === id ? { ...t, status } : t)
-    );
-    this.activeSettingsId.set(null);
+  updateStatus(id: string, status: 'Active' | 'Inactive'): void {
+    this.facade.updateStatus(id, status);
   }
 }
-
