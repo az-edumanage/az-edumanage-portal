@@ -42,7 +42,7 @@
 
       <!-- KPI Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        @for (stat of stats; track stat.label) {
+        @for (stat of stats(); track stat.label) {
           <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
             <div class="flex justify-between items-start mb-4">
               <div class="p-3 rounded-xl" [class]="stat.color">
@@ -95,7 +95,7 @@
           <div #revenueChart class="h-64 w-full flex items-center justify-center"></div>
           
           <div class="mt-8 space-y-3">
-            @for (plan of plans; track plan.name) {
+            @for (plan of plans(); track plan.name) {
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                   <span class="w-2 h-2 rounded-full" [class]="plan.dotColor"></span>
@@ -123,7 +123,7 @@
             </span>
           </div>
           <div class="space-y-6">
-            @for (activity of activities; track activity.id) {
+            @for (activity of activities(); track activity.id) {
               <div class="flex gap-4">
                 <div class="shrink-0 w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                   <mat-icon class="text-slate-500 text-sm">{{ activity.icon }}</mat-icon>
@@ -153,7 +153,7 @@
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div class="space-y-6">
-              @for (service of services; track service.name) {
+              @for (service of services(); track service.name) {
                 <div class="space-y-2">
                   <div class="flex justify-between items-center">
                     <span class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ service.name }}</span>
@@ -171,7 +171,7 @@
             <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-6 space-y-6">
               <h4 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Regional Distribution</h4>
               <div class="space-y-4">
-                @for (region of regions; track region.name) {
+                @for (region of regions(); track region.name) {
                   <div class="flex items-center gap-4">
                     <div class="w-full flex-1">
                       <div class="flex justify-between text-xs mb-1">

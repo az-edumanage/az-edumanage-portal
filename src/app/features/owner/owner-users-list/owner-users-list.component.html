@@ -25,7 +25,7 @@
       <!-- Filters -->
       <div class="flex flex-wrap gap-2 border-b border-slate-200 dark:border-slate-800 pb-4">
         <button 
-          (click)="filter.set('All')"
+          (click)="setFilter('All')"
           class="px-4 py-2 rounded-full text-sm font-medium transition-colors"
           [class.bg-slate-900]="filter() === 'All'"
           [class.text-white]="filter() === 'All'"
@@ -39,7 +39,7 @@
           All Users
         </button>
         <button 
-          (click)="filter.set('Super Admin')"
+          (click)="setFilter('Super Admin')"
           class="px-4 py-2 rounded-full text-sm font-medium transition-colors"
           [class.bg-purple-100]="filter() === 'Super Admin'"
           [class.text-purple-700]="filter() === 'Super Admin'"
@@ -53,7 +53,7 @@
           Admins
         </button>
         <button 
-          (click)="filter.set('Support Agent')"
+          (click)="setFilter('Support Agent')"
           class="px-4 py-2 rounded-full text-sm font-medium transition-colors"
           [class.bg-blue-100]="filter() === 'Support Agent'"
           [class.text-blue-700]="filter() === 'Support Agent'"

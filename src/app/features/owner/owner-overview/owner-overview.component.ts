@@ -1,17 +1,8 @@
-import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, signal, inject, PLATFORM_ID } from '@angular/core';
+import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import * as d3 from 'd3';
-
-interface StatCard {
-  label: string;
-  value: string;
-  change: string;
-  trend: 'up' | 'down' | 'neutral';
-  icon: string;
-  color: string;
-  details: string;
-}
+import { OwnerOverviewFacade } from '../state/owner-overview.facade';
 
 @Component({
   selector: 'app-owner-overview',
@@ -23,42 +14,16 @@ export class OwnerOverviewComponent implements AfterViewInit, OnDestroy {
   @ViewChild('growthChart') growthChartContainer!: ElementRef;
   @ViewChild('revenueChart') revenueChartContainer!: ElementRef;
 
-  private platformId = inject(PLATFORM_ID);
-  timeRange = signal('30d');
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly facade = inject(OwnerOverviewFacade);
   private resizeObserver!: ResizeObserver;
 
-  stats: StatCard[] = [
-    { label: 'Total Revenue', value: '$1.42M', change: '12.5%', trend: 'up', icon: 'payments', color: 'bg-indigo-600', details: '+$142k from last month' },
-    { label: 'Active Tenants', value: '1,248', change: '8.2%', trend: 'up', icon: 'business', color: 'bg-indigo-600', details: '94 new this month' },
-    { label: 'Avg. LTV', value: '$4,820', change: '3.1%', trend: 'up', icon: 'trending_up', color: 'bg-emerald-600', details: 'Lifetime value per center' },
-    { label: 'Churn Rate', value: '1.2%', change: '0.4%', trend: 'down', icon: 'person_remove', color: 'bg-rose-600', details: 'Lowest in 6 months' }
-  ];
-
-  plans = [
-    { name: 'Enterprise', value: '$640k', percentage: 45, dotColor: 'bg-indigo-500' },
-    { name: 'Professional', value: '$498k', percentage: 35, dotColor: 'bg-blue-500' },
-    { name: 'Starter', value: '$285k', percentage: 20, dotColor: 'bg-sky-400' }
-  ];
-
-  activities = [
-    { id: 1, title: 'New Enterprise Tenant', description: 'Global Education Group joined.', time: '2 mins ago', icon: 'add_business' },
-    { id: 2, title: 'System Update', description: 'v2.4.0 deployed to US-EAST-1.', time: '15 mins ago', icon: 'system_update' },
-    { id: 3, title: 'High Usage Alert', description: 'Cairo Math Center exceeded storage.', time: '1 hour ago', icon: 'priority_high' },
-    { id: 4, title: 'Billing Success', description: '1,142 invoices processed.', time: '3 hours ago', icon: 'check_circle' }
-  ];
-
-  services = [
-    { name: 'API Gateway', uptime: 99.99 },
-    { name: 'Database Cluster', uptime: 99.98 },
-    { name: 'Storage Service', uptime: 100 }
-  ];
-
-  regions = [
-    { name: 'Middle East', count: 542, percentage: 43 },
-    { name: 'North America', count: 312, percentage: 25 },
-    { name: 'Europe', count: 284, percentage: 22 },
-    { name: 'Other', count: 110, percentage: 10 }
-  ];
+  readonly timeRange = this.facade.timeRange;
+  readonly stats = this.facade.stats;
+  readonly plans = this.facade.plans;
+  readonly activities = this.facade.activities;
+  readonly services = this.facade.services;
+  readonly regions = this.facade.regions;
 
   ngAfterViewInit() {
     if (isPlatformBrowser(this.platformId)) {
@@ -184,7 +149,7 @@ export class OwnerOverviewComponent implements AfterViewInit, OnDestroy {
       .append('g')
       .attr('transform', `translate(${width / 2},${height / 2})`);
 
-    const data = this.plans;
+    const data = this.plans();
     const color = d3.scaleOrdinal<string>()
       .domain(data.map(d => d.name))
       .range(['#6366f1', '#3b82f6', '#38bdf8']);

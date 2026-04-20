@@ -122,6 +122,10 @@ Close remaining migration gaps in state/data-access and final structure complian
 - [x] Migrate additional large page VM/data orchestration out of component (completed: `tenant-students`).
 - [x] Migrate additional large page VM/data orchestration out of component (completed: `tenant-teachers`).
 - [x] Migrate additional large page VM/data orchestration out of component (completed: `tenant-rooms`).
+- [x] Migrate additional large page VM/data orchestration out of component (completed: `tenant-groups`).
+- [x] Migrate additional large page VM/data orchestration out of component (completed: `tenant-grades`).
+- [x] Migrate additional large page VM/data orchestration out of component (completed: `owner-users-list`).
+- [x] Migrate additional large page VM/data orchestration out of component (completed: `owner-overview`).
 - [ ] Complete Task 7 pending items (`view-model derivations`, `facade UI APIs`) for remaining large components.
 - [ ] Complete Task 8 pending item (move remaining mock arrays/submit handlers from pages).
 - [ ] Validate and close Definition of Done: structure compliance + shared/native/feature categorization.
