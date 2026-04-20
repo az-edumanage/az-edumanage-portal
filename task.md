@@ -162,7 +162,11 @@
 
 ## 13) Definition of Done
 - [ ] Codebase matches `STRUCTURE.md`.
-- [ ] Components are clearly categorized as shared/native/feature.
+- [x] Components are clearly categorized as shared/native/feature.
 - [x] No broken routes.
 - [x] No shell/layout/style regressions.
 - [x] Build/lint/test green.
+
+## 14) Incremental Structure Alignment
+- [x] Batch 1: Move remaining route-level `features/owner/owner-*` page folders into `features/owner/pages/*` (move-only + import fixes, no HTML/CSS changes).
+- [x] Re-run lint/test/build after relocation batch.
