@@ -2,6 +2,7 @@ import { Component, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
+import { UiPagerButtonComponent } from '../../../shared/ui';
 
 export interface AuditLog {
   id: string;
@@ -27,7 +28,7 @@ export interface AuditLog {
 @Component({
   selector: 'app-owner-audit-logs',
   standalone: true,
-  imports: [CommonModule, MatIconModule, FormsModule],
+  imports: [CommonModule, MatIconModule, FormsModule, UiPagerButtonComponent],
   templateUrl: './owner-audit-logs.component.html',
   styleUrl: './owner-audit-logs.component.css'})
 export class OwnerAuditLogsComponent {

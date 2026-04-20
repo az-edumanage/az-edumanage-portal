@@ -1,99 +1,48 @@
-import { Component, signal, computed, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../../../core/services/dashboard.service';
-
-type TenantStatus = 'Active' | 'Suspended' | 'Trial' | 'Past Due' | 'Cancelled';
-
-interface Tenant {
-  id: string;
-  name: string;
-  status: TenantStatus;
-  plan: string;
-  createdDate: string;
-  ownerEmail: string;
-  healthStatus: 'Healthy' | 'Degraded' | 'Down';
-  tenantType: string;
-}
+import { UiPagerButtonComponent } from '../../../shared/ui';
+import { OwnerTenantsListFacade } from '../state/owner-tenants-list.facade';
+import { Tenant } from '../models/owner-tenants.models';
 
 @Component({
   selector: 'app-owner-tenants-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule, FormsModule],
+  imports: [CommonModule, RouterModule, MatIconModule, FormsModule, UiPagerButtonComponent],
   templateUrl: './owner-tenants-list.component.html'})
 export class OwnerTenantsListComponent {
   private router = inject(Router);
   private dashboardService = inject(DashboardService);
+  private readonly tenantsFacade = inject(OwnerTenantsListFacade);
 
-  searchQuery = signal('');
-  
-  showFiltersDropdown = signal(false);
-  activeStatusDropdown = signal<string | null>(null);
-  pendingStatusChange = signal<{ tenant: Tenant, status: TenantStatus } | null>(null);
-  activePlanDropdown = signal<string | null>(null);
-  pendingPlanChange = signal<{ tenant: Tenant, plan: string } | null>(null);
-  copyNotification = signal<string | null>(null);
-  
-  selectedStatuses = signal<Set<string>>(new Set());
-  selectedPlans = signal<Set<string>>(new Set());
-  selectedHealths = signal<Set<string>>(new Set());
+  readonly searchQuery = this.tenantsFacade.searchQuery;
+  readonly showFiltersDropdown = this.tenantsFacade.showFiltersDropdown;
+  readonly activeStatusDropdown = this.tenantsFacade.activeStatusDropdown;
+  readonly pendingStatusChange = this.tenantsFacade.pendingStatusChange;
+  readonly activePlanDropdown = this.tenantsFacade.activePlanDropdown;
+  readonly pendingPlanChange = this.tenantsFacade.pendingPlanChange;
+  readonly copyNotification = this.tenantsFacade.copyNotification;
 
-  statuses = ['Active', 'Trial', 'Past Due', 'Suspended', 'Cancelled'];
-  plans = ['Starter', 'Professional', 'Enterprise'];
-  healths = ['Healthy', 'Degraded', 'Down'];
+  readonly selectedStatuses = this.tenantsFacade.selectedStatuses;
+  readonly selectedPlans = this.tenantsFacade.selectedPlans;
+  readonly selectedHealths = this.tenantsFacade.selectedHealths;
 
-  activeFilterCount = computed(() => {
-    return this.selectedStatuses().size + this.selectedPlans().size + this.selectedHealths().size;
-  });
+  readonly statuses = this.tenantsFacade.statuses;
+  readonly plans = this.tenantsFacade.plans;
+  readonly healths = this.tenantsFacade.healths;
+  readonly activeFilterCount = this.tenantsFacade.activeFilterCount;
+  readonly filteredTenants = this.tenantsFacade.filteredTenants;
 
-  toggleFilter(type: 'status' | 'plan' | 'health', value: string) {
-    const set = type === 'status' ? this.selectedStatuses() : type === 'plan' ? this.selectedPlans() : this.selectedHealths();
-    const newSet = new Set(set);
-    if (newSet.has(value)) {
-      newSet.delete(value);
-    } else {
-      newSet.add(value);
-    }
-    
-    if (type === 'status') this.selectedStatuses.set(newSet);
-    else if (type === 'plan') this.selectedPlans.set(newSet);
-    else this.selectedHealths.set(newSet);
+  toggleFilter(type: 'status' | 'plan' | 'health', value: string): void {
+    this.tenantsFacade.toggleFilter(type, value);
   }
 
-  clearFilters() {
-    this.selectedStatuses.set(new Set());
-    this.selectedPlans.set(new Set());
-    this.selectedHealths.set(new Set());
+  clearFilters(): void {
+    this.tenantsFacade.clearFilters();
   }
-  
-  tenants: Tenant[] = [
-    { id: 'tnt_001', name: 'Bright Future Academy', status: 'Active', plan: 'Enterprise', createdDate: 'Jan 15, 2024', ownerEmail: 'admin@brightfuture.edu', healthStatus: 'Healthy', tenantType: 'Educational Center' },
-    { id: 'tnt_002', name: 'Cairo Math Center', status: 'Trial', plan: 'Professional', createdDate: 'Feb 02, 2024', ownerEmail: 'contact@cairomath.com', healthStatus: 'Healthy', tenantType: 'Educational Center' },
-    { id: 'tnt_003', name: 'Elite Tutors', status: 'Active', plan: 'Starter', createdDate: 'Dec 10, 2023', ownerEmail: 'sarah@elitetutors.net', healthStatus: 'Degraded', tenantType: 'Individual Teacher' },
-    { id: 'tnt_004', name: 'Physics Pro', status: 'Active', plan: 'Professional', createdDate: 'Jan 20, 2024', ownerEmail: 'dr.ahmed@physicspro.com', healthStatus: 'Healthy', tenantType: 'Educational Center' },
-    { id: 'tnt_005', name: 'Language Hub', status: 'Suspended', plan: 'Starter', createdDate: 'Nov 05, 2023', ownerEmail: 'info@langhub.org', healthStatus: 'Down', tenantType: 'Educational Center' },
-  ];
-
-  filteredTenants = computed(() => {
-    const search = this.searchQuery().toLowerCase();
-    const statuses = this.selectedStatuses();
-    const plans = this.selectedPlans();
-    const healths = this.selectedHealths();
-
-    return this.tenants.filter(tenant => {
-      const matchesSearch = !search || 
-                            tenant.name.toLowerCase().includes(search) || 
-                            tenant.id.toLowerCase().includes(search) ||
-                            tenant.ownerEmail.toLowerCase().includes(search);
-      const matchesStatus = statuses.size === 0 || statuses.has(tenant.status);
-      const matchesPlan = plans.size === 0 || plans.has(tenant.plan);
-      const matchesHealth = healths.size === 0 || healths.has(tenant.healthStatus);
-
-      return matchesSearch && matchesStatus && matchesPlan && matchesHealth;
-    });
-  });
 
   impersonate(tenant: Tenant) {
     // Save current URL to return back later
@@ -110,43 +59,31 @@ export class OwnerTenantsListComponent {
     console.log(`Impersonating tenant: ${tenant.name} (${tenant.tenantType})`);
   }
 
-  requestStatusChange(tenant: Tenant, newStatus: string) {
-    if (tenant.status === newStatus) return;
-    this.pendingStatusChange.set({ tenant, status: newStatus as TenantStatus });
+  requestStatusChange(tenant: Tenant, newStatus: string): void {
+    this.tenantsFacade.requestStatusChange(tenant, newStatus);
   }
 
-  confirmStatusChange() {
-    const pending = this.pendingStatusChange();
-    if (pending) {
-      pending.tenant.status = pending.status;
-      console.log(`Confirmed status change of ${pending.tenant.name} to ${pending.status}`);
-      this.pendingStatusChange.set(null);
-    }
+  confirmStatusChange(): void {
+    this.tenantsFacade.confirmStatusChange();
   }
 
-  cancelStatusChange() {
-    this.pendingStatusChange.set(null);
+  cancelStatusChange(): void {
+    this.tenantsFacade.cancelStatusChange();
   }
 
-  requestPlanChange(tenant: Tenant, newPlan: string) {
-    if (tenant.plan === newPlan) return;
-    this.pendingPlanChange.set({ tenant, plan: newPlan });
+  requestPlanChange(tenant: Tenant, newPlan: string): void {
+    this.tenantsFacade.requestPlanChange(tenant, newPlan);
   }
 
-  confirmPlanChange() {
-    const pending = this.pendingPlanChange();
-    if (pending) {
-      pending.tenant.plan = pending.plan;
-      console.log(`Confirmed plan change of ${pending.tenant.name} to ${pending.plan}`);
-      this.pendingPlanChange.set(null);
-    }
+  confirmPlanChange(): void {
+    this.tenantsFacade.confirmPlanChange();
   }
 
-  cancelPlanChange() {
-    this.pendingPlanChange.set(null);
+  cancelPlanChange(): void {
+    this.tenantsFacade.cancelPlanChange();
   }
 
-  copyToClipboard(text: string) {
+  copyToClipboard(text: string): void {
     navigator.clipboard.writeText(text).then(() => {
       this.copyNotification.set(text);
       setTimeout(() => {
@@ -155,10 +92,5 @@ export class OwnerTenantsListComponent {
         }
       }, 2000);
     });
-  }
-
-  changeStatus(tenant: Tenant, newStatus: string) {
-    tenant.status = newStatus as TenantStatus;
-    console.log(`Changed status of ${tenant.name} to ${newStatus}`);
   }
 }

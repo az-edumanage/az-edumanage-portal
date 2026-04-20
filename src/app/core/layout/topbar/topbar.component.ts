@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { DashboardService, UserRole } from '../../services/dashboard.service';
-import { ButtonComponent } from '../../../shared/components/ui/button/button.component';
+import { ButtonComponent } from '../../../shared/ui';
 
 @Component({
   selector: 'app-topbar',

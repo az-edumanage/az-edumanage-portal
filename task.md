@@ -34,7 +34,7 @@
 - [x] Move `layout/topbar` -> `core/layout/topbar`.
 - [x] Move `layout/task-bar` -> `core/layout/task-bar`.
 - [x] Update imports across app.
-- [ ] Verify collapse, theme toggle, task bar functionality.
+- [x] Verify collapse, theme toggle, task bar functionality.
 
 ## 4) Route Refactor Tasks
 - [x] Create `src/app/features/owner/routes.ts`.
@@ -45,25 +45,25 @@
 - [x] Move teacher routes out of `app.routes.ts`.
 - [x] Keep all path strings identical (no URL breaks).
 - [x] Switch root routes to lazy loading.
-- [ ] Verify deep-link navigation for all major pages.
+- [x] Verify deep-link navigation for all major pages.
 
 ## 5) Component Conversion Strategy
 
 ## 5.1 Shared Components (Domain-Agnostic)
-- [ ] Keep/normalize `shared/ui/button`.
-- [ ] Keep/normalize `shared/ui/card`.
-- [ ] Keep/normalize `shared/components/data-display/badge`.
-- [ ] Keep/normalize table directives into `shared/ui/table` or `shared/directives`.
-- [ ] Add shared naming convention (`Ui*` or folder-first convention).
-- [ ] Replace duplicate button/card/table markup in at least 3 pages.
+- [x] Keep/normalize `shared/ui/button`.
+- [x] Keep/normalize `shared/ui/card`.
+- [x] Keep/normalize `shared/components/data-display/badge`.
+- [x] Keep/normalize table directives into `shared/ui/table` or `shared/directives`.
+- [x] Add shared naming convention (`app-*` selector prefix + folder-first convention).
+- [x] Replace duplicate button/card/table markup in at least 3 pages.
 - [x] Add usage docs in `shared/ui/README.md`.
 
 ## 5.2 Native Components (Do Not Over-Abstract)
 - [x] Define and document "native-first" rule:
   - Use raw HTML + Tailwind + Angular Material for one-off UI.
   - Do not create shared component unless reuse exists.
-- [ ] Keep one-off screen-specific controls as native in page/component templates.
-- [ ] Review existing raw controls and mark abstraction candidates only when reused.
+- [x] Keep one-off screen-specific controls as native in page/component templates.
+- [x] Review existing raw controls and mark abstraction candidates only when reused.
 
 ## 5.3 Feature Components (Domain-Specific)
 - [x] For `owner`, create:
@@ -136,18 +136,18 @@
 - [x] Add at least one unit test per migrated facade/store.
 
 ## 12) Visual Regression Checklist
-- [ ] Owner dashboard layout unchanged.
-- [ ] Tenant dashboard layout unchanged.
-- [ ] Teacher dashboard layout unchanged.
-- [ ] Sidebar behavior unchanged.
-- [ ] Topbar actions unchanged.
-- [ ] Dark/light theme unchanged.
-- [ ] Form styling unchanged.
-- [ ] Tables and badges styling unchanged.
+- [x] Owner dashboard layout unchanged.
+- [x] Tenant dashboard layout unchanged.
+- [x] Teacher dashboard layout unchanged.
+- [x] Sidebar behavior unchanged.
+- [x] Topbar actions unchanged.
+- [x] Dark/light theme unchanged.
+- [x] Form styling unchanged.
+- [x] Tables and badges styling unchanged.
 
 ## 13) Definition of Done
 - [ ] Codebase matches `STRUCTURE.md`.
 - [ ] Components are clearly categorized as shared/native/feature.
-- [ ] No broken routes.
-- [ ] No shell/layout/style regressions.
-- [ ] Build/lint/test green.
+- [x] No broken routes.
+- [x] No shell/layout/style regressions.
+- [x] Build/lint/test green.

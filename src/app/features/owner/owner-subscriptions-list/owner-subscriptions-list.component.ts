@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../../../core/services/dashboard.service';
+import { UiPagerButtonComponent } from '../../../shared/ui';
 
 interface Subscription {
   id: string;
@@ -20,7 +21,7 @@ interface Subscription {
 @Component({
   selector: 'app-owner-subscriptions-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule, FormsModule],
+  imports: [CommonModule, RouterModule, MatIconModule, FormsModule, UiPagerButtonComponent],
   templateUrl: './owner-subscriptions-list.component.html'})
 export class OwnerSubscriptionsListComponent {
   private dashboardService = inject(DashboardService);

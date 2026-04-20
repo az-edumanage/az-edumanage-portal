@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { BadgeComponent } from '../../../../shared/components/data-display/badge/badge.component';
-import { TABLE_COMPONENTS } from '../../../../shared/components/data-display/table/table.components';
+import { BadgeComponent } from '../../../../shared/ui';
+import { TABLE_COMPONENTS } from '../../../../shared/directives';
 import { Invoice } from '../../owner-billing/models/owner-billing.models';
 
 @Component({

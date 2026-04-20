@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { TABLE_COMPONENTS } from '../../../../shared/components/data-display/table/table.components';
+import { TABLE_COMPONENTS } from '../../../../shared/directives';
 import { Payment } from '../../owner-billing/models/owner-billing.models';
 
 @Component({

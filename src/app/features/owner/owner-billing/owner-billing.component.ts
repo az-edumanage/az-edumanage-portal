@@ -3,10 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
-import { ButtonComponent } from '../../../shared/components/ui/button/button.component';
-import { BadgeComponent } from '../../../shared/components/data-display/badge/badge.component';
-import { CardComponent } from '../../../shared/components/ui/card/card.component';
-import { TABLE_COMPONENTS } from '../../../shared/components/data-display/table/table.components';
+import { ButtonComponent, BadgeComponent, CardComponent } from '../../../shared/ui';
+import { TABLE_COMPONENTS } from '../../../shared/directives';
 import { Tab, Invoice } from './models/owner-billing.models';
 import { OwnerBillingService } from './services/owner-billing.service';
 
