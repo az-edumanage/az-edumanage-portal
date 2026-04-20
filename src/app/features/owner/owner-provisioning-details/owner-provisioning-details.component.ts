@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { ProvisioningStatus } from '../owner-provisioning-list/owner-provisioning-list.component';
+import { ProvisioningStatus } from '../models/owner-provisioning.models';
 
 interface ProvisioningStep {
   name: string;

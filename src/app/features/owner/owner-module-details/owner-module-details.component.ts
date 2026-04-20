@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
-import { Module } from '../owner-modules-list/owner-modules-list.component';
+import { OwnerModule } from '../models/owner-modules.models';
 
 interface Feature {
   id: string;
@@ -42,7 +42,7 @@ export class OwnerModuleDetailsComponent {
   private route = inject(ActivatedRoute);
   activeTab = signal<'overview' | 'settings' | 'plans' | 'overrides' | 'dependencies' | 'changelog'>('overview');
 
-  module = signal<Module>({
+  module = signal<OwnerModule>({
     id: 'mod-students',
     name: 'Students Management',
     code: 'CORE_STUD',

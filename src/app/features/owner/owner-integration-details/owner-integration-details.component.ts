@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Integration } from '../owner-integrations-list/owner-integrations-list.component';
+import { Integration } from '../models/owner-integrations.models';
 import { OwnerApiService } from '../data-access/owner-api.service';
 
 interface IntegrationLog {

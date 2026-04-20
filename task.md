@@ -108,6 +108,9 @@
 - [x] Create `features/teacher/state/teacher.store.ts`.
 - [~] Move view-model derivations from large components into stores/computed selectors.
 - [~] Expose UI-friendly APIs from facades only.
+  - [x] Migrate list/screen derivations to store/facade for: `owner-tenants-list`, `owner-users-list`, `owner-overview`.
+  - [x] Migrate additional list/screen derivations to store/facade for: `owner-audit-logs`, `owner-provisioning-list`, `owner-modules-list`, `tenant-schedule`, `owner-integrations-list`.
+  - [ ] Migrate remaining complex pages still hosting local orchestration logic.
 
 ## 8) Data-Access Tasks
 - [x] Create owner repositories/services in `features/owner/data-access`.
@@ -115,6 +118,8 @@
 - [x] Create teacher repositories/services in `features/teacher/data-access`.
 - [~] Migrate mock arrays and submit handlers out of page components.
 - [x] Replace `setTimeout` simulated calls with facade repository methods.
+  - [x] Move mock list data into data-access services for migrated list pages (owner/tenant slices above).
+  - [ ] Move remaining page-level mock payloads from details/create flows into data-access.
 
 ## 9) Core Hardening Tasks
 - [x] Add `core/guards/role.guard.ts`.

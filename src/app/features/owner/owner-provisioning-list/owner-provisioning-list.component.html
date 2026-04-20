@@ -29,7 +29,7 @@
       <!-- Filters -->
       <div class="flex flex-wrap gap-2 border-b border-slate-200 dark:border-slate-800 pb-4">
         <button 
-          (click)="filter.set('All')"
+          (click)="setFilter('All')"
           class="px-4 py-2 rounded-full text-sm font-medium transition-colors"
           [class.bg-slate-900]="filter() === 'All'"
           [class.text-white]="filter() === 'All'"
@@ -43,7 +43,7 @@
           All Jobs
         </button>
         <button 
-          (click)="filter.set('In Progress')"
+          (click)="setFilter('In Progress')"
           class="px-4 py-2 rounded-full text-sm font-medium transition-colors"
           [class.bg-blue-100]="filter() === 'In Progress'"
           [class.text-blue-700]="filter() === 'In Progress'"
@@ -57,7 +57,7 @@
           In Progress
         </button>
         <button 
-          (click)="filter.set('Failed')"
+          (click)="setFilter('Failed')"
           class="px-4 py-2 rounded-full text-sm font-medium transition-colors"
           [class.bg-red-100]="filter() === 'Failed'"
           [class.text-red-700]="filter() === 'Failed'"
