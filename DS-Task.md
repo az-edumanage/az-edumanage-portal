@@ -60,6 +60,7 @@ Status legend:
 - [x] `Done` Execute Slice 03 button/card primitive migration and validate parity on owner-overview/owner-billing/design-system (`docs/ds-shared-primitive-migration-slice-03.md`).
 - [x] `Done` Execute Slice 04 form primitive migration (`input/select`) and validate parity on owner-billing/design-system (`docs/ds-shared-primitive-migration-slice-04.md`).
 - [x] `Done` Execute Slice 05 checkable primitive migration (`checkbox/radio/toggle`) and validate parity on owner-compliance/design-system (`docs/ds-shared-primitive-migration-slice-05.md`).
+- [x] `Done` Execute Slice 06 extended form primitive adoption on owner high-usage forms (`owner-plan-create`, `owner-provisioning-settings`) (`docs/ds-shared-primitive-migration-slice-06.md`).
 
 ## Epic 6: Feature-by-Feature Adoption
 - [ ] `Not Started` Migrate Owner feature styles to semantic/component tokens.

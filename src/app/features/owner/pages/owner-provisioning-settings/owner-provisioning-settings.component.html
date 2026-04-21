@@ -67,7 +67,7 @@
 
             <div>
               <label for="dbRegion" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Region (Optional)</label>
-              <select id="dbRegion" formControlName="dbRegion" class="w-full md:w-1/2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+              <select appSelect id="dbRegion" formControlName="dbRegion" class="w-full md:w-1/2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
                 <option value="">Auto-detect / Default</option>
                 <option value="us-east-1">US East (N. Virginia)</option>
                 <option value="eu-central-1">Europe (Frankfurt)</option>
@@ -91,7 +91,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label for="defaultPlan" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Default Plan</label>
-                <select id="defaultPlan" formControlName="defaultPlan" class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                <select appSelect id="defaultPlan" formControlName="defaultPlan" class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
                   <option value="starter">Starter Plan</option>
                   <option value="professional">Professional Plan</option>
                   <option value="enterprise">Enterprise Plan</option>
@@ -100,7 +100,7 @@
               </div>
               <div>
                 <label for="defaultTrialDays" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Default Trial Duration (Days)</label>
-                <input id="defaultTrialDays" type="number" formControlName="defaultTrialDays" class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                <input appInput id="defaultTrialDays" type="number" formControlName="defaultTrialDays" class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
               </div>
             </div>
 
@@ -110,8 +110,8 @@
                 <div class="text-sm text-slate-500">Automatically activate tenant status after registration verification.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" formControlName="autoActivate" class="sr-only peer">
-                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                <input appToggleInput type="checkbox" formControlName="autoActivate" >
+                <div appToggleTrack></div>
               </div>
             </div>
           </div>
@@ -141,8 +141,8 @@
                 <div class="text-sm text-slate-500">Allow trial users to access all advanced features regardless of plan.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" formControlName="enableAdvancedInTrial" class="sr-only peer">
-                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                <input appToggleInput type="checkbox" formControlName="enableAdvancedInTrial" >
+                <div appToggleTrack></div>
               </div>
             </div>
 
@@ -150,19 +150,19 @@
               <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Default Trial Modules</div>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                  <input type="checkbox" checked disabled class="text-indigo-600 rounded border-slate-200 focus:ring-indigo-500 disabled:opacity-50">
+                  <input appCheckbox type="checkbox" checked disabled class="text-indigo-600 rounded border-slate-200 focus:ring-indigo-500 disabled:opacity-50">
                   <span class="text-slate-900 dark:text-white opacity-50">Core Modules (Mandatory)</span>
                 </label>
                 <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                  <input type="checkbox" formControlName="trialModExams" class="text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+                  <input appCheckbox type="checkbox" formControlName="trialModExams" class="text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
                   <span class="text-slate-900 dark:text-white">Exams & Grades</span>
                 </label>
                 <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                  <input type="checkbox" formControlName="trialModFinance" class="text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+                  <input appCheckbox type="checkbox" formControlName="trialModFinance" class="text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
                   <span class="text-slate-900 dark:text-white">Finance</span>
                 </label>
                 <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                  <input type="checkbox" formControlName="trialModAnalytics" class="text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+                  <input appCheckbox type="checkbox" formControlName="trialModAnalytics" class="text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
                   <span class="text-slate-900 dark:text-white">Advanced Analytics</span>
                 </label>
               </div>
@@ -187,8 +187,8 @@
                 <div class="text-sm text-slate-500">Admin, Teacher, Student, Parent roles with standard permissions.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" formControlName="createDefaultRoles" class="sr-only peer">
-                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                <input appToggleInput type="checkbox" formControlName="createDefaultRoles" >
+                <div appToggleTrack></div>
               </div>
             </div>
             <hr class="border-slate-200 dark:border-slate-800">
@@ -198,8 +198,8 @@
                 <div class="text-sm text-slate-500">Initialize the current academic year automatically.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" formControlName="createAcademicYear" class="sr-only peer">
-                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                <input appToggleInput type="checkbox" formControlName="createAcademicYear" >
+                <div appToggleTrack></div>
               </div>
             </div>
             <hr class="border-slate-200 dark:border-slate-800">
@@ -209,8 +209,8 @@
                 <div class="text-sm text-slate-500">Email and SMS templates for common system events.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" formControlName="setupNotifTemplates" class="sr-only peer">
-                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                <input appToggleInput type="checkbox" formControlName="setupNotifTemplates" >
+                <div appToggleTrack></div>
               </div>
             </div>
             
@@ -240,8 +240,8 @@
                 <div class="text-sm text-slate-500">Register tenant in Stripe/Payment Provider.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" formControlName="createPaymentCustomer" class="sr-only peer">
-                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                <input appToggleInput type="checkbox" formControlName="createPaymentCustomer" >
+                <div appToggleTrack></div>
               </div>
             </div>
             <hr class="border-slate-200 dark:border-slate-800">
@@ -251,8 +251,8 @@
                 <div class="text-sm text-slate-500">Send onboarding instructions to tenant admin.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" formControlName="sendWelcomeEmail" class="sr-only peer">
-                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                <input appToggleInput type="checkbox" formControlName="sendWelcomeEmail" >
+                <div appToggleTrack></div>
               </div>
             </div>
             <hr class="border-slate-200 dark:border-slate-800">
@@ -262,8 +262,8 @@
                 <div class="text-sm text-slate-500">Create dedicated S3 folder/bucket for tenant files.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" formControlName="allocateStorage" class="sr-only peer">
-                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                <input appToggleInput type="checkbox" formControlName="allocateStorage" >
+                <div appToggleTrack></div>
               </div>
             </div>
           </div>
@@ -283,11 +283,11 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label for="maxRetries" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Max Retry Attempts</label>
-                <input id="maxRetries" type="number" formControlName="maxRetries" class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                <input appInput id="maxRetries" type="number" formControlName="maxRetries" class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
               </div>
               <div>
                 <label for="retryInterval" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Retry Interval (Seconds)</label>
-                <input id="retryInterval" type="number" formControlName="retryInterval" class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                <input appInput id="retryInterval" type="number" formControlName="retryInterval" class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
               </div>
             </div>
 
@@ -297,8 +297,8 @@
                 <div class="text-sm text-slate-500">Send email alert to system admins if provisioning fails.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" formControlName="notifyAdmin" class="sr-only peer">
-                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                <input appToggleInput type="checkbox" formControlName="notifyAdmin" >
+                <div appToggleTrack></div>
               </div>
             </div>
 
@@ -308,8 +308,8 @@
                 <div class="text-sm text-slate-500">Delete created resources if any step fails.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" formControlName="rollbackOnFailure" class="sr-only peer">
-                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                <input appToggleInput type="checkbox" formControlName="rollbackOnFailure" >
+                <div appToggleTrack></div>
               </div>
             </div>
           </div>

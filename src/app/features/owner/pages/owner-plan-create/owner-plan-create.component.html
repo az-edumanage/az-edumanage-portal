@@ -23,7 +23,7 @@
             <div class="md:col-span-2">
               <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Plan Name</div>
               <div class="relative">
-                <input 
+                <input appInput 
                   type="text" 
                   formControlName="name" 
                   placeholder="e.g. Starter, Professional, Enterprise" 
@@ -73,7 +73,7 @@
                   <div class="p-2 border-b border-slate-200 dark:border-slate-700">
                     <div class="relative">
                       <mat-icon class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</mat-icon>
-                      <input 
+                      <input appInput 
                         type="text" 
                         [ngModel]="statusSearchQuery()"
                         (ngModelChange)="statusSearchQuery.set($event)"
@@ -122,7 +122,7 @@
                   <div class="p-2 border-b border-slate-200 dark:border-slate-700">
                     <div class="relative">
                       <mat-icon class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</mat-icon>
-                      <input 
+                      <input appInput 
                         type="text" 
                         [ngModel]="visibilitySearchQuery()"
                         (ngModelChange)="visibilitySearchQuery.set($event)"
@@ -181,7 +181,7 @@
                   <div class="p-2 border-b border-slate-200 dark:border-slate-700">
                     <div class="relative">
                       <mat-icon class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</mat-icon>
-                      <input 
+                      <input appInput 
                         type="text" 
                         [ngModel]="currencySearchQuery()"
                         (ngModelChange)="currencySearchQuery.set($event)"
@@ -216,28 +216,28 @@
               <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Monthly Price</div>
               <div class="relative">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
-                <input type="number" formControlName="monthlyPrice" class="w-full pl-8 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                <input appInput type="number" formControlName="monthlyPrice" class="w-full pl-8 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
               </div>
             </div>
             <div>
               <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Yearly Price</div>
               <div class="relative">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
-                <input type="number" formControlName="yearlyPrice" class="w-full pl-8 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                <input appInput type="number" formControlName="yearlyPrice" class="w-full pl-8 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
               </div>
             </div>
             <div>
               <div class="flex items-center justify-between mb-2">
                 <div class="block text-sm font-medium text-slate-700 dark:text-slate-300">Free Trial</div>
                 <label class="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" formControlName="hasTrial" class="sr-only peer">
+                  <input appToggleInput type="checkbox" formControlName="hasTrial" class="sr-only peer">
                   <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
                 </label>
               </div>
               
               @if (planForm.get('hasTrial')?.value) {
                 <div class="relative">
-                  <input type="number" formControlName="trialDays" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                  <input appInput type="number" formControlName="trialDays" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
                   <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">Days</span>
                 </div>
               } @else {
@@ -256,20 +256,20 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Max Students</div>
-              <input type="number" formControlName="maxStudents" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+              <input appInput type="number" formControlName="maxStudents" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
               <p class="text-xs text-slate-500 mt-1">Set to -1 for unlimited</p>
             </div>
             <div>
               <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Max Teachers</div>
-              <input type="number" formControlName="maxTeachers" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+              <input appInput type="number" formControlName="maxTeachers" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
             </div>
             <div>
               <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Max Storage (GB)</div>
-              <input type="number" formControlName="maxStorage" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+              <input appInput type="number" formControlName="maxStorage" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
             </div>
             <div>
               <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Max Branches</div>
-              <input type="number" formControlName="maxBranches" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+              <input appInput type="number" formControlName="maxBranches" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
             </div>
           </div>
         </div>
@@ -282,51 +282,51 @@
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" formGroupName="modules">
             <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              <input type="checkbox" formControlName="academicStructure" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+              <input appCheckbox type="checkbox" formControlName="academicStructure" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
               <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Academic Structure</span>
             </label>
             <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              <input type="checkbox" formControlName="studentsManagement" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+              <input appCheckbox type="checkbox" formControlName="studentsManagement" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
               <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Students Management</span>
             </label>
             <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              <input type="checkbox" formControlName="scheduling" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+              <input appCheckbox type="checkbox" formControlName="scheduling" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
               <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Scheduling & Timetable</span>
             </label>
             <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              <input type="checkbox" formControlName="usersManagement" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+              <input appCheckbox type="checkbox" formControlName="usersManagement" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
               <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Users Management</span>
             </label>
             <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              <input type="checkbox" formControlName="auditLogs" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+              <input appCheckbox type="checkbox" formControlName="auditLogs" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
               <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Audit Logs</span>
             </label>
             <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              <input type="checkbox" formControlName="examsAndGrades" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+              <input appCheckbox type="checkbox" formControlName="examsAndGrades" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
               <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Exams & Grades</span>
             </label>
             <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              <input type="checkbox" formControlName="finance" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+              <input appCheckbox type="checkbox" formControlName="finance" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
               <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Finance</span>
             </label>
             <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              <input type="checkbox" formControlName="smsIntegration" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+              <input appCheckbox type="checkbox" formControlName="smsIntegration" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
               <span class="text-sm font-medium text-slate-700 dark:text-slate-300">SMS Integration</span>
             </label>
             <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              <input type="checkbox" formControlName="advancedAnalytics" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+              <input appCheckbox type="checkbox" formControlName="advancedAnalytics" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
               <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Advanced Analytics</span>
             </label>
             <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              <input type="checkbox" formControlName="parentPortal" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+              <input appCheckbox type="checkbox" formControlName="parentPortal" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
               <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Parent Portal</span>
             </label>
             <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              <input type="checkbox" formControlName="lms" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+              <input appCheckbox type="checkbox" formControlName="lms" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
               <span class="text-sm font-medium text-slate-700 dark:text-slate-300">LMS</span>
             </label>
             <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              <input type="checkbox" formControlName="questionBank" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+              <input appCheckbox type="checkbox" formControlName="questionBank" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
               <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Question Bank</span>
             </label>
           </div>
@@ -345,8 +345,8 @@
                 <div class="text-xs text-slate-500">Subscriptions will automatically renew at the end of the cycle.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" formControlName="autoRenew" class="sr-only peer">
-                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                <input appToggleInput type="checkbox" formControlName="autoRenew" >
+                <div appToggleTrack></div>
               </div>
             </label>
             <label class="flex items-center justify-between p-4 border border-slate-200 dark:border-slate-700 rounded-lg">
@@ -355,8 +355,8 @@
                 <div class="text-xs text-slate-500">Tenants can switch to a lower tier plan.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" formControlName="allowDowngrade" class="sr-only peer">
-                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                <input appToggleInput type="checkbox" formControlName="allowDowngrade" >
+                <div appToggleTrack></div>
               </div>
             </label>
           </div>

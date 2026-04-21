@@ -4,11 +4,12 @@ import { RouterModule, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { OwnerPlanCreateFacade } from '../../state/owner-plan-create.facade';
+import { FORM_COMPONENTS } from '../../../../shared/components/form';
 
 @Component({
   selector: 'app-owner-plan-create',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, MatIconModule, FormsModule, ReactiveFormsModule, ...FORM_COMPONENTS],
   templateUrl: './owner-plan-create.component.html'})
 export class OwnerPlanCreateComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
