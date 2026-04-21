@@ -1,0 +1,19 @@
+@layer base {
+  :root {
+    /*
+     * Angular Material semantic bridge (parity-safe).
+     * Keep values tied to DS semantic tokens so Material surfaces can be aligned
+     * incrementally without changing current utility-driven layouts.
+     */
+    --mat-sys-primary: var(--ds-color-primary);
+    --mat-sys-on-primary: var(--ds-color-primary-contrast);
+    --mat-sys-surface: var(--ds-color-surface-card);
+    --mat-sys-on-surface: var(--ds-color-text-primary);
+    --mat-sys-outline: var(--ds-color-border-default);
+
+    /* MDC-compatible fallbacks used by Material internals where applicable. */
+    --mdc-theme-primary: var(--ds-color-primary);
+    --mdc-theme-surface: var(--ds-color-surface-card);
+    --mdc-theme-on-surface: var(--ds-color-text-primary);
+  }
+}

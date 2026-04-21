@@ -9,3 +9,4 @@
 @import "./theme.modes.css";
 @import "./theme.tenant-overrides.css";
 @import "./tailwind.semantic-bridge.css";
+@import "./material.semantic-bridge.css";

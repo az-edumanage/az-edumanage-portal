@@ -42,8 +42,8 @@ Status legend:
 ## Epic 4: Tailwind & Material Alignment
 - [x] `Done` Map Tailwind token consumption to semantic CSS variables via parity-safe bridge (`src/styles/tokens/tailwind.semantic-bridge.css`) (`docs/ds-tailwind-material-alignment-slice-01.md`).
 - [x] `Done` Ensure existing utility classes remain visually identical through compatibility aliases and representative `brand` regression checks (`docs/ds-tailwind-material-alignment-slice-01.md`).
-- [ ] `Not Started` Configure Angular Material theming to use DS semantic tokens.
-- [ ] `Not Started` Validate Material + Tailwind parity in shared screens.
+- [x] `Done` Configure Angular Material semantic token bridge to DS variables (`src/styles/tokens/material.semantic-bridge.css`) (`docs/ds-tailwind-material-alignment-slice-02.md`).
+- [x] `Done` Validate Material + Tailwind parity in representative shared screens under `brand` (`owner-overview`, `tenant-rooms`, `teacher-media`) (`docs/ds-tailwind-material-alignment-slice-02.md`).
 
 ## Epic 5: Shared Primitive Migration
 - [ ] `Not Started` Audit and classify reusable UI candidates.
