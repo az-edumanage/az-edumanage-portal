@@ -10,9 +10,9 @@ Prepare a zero-regression execution foundation before touching visual implementa
 - [x] Create high-level DS program plan (`DS-Plan.md`).
 - [x] Create master DS task tracker (`DS-Task.ms`).
 - [x] Define and lock the critical route matrix for visual baselines (`docs/ds-critical-route-matrix.md`).
-- [ ] Define `brand`/light/dark + breakpoint baseline capture strategy.
+- [x] Define `brand`/light/dark + breakpoint baseline capture strategy (`docs/ds-baseline-capture-strategy.md`).
 - [ ] Confirm CI integration approach for visual regression checks.
-- [ ] Define inline-style migration policy: move to separated CSS with DS tokens and zero visual delta in `brand`.
+- [x] Define inline-style migration policy and inventory: move to separated CSS with DS tokens and zero visual delta in `brand` (`docs/ds-inline-style-inventory.md`).
 - [ ] Create first migration task batch for token foundation scaffolding.
 
 ## Scope Guardrails

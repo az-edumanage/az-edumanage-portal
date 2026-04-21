@@ -9,9 +9,10 @@ Status legend:
 ## Epic 1: Safety Net & Baseline
 - [x] `Done` Create page inventory for Owner/Tenant/Teacher critical flows.
 - [x] `Done` Define visual snapshot matrix (light/dark + key breakpoints).
+- [x] `Done` Create baseline execution strategy for `brand`/light/dark + desktop/mobile matrix (`docs/ds-baseline-capture-strategy.md`).
 - [ ] `Not Started` Add visual regression job to CI pipeline.
 - [ ] `Not Started` Add manual smoke checklist for DS-sensitive interactions.
-- [ ] `Not Started` Add acceptance thresholds and approval process for diffs.
+- [x] `Done` Add acceptance thresholds and diff approval policy (`docs/ds-baseline-capture-strategy.md`).
 
 ## Epic 2: Token Foundation
 - [ ] `Not Started` Create `src/styles/tokens` directory structure.
@@ -48,7 +49,7 @@ Status legend:
 - [ ] `Not Started` Migrate Owner feature styles to semantic/component tokens.
 - [ ] `Not Started` Migrate Tenant feature styles to semantic/component tokens.
 - [ ] `Not Started` Migrate Teacher feature styles to semantic/component tokens.
-- [ ] `Not Started` Audit and inventory inline styles (`style=\"...\"`, `[style.*]`, `[ngStyle]`) by feature.
+- [x] `Done` Audit and inventory inline styles (`style=\"...\"`, `[style.*]`, `[ngStyle]`) by feature (`docs/ds-inline-style-inventory.md`).
 - [ ] `Not Started` Convert inline styles to separated component CSS/SCSS using DS tokens while preserving exact visuals.
 - [ ] `Not Started` Add regression checkpoints for each inline-style conversion batch under `brand` theme.
 - [ ] `Not Started` Remove duplicate one-off style patterns after replacement.
