@@ -1,29 +1,29 @@
-# Current Task: Phase 4 - Tailwind & Material Alignment Slice 02
+# Current Task: Phase 5 - Shared Primitive Migration Slice 01
 
 ## Objective
-Introduce a low-risk Angular Material semantic token bridge mapped to DS variables and validate Material + Tailwind parity on representative `brand` routes.
+Audit and classify shared primitive candidates, then start standardization with low-risk changes focused on `badge` and `table` candidates.
 
 ## Status
 `Completed`
 
 ## Sub-Tasks
-- [x] Add Material semantic bridge token file and wire it globally (`src/styles/tokens/material.semantic-bridge.css`, `src/styles/tokens/index.css`) (`docs/ds-tailwind-material-alignment-slice-02.md`).
-- [x] Map core Material semantic variables (`primary/surface/on-surface/outline`) to DS semantic tokens with MDC-compatible fallbacks (`docs/ds-tailwind-material-alignment-slice-02.md`).
-- [x] Validate representative `brand` routes on desktop (`owner-overview`, `tenant-rooms`, `teacher-media`) (`docs/ds-tailwind-material-alignment-slice-02.md`).
-- [x] Confirm build stability after bridge integration (`docs/ds-tailwind-material-alignment-slice-02.md`).
+- [x] Audit shared primitive usage and rank migration candidates (`button`, `card`, `badge`, `table`, `pager`) (`docs/shared-ui-candidate-matrix.md`, `docs/ds-shared-primitive-migration-slice-01.md`).
+- [x] Standardize `badge` candidate by introducing `info` variant and removing one-off custom class usage (`src/app/shared/components/data-display/badge/badge.component.ts`, `src/app/features/owner/components/owner-billing-invoices-table/owner-billing-invoices-table.component.html`) (`docs/ds-shared-primitive-migration-slice-01.md`).
+- [x] Add DS badge/table token scaffolding for next incremental adoption (`src/styles/tokens/component.tokens.css`) (`docs/ds-shared-primitive-migration-slice-01.md`).
+- [x] Validate `brand` parity on `owner-billing` and regenerate approved baseline (`docs/ds-shared-primitive-migration-slice-01.md`).
 
 ## Scope Guardrails
-- Keep changes token-level only (no Material component selector overrides).
-- Preserve `brand` visual parity and existing utility-driven UI.
-- Keep this slice isolated from primitive/component refactors.
+- Keep existing selectors and public primitive APIs backward-compatible.
+- Prefer incremental standardization with route-level parity checks.
+- Defer high-blast-radius table directive class adoption to next slice.
 
 ## Exit Criteria
-- Material semantic bridge is present and imported in global token chain.
-- Representative `brand` route checks pass with no regressions.
-- Build remains green.
+- Shared primitive audit is documented with clear ranking.
+- First primitive standardization is implemented and validated.
+- No regressions on representative billing route under `brand`.
 
 ## Next Task (Active)
-Phase 5 - Shared Primitive Migration Slice 01:
-- Audit and classify shared primitive candidates (`button`, `badge`, `table`, `input/select` wrappers).
-- Define migration order and ownership for shared components used across Owner/Tenant/Teacher.
-- Execute first shared primitive standardization candidate with parity checkpoints.
+Phase 5 - Shared Primitive Migration Slice 02:
+- Migrate `appTable*` directives to DS table class ownership (`ds-table*`) in a controlled batch.
+- Validate parity on billing table-heavy route(s) for desktop + mobile.
+- Add a DS showcase section for standardized `badge` + `table` primitives.

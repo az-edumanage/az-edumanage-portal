@@ -46,13 +46,15 @@ Status legend:
 - [x] `Done` Validate Material + Tailwind parity in representative shared screens under `brand` (`owner-overview`, `tenant-rooms`, `teacher-media`) (`docs/ds-tailwind-material-alignment-slice-02.md`).
 
 ## Epic 5: Shared Primitive Migration
-- [ ] `Not Started` Audit and classify reusable UI candidates.
+- [x] `Done` Audit and classify reusable UI candidates with usage counts and migration target ranking (`docs/shared-ui-candidate-matrix.md`, `docs/ds-shared-primitive-migration-slice-01.md`).
 - [x] `Done` Execute low-risk shared primitive token adoption pilot (`app-pager-button` -> `ds-pager-button`) (`docs/ds-token-adoption-slice-01.md`).
 - [ ] `Not Started` Standardize button primitive variants.
 - [ ] `Not Started` Standardize card primitive variants.
 - [ ] `Not Started` Standardize input/select/form control primitives.
 - [ ] `Not Started` Standardize table + badge + pager primitives.
 - [ ] `Not Started` Update DS showcase with migrated primitives.
+- [x] `Done` Start shared primitive standardization with `badge` variant normalization (`info`) and remove one-off badge style override in billing invoice table (`docs/ds-shared-primitive-migration-slice-01.md`).
+- [ ] `Not Started` Adopt DS table classes for `appTable*` directives in incremental batches (candidate prepared in Slice 01 audit) (`docs/ds-shared-primitive-migration-slice-01.md`).
 
 ## Epic 6: Feature-by-Feature Adoption
 - [ ] `Not Started` Migrate Owner feature styles to semantic/component tokens.

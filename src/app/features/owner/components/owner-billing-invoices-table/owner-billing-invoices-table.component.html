@@ -47,7 +47,7 @@
             } @else if (inv.status === 'Cancelled') {
               <app-badge variant="default">{{ inv.status }}</app-badge>
             } @else if (inv.status === 'Refunded') {
-              <app-badge class="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">{{ inv.status }}</app-badge>
+              <app-badge variant="info">{{ inv.status }}</app-badge>
             }
           </td>
           <td appTableCell class="text-right">

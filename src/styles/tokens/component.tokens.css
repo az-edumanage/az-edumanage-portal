@@ -12,6 +12,34 @@
     --ds-input-bg: var(--ds-color-surface-card);
     --ds-input-border: var(--ds-color-border-default);
     --ds-input-text: var(--ds-color-text-primary);
+    --ds-badge-default-bg: #f1f5f9;
+    --ds-badge-default-fg: #334155;
+    --ds-badge-success-bg: #dcfce7;
+    --ds-badge-success-fg: #15803d;
+    --ds-badge-warning-bg: #fef3c7;
+    --ds-badge-warning-fg: #b45309;
+    --ds-badge-danger-bg: #fee2e2;
+    --ds-badge-danger-fg: #b91c1c;
+    --ds-badge-info-bg: #f3e8ff;
+    --ds-badge-info-fg: #7e22ce;
+    --ds-badge-default-bg-dark: #1e293b;
+    --ds-badge-default-fg-dark: #cbd5e1;
+    --ds-badge-success-bg-dark: rgb(20 83 45 / 0.3);
+    --ds-badge-success-fg-dark: #4ade80;
+    --ds-badge-warning-bg-dark: rgb(120 53 15 / 0.3);
+    --ds-badge-warning-fg-dark: #fbbf24;
+    --ds-badge-danger-bg-dark: rgb(127 29 29 / 0.3);
+    --ds-badge-danger-fg-dark: #f87171;
+    --ds-badge-info-bg-dark: rgb(88 28 135 / 0.3);
+    --ds-badge-info-fg-dark: #c084fc;
+    --ds-table-header-bg: #f8fafc;
+    --ds-table-header-bg-dark: rgb(30 41 59 / 0.5);
+    --ds-table-header-fg: #64748b;
+    --ds-table-header-fg-dark: #64748b;
+    --ds-table-border: #e2e8f0;
+    --ds-table-border-dark: #1e293b;
+    --ds-table-row-hover-bg: #f8fafc;
+    --ds-table-row-hover-bg-dark: rgb(30 41 59 / 0.5);
 
     --ds-pager-border: #e2e8f0;
     --ds-pager-hover-bg: #f8fafc;
@@ -144,5 +172,114 @@
 
   .group:hover .ds-revenue-column {
     background-color: var(--ds-revenue-column-bg-hover);
+  }
+
+  .ds-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--ds-radius-full);
+    white-space: nowrap;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .ds-badge--default {
+    color: var(--ds-badge-default-fg);
+    background-color: var(--ds-badge-default-bg);
+  }
+
+  .ds-badge--success {
+    color: var(--ds-badge-success-fg);
+    background-color: var(--ds-badge-success-bg);
+  }
+
+  .ds-badge--warning {
+    color: var(--ds-badge-warning-fg);
+    background-color: var(--ds-badge-warning-bg);
+  }
+
+  .ds-badge--danger {
+    color: var(--ds-badge-danger-fg);
+    background-color: var(--ds-badge-danger-bg);
+  }
+
+  .ds-badge--info {
+    color: var(--ds-badge-info-fg);
+    background-color: var(--ds-badge-info-bg);
+  }
+
+  .dark .ds-badge--default {
+    color: var(--ds-badge-default-fg-dark);
+    background-color: var(--ds-badge-default-bg-dark);
+  }
+
+  .dark .ds-badge--success {
+    color: var(--ds-badge-success-fg-dark);
+    background-color: var(--ds-badge-success-bg-dark);
+  }
+
+  .dark .ds-badge--warning {
+    color: var(--ds-badge-warning-fg-dark);
+    background-color: var(--ds-badge-warning-bg-dark);
+  }
+
+  .dark .ds-badge--danger {
+    color: var(--ds-badge-danger-fg-dark);
+    background-color: var(--ds-badge-danger-bg-dark);
+  }
+
+  .dark .ds-badge--info {
+    color: var(--ds-badge-info-fg-dark);
+    background-color: var(--ds-badge-info-bg-dark);
+  }
+
+  .ds-table {
+    width: 100%;
+    text-align: left;
+    font-size: 0.875rem;
+  }
+
+  .ds-table-header {
+    border-bottom: 1px solid var(--ds-table-border);
+    color: var(--ds-table-header-fg);
+    background-color: var(--ds-table-header-bg);
+  }
+
+  .dark .ds-table-header {
+    border-bottom-color: var(--ds-table-border-dark);
+    color: var(--ds-table-header-fg-dark);
+    background-color: var(--ds-table-header-bg-dark);
+  }
+
+  .ds-table-body {
+    border-color: var(--ds-table-border);
+  }
+
+  .dark .ds-table-body {
+    border-color: var(--ds-table-border-dark);
+  }
+
+  .ds-table-row {
+    transition: background-color var(--ds-motion-duration-fast) var(--ds-motion-ease-standard);
+  }
+
+  .ds-table-row:hover {
+    background-color: var(--ds-table-row-hover-bg);
+  }
+
+  .dark .ds-table-row:hover {
+    background-color: var(--ds-table-row-hover-bg-dark);
+  }
+
+  .ds-table-head,
+  .ds-table-cell {
+    padding: 1rem 1.5rem;
+  }
+
+  .ds-table-head {
+    font-weight: 500;
   }
 }
