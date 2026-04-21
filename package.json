@@ -9,7 +9,11 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
-    "serve:ssr:app": "node dist/app/server/server.mjs"
+    "serve:ssr:app": "node dist/app/server/server.mjs",
+    "vr:install": "playwright install --with-deps chromium",
+    "vr:test": "playwright test --config=playwright.visual.config.ts",
+    "vr:update": "playwright test --config=playwright.visual.config.ts --update-snapshots",
+    "vr:report": "playwright show-report"
   },
   "private": true,
   "dependencies": {
@@ -40,6 +44,7 @@
     "@angular/build": "^21.0.0",
     "@angular/cli": "^21.0.0",
     "@angular/compiler-cli": "^21.0.0",
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4.1.12",
     "@types/express": "^5.0.1",
     "@types/node": "^20.17.19",

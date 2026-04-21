@@ -10,7 +10,7 @@ Status legend:
 - [x] `Done` Create page inventory for Owner/Tenant/Teacher critical flows.
 - [x] `Done` Define visual snapshot matrix (light/dark + key breakpoints).
 - [x] `Done` Create baseline execution strategy for `brand`/light/dark + desktop/mobile matrix (`docs/ds-baseline-capture-strategy.md`).
-- [ ] `Not Started` Add visual regression job to CI pipeline.
+- [x] `Done` Add visual regression job to CI pipeline (`.github/workflows/visual-regression.yml`, `playwright.visual.config.ts`, `tests/visual/ds-visual.spec.ts`).
 - [ ] `Not Started` Add manual smoke checklist for DS-sensitive interactions.
 - [x] `Done` Add acceptance thresholds and diff approval policy (`docs/ds-baseline-capture-strategy.md`).
 
