@@ -71,6 +71,9 @@ Status legend:
 - [x] `Done` Execute owner inline-dimension conversion (`owner-tenants-list` search input) to separated component CSS class (`docs/ds-token-adoption-slice-04.md`).
 - [x] `Done` Execute tenant progress-width conversions to DS CSS-variable pattern (`tenant-room-details`, `tenant-group-details`, `tenant-group-attendance`) (`docs/ds-token-adoption-slice-04.md`).
 - [x] `Done` Add and run seventh/eighth/ninth regression checkpoints under `brand` theme (`owner-tenants`, `tenant-groups-details`, `tenant-rooms`) (`docs/ds-token-adoption-slice-04.md`).
+- [x] `Done` Execute tenant static-width conversion to DS utility pattern (`tenant-grade-details`) (`docs/ds-token-adoption-slice-05.md`).
+- [x] `Done` Execute owner compliance progress conversion to DS CSS-variable pattern (`owner-compliance`) (`docs/ds-token-adoption-slice-05.md`).
+- [x] `Done` Add and run tenth/eleventh regression checkpoints under `brand` theme (`owner-compliance`, `tenant-grade-details`) (`docs/ds-token-adoption-slice-05.md`).
 - [ ] `Not Started` Remove duplicate one-off style patterns after replacement.
 
 ## Epic 7: Governance & Enforcement

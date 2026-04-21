@@ -120,6 +120,14 @@
     width: 78%;
   }
 
+  .ds-progress-fill--w-84 {
+    width: 84%;
+  }
+
+  .ds-progress-fill--w-92 {
+    width: 92%;
+  }
+
   .ds-progress-fill--w-90 {
     width: 90%;
   }

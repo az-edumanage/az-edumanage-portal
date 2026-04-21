@@ -55,12 +55,14 @@ Purpose: define the minimum visual-regression baseline coverage for zero-regress
 |---|---|---|
 | `/owner/notifications` | owner | Notification list patterns. |
 | `/owner/security` | owner | Security controls and dense settings UI. |
+| `/owner/compliance` | owner | Compliance request progress bars and policy controls. |
 | `/owner/modules` | owner | Module listing variants. |
 | `/owner/integrations` | owner | Integration list/detail patterns. |
 | `/tenant/teachers` | tenant | Secondary list coverage. |
 | `/tenant/schedule` | tenant | Calendar/schedule visual area. |
 | `/tenant/rooms/create` | tenant | Additional create form path. |
 | `/tenant/grades` | tenant | Grades list/table patterns. |
+| `/tenant/grades/grade-001` | tenant | Grade details with static performance progress bars. |
 | `/teacher/schedule` | teacher | Shared dashboard variant route. |
 
 ## Fixture ID Policy

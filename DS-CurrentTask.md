@@ -1,4 +1,4 @@
-# Current Task: Phase 2 - Token Adoption Slice 04
+# Current Task: Phase 2 - Token Adoption Slice 05
 
 ## Objective
 Start incremental DS adoption with real code changes while preserving `brand` visual parity.
@@ -7,9 +7,9 @@ Start incremental DS adoption with real code changes while preserving `brand` vi
 `Completed`
 
 ## Sub-Tasks
-- [x] Migrate `owner-tenants-list` hardcoded inline dimensions to DS class/tokenized sizing (`docs/ds-token-adoption-slice-04.md`).
-- [x] Convert tenant progress-width bindings (`tenant-room-details`, `tenant-group-details`, `tenant-group-attendance`) to DS CSS-variable pattern (`docs/ds-token-adoption-slice-04.md`).
-- [x] Run targeted `brand` snapshots for affected matrix routes (`owner-tenants`, `tenant-groups-details`, `tenant-rooms`) (`docs/ds-token-adoption-slice-04.md`).
+- [x] Migrate `tenant-grade-details` static inline widths to DS width utilities/classes (`docs/ds-token-adoption-slice-05.md`).
+- [x] Migrate `owner-compliance` remaining progress-width binding to DS CSS-variable pattern (`docs/ds-token-adoption-slice-05.md`).
+- [x] Run targeted `brand` snapshots for affected routes (`owner-compliance`, `tenant-grade-details`) (`docs/ds-token-adoption-slice-05.md`).
 
 ## Scope Guardrails
 - Keep visual parity in `brand` theme (no intentional UI/layout changes).
@@ -21,7 +21,7 @@ Start incremental DS adoption with real code changes while preserving `brand` vi
 - Targeted `brand` snapshots pass for migrated routes.
 
 ## Next Task (Active)
-Phase 2 - Token Adoption Slice 05:
-- Migrate `tenant-grade-details` static inline widths to DS width utilities/classes.
-- Migrate `owner-compliance` remaining progress-width binding to DS CSS-variable pattern.
-- Run targeted `brand` snapshots for affected matrix routes (or nearest parent route coverage where route is outside P0).
+Phase 2 - Token Adoption Slice 06:
+- Run final inline-style sweep to identify any remaining `style="..."` attributes in migrated owner/tenant pages.
+- Migrate any remaining owner/tenant inline style attributes to DS classes/tokens.
+- Execute broader `brand` regression sweep on all migrated owner and tenant routes.
