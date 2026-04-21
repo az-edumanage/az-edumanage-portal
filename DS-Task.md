@@ -54,7 +54,8 @@ Status legend:
 - [ ] `Not Started` Standardize table + badge + pager primitives.
 - [ ] `Not Started` Update DS showcase with migrated primitives.
 - [x] `Done` Start shared primitive standardization with `badge` variant normalization (`info`) and remove one-off badge style override in billing invoice table (`docs/ds-shared-primitive-migration-slice-01.md`).
-- [ ] `Not Started` Adopt DS table classes for `appTable*` directives in incremental batches (candidate prepared in Slice 01 audit) (`docs/ds-shared-primitive-migration-slice-01.md`).
+- [x] `Done` Adopt DS table classes for `appTable*` directives and preserve parity on billing/design-system routes (`docs/ds-shared-primitive-migration-slice-02.md`).
+- [x] `Done` Update DS showcase with standardized `badge` + `table` primitive demos (`docs/ds-shared-primitive-migration-slice-02.md`).
 
 ## Epic 6: Feature-by-Feature Adoption
 - [ ] `Not Started` Migrate Owner feature styles to semantic/component tokens.

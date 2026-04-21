@@ -160,5 +160,43 @@
           </table>
         </div>
       </section>
+
+      <!-- Standardized Primitives -->
+      <section class="space-y-4">
+        <h2 class="text-2xl font-semibold border-b pb-2 border-slate-200 dark:border-slate-800">Standardized Primitives</h2>
+        <div class="space-y-6">
+          <div class="flex flex-wrap items-center gap-2">
+            <app-badge variant="default">Default</app-badge>
+            <app-badge variant="success">Success</app-badge>
+            <app-badge variant="warning">Warning</app-badge>
+            <app-badge variant="danger">Danger</app-badge>
+            <app-badge variant="info">Info</app-badge>
+          </div>
+
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <table appTable>
+              <thead appTableHeader>
+                <tr>
+                  <th appTableHead>Primitive</th>
+                  <th appTableHead>Status</th>
+                  <th appTableHead>Scope</th>
+                </tr>
+              </thead>
+              <tbody appTableBody>
+                <tr appTableRow>
+                  <td appTableCell class="font-medium text-slate-900 dark:text-white">Badge Variants</td>
+                  <td appTableCell><app-badge variant="success">Standardized</app-badge></td>
+                  <td appTableCell class="text-slate-500 dark:text-slate-500">Shared UI</td>
+                </tr>
+                <tr appTableRow>
+                  <td appTableCell class="font-medium text-slate-900 dark:text-white">Table Directives</td>
+                  <td appTableCell><app-badge variant="info">DS Owned</app-badge></td>
+                  <td appTableCell class="text-slate-500 dark:text-slate-500">Shared Directives</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
     </div>
   

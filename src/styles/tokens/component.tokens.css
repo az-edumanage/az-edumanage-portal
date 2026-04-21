@@ -258,8 +258,16 @@
     border-color: var(--ds-table-border);
   }
 
+  .ds-table-body > tr + tr {
+    border-top: 1px solid var(--ds-table-border);
+  }
+
   .dark .ds-table-body {
     border-color: var(--ds-table-border-dark);
+  }
+
+  .dark .ds-table-body > tr + tr {
+    border-top-color: var(--ds-table-border-dark);
   }
 
   .ds-table-row {
