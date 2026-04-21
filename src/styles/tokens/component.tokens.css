@@ -4,6 +4,26 @@
     --ds-button-primary-bg: var(--ds-color-primary);
     --ds-button-primary-bg-hover: var(--ds-color-primary-hover);
     --ds-button-primary-fg: var(--ds-color-primary-contrast);
+    --ds-button-secondary-bg: #f1f5f9;
+    --ds-button-secondary-fg: #0f172a;
+    --ds-button-secondary-bg-hover: #e2e8f0;
+    --ds-button-ghost-fg: #475569;
+    --ds-button-ghost-bg-hover: #f1f5f9;
+    --ds-button-danger-bg: #dc2626;
+    --ds-button-danger-bg-hover: #b91c1c;
+    --ds-button-danger-fg: #ffffff;
+    --ds-button-outline-fg: #0f172a;
+    --ds-button-outline-border: #e2e8f0;
+    --ds-button-outline-bg-hover: #f8fafc;
+    --ds-button-focus-ring: var(--brand-500);
+    --ds-button-secondary-bg-dark: #1e293b;
+    --ds-button-secondary-fg-dark: #f1f5f9;
+    --ds-button-secondary-bg-hover-dark: #334155;
+    --ds-button-ghost-fg-dark: #94a3b8;
+    --ds-button-ghost-bg-hover-dark: #1e293b;
+    --ds-button-outline-fg-dark: #f1f5f9;
+    --ds-button-outline-border-dark: #1e293b;
+    --ds-button-outline-bg-hover-dark: #1e293b;
 
     --ds-card-bg: var(--ds-color-surface-card);
     --ds-card-border: var(--ds-color-border-default);
@@ -80,6 +100,154 @@
 
   .dark .ds-pager-button:hover {
     background-color: var(--ds-pager-hover-bg-dark);
+  }
+
+  .ds-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--ds-radius-md);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color var(--ds-motion-duration-fast) var(--ds-motion-ease-standard),
+      color var(--ds-motion-duration-fast) var(--ds-motion-ease-standard),
+      border-color var(--ds-motion-duration-fast) var(--ds-motion-ease-standard);
+  }
+
+  .ds-button:focus-visible {
+    outline: 2px solid var(--ds-button-focus-ring);
+    outline-offset: 2px;
+  }
+
+  .ds-button:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .ds-button--primary {
+    color: var(--ds-button-primary-fg);
+    background-color: var(--ds-button-primary-bg);
+    box-shadow: var(--ds-shadow-sm);
+  }
+
+  .ds-button--primary:hover {
+    background-color: var(--ds-button-primary-bg-hover);
+  }
+
+  .ds-button--secondary {
+    color: var(--ds-button-secondary-fg);
+    background-color: var(--ds-button-secondary-bg);
+  }
+
+  .ds-button--secondary:hover {
+    background-color: var(--ds-button-secondary-bg-hover);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .ds-button--secondary {
+      color: var(--ds-button-secondary-fg-dark);
+      background-color: var(--ds-button-secondary-bg-dark);
+    }
+
+    .ds-button--secondary:hover {
+      background-color: var(--ds-button-secondary-bg-hover-dark);
+    }
+  }
+
+  .ds-button--ghost {
+    color: var(--ds-button-ghost-fg);
+  }
+
+  .ds-button--ghost:hover {
+    background-color: var(--ds-button-ghost-bg-hover);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .ds-button--ghost {
+      color: var(--ds-button-ghost-fg-dark);
+    }
+
+    .ds-button--ghost:hover {
+      background-color: var(--ds-button-ghost-bg-hover-dark);
+    }
+  }
+
+  .ds-button--danger {
+    color: var(--ds-button-danger-fg);
+    background-color: var(--ds-button-danger-bg);
+    box-shadow: var(--ds-shadow-sm);
+  }
+
+  .ds-button--danger:hover {
+    background-color: var(--ds-button-danger-bg-hover);
+  }
+
+  .ds-button--outline {
+    color: var(--ds-button-outline-fg);
+    border: 1px solid var(--ds-button-outline-border);
+  }
+
+  .ds-button--outline:hover {
+    background-color: var(--ds-button-outline-bg-hover);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .ds-button--outline {
+      color: var(--ds-button-outline-fg-dark);
+      border-color: var(--ds-button-outline-border-dark);
+    }
+
+    .ds-button--outline:hover {
+      background-color: var(--ds-button-outline-bg-hover-dark);
+    }
+  }
+
+  .ds-button--sm {
+    height: 2rem;
+    padding: 0 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+
+  .ds-button--md {
+    height: 2.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  .ds-button--lg {
+    height: 3rem;
+    padding: 0 2rem;
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+
+  .ds-button--icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+  }
+
+  @media (min-width: 640px) {
+    .ds-button--icon {
+      border-radius: 0.5rem;
+    }
+  }
+
+  .ds-card {
+    overflow: hidden;
+    border: 1px solid var(--ds-card-border);
+    border-radius: var(--ds-radius-xl);
+    box-shadow: var(--ds-card-shadow);
+    background-color: var(--ds-card-bg);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .ds-card {
+      background-color: #0f172a;
+      border-color: #1e293b;
+    }
   }
 
   .ds-progress-track {

@@ -48,14 +48,15 @@ Status legend:
 ## Epic 5: Shared Primitive Migration
 - [x] `Done` Audit and classify reusable UI candidates with usage counts and migration target ranking (`docs/shared-ui-candidate-matrix.md`, `docs/ds-shared-primitive-migration-slice-01.md`).
 - [x] `Done` Execute low-risk shared primitive token adoption pilot (`app-pager-button` -> `ds-pager-button`) (`docs/ds-token-adoption-slice-01.md`).
-- [ ] `Not Started` Standardize button primitive variants.
-- [ ] `Not Started` Standardize card primitive variants.
+- [x] `Done` Standardize button primitive variants with DS class ownership and normalized `danger` mapping (`src/app/shared/components/ui/button/button.component.ts`, `src/styles/tokens/component.tokens.css`) (`docs/ds-shared-primitive-migration-slice-03.md`).
+- [x] `Done` Standardize card primitive variants with DS class ownership (`src/app/shared/components/ui/card/card.component.html`, `src/styles/tokens/component.tokens.css`) (`docs/ds-shared-primitive-migration-slice-03.md`).
 - [ ] `Not Started` Standardize input/select/form control primitives.
-- [ ] `Not Started` Standardize table + badge + pager primitives.
-- [ ] `Not Started` Update DS showcase with migrated primitives.
+- [x] `Done` Standardize table + badge + pager primitives (`src/app/shared/components/data-display/table/table.components.ts`, `src/styles/tokens/component.tokens.css`) (`docs/ds-shared-primitive-migration-slice-02.md`).
+- [x] `Done` Update DS showcase with migrated primitives (badge/table/button/card examples) (`src/app/features/design-system/design-system-showcase/*`) (`docs/ds-shared-primitive-migration-slice-02.md`, `docs/ds-shared-primitive-migration-slice-03.md`).
 - [x] `Done` Start shared primitive standardization with `badge` variant normalization (`info`) and remove one-off badge style override in billing invoice table (`docs/ds-shared-primitive-migration-slice-01.md`).
 - [x] `Done` Adopt DS table classes for `appTable*` directives and preserve parity on billing/design-system routes (`docs/ds-shared-primitive-migration-slice-02.md`).
 - [x] `Done` Update DS showcase with standardized `badge` + `table` primitive demos (`docs/ds-shared-primitive-migration-slice-02.md`).
+- [x] `Done` Execute Slice 03 button/card primitive migration and validate parity on owner-overview/owner-billing/design-system (`docs/ds-shared-primitive-migration-slice-03.md`).
 
 ## Epic 6: Feature-by-Feature Adoption
 - [ ] `Not Started` Migrate Owner feature styles to semantic/component tokens.

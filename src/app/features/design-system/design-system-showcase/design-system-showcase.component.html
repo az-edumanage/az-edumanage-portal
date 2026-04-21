@@ -165,6 +165,22 @@
       <section class="space-y-4">
         <h2 class="text-2xl font-semibold border-b pb-2 border-slate-200 dark:border-slate-800">Standardized Primitives</h2>
         <div class="space-y-6">
+          <div class="flex flex-wrap items-center gap-3">
+            <app-button variant="primary" size="md">Primary</app-button>
+            <app-button variant="secondary" size="md">Secondary</app-button>
+            <app-button variant="outline" size="md">Outline</app-button>
+            <app-button variant="ghost" size="icon">
+              <mat-icon class="text-sm">settings</mat-icon>
+            </app-button>
+          </div>
+
+          <app-card class="p-4">
+            <div class="text-sm font-semibold text-slate-900 dark:text-white mb-1">Shared Card Primitive</div>
+            <p class="text-xs text-slate-500 dark:text-slate-500">
+              `app-card` now uses DS class ownership (`ds-card`) with tokenized surface/border/shadow.
+            </p>
+          </app-card>
+
           <div class="flex flex-wrap items-center gap-2">
             <app-badge variant="default">Default</app-badge>
             <app-badge variant="success">Success</app-badge>
