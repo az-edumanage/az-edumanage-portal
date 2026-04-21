@@ -32,6 +32,10 @@
     --ds-input-bg: var(--ds-color-surface-card);
     --ds-input-border: var(--ds-color-border-default);
     --ds-input-text: var(--ds-color-text-primary);
+    --ds-input-bg-dark: #1e293b;
+    --ds-input-border-dark: #334155;
+    --ds-input-text-dark: #ffffff;
+    --ds-input-focus-ring: var(--brand-500);
     --ds-badge-default-bg: #f1f5f9;
     --ds-badge-default-fg: #334155;
     --ds-badge-success-bg: #dcfce7;
@@ -247,6 +251,36 @@
     .ds-card {
       background-color: #0f172a;
       border-color: #1e293b;
+    }
+  }
+
+  .ds-input,
+  .ds-select {
+    border: 1px solid var(--ds-input-border);
+    border-radius: var(--ds-radius-md);
+    background-color: var(--ds-input-bg);
+    color: var(--ds-input-text);
+    outline: none;
+    transition: border-color var(--ds-motion-duration-fast) var(--ds-motion-ease-standard),
+      box-shadow var(--ds-motion-duration-fast) var(--ds-motion-ease-standard);
+  }
+
+  .ds-input:focus,
+  .ds-select:focus {
+    border-color: transparent;
+    box-shadow: 0 0 0 2px var(--ds-input-focus-ring);
+  }
+
+  .ds-input::placeholder {
+    color: #64748b;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .ds-input,
+    .ds-select {
+      border-color: var(--ds-input-border-dark);
+      background-color: var(--ds-input-bg-dark);
+      color: var(--ds-input-text-dark);
     }
   }
 

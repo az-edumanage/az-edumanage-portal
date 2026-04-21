@@ -3,10 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { Tab } from '../../models/owner-billing.models';
+import { FORM_COMPONENTS } from '../../../../shared/components/form';
 
 @Component({
   selector: 'app-owner-billing-filter-panel',
-  imports: [CommonModule, FormsModule, MatIconModule],
+  imports: [CommonModule, FormsModule, MatIconModule, ...FORM_COMPONENTS],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './owner-billing-filter-panel.component.html',
   styleUrl: './owner-billing-filter-panel.component.css',

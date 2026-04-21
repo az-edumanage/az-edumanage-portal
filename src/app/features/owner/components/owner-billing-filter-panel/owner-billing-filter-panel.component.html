@@ -95,11 +95,12 @@
     <div class="relative h-9">
       <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</mat-icon>
       <input
+        appInput
         type="text"
         [ngModel]="searchQuery()"
         (ngModelChange)="onSearchQueryChange($event)"
         placeholder="Search..."
-        class="h-full pl-9 pr-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full lg:w-64"
+        class="h-full pl-9 pr-4 text-sm w-full lg:w-64"
       >
     </div>
 
@@ -127,10 +128,11 @@
             <div>
               <label for="status-select" class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Status</label>
               <select
+                appSelect
                 id="status-select"
                 [ngModel]="filterStatus()"
                 (ngModelChange)="onFilterStatusChange($event)"
-                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                class="w-full px-3 py-2 text-sm"
               >
                 <option value="All">All Statuses</option>
                 <option value="Paid">Paid</option>
@@ -144,23 +146,25 @@
               <div>
                 <label for="min-amount-input" class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Min Amount</label>
                 <input
+                  appInput
                   id="min-amount-input"
                   type="number"
                   [ngModel]="filterMinAmount()"
                   (ngModelChange)="onFilterMinAmountChange($event)"
                   placeholder="0.00"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  class="w-full px-3 py-2 text-sm"
                 >
               </div>
               <div>
                 <label for="max-amount-input" class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Max Amount</label>
                 <input
+                  appInput
                   id="max-amount-input"
                   type="number"
                   [ngModel]="filterMaxAmount()"
                   (ngModelChange)="onFilterMaxAmountChange($event)"
                   placeholder="10000.00"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  class="w-full px-3 py-2 text-sm"
                 >
               </div>
             </div>
