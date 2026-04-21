@@ -25,6 +25,7 @@
     --ds-progress-fill-amber: #f59e0b;
     --ds-progress-fill-blue: #3b82f6;
     --ds-progress-fill-green: #22c55e;
+    --ds-layer-overlay: 9999;
     --ds-revenue-column-bg: rgb(99 102 241 / 0.2);
     --ds-revenue-column-bg-hover: var(--brand-600);
   }
@@ -91,6 +92,10 @@
     width: 25%;
   }
 
+  .ds-progress-fill--w-24 {
+    width: 24%;
+  }
+
   .ds-progress-fill--w-32 {
     width: 32%;
   }
@@ -101,6 +106,14 @@
 
   .ds-progress-fill--w-45 {
     width: 45%;
+  }
+
+  .ds-progress-fill--w-4_5 {
+    width: 4.5%;
+  }
+
+  .ds-progress-fill--w-0_8 {
+    width: 0.8%;
   }
 
   .ds-progress-fill--w-78 {

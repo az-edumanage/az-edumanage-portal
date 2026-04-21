@@ -1,3 +1,7 @@
 
     :host { display: block; }
+
+    .tenant-customization-overlay {
+      z-index: var(--ds-layer-overlay);
+    }
   

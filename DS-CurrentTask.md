@@ -1,4 +1,4 @@
-# Current Task: Phase 2 - Token Adoption Slice 02
+# Current Task: Phase 2 - Token Adoption Slice 03
 
 ## Objective
 Start incremental DS adoption with real code changes while preserving `brand` visual parity.
@@ -7,9 +7,9 @@ Start incremental DS adoption with real code changes while preserving `brand` vi
 `Completed`
 
 ## Sub-Tasks
-- [x] Migrate next P0 inline-style target (`owner-usage-analytics`) (`docs/ds-token-adoption-slice-02.md`).
-- [x] Migrate one static-inline-width P0 target (`owner-tenant-details`) (`docs/ds-token-adoption-slice-02.md`).
-- [x] Run targeted `brand` snapshots for newly affected routes (`owner-analytics`, `owner-tenant-details`) (`docs/ds-token-adoption-slice-02.md`).
+- [x] Migrate `owner-subscription-details` static inline-width bars (`docs/ds-token-adoption-slice-03.md`).
+- [x] Migrate `owner-tenant-create` inline `z-index` style into component CSS/token (`docs/ds-token-adoption-slice-03.md`).
+- [x] Run targeted `brand` snapshots for affected owner routes (`owner-subscription-details`, `owner-tenants-create`) (`docs/ds-token-adoption-slice-03.md`).
 
 ## Scope Guardrails
 - Keep visual parity in `brand` theme (no intentional UI/layout changes).
@@ -21,7 +21,7 @@ Start incremental DS adoption with real code changes while preserving `brand` vi
 - Targeted `brand` snapshots pass for migrated routes.
 
 ## Next Task (Active)
-Phase 2 - Token Adoption Slice 03:
-- Migrate `owner-subscription-details` static inline-width bars.
-- Migrate `owner-tenant-create` inline `z-index` style into component CSS/token.
-- Run targeted `brand` snapshots for affected owner routes in matrix scope.
+Phase 2 - Token Adoption Slice 04:
+- Migrate `owner-tenants-list` hardcoded inline dimensions to DS class/tokenized sizing.
+- Start tenant route conversions for inline progress widths (`tenant-room-details`, `tenant-group-details`, `tenant-group-attendance`).
+- Run targeted `brand` snapshots for affected matrix routes.
