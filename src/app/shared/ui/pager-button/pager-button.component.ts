@@ -11,8 +11,7 @@ export class UiPagerButtonComponent {
   className = input<string>('');
 
   classes = computed(() => {
-    const base =
-      'px-3 py-1 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50';
+    const base = 'ds-pager-button';
     return `${base} ${this.className()}`.trim();
   });
 }

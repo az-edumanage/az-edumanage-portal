@@ -10,6 +10,7 @@ Purpose: inventory current inline style usage before migrating to separated CSS/
 - Owner feature hits: `15`
 - Tenant feature hits: `6`
 - Teacher feature hits: `0`
+- Migrated in Slice 01: `owner-overview` progress width pattern moved to DS CSS-variable class pattern.
 
 ## Current Findings
 

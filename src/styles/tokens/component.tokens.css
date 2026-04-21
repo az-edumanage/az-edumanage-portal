@@ -12,5 +12,56 @@
     --ds-input-bg: var(--ds-color-surface-card);
     --ds-input-border: var(--ds-color-border-default);
     --ds-input-text: var(--ds-color-text-primary);
+
+    --ds-pager-border: #e2e8f0;
+    --ds-pager-hover-bg: #f8fafc;
+    --ds-pager-border-dark: #334155;
+    --ds-pager-hover-bg-dark: #1e293b;
+
+    --ds-progress-track-bg: #e2e8f0;
+    --ds-progress-track-bg-dark: #334155;
+    --ds-progress-fill-bg: var(--brand-500);
+  }
+}
+
+@layer components {
+  .ds-pager-button {
+    padding: var(--ds-space-1) var(--ds-space-3);
+    border: 1px solid var(--ds-pager-border);
+    border-radius: var(--ds-radius-sm);
+  }
+
+  .ds-pager-button:hover {
+    background-color: var(--ds-pager-hover-bg);
+  }
+
+  .ds-pager-button:disabled {
+    opacity: 0.5;
+  }
+
+  .dark .ds-pager-button {
+    border-color: var(--ds-pager-border-dark);
+  }
+
+  .dark .ds-pager-button:hover {
+    background-color: var(--ds-pager-hover-bg-dark);
+  }
+
+  .ds-progress-track {
+    height: 0.375rem;
+    overflow: hidden;
+    border-radius: var(--ds-radius-full);
+    background-color: var(--ds-progress-track-bg);
+  }
+
+  .dark .ds-progress-track {
+    background-color: var(--ds-progress-track-bg-dark);
+  }
+
+  .ds-progress-fill {
+    height: 100%;
+    width: var(--ds-progress, 0%);
+    border-radius: var(--ds-radius-full);
+    background-color: var(--ds-progress-fill-bg);
   }
 }

@@ -178,8 +178,8 @@
                         <span class="text-slate-500 dark:text-slate-500">{{ region.name }}</span>
                         <span class="font-bold text-slate-900 dark:text-white">{{ region.count }}</span>
                       </div>
-                      <div class="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                        <div class="h-full bg-indigo-500 rounded-full" [style.width.%]="region.percentage"></div>
+                      <div class="ds-progress-track">
+                        <div class="ds-progress-fill" [style.--ds-progress]="region.percentage + '%'"></div>
                       </div>
                     </div>
                   </div>

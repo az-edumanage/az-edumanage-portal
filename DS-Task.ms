@@ -40,6 +40,7 @@ Status legend:
 
 ## Epic 5: Shared Primitive Migration
 - [ ] `Not Started` Audit and classify reusable UI candidates.
+- [x] `Done` Execute low-risk shared primitive token adoption pilot (`app-pager-button` -> `ds-pager-button`) (`docs/ds-token-adoption-slice-01.md`).
 - [ ] `Not Started` Standardize button primitive variants.
 - [ ] `Not Started` Standardize card primitive variants.
 - [ ] `Not Started` Standardize input/select/form control primitives.
@@ -51,8 +52,9 @@ Status legend:
 - [ ] `Not Started` Migrate Tenant feature styles to semantic/component tokens.
 - [ ] `Not Started` Migrate Teacher feature styles to semantic/component tokens.
 - [x] `Done` Audit and inventory inline styles (`style=\"...\"`, `[style.*]`, `[ngStyle]`) by feature (`docs/ds-inline-style-inventory.md`).
+- [x] `Done` Execute first P0 inline-style conversion to DS CSS-variable pattern (`owner-overview` regional progress bars) (`docs/ds-token-adoption-slice-01.md`).
 - [ ] `Not Started` Convert inline styles to separated component CSS/SCSS using DS tokens while preserving exact visuals.
-- [ ] `Not Started` Add regression checkpoints for each inline-style conversion batch under `brand` theme.
+- [x] `Done` Add and run first regression checkpoint under `brand` theme for adopted P0 route (`owner-overview`) (`docs/ds-token-adoption-slice-01.md`).
 - [ ] `Not Started` Remove duplicate one-off style patterns after replacement.
 
 ## Epic 7: Governance & Enforcement
