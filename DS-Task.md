@@ -34,8 +34,10 @@ Status legend:
 - [x] `Done` Introduce `.theme-brand` as default parity theme for existing UI.
 - [x] `Done` Ensure root theme class application is centralized at app startup (`src/app/app.ts`, `src/app/core/services/dashboard.service.ts`) (`docs/ds-theme-system-hardening-slice-01.md`).
 - [x] `Done` Verify localStorage/theme persistence remains unchanged for toggle flow (`tests/visual/theme-toggle-regression.spec.ts`) (`docs/ds-theme-system-hardening-slice-01.md`).
-- [ ] `Not Started` Add future-ready hook for additional tenant brand themes.
+- [x] `Done` Add future-ready hook for additional tenant brand themes (class namespace + token override entrypoint + runtime orchestration) (`src/app/core/services/dashboard.service.ts`, `src/styles/tokens/theme.tenant-overrides.css`) (`docs/ds-theme-system-hardening-slice-02.md`).
 - [x] `Done` Add core shell regression checks for theme toggling semantics across owner/tenant/teacher with `theme-brand` + light/dark classes (`tests/visual/theme-toggle-regression.spec.ts`) (`docs/ds-theme-system-hardening-slice-01.md`).
+- [x] `Done` Define tenant theme override contract and fallback rules (`docs/ds-tenant-theme-contract.md`) (`docs/ds-theme-system-hardening-slice-02.md`).
+- [x] `Done` Add non-default tenant theme smoke checks without affecting `brand` parity (`tests/visual/tenant-theme-smoke.spec.ts`) (`docs/ds-theme-system-hardening-slice-02.md`).
 
 ## Epic 4: Tailwind & Material Alignment
 - [ ] `Not Started` Map Tailwind token consumption to semantic CSS variables.

@@ -7,3 +7,4 @@
 @import "./semantic.brand.css";
 @import "./component.tokens.css";
 @import "./theme.modes.css";
+@import "./theme.tenant-overrides.css";

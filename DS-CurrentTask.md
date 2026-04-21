@@ -1,29 +1,29 @@
-# Current Task: Phase 3 - Theme System Hardening Slice 01
+# Current Task: Phase 3 - Theme System Hardening Slice 02
 
 ## Objective
-Centralize root theme class application, preserve theme persistence behavior, and add regression checks for theme toggling on core shell routes.
+Add a future-ready tenant-theme hook (class namespace + token override entrypoint), document the override contract, and add an initial non-default tenant theme smoke check without impacting `brand` parity.
 
 ## Status
 `Completed`
 
 ## Sub-Tasks
-- [x] Move theme initialization to app startup (`src/app/app.ts`) and remove layout-level init (`src/app/core/layout/main-layout/main-layout.component.ts`) (`docs/ds-theme-system-hardening-slice-01.md`).
-- [x] Apply consistent root classes (`theme-brand`, `theme-light`/`theme-dark`, `dark`) from a single service path (`src/app/core/services/dashboard.service.ts`) (`docs/ds-theme-system-hardening-slice-01.md`).
-- [x] Add core shell theme-toggle regression checks for owner/tenant/teacher routes (`tests/visual/theme-toggle-regression.spec.ts`) (`docs/ds-theme-system-hardening-slice-01.md`).
-- [x] Align visual snapshot theme helper with runtime class semantics (`tests/visual/ds-visual.spec.ts`) (`docs/ds-theme-system-hardening-slice-01.md`).
+- [x] Add tenant theme runtime hook and class namespace orchestration (`theme-tenant-default`, `theme-tenant-ocean`) (`src/app/core/services/dashboard.service.ts`) (`docs/ds-theme-system-hardening-slice-02.md`).
+- [x] Add tenant theme token override entrypoint and wire it into token imports (`src/styles/tokens/theme.tenant-overrides.css`, `src/styles/tokens/index.css`) (`docs/ds-theme-system-hardening-slice-02.md`).
+- [x] Define tenant-theme override contract and fallback rules (`docs/ds-tenant-theme-contract.md`) (`docs/ds-theme-system-hardening-slice-02.md`).
+- [x] Add non-default tenant theme smoke checks on tenant/owner routes (`tests/visual/tenant-theme-smoke.spec.ts`) (`docs/ds-theme-system-hardening-slice-02.md`).
 
 ## Scope Guardrails
-- Preserve `brand` visual parity.
-- Keep theme persistence key and behavior backward-compatible.
-- Keep changes limited to theme orchestration and verification.
+- Keep `brand` as parity baseline and avoid intentional visual changes.
+- Keep tenant overrides token-scoped and opt-in via class namespace.
+- Keep owner/teacher routes on `theme-tenant-default` fallback.
 
 ## Exit Criteria
-- Root theme classes are applied from one startup path.
-- Theme toggle persists and applies expected classes on core shell routes.
-- Regression checks pass for theme toggle behavior.
+- Tenant theme classes and token entrypoint exist and are documented.
+- Smoke checks pass for non-default tenant theme application and owner fallback isolation.
+- Build remains green.
 
 ## Next Task (Active)
-Phase 3 - Theme System Hardening Slice 02:
-- Add future-ready hook for additional tenant brand themes (class namespace + token override entry points).
-- Define and document tenant-theme override contract (allowed semantic/component tokens and fallback rules).
-- Add initial non-default tenant theme smoke route/check without affecting `brand` parity.
+Phase 4 - Tailwind & Material Alignment Slice 01:
+- Map core Tailwind color/surface utilities to DS semantic variables where safe.
+- Keep visual parity by introducing compatibility aliases for existing utility usage.
+- Validate representative Owner/Tenant/Teacher routes under `brand` after mapping.
