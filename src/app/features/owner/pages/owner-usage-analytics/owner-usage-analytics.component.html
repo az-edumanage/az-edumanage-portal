@@ -170,8 +170,8 @@
                   <td class="px-6 py-4 text-right">
                     <div class="flex items-center justify-end gap-2">
                       <span class="text-slate-900 dark:text-white font-medium">{{ module.usageRate }}%</span>
-                      <div class="w-16 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                        <div class="h-full bg-indigo-500 rounded-full" [style.width.%]="module.usageRate"></div>
+                      <div class="ds-progress-track w-16">
+                        <div class="ds-progress-fill" [style.--ds-progress]="module.usageRate + '%'"></div>
                       </div>
                     </div>
                   </td>
@@ -296,8 +296,8 @@
                   <span class="text-slate-500 dark:text-slate-500">Advanced Analytics</span>
                   <span class="font-medium text-slate-900 dark:text-white">45%</span>
                 </div>
-                <div class="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                  <div class="h-full bg-indigo-500 rounded-full" style="width: 45%"></div>
+                <div class="ds-progress-track h-2">
+                  <div class="ds-progress-fill ds-progress-fill--w-45"></div>
                 </div>
               </div>
               <div>
@@ -305,8 +305,8 @@
                   <span class="text-slate-500 dark:text-slate-500">Finance Module</span>
                   <span class="font-medium text-slate-900 dark:text-white">32%</span>
                 </div>
-                <div class="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                  <div class="h-full bg-emerald-500 rounded-full" style="width: 32%"></div>
+                <div class="ds-progress-track h-2">
+                  <div class="ds-progress-fill ds-progress-fill--emerald ds-progress-fill--w-32"></div>
                 </div>
               </div>
               <div>
@@ -314,8 +314,8 @@
                   <span class="text-slate-500 dark:text-slate-500">Exams & Grades</span>
                   <span class="font-medium text-slate-900 dark:text-white">78%</span>
                 </div>
-                <div class="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                  <div class="h-full bg-amber-500 rounded-full" style="width: 78%"></div>
+                <div class="ds-progress-track h-2">
+                  <div class="ds-progress-fill ds-progress-fill--amber ds-progress-fill--w-78"></div>
                 </div>
               </div>
             </div>

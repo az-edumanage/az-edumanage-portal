@@ -33,7 +33,9 @@ Purpose: define the minimum visual-regression baseline coverage for zero-regress
 | `/owner/plans/plan-001` | owner | Details layout with cards/sections. |
 | `/owner/subscriptions/orders` | owner | Dense admin page with mixed controls. |
 | `/owner/billing` | owner | Financial table and filters. |
+| `/owner/analytics` | owner | Usage analytics tables and feature adoption progress bars. |
 | `/owner/users` | owner | User list patterns and badges/chips. |
+| `/owner/tenants/tenant-001` | owner | Tenant details page with utilization progress metrics. |
 | `/owner/settings` | owner | Settings toggles and form controls. |
 | `/tenant/overview` | tenant | Tenant dashboard baseline. |
 | `/tenant/students` | tenant | Standard list/table rendering. |

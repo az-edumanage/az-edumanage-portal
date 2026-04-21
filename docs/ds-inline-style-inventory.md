@@ -13,13 +13,16 @@ Purpose: inventory current inline style usage before migrating to separated CSS/
 - Migrated in Slice 01:
   - `owner-overview` progress width pattern moved to DS CSS-variable class pattern.
   - `owner-billing` revenue bar height pattern moved to DS CSS-variable class pattern.
+- Migrated in Slice 02:
+  - `owner-usage-analytics` module and feature-adoption bars moved to DS CSS-variable/class patterns.
+  - `owner-tenant-details` static utilization bars moved to DS class utility pattern.
 
 ## Current Findings
 
 | File | Count | Pattern Type | Priority | Migration Note |
 |---|---:|---|---|---|
-| `src/app/features/owner/pages/owner-usage-analytics/owner-usage-analytics.component.html` | 4 | `[style.width.%]` + `style="width:..."` | P0 | Convert progress bar widths to DS progress utility with tokenized colors. |
-| `src/app/features/owner/pages/owner-tenant-details/owner-tenant-details.component.html` | 3 | `style="width:..."` | P0 | Replace static inline widths with utility classes or CSS vars in component stylesheet. |
+| `src/app/features/owner/pages/owner-usage-analytics/owner-usage-analytics.component.html` | 4 | `[style.width.%]` + `style="width:..."` | P0 | Migrated to DS progress class/CSS-variable pattern in Slice 02. |
+| `src/app/features/owner/pages/owner-tenant-details/owner-tenant-details.component.html` | 3 | `style="width:..."` | P0 | Migrated to DS progress width utility classes in Slice 02. |
 | `src/app/features/owner/pages/owner-subscription-details/owner-subscription-details.component.html` | 3 | `style="width:..."` | P0 | Same as above; preserve exact percentages in `brand`. |
 | `src/app/features/tenant/pages/tenant-room-details/tenant-room-details.component.html` | 2 | `[style.width.%]` | P1 | Keep dynamic width binding but move structure/visual style to DS class. |
 | `src/app/features/tenant/pages/tenant-grade-details/tenant-grade-details.component.html` | 2 | `style="width:..."` | P1 | Convert static inline widths to CSS class or CSS custom prop pattern. |

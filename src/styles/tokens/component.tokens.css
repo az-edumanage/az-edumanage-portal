@@ -21,6 +21,10 @@
     --ds-progress-track-bg: #e2e8f0;
     --ds-progress-track-bg-dark: #334155;
     --ds-progress-fill-bg: var(--brand-500);
+    --ds-progress-fill-emerald: #10b981;
+    --ds-progress-fill-amber: #f59e0b;
+    --ds-progress-fill-blue: #3b82f6;
+    --ds-progress-fill-green: #22c55e;
     --ds-revenue-column-bg: rgb(99 102 241 / 0.2);
     --ds-revenue-column-bg-hover: var(--brand-600);
   }
@@ -65,6 +69,46 @@
     width: var(--ds-progress, 0%);
     border-radius: var(--ds-radius-full);
     background-color: var(--ds-progress-fill-bg);
+  }
+
+  .ds-progress-fill--emerald {
+    background-color: var(--ds-progress-fill-emerald);
+  }
+
+  .ds-progress-fill--amber {
+    background-color: var(--ds-progress-fill-amber);
+  }
+
+  .ds-progress-fill--blue {
+    background-color: var(--ds-progress-fill-blue);
+  }
+
+  .ds-progress-fill--green {
+    background-color: var(--ds-progress-fill-green);
+  }
+
+  .ds-progress-fill--w-25 {
+    width: 25%;
+  }
+
+  .ds-progress-fill--w-32 {
+    width: 32%;
+  }
+
+  .ds-progress-fill--w-42 {
+    width: 42%;
+  }
+
+  .ds-progress-fill--w-45 {
+    width: 45%;
+  }
+
+  .ds-progress-fill--w-78 {
+    width: 78%;
+  }
+
+  .ds-progress-fill--w-90 {
+    width: 90%;
   }
 
   .ds-revenue-column {

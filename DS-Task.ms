@@ -16,6 +16,7 @@ Status legend:
 - [x] `Done` Add visual regression job to CI pipeline (`.github/workflows/visual-regression.yml`, `playwright.visual.config.ts`, `tests/visual/ds-visual.spec.ts`).
 - [ ] `Not Started` Add manual smoke checklist for DS-sensitive interactions.
 - [x] `Done` Add acceptance thresholds and diff approval policy (`docs/ds-baseline-capture-strategy.md`).
+- [x] `Done` Expand P0 route matrix to include migrated owner analytics/detail routes for brand snapshot coverage (`docs/ds-critical-route-matrix.md`, `tests/visual/ds-visual.spec.ts`).
 
 ## Epic 2: Token Foundation
 - [x] `Done` Create `src/styles/tokens` directory structure.
@@ -57,9 +58,12 @@ Status legend:
 - [x] `Done` Audit and inventory inline styles (`style=\"...\"`, `[style.*]`, `[ngStyle]`) by feature (`docs/ds-inline-style-inventory.md`).
 - [x] `Done` Execute first P0 inline-style conversion to DS CSS-variable pattern (`owner-overview` regional progress bars) (`docs/ds-token-adoption-slice-01.md`).
 - [x] `Done` Execute second P0 inline-style conversion to DS CSS-variable pattern (`owner-billing` revenue bars) (`docs/ds-token-adoption-slice-01.md`).
+- [x] `Done` Execute third P0 inline-style conversion to DS CSS-variable pattern (`owner-usage-analytics` bars) (`docs/ds-token-adoption-slice-02.md`).
+- [x] `Done` Execute fourth P0 static-width conversion to DS class utility pattern (`owner-tenant-details` bars) (`docs/ds-token-adoption-slice-02.md`).
 - [ ] `Not Started` Convert inline styles to separated component CSS/SCSS using DS tokens while preserving exact visuals.
 - [x] `Done` Add and run first regression checkpoint under `brand` theme for adopted P0 route (`owner-overview`) (`docs/ds-token-adoption-slice-01.md`).
 - [x] `Done` Add and run second regression checkpoint under `brand` theme for adopted P0 route (`owner-billing`) (`docs/ds-token-adoption-slice-01.md`).
+- [x] `Done` Add and run third/fourth regression checkpoints under `brand` theme (`owner-analytics`, `owner-tenant-details`) (`docs/ds-token-adoption-slice-02.md`).
 - [ ] `Not Started` Remove duplicate one-off style patterns after replacement.
 
 ## Epic 7: Governance & Enforcement
