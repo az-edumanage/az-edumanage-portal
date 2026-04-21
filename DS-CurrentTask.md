@@ -1,27 +1,27 @@
-# Current Task: Phase 2 - Token Adoption Slice 05
+# Current Task: Phase 2 - Token Adoption Slice 06
 
 ## Objective
-Start incremental DS adoption with real code changes while preserving `brand` visual parity.
+Complete final inline-style cleanup verification for Owner/Tenant migrated pages and broaden `brand` regression safety coverage.
 
 ## Status
 `Completed`
 
 ## Sub-Tasks
-- [x] Migrate `tenant-grade-details` static inline widths to DS width utilities/classes (`docs/ds-token-adoption-slice-05.md`).
-- [x] Migrate `owner-compliance` remaining progress-width binding to DS CSS-variable pattern (`docs/ds-token-adoption-slice-05.md`).
-- [x] Run targeted `brand` snapshots for affected routes (`owner-compliance`, `tenant-grade-details`) (`docs/ds-token-adoption-slice-05.md`).
+- [x] Run final inline-style sweep for Owner/Tenant pages and confirm only DS-approved dynamic bindings remain (`docs/ds-token-adoption-slice-06.md`).
+- [x] Add `tenant-group-attendance` to automated visual regression coverage (`docs/ds-token-adoption-slice-06.md`).
+- [x] Run broad `brand` regression pass for migrated Owner/Tenant routes on desktop + mobile (`24 passed`) (`docs/ds-token-adoption-slice-06.md`).
 
 ## Scope Guardrails
-- Keep visual parity in `brand` theme (no intentional UI/layout changes).
-- Keep PR scope narrow and reversible.
-- Prefer class-based DS styling; allow dynamic `[style.*]` only for data values.
+- Preserve visual parity in `brand` theme.
+- Keep changes incremental and reversible.
+- Keep dynamic style bindings only where data-driven and DS-owned.
 
 ## Exit Criteria
-- Targeted P0 owner route conversions are migrated to DS class/CSS-variable patterns.
-- Targeted `brand` snapshots pass for migrated routes.
+- No raw `style="..."` attributes remain in Owner/Tenant migrated feature pages.
+- Broad migrated-route `brand` sweep is passing on desktop and mobile.
 
 ## Next Task (Active)
-Phase 2 - Token Adoption Slice 06:
-- Run final inline-style sweep to identify any remaining `style="..."` attributes in migrated owner/tenant pages.
-- Migrate any remaining owner/tenant inline style attributes to DS classes/tokens.
-- Execute broader `brand` regression sweep on all migrated owner and tenant routes.
+Phase 3 - Theme System Hardening Slice 01:
+- Centralize root theme class application in layout shell/app bootstrap.
+- Verify `localStorage` theme persistence behavior remains unchanged.
+- Add regression check for theme toggling across `brand`, `light`, and `dark` on core shell routes.

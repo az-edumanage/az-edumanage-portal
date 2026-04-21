@@ -25,6 +25,9 @@ Purpose: inventory current inline style usage before migrating to separated CSS/
 - Migrated in Slice 05:
   - `tenant-grade-details` static widths moved to DS width utility classes.
   - `owner-compliance` progress width binding moved to DS CSS-variable pattern.
+- Validated in Slice 06:
+  - Final Owner/Tenant sweep confirms no raw `style="..."` attributes remain in Owner/Tenant feature pages.
+  - Remaining bindings are DS-approved dynamic CSS-variable patterns only.
 
 ## Current Findings
 
@@ -61,3 +64,8 @@ Purpose: inventory current inline style usage before migrating to separated CSS/
 - No `style="..."` in migrated target files (except approved edge cases).
 - `[style.*]` usage only for data-driven values with DS class ownership.
 - `brand` snapshot diff is clean for affected routes.
+
+## Slice 06 Result
+- Query: `rg -n "style=\"|\[style\.|\[ngStyle\]" src/app/features/owner src/app/features/tenant`
+- Result: 8 matches, all DS-owned dynamic bindings (`[style.--ds-progress]`, `[style.--ds-bar-height]`).
+- Raw inline styles (`style="..."`) in Owner/Tenant features: `0`.

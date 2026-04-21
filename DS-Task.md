@@ -74,6 +74,9 @@ Status legend:
 - [x] `Done` Execute tenant static-width conversion to DS utility pattern (`tenant-grade-details`) (`docs/ds-token-adoption-slice-05.md`).
 - [x] `Done` Execute owner compliance progress conversion to DS CSS-variable pattern (`owner-compliance`) (`docs/ds-token-adoption-slice-05.md`).
 - [x] `Done` Add and run tenth/eleventh regression checkpoints under `brand` theme (`owner-compliance`, `tenant-grade-details`) (`docs/ds-token-adoption-slice-05.md`).
+- [x] `Done` Execute final Owner/Tenant inline-style sweep and confirm zero raw `style="..."` attributes remain (`docs/ds-token-adoption-slice-06.md`).
+- [x] `Done` Expand migrated-route visual coverage to include `tenant-group-attendance` in automated snapshots (`docs/ds-critical-route-matrix.md`, `tests/visual/ds-visual.spec.ts`, `docs/ds-token-adoption-slice-06.md`).
+- [x] `Done` Execute broader `brand` regression sweep for all migrated Owner/Tenant routes on desktop + mobile (`24 passed`) (`docs/ds-token-adoption-slice-06.md`).
 - [ ] `Not Started` Remove duplicate one-off style patterns after replacement.
 
 ## Epic 7: Governance & Enforcement

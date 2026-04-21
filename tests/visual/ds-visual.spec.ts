@@ -29,6 +29,7 @@ const P0_ROUTES: Array<{ key: string; path: string; role: UserRole }> = [
   { key: 'tenant-groups', path: '/tenant/groups', role: 'tenant' },
   { key: 'tenant-groups-create', path: '/tenant/groups/create', role: 'tenant' },
   { key: 'tenant-groups-details', path: '/tenant/groups/group-001', role: 'tenant' },
+  { key: 'tenant-group-attendance', path: '/tenant/groups/group-001/attendance', role: 'tenant' },
   { key: 'tenant-rooms', path: '/tenant/rooms', role: 'tenant' },
   { key: 'tenant-grade-details', path: '/tenant/grades/grade-001', role: 'tenant' },
   { key: 'teacher-overview', path: '/teacher/overview', role: 'teacher' },

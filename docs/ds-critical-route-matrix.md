@@ -44,6 +44,7 @@ Purpose: define the minimum visual-regression baseline coverage for zero-regress
 | `/tenant/groups` | tenant | Group list and action buttons. |
 | `/tenant/groups/create` | tenant | Complex multi-section form coverage. |
 | `/tenant/groups/group-001` | tenant | Detail view and schedule sections. |
+| `/tenant/groups/group-001/attendance` | tenant | Attendance page with DS-migrated progress bars. |
 | `/tenant/rooms` | tenant | List + card/table hybrid layout. |
 | `/teacher/overview` | teacher | Teacher main dashboard baseline. |
 | `/teacher/media` | teacher | Teacher feature page with cards/actions. |
@@ -73,5 +74,5 @@ Purpose: define the minimum visual-regression baseline coverage for zero-regress
 ## Change Control
 - Any modification to this matrix requires:
   - DS reviewer approval.
-  - Update in `DS-Task.ms` and `DS-CurrentTask.md`.
+  - Update in `DS-Task.md` and `DS-CurrentTask.md`.
   - Regenerated baseline snapshots for changed scope.
