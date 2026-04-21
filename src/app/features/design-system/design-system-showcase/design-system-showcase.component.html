@@ -126,6 +126,21 @@
               <option>Option 2</option>
             </select>
           </div>
+          <div class="space-y-2 pt-1">
+            <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+              <input appCheckbox type="checkbox" checked>
+              Checkbox
+            </label>
+            <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+              <input appRadio type="radio" name="showcase-radio" checked>
+              Radio
+            </label>
+            <label class="relative inline-flex items-center cursor-pointer gap-3">
+              <input appToggleInput type="checkbox" checked>
+              <div appToggleTrack></div>
+              <span class="text-sm text-slate-700 dark:text-slate-300">Toggle</span>
+            </label>
+          </div>
         </div>
       </section>
 
@@ -212,7 +227,7 @@
                 <tr appTableRow>
                   <td appTableCell class="font-medium text-slate-900 dark:text-white">Form Directives</td>
                   <td appTableCell><app-badge variant="success">Standardized</app-badge></td>
-                  <td appTableCell class="text-slate-500 dark:text-slate-500">Input + Select</td>
+                  <td appTableCell class="text-slate-500 dark:text-slate-500">Input + Select + Checkable</td>
                 </tr>
               </tbody>
             </table>

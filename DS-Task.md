@@ -51,13 +51,15 @@ Status legend:
 - [x] `Done` Standardize button primitive variants with DS class ownership and normalized `danger` mapping (`src/app/shared/components/ui/button/button.component.ts`, `src/styles/tokens/component.tokens.css`) (`docs/ds-shared-primitive-migration-slice-03.md`).
 - [x] `Done` Standardize card primitive variants with DS class ownership (`src/app/shared/components/ui/card/card.component.html`, `src/styles/tokens/component.tokens.css`) (`docs/ds-shared-primitive-migration-slice-03.md`).
 - [x] `Done` Standardize input/select/form control primitives with DS directives (`appInput`, `appSelect`) and token classes (`src/app/shared/components/form/form-controls.components.ts`, `src/styles/tokens/component.tokens.css`) (`docs/ds-shared-primitive-migration-slice-04.md`).
+- [x] `Done` Standardize checkbox/radio/toggle control primitives with DS directives (`appCheckbox`, `appRadio`, `appToggleInput`, `appToggleTrack`) and token classes (`src/app/shared/components/form/form-controls.components.ts`, `src/styles/tokens/component.tokens.css`) (`docs/ds-shared-primitive-migration-slice-05.md`).
 - [x] `Done` Standardize table + badge + pager primitives (`src/app/shared/components/data-display/table/table.components.ts`, `src/styles/tokens/component.tokens.css`) (`docs/ds-shared-primitive-migration-slice-02.md`).
-- [x] `Done` Update DS showcase with migrated primitives (badge/table/button/card/form examples) (`src/app/features/design-system/design-system-showcase/*`) (`docs/ds-shared-primitive-migration-slice-02.md`, `docs/ds-shared-primitive-migration-slice-03.md`, `docs/ds-shared-primitive-migration-slice-04.md`).
+- [x] `Done` Update DS showcase with migrated primitives (badge/table/button/card/form/checkable examples) (`src/app/features/design-system/design-system-showcase/*`) (`docs/ds-shared-primitive-migration-slice-02.md`, `docs/ds-shared-primitive-migration-slice-03.md`, `docs/ds-shared-primitive-migration-slice-04.md`, `docs/ds-shared-primitive-migration-slice-05.md`).
 - [x] `Done` Start shared primitive standardization with `badge` variant normalization (`info`) and remove one-off badge style override in billing invoice table (`docs/ds-shared-primitive-migration-slice-01.md`).
 - [x] `Done` Adopt DS table classes for `appTable*` directives and preserve parity on billing/design-system routes (`docs/ds-shared-primitive-migration-slice-02.md`).
 - [x] `Done` Update DS showcase with standardized `badge` + `table` primitive demos (`docs/ds-shared-primitive-migration-slice-02.md`).
 - [x] `Done` Execute Slice 03 button/card primitive migration and validate parity on owner-overview/owner-billing/design-system (`docs/ds-shared-primitive-migration-slice-03.md`).
 - [x] `Done` Execute Slice 04 form primitive migration (`input/select`) and validate parity on owner-billing/design-system (`docs/ds-shared-primitive-migration-slice-04.md`).
+- [x] `Done` Execute Slice 05 checkable primitive migration (`checkbox/radio/toggle`) and validate parity on owner-compliance/design-system (`docs/ds-shared-primitive-migration-slice-05.md`).
 
 ## Epic 6: Feature-by-Feature Adoption
 - [ ] `Not Started` Migrate Owner feature styles to semantic/component tokens.

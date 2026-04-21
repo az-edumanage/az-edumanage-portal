@@ -84,8 +84,8 @@
                     <p class="text-xs text-slate-500">Permanently remove data once retention period ends.</p>
                   </div>
                   <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" class="sr-only peer" checked>
-                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                    <input appToggleInput type="checkbox" checked>
+                    <div appToggleTrack></div>
                   </label>
                 </div>
 
@@ -95,8 +95,8 @@
                     <p class="text-xs text-slate-500">Move data to cold storage for 2 additional years before deletion.</p>
                   </div>
                   <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" class="sr-only peer">
-                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                    <input appToggleInput type="checkbox">
+                    <div appToggleTrack></div>
                   </label>
                 </div>
 
@@ -236,15 +236,15 @@
                     <p class="text-xs text-slate-500">Required for all administrative accounts.</p>
                   </div>
                   <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" class="sr-only peer" checked>
-                    <div class="w-11 h-6 bg-slate-200 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:bg-indigo-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                    <input appToggleInput type="checkbox" checked>
+                    <div appToggleTrack></div>
                   </label>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                   <div>
                     <label for="min-password-length" class="block text-xs font-bold text-slate-500 uppercase mb-1">Min Password Length</label>
-                    <select id="min-password-length" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+                    <select appSelect id="min-password-length" class="w-full px-3 py-2 text-sm">
                       <option>8 Characters</option>
                       <option selected>12 Characters</option>
                       <option>16 Characters</option>
@@ -252,7 +252,7 @@
                   </div>
                   <div>
                     <label for="session-timeout" class="block text-xs font-bold text-slate-500 uppercase mb-1">Session Timeout</label>
-                    <select id="session-timeout" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+                    <select appSelect id="session-timeout" class="w-full px-3 py-2 text-sm">
                       <option>15 Minutes</option>
                       <option selected>30 Minutes</option>
                       <option>1 Hour</option>
@@ -262,15 +262,15 @@
 
                 <div class="space-y-2">
                   <label class="flex items-center gap-2 text-sm">
-                    <input type="checkbox" class="rounded border-slate-200 text-indigo-600" checked>
+                    <input appCheckbox type="checkbox" checked>
                     Require Special Characters
                   </label>
                   <label class="flex items-center gap-2 text-sm">
-                    <input type="checkbox" class="rounded border-slate-200 text-indigo-600" checked>
+                    <input appCheckbox type="checkbox" checked>
                     Require Numbers
                   </label>
                   <label class="flex items-center gap-2 text-sm">
-                    <input type="checkbox" class="rounded border-slate-200 text-indigo-600">
+                    <input appCheckbox type="checkbox">
                     Prevent Password Reuse (Last 5)
                   </label>
                 </div>
@@ -376,11 +376,11 @@
                   <div class="block text-xs font-bold text-slate-500 uppercase mb-1">Deletion Type</div>
                   <div class="flex gap-4">
                     <label class="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="delType" value="soft" [(ngModel)]="deleteType" class="text-indigo-600">
+                      <input appRadio type="radio" name="delType" value="soft" [(ngModel)]="deleteType">
                       <span class="text-sm">Soft Delete (30d recovery)</span>
                     </label>
                     <label class="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="delType" value="hard" [(ngModel)]="deleteType" class="text-indigo-600">
+                      <input appRadio type="radio" name="delType" value="hard" [(ngModel)]="deleteType" class="ds-radio--danger">
                       <span class="text-sm text-red-600 font-medium">Hard Delete</span>
                     </label>
                   </div>
@@ -399,7 +399,7 @@
 
                 <div class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                   <label class="flex items-start gap-3 cursor-pointer">
-                    <input type="checkbox" [(ngModel)]="confirmIrreversible" class="mt-1 rounded border-red-300 text-red-600">
+                    <input appCheckbox type="checkbox" [(ngModel)]="confirmIrreversible" class="mt-1 ds-checkbox--danger">
                     <span class="text-xs text-red-800 dark:text-red-400">
                       I understand that this action is irreversible and complies with the platform's data governance policies.
                     </span>

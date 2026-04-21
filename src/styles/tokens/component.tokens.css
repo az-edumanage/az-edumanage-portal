@@ -36,6 +36,15 @@
     --ds-input-border-dark: #334155;
     --ds-input-text-dark: #ffffff;
     --ds-input-focus-ring: var(--brand-500);
+    --ds-checkable-border: #cbd5e1;
+    --ds-checkable-bg: #ffffff;
+    --ds-checkable-accent: var(--brand-600);
+    --ds-checkable-accent-danger: #dc2626;
+    --ds-checkable-focus-ring: rgb(99 102 241 / 0.25);
+    --ds-toggle-bg: #e2e8f0;
+    --ds-toggle-bg-dark: #334155;
+    --ds-toggle-bg-checked: var(--brand-600);
+    --ds-toggle-focus-ring: rgb(99 102 241 / 0.35);
     --ds-badge-default-bg: #f1f5f9;
     --ds-badge-default-fg: #334155;
     --ds-badge-success-bg: #dcfce7;
@@ -281,6 +290,87 @@
       border-color: var(--ds-input-border-dark);
       background-color: var(--ds-input-bg-dark);
       color: var(--ds-input-text-dark);
+    }
+  }
+
+  .ds-checkbox,
+  .ds-radio {
+    width: 1rem;
+    height: 1rem;
+    border: 1px solid var(--ds-checkable-border);
+    background-color: var(--ds-checkable-bg);
+    accent-color: var(--ds-checkable-accent);
+  }
+
+  .ds-checkbox {
+    border-radius: var(--ds-radius-sm);
+  }
+
+  .ds-radio {
+    border-radius: 9999px;
+  }
+
+  .ds-checkbox:focus,
+  .ds-radio:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--ds-checkable-focus-ring);
+  }
+
+  .ds-checkbox.ds-checkbox--danger,
+  .ds-radio.ds-radio--danger {
+    accent-color: var(--ds-checkable-accent-danger);
+  }
+
+  .ds-toggle-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .ds-toggle-track {
+    position: relative;
+    width: 2.75rem;
+    height: 1.5rem;
+    border-radius: 9999px;
+    background-color: var(--ds-toggle-bg);
+    transition: background-color var(--ds-motion-duration-fast) var(--ds-motion-ease-standard);
+  }
+
+  .ds-toggle-track::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 9999px;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    transition: transform var(--ds-motion-duration-fast) var(--ds-motion-ease-standard);
+  }
+
+  .ds-toggle-input:focus + .ds-toggle-track {
+    box-shadow: 0 0 0 4px var(--ds-toggle-focus-ring);
+  }
+
+  .ds-toggle-input:checked + .ds-toggle-track {
+    background-color: var(--ds-toggle-bg-checked);
+  }
+
+  .ds-toggle-input:checked + .ds-toggle-track::after {
+    transform: translateX(1.25rem);
+    border-color: #ffffff;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .ds-toggle-track {
+      background-color: var(--ds-toggle-bg-dark);
     }
   }
 

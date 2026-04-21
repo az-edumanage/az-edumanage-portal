@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
+import { FORM_COMPONENTS } from '../../../../shared/components/form';
 
 interface PrivacyRequest {
   id: string;
@@ -23,7 +24,7 @@ interface ComplianceLog {
 @Component({
   selector: 'app-owner-compliance',
   standalone: true,
-  imports: [CommonModule, MatIconModule, FormsModule],
+  imports: [CommonModule, MatIconModule, FormsModule, ...FORM_COMPONENTS],
   templateUrl: './owner-compliance.component.html',
   styleUrl: './owner-compliance.component.css'})
 export class OwnerComplianceComponent {
