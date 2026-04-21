@@ -4,7 +4,7 @@ import {RouterOutlet} from '@angular/router';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-root',
-  imports: [RouterOutlet],
+    imports: [RouterOutlet, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
