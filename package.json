@@ -1,5 +1,5 @@
 {
-  "name": "ai-studio-angular-app",
+  "name": "education-centers-manager",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -9,8 +9,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
-    "serve:ssr:app": "node dist/app/server/server.mjs",
-    "vr:install": "playwright install --with-deps chromium",
+    "vr:install": "playwright install chromium",
     "vr:test": "playwright test --config=playwright.visual.config.ts",
     "vr:update": "playwright test --config=playwright.visual.config.ts --update-snapshots",
     "vr:report": "playwright show-report"

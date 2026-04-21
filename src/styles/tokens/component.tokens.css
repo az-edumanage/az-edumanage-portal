@@ -21,6 +21,8 @@
     --ds-progress-track-bg: #e2e8f0;
     --ds-progress-track-bg-dark: #334155;
     --ds-progress-fill-bg: var(--brand-500);
+    --ds-revenue-column-bg: rgb(99 102 241 / 0.2);
+    --ds-revenue-column-bg-hover: var(--brand-600);
   }
 }
 
@@ -63,5 +65,19 @@
     width: var(--ds-progress, 0%);
     border-radius: var(--ds-radius-full);
     background-color: var(--ds-progress-fill-bg);
+  }
+
+  .ds-revenue-column {
+    position: relative;
+    width: 100%;
+    height: var(--ds-bar-height, 0%);
+    border-top-left-radius: var(--ds-radius-sm);
+    border-top-right-radius: var(--ds-radius-sm);
+    background-color: var(--ds-revenue-column-bg);
+    transition: all var(--ds-motion-duration-normal) var(--ds-motion-ease-standard);
+  }
+
+  .group:hover .ds-revenue-column {
+    background-color: var(--ds-revenue-column-bg-hover);
   }
 }

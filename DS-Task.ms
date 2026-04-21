@@ -6,6 +6,9 @@ Status legend:
 - `Blocked`
 - `Done`
 
+## Epic 0: Architecture Alignment
+- [x] `Done` Switch project build mode from SSR to CSR (`angular.json` CSR-only build options, remove SSR serve script) (`docs/architecture-csr-migration.md`).
+
 ## Epic 1: Safety Net & Baseline
 - [x] `Done` Create page inventory for Owner/Tenant/Teacher critical flows.
 - [x] `Done` Define visual snapshot matrix (light/dark + key breakpoints).
@@ -53,8 +56,10 @@ Status legend:
 - [ ] `Not Started` Migrate Teacher feature styles to semantic/component tokens.
 - [x] `Done` Audit and inventory inline styles (`style=\"...\"`, `[style.*]`, `[ngStyle]`) by feature (`docs/ds-inline-style-inventory.md`).
 - [x] `Done` Execute first P0 inline-style conversion to DS CSS-variable pattern (`owner-overview` regional progress bars) (`docs/ds-token-adoption-slice-01.md`).
+- [x] `Done` Execute second P0 inline-style conversion to DS CSS-variable pattern (`owner-billing` revenue bars) (`docs/ds-token-adoption-slice-01.md`).
 - [ ] `Not Started` Convert inline styles to separated component CSS/SCSS using DS tokens while preserving exact visuals.
 - [x] `Done` Add and run first regression checkpoint under `brand` theme for adopted P0 route (`owner-overview`) (`docs/ds-token-adoption-slice-01.md`).
+- [x] `Done` Add and run second regression checkpoint under `brand` theme for adopted P0 route (`owner-billing`) (`docs/ds-token-adoption-slice-01.md`).
 - [ ] `Not Started` Remove duplicate one-off style patterns after replacement.
 
 ## Epic 7: Governance & Enforcement
