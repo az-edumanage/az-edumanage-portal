@@ -8,3 +8,4 @@
 @import "./component.tokens.css";
 @import "./theme.modes.css";
 @import "./theme.tenant-overrides.css";
+@import "./tailwind.semantic-bridge.css";

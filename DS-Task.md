@@ -40,8 +40,8 @@ Status legend:
 - [x] `Done` Add non-default tenant theme smoke checks without affecting `brand` parity (`tests/visual/tenant-theme-smoke.spec.ts`) (`docs/ds-theme-system-hardening-slice-02.md`).
 
 ## Epic 4: Tailwind & Material Alignment
-- [ ] `Not Started` Map Tailwind token consumption to semantic CSS variables.
-- [ ] `Not Started` Ensure existing utility classes remain visually identical.
+- [x] `Done` Map Tailwind token consumption to semantic CSS variables via parity-safe bridge (`src/styles/tokens/tailwind.semantic-bridge.css`) (`docs/ds-tailwind-material-alignment-slice-01.md`).
+- [x] `Done` Ensure existing utility classes remain visually identical through compatibility aliases and representative `brand` regression checks (`docs/ds-tailwind-material-alignment-slice-01.md`).
 - [ ] `Not Started` Configure Angular Material theming to use DS semantic tokens.
 - [ ] `Not Started` Validate Material + Tailwind parity in shared screens.
 
