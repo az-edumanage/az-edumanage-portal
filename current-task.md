@@ -180,5 +180,5 @@ Complete strict structure compliance by relocating teacher route-level pages int
 - [x] Relocate tenant route-level `tenant-*` pages to `tenant/pages/*` and stabilize imports/routes.
 - [x] Remove unused tenant legacy container (`tenant-group-create`) after relocation.
 - [x] Re-run lint/test/build after tenant relocation batch.
-- [ ] Relocate teacher route-level `teacher-*` pages to `teacher/pages/*` and stabilize imports/routes.
-- [ ] Re-run lint/test/build and close Definition of Done (`Codebase matches STRUCTURE.md`).
+- [x] Relocate teacher route-level `teacher-*` pages to `teacher/pages/*` and stabilize imports/routes.
+- [x] Re-run lint/test/build and close Definition of Done (`Codebase matches STRUCTURE.md`).

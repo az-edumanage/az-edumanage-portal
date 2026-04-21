@@ -161,7 +161,7 @@
 - [x] Tables and badges styling unchanged.
 
 ## 13) Definition of Done
-- [ ] Codebase matches `STRUCTURE.md`.
+- [x] Codebase matches `STRUCTURE.md`.
 - [x] Components are clearly categorized as shared/native/feature.
 - [x] No broken routes.
 - [x] No shell/layout/style regressions.
@@ -174,4 +174,5 @@
 - [x] Remove leftover unused tenant legacy container (`tenant-group-create`) after relocation.
 - [x] Re-run lint/test/build after tenant relocation batch.
 - [ ] Batch 3: Move remaining route-level `features/teacher/teacher-*` page folders into `features/teacher/pages/*` (move-only + import fixes, no HTML/CSS changes).
-- [ ] Re-run lint/test/build after teacher relocation batch.
+- [x] Batch 3: Move remaining route-level `features/teacher/teacher-*` page folders into `features/teacher/pages/*` (move-only + import fixes, no HTML/CSS changes).
+- [x] Re-run lint/test/build after teacher relocation batch.
