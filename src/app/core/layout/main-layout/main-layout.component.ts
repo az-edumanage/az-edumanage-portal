@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../sidebar/sidebar.component';
@@ -13,12 +13,8 @@ import { DashboardService } from '../../services/dashboard.service';
   imports: [CommonModule, RouterOutlet, SidebarComponent, TopbarComponent, TaskBarComponent, MatIconModule],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.css'})
-export class MainLayoutComponent implements OnInit {
+export class MainLayoutComponent {
   private dashboardService = inject(DashboardService);
   
   collapsed = this.dashboardService.sidebarCollapsed;
-
-  ngOnInit() {
-    this.dashboardService.initTheme();
-  }
 }

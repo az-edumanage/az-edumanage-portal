@@ -1,5 +1,5 @@
 import { Injectable, signal, inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 
 export type UserRole = 'owner' | 'tenant' | 'teacher';
@@ -10,6 +10,7 @@ export type UserRole = 'owner' | 'tenant' | 'teacher';
 export class DashboardService {
   private platformId = inject(PLATFORM_ID);
   private router = inject(Router);
+  private document = inject(DOCUMENT);
 
   // State
   readonly currentRole = signal<UserRole>('owner');
@@ -18,6 +19,10 @@ export class DashboardService {
   readonly theme = signal<'light' | 'dark'>(this.getInitialTheme());
   readonly criticalNotification = signal<{title: string, message: string} | null>(null);
   readonly pendingSubscriptionOrdersCount = signal<number>(3); // Mock initial value based on current mock data
+
+  constructor() {
+    this.initTheme();
+  }
 
   private getInitialTheme(): 'light' | 'dark' {
     if (isPlatformBrowser(this.platformId)) {
@@ -59,13 +64,14 @@ export class DashboardService {
 
   private applyTheme() {
     if (isPlatformBrowser(this.platformId)) {
-      if (this.theme() === 'dark') {
-        document.documentElement.classList.add('dark');
-        document.documentElement.style.colorScheme = 'dark';
-      } else {
-        document.documentElement.classList.remove('dark');
-        document.documentElement.style.colorScheme = 'light';
-      }
+      const root = this.document.documentElement;
+      const isDark = this.theme() === 'dark';
+
+      root.classList.add('theme-brand');
+      root.classList.toggle('theme-dark', isDark);
+      root.classList.toggle('theme-light', !isDark);
+      root.classList.toggle('dark', isDark);
+      root.style.colorScheme = isDark ? 'dark' : 'light';
     }
   }
 

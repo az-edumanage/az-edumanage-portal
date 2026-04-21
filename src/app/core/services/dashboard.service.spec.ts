@@ -10,6 +10,10 @@ describe('DashboardService', () => {
   };
 
   beforeEach(() => {
+    localStorage.clear();
+    document.documentElement.classList.remove('dark', 'theme-brand', 'theme-light', 'theme-dark');
+    document.documentElement.style.colorScheme = '';
+
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
       value: () => ({
@@ -54,6 +58,31 @@ describe('DashboardService', () => {
     const initial = service.theme();
     service.toggleTheme();
     expect(service.theme()).not.toBe(initial);
+  });
+
+  it('should apply root theme classes on init', () => {
+    service.initTheme();
+
+    expect(document.documentElement.classList.contains('theme-brand')).toBe(true);
+    expect(document.documentElement.classList.contains('theme-light')).toBe(true);
+    expect(document.documentElement.classList.contains('theme-dark')).toBe(false);
+    expect(document.documentElement.classList.contains('dark')).toBe(false);
+    expect(document.documentElement.style.colorScheme).toBe('light');
+  });
+
+  it('should persist theme and switch classes when toggled', () => {
+    const setItemSpy = spyOn(Storage.prototype, 'setItem').and.callThrough();
+    service.initTheme();
+
+    service.toggleTheme();
+
+    expect(setItemSpy).toHaveBeenCalledWith('theme', 'dark');
+    expect(localStorage.getItem('theme')).toBe('dark');
+    expect(document.documentElement.classList.contains('theme-brand')).toBe(true);
+    expect(document.documentElement.classList.contains('theme-dark')).toBe(true);
+    expect(document.documentElement.classList.contains('theme-light')).toBe(false);
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+    expect(document.documentElement.style.colorScheme).toBe('dark');
   });
 
   it('should navigate to return URL when switching to owner with pending returnUrl', () => {

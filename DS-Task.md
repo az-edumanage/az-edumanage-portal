@@ -32,10 +32,10 @@ Status legend:
 ## Epic 3: Theme System
 - [x] `Done` Introduce `.theme-light` and `.theme-dark` token scopes.
 - [x] `Done` Introduce `.theme-brand` as default parity theme for existing UI.
-- [ ] `Not Started` Ensure root theme class application is centralized in shell.
-- [ ] `Not Started` Verify localStorage/theme persistence remains unchanged.
+- [x] `Done` Ensure root theme class application is centralized at app startup (`src/app/app.ts`, `src/app/core/services/dashboard.service.ts`) (`docs/ds-theme-system-hardening-slice-01.md`).
+- [x] `Done` Verify localStorage/theme persistence remains unchanged for toggle flow (`tests/visual/theme-toggle-regression.spec.ts`) (`docs/ds-theme-system-hardening-slice-01.md`).
 - [ ] `Not Started` Add future-ready hook for additional tenant brand themes.
-- [ ] `Not Started` Extend visual snapshots to run `brand` + `light` + `dark`.
+- [x] `Done` Add core shell regression checks for theme toggling semantics across owner/tenant/teacher with `theme-brand` + light/dark classes (`tests/visual/theme-toggle-regression.spec.ts`) (`docs/ds-theme-system-hardening-slice-01.md`).
 
 ## Epic 4: Tailwind & Material Alignment
 - [ ] `Not Started` Map Tailwind token consumption to semantic CSS variables.

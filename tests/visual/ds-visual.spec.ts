@@ -40,13 +40,14 @@ const P0_ROUTES: Array<{ key: string; path: string; role: UserRole }> = [
 async function applyTheme(page: Page, theme: ThemeMode): Promise<void> {
   await page.evaluate((mode) => {
     const html = document.documentElement;
-    html.classList.remove('theme-brand');
+    html.classList.remove('theme-light', 'theme-dark');
+    html.classList.add('theme-brand');
 
     // Brand parity currently maps to the existing default dark presentation.
     if (mode === 'brand') {
       localStorage.setItem('theme', 'dark');
       html.classList.add('dark');
-      html.classList.add('theme-brand');
+      html.classList.add('theme-dark');
       html.style.colorScheme = 'dark';
       return;
     }
@@ -54,9 +55,11 @@ async function applyTheme(page: Page, theme: ThemeMode): Promise<void> {
     localStorage.setItem('theme', mode);
     if (mode === 'dark') {
       html.classList.add('dark');
+      html.classList.add('theme-dark');
       html.style.colorScheme = 'dark';
     } else {
       html.classList.remove('dark');
+      html.classList.add('theme-light');
       html.style.colorScheme = 'light';
     }
   }, theme);
