@@ -68,6 +68,9 @@ Status legend:
 - [x] `Done` Add and run second regression checkpoint under `brand` theme for adopted P0 route (`owner-billing`) (`docs/ds-token-adoption-slice-01.md`).
 - [x] `Done` Add and run third/fourth regression checkpoints under `brand` theme (`owner-analytics`, `owner-tenant-details`) (`docs/ds-token-adoption-slice-02.md`).
 - [x] `Done` Add and run fifth/sixth regression checkpoints under `brand` theme (`owner-subscription-details`, `owner-tenants-create`) (`docs/ds-token-adoption-slice-03.md`).
+- [x] `Done` Execute owner inline-dimension conversion (`owner-tenants-list` search input) to separated component CSS class (`docs/ds-token-adoption-slice-04.md`).
+- [x] `Done` Execute tenant progress-width conversions to DS CSS-variable pattern (`tenant-room-details`, `tenant-group-details`, `tenant-group-attendance`) (`docs/ds-token-adoption-slice-04.md`).
+- [x] `Done` Add and run seventh/eighth/ninth regression checkpoints under `brand` theme (`owner-tenants`, `tenant-groups-details`, `tenant-rooms`) (`docs/ds-token-adoption-slice-04.md`).
 - [ ] `Not Started` Remove duplicate one-off style patterns after replacement.
 
 ## Epic 7: Governance & Enforcement

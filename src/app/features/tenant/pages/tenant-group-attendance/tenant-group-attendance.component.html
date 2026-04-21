@@ -71,9 +71,9 @@
                     </div>
                   </td>
                   <td class="px-6 py-4">
-                    <div class="flex items-center gap-3">
-                      <div class="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden max-w-[100px]">
-                        <div class="h-full bg-indigo-500" [style.width.%]="student.attendanceRate"></div>
+                      <div class="flex items-center gap-3">
+                        <div class="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden max-w-[100px]">
+                        <div class="ds-progress-fill" [style.--ds-progress]="student.attendanceRate + '%'"></div>
                       </div>
                       <span class="text-xs font-medium text-slate-500 dark:text-slate-500">{{ student.attendedSessions }}/{{ student.totalSessions }} ({{ student.attendanceRate }}%)</span>
                     </div>
