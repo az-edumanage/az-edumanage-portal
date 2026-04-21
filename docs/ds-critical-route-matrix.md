@@ -30,6 +30,7 @@ Purpose: define the minimum visual-regression baseline coverage for zero-regress
 | `/owner/tenants` | owner | Core data table/list patterns. |
 | `/owner/tenants/create` | owner | Complex form layout and validation styles. |
 | `/owner/plans` | owner | Table + filter composition used widely. |
+| `/owner/plans/create` | owner | High-usage Owner form route migrated to DS form directives. |
 | `/owner/plans/plan-001` | owner | Details layout with cards/sections. |
 | `/owner/subscriptions/sub-001` | owner | Subscription detail page with plan utilization metrics. |
 | `/owner/subscriptions/orders` | owner | Dense admin page with mixed controls. |
@@ -37,6 +38,7 @@ Purpose: define the minimum visual-regression baseline coverage for zero-regress
 | `/owner/analytics` | owner | Usage analytics tables and feature adoption progress bars. |
 | `/owner/users` | owner | User list patterns and badges/chips. |
 | `/owner/tenants/tenant-001` | owner | Tenant details page with utilization progress metrics. |
+| `/owner/provisioning/settings` | owner | High-usage Owner provisioning form route migrated to DS form directives. |
 | `/owner/settings` | owner | Settings toggles and form controls. |
 | `/tenant/overview` | tenant | Tenant dashboard baseline. |
 | `/tenant/students` | tenant | Standard list/table rendering. |

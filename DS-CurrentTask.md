@@ -1,29 +1,25 @@
-# Current Task: Phase 5 - Shared Primitive Migration Slice 06
+# Current Task: Phase 5 - Shared Primitive Migration Slice 07
 
 ## Objective
-Expand DS form primitive adoption (`appInput`, `appSelect`, `appCheckbox`, toggle directives) across additional high-usage Owner forms while preserving layout parity.
+Add missing automated visual baseline coverage for the two high-usage Owner form routes migrated in Slice 06 and verify parity across theme/viewport matrix.
 
 ## Status
 `Completed`
 
 ## Sub-Tasks
-- [x] Wire `FORM_COMPONENTS` into `owner-plan-create` and `owner-provisioning-settings` standalone imports (`src/app/features/owner/pages/owner-plan-create/owner-plan-create.component.ts`, `src/app/features/owner/pages/owner-provisioning-settings/owner-provisioning-settings.component.ts`) (`docs/ds-shared-primitive-migration-slice-06.md`).
-- [x] Replace repeated raw form utility bundles with DS directives in `owner-plan-create` (`appInput`, `appCheckbox`, `appToggleInput`, `appToggleTrack`) while preserving layout classes (`src/app/features/owner/pages/owner-plan-create/owner-plan-create.component.html`) (`docs/ds-shared-primitive-migration-slice-06.md`).
-- [x] Replace repeated raw form utility bundles with DS directives in `owner-provisioning-settings` (`appInput`, `appSelect`, `appCheckbox`, `appToggleInput`, `appToggleTrack`) while preserving layout classes (`src/app/features/owner/pages/owner-provisioning-settings/owner-provisioning-settings.component.html`) (`docs/ds-shared-primitive-migration-slice-06.md`).
-- [x] Validate build (`npm run build`) and focused baseline visual checks (`owner-compliance` + `design-system` under `brand`, desktop/mobile) (`4 passed`) (`docs/ds-shared-primitive-migration-slice-06.md`).
-
-## Scope Guardrails
-- Keep existing primitive selectors and directive APIs unchanged.
-- Keep migration incremental and route-validated.
-- Limit this slice to additional Owner high-usage forms; avoid broad route-wide refactors.
+- [x] Add `owner-plan-create` (`/owner/plans/create`) to automated visual matrix (`tests/visual/ds-visual.spec.ts`).
+- [x] Add `owner-provisioning-settings` (`/owner/provisioning/settings`) to automated visual matrix (`tests/visual/ds-visual.spec.ts`).
+- [x] Update locked route matrix documentation to include both routes in P0 (`docs/ds-critical-route-matrix.md`).
+- [x] Generate baseline snapshots for both routes under `brand`/`light`/`dark` and desktop/mobile (`npm run vr:update -- --grep "owner-plan-create|owner-provisioning-settings"`).
+- [x] Validate focused visual regression run for both routes (`npm run vr:test -- --grep "owner-plan-create|owner-provisioning-settings"`).
 
 ## Exit Criteria
-- High-usage Owner forms use DS form directives for most repeated control patterns.
-- No template/build regressions introduced.
-- Focused baseline visual checks remain green for validated routes.
+- Both Slice 06 high-usage Owner form routes are included in CI visual matrix.
+- Baseline snapshots exist for all required theme/viewport combinations.
+- Focused visual checks pass with no regressions.
 
 ## Next Task (Active)
-Phase 5 - Shared Primitive Migration Slice 07:
-- Add missing visual baseline coverage for high-usage Owner form routes affected by Slice 06.
-- Validate `owner-plan-create` and `owner-provisioning-settings` route parity under `brand` (desktop/mobile).
-- Finalize Epic 5 closure notes and handoff to broader feature adoption track.
+Phase 6 - Feature Adoption (Owner Slice 01):
+- Start Owner feature-wide semantic/component token adoption.
+- Prioritize high-frequency Owner pages still using one-off patterns.
+- Keep route-by-route parity validation under `brand` as migration guardrail.
