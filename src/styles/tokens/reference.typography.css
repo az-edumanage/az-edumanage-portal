@@ -1,0 +1,11 @@
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  :root {
+    --ds-font-family-sans: var(--font-sans);
+    --ds-font-family-mono: var(--font-mono);
+  }
+}

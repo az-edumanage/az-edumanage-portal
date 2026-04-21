@@ -15,17 +15,18 @@ Status legend:
 - [x] `Done` Add acceptance thresholds and diff approval policy (`docs/ds-baseline-capture-strategy.md`).
 
 ## Epic 2: Token Foundation
-- [ ] `Not Started` Create `src/styles/tokens` directory structure.
-- [ ] `Not Started` Create reference token files (color, type, spacing, radius, shadow, motion).
-- [ ] `Not Started` Create semantic token files (text, surface, border, state, action).
-- [ ] `Not Started` Create component token files (button, input, card, table, badge).
-- [ ] `Not Started` Add backward-compatible aliases for existing variables.
-- [ ] `Not Started` Wire token imports into `src/styles.css`.
-- [ ] `Not Started` Add `brand` token map that preserves current visual values as migration baseline.
+- [x] `Done` Create `src/styles/tokens` directory structure.
+- [x] `Done` Create reference token files (color, type, spacing, radius, shadow, motion).
+- [x] `Done` Create semantic token files (text, surface, border, state, action).
+- [x] `Done` Create component token files (button, input, card, table, badge).
+- [x] `Done` Add backward-compatible aliases for existing variables.
+- [x] `Done` Wire token imports into `src/styles.css`.
+- [x] `Done` Add `brand` token map that preserves current visual values as migration baseline.
+- [x] `Done` Execute Batch 01 scaffolding and document implementation (`docs/ds-token-foundation-batch-01.md`).
 
 ## Epic 3: Theme System
-- [ ] `Not Started` Introduce `.theme-light` and `.theme-dark` token scopes.
-- [ ] `Not Started` Introduce `.theme-brand` as default parity theme for existing UI.
+- [x] `Done` Introduce `.theme-light` and `.theme-dark` token scopes.
+- [x] `Done` Introduce `.theme-brand` as default parity theme for existing UI.
 - [ ] `Not Started` Ensure root theme class application is centralized in shell.
 - [ ] `Not Started` Verify localStorage/theme persistence remains unchanged.
 - [ ] `Not Started` Add future-ready hook for additional tenant brand themes.

@@ -1,0 +1,30 @@
+@layer base {
+  :root {
+    /* Brand parity semantic tokens. */
+    --ds-color-primary: var(--brand-600);
+    --ds-color-primary-hover: var(--brand-700);
+    --ds-color-primary-soft: var(--brand-100);
+    --ds-color-primary-contrast: #ffffff;
+
+    --ds-color-text-primary: #0f172a;
+    --ds-color-text-muted: #64748b;
+    --ds-color-surface-default: #f8fafc;
+    --ds-color-surface-card: #ffffff;
+    --ds-color-border-default: #e2e8f0;
+  }
+}
+
+@theme {
+  /* Tailwind indigo remains mapped to the existing brand variables (no visual change). */
+  --color-indigo-50: var(--brand-50);
+  --color-indigo-100: var(--brand-100);
+  --color-indigo-200: var(--brand-200);
+  --color-indigo-300: var(--brand-300);
+  --color-indigo-400: var(--brand-400);
+  --color-indigo-500: var(--brand-500);
+  --color-indigo-600: var(--brand-600);
+  --color-indigo-700: var(--brand-700);
+  --color-indigo-800: var(--brand-800);
+  --color-indigo-900: var(--brand-900);
+  --color-indigo-950: var(--brand-950);
+}

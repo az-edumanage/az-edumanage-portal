@@ -1,0 +1,16 @@
+@layer base {
+  :root {
+    /* Component token seeds for batch-01. */
+    --ds-button-primary-bg: var(--ds-color-primary);
+    --ds-button-primary-bg-hover: var(--ds-color-primary-hover);
+    --ds-button-primary-fg: var(--ds-color-primary-contrast);
+
+    --ds-card-bg: var(--ds-color-surface-card);
+    --ds-card-border: var(--ds-color-border-default);
+    --ds-card-shadow: var(--ds-shadow-sm);
+
+    --ds-input-bg: var(--ds-color-surface-card);
+    --ds-input-border: var(--ds-color-border-default);
+    --ds-input-text: var(--ds-color-text-primary);
+  }
+}

@@ -1,0 +1,29 @@
+@layer base {
+  :root {
+    /* Brand palette (parity values from existing app styles). */
+    --brand-50: #eef2ff;
+    --brand-100: #e0e7ff;
+    --brand-200: #c7d2fe;
+    --brand-300: #a5b4fc;
+    --brand-400: #818cf8;
+    --brand-500: #6366f1;
+    --brand-600: #4f46e5;
+    --brand-700: #4338ca;
+    --brand-800: #3730a3;
+    --brand-900: #312e81;
+    --brand-950: #1e1b4b;
+
+    /* Backward-compatible alias layer for DS-prefixed usage. */
+    --ds-brand-50: var(--brand-50);
+    --ds-brand-100: var(--brand-100);
+    --ds-brand-200: var(--brand-200);
+    --ds-brand-300: var(--brand-300);
+    --ds-brand-400: var(--brand-400);
+    --ds-brand-500: var(--brand-500);
+    --ds-brand-600: var(--brand-600);
+    --ds-brand-700: var(--brand-700);
+    --ds-brand-800: var(--brand-800);
+    --ds-brand-900: var(--brand-900);
+    --ds-brand-950: var(--brand-950);
+  }
+}
