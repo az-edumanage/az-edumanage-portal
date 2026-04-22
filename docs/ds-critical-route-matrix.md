@@ -38,6 +38,7 @@ Purpose: define the minimum visual-regression baseline coverage for zero-regress
 | `/owner/analytics` | owner | Usage analytics tables and feature adoption progress bars. |
 | `/owner/users` | owner | User list patterns and badges/chips. |
 | `/owner/tenants/tenant-001` | owner | Tenant details page with utilization progress metrics. |
+| `/owner/tenants/tenant-001/edit` | owner | Tenant edit form with dense dropdown/control combinations. |
 | `/owner/provisioning/settings` | owner | High-usage Owner provisioning form route migrated to DS form directives. |
 | `/owner/settings` | owner | Settings toggles and form controls. |
 | `/tenant/overview` | tenant | Tenant dashboard baseline. |

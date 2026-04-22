@@ -1,28 +1,28 @@
 
-    <div class="max-w-4xl mx-auto space-y-6">
+    <div class="owner-tenant-edit-page max-w-4xl mx-auto space-y-6">
       <!-- Header -->
-      <div class="flex items-center justify-between">
-        <div class="space-y-1">
-          <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
-            <a routerLink="/owner/tenants" class="hover:text-indigo-600 transition-colors">Tenants</a>
+      <div class="owner-tenant-edit-header flex items-center justify-between">
+        <div class="owner-tenant-edit-header-text space-y-1">
+          <div class="owner-tenant-edit-breadcrumb flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+            <a routerLink="/owner/tenants" class="owner-tenant-edit-breadcrumb-link hover:text-indigo-600 transition-colors">Tenants</a>
             <mat-icon class="text-[10px]">chevron_right</mat-icon>
-            <a [routerLink]="['/owner/tenants', tenantId]" class="hover:text-indigo-600 transition-colors">{{ tenantName() }}</a>
+            <a [routerLink]="['/owner/tenants', tenantId]" class="owner-tenant-edit-breadcrumb-link hover:text-indigo-600 transition-colors">{{ tenantName() }}</a>
             <mat-icon class="text-[10px]">chevron_right</mat-icon>
             <span>Edit Details</span>
           </div>
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Edit Tenant Details</h2>
+          <h2 class="owner-tenant-edit-title text-2xl font-bold text-slate-900 dark:text-white">Edit Tenant Details</h2>
         </div>
-        <div class="flex gap-3">
+        <div class="owner-tenant-edit-header-actions flex gap-3">
           <button 
             (click)="onCancel()"
-            class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+            class="owner-tenant-edit-btn owner-tenant-edit-btn-secondary px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
           >
             Cancel
           </button>
           <button 
             (click)="onSubmit()"
             [disabled]="tenantForm.invalid || isSubmitting()"
-            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+            class="owner-tenant-edit-btn owner-tenant-edit-btn-primary px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
           >
             @if (isSubmitting()) {
               <mat-icon class="animate-spin text-sm">sync</mat-icon>
@@ -35,34 +35,34 @@
         </div>
       </div>
 
-      <form [formGroup]="tenantForm" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <form [formGroup]="tenantForm" class="owner-tenant-edit-form grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Main Form Section -->
         <div class="lg:col-span-2 space-y-6">
           <!-- Basic Information -->
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+          <div class="owner-tenant-edit-card bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="owner-tenant-edit-section-title text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
               <mat-icon class="text-sm">business</mat-icon>
               Tenant Information
             </h3>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="md:col-span-2">
-                <label for="centerName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tenant Name</label>
+                <label for="centerName" class="owner-tenant-edit-label block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tenant Name</label>
                 <input 
                   id="centerName"
                   type="text" 
                   formControlName="centerName"
                   placeholder="e.g. Cairo Excellence Academy"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  class="owner-tenant-edit-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                 >
               </div>
 
               <div class="md:col-span-2 relative">
-                <label for="tenantType" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tenant Type</label>
+                <label for="tenantType" class="owner-tenant-edit-label block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tenant Type</label>
                 <button 
                   type="button"
                   (click)="showTenantTypeDropdown.set(!showTenantTypeDropdown())"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 cursor-pointer flex justify-between items-center transition-all"
+                  class="owner-tenant-edit-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 cursor-pointer flex justify-between items-center transition-all"
                 >
                   <span [class.text-slate-500]="!tenantForm.get('tenantType')?.value">
                     {{ tenantForm.get('tenantType')?.value || 'Select Tenant Type' }}
@@ -77,7 +77,7 @@
                     (click)="showTenantTypeDropdown.set(false)"
                     aria-label="Close dropdown"
                   ></button>
-                  <div class="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div class="owner-tenant-edit-dropdown-menu absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                     <div class="max-h-48 overflow-y-auto">
                       @for (type of tenantTypes; track type) {
                         <button 
@@ -97,14 +97,14 @@
               </div>
               
               <div class="md:col-span-2">
-                <label for="subdomain" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Subdomain</label>
-                <div class="flex rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 opacity-60 cursor-not-allowed">
+                <label for="subdomain" class="owner-tenant-edit-label block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Subdomain</label>
+                <div class="owner-tenant-edit-readonly-subdomain flex rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 opacity-60 cursor-not-allowed">
                   <input 
                     id="subdomain"
                     type="text" 
                     formControlName="subdomain"
                     readonly
-                    class="flex-1 px-3 py-2 bg-transparent text-sm outline-none cursor-not-allowed"
+                    class="owner-tenant-edit-control owner-tenant-edit-control-ghost flex-1 px-3 py-2 bg-transparent text-sm outline-none cursor-not-allowed"
                   >
                   <div class="px-3 py-2 border-l border-slate-200 dark:border-slate-700 text-xs text-slate-500 flex items-center">
                     {{ tenantForm.get('domain')?.value }}
@@ -114,11 +114,11 @@
               </div>
 
               <div class="md:col-span-2 relative">
-                <label for="industry" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Industry / Type</label>
+                <label for="industry" class="owner-tenant-edit-label block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Industry / Type</label>
                 <button 
                   type="button"
                   (click)="showIndustryDropdown.set(!showIndustryDropdown())"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 cursor-pointer flex justify-between items-center transition-all"
+                  class="owner-tenant-edit-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 cursor-pointer flex justify-between items-center transition-all"
                 >
                   <span [class.text-slate-500]="!tenantForm.get('industry')?.value">
                     {{ tenantForm.get('industry')?.value || 'Select Industry' }}
@@ -133,7 +133,7 @@
                     (click)="showIndustryDropdown.set(false)"
                     aria-label="Close dropdown"
                   ></button>
-                  <div class="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div class="owner-tenant-edit-dropdown-menu absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                     <div class="max-h-48 overflow-y-auto">
                       @for (industry of industries; track industry) {
                         <button 
@@ -155,63 +155,63 @@
           </div>
 
           <!-- Contact Information -->
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+          <div class="owner-tenant-edit-card bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="owner-tenant-edit-section-title text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
               <mat-icon class="text-sm">contact_mail</mat-icon>
               Contact Info
             </h3>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="md:col-span-2">
-                <label for="contactName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+                <label for="contactName" class="owner-tenant-edit-label block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
                 <input 
                   id="contactName"
                   type="text" 
                   formControlName="contactName"
                   placeholder="John Doe"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  class="owner-tenant-edit-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                 >
               </div>
 
               <div>
-                <label for="contactEmail" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Contact Email</label>
+                <label for="contactEmail" class="owner-tenant-edit-label block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Contact Email</label>
                 <input 
                   id="contactEmail"
                   type="email" 
                   formControlName="contactEmail"
                   placeholder="contact@center.com"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  class="owner-tenant-edit-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                 >
               </div>
               
               <div>
-                <label for="contactPhone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Phone Number</label>
+                <label for="contactPhone" class="owner-tenant-edit-label block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Phone Number</label>
                 <input 
                   id="contactPhone"
                   type="tel" 
                   formControlName="contactPhone"
                   placeholder="+20 123 456 7890"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  class="owner-tenant-edit-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                 >
               </div>
 
               <div class="md:col-span-2">
-                <label for="address" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Address</label>
+                <label for="address" class="owner-tenant-edit-label block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Address</label>
                 <input 
                   id="address"
                   type="text" 
                   formControlName="address"
                   placeholder="123 Education St"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  class="owner-tenant-edit-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                 >
               </div>
 
               <div class="relative">
-                <label for="city" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">City</label>
+                <label for="city" class="owner-tenant-edit-label block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">City</label>
                 <button 
                   type="button"
                   (click)="showCityDropdown.set(!showCityDropdown())"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 cursor-pointer flex justify-between items-center transition-all"
+                  class="owner-tenant-edit-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 cursor-pointer flex justify-between items-center transition-all"
                 >
                   <span [class.text-slate-500]="!tenantForm.get('city')?.value">
                     {{ tenantForm.get('city')?.value || 'Select City' }}
@@ -226,7 +226,7 @@
                     (click)="showCityDropdown.set(false)"
                     aria-label="Close dropdown"
                   ></button>
-                  <div class="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div class="owner-tenant-edit-dropdown-menu absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                     <div class="max-h-48 overflow-y-auto">
                       @for (city of cities; track city) {
                         <button 
@@ -246,11 +246,11 @@
               </div>
 
               <div class="relative">
-                <label for="country" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Country</label>
+                <label for="country" class="owner-tenant-edit-label block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Country</label>
                 <button 
                   type="button"
                   (click)="showCountryDropdown.set(!showCountryDropdown())"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 cursor-pointer flex justify-between items-center transition-all"
+                  class="owner-tenant-edit-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 cursor-pointer flex justify-between items-center transition-all"
                 >
                   <span [class.text-slate-500]="!tenantForm.get('country')?.value">
                     {{ tenantForm.get('country')?.value || 'Select Country' }}
@@ -265,7 +265,7 @@
                     (click)="showCountryDropdown.set(false)"
                     aria-label="Close dropdown"
                   ></button>
-                  <div class="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div class="owner-tenant-edit-dropdown-menu absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                     <div class="max-h-48 overflow-y-auto">
                       @for (country of countries; track country) {
                         <button 
@@ -290,14 +290,14 @@
         <!-- Sidebar Options -->
         <div class="space-y-6">
           <!-- Subscription Plan -->
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Subscription Plan</h3>
+          <div class="owner-tenant-edit-card bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="owner-tenant-edit-section-title text-sm font-bold text-slate-500 uppercase tracking-wider">Subscription Plan</h3>
             
             <div class="relative">
               <button 
                 type="button"
                 (click)="showPlanDropdown.set(!showPlanDropdown())"
-                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 cursor-pointer flex justify-between items-center transition-all"
+                class="owner-tenant-edit-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 cursor-pointer flex justify-between items-center transition-all"
               >
                 <span [class.text-slate-500]="!tenantForm.get('planId')?.value">
                   {{ getSelectedPlanName() || 'Select plan' }}
@@ -312,13 +312,13 @@
                   (click)="showPlanDropdown.set(false)"
                   aria-label="Close dropdown"
                 ></button>
-                <div class="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div class="owner-tenant-edit-dropdown-menu absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                   <div class="max-h-64 overflow-y-auto p-2 space-y-1">
                     @for (plan of plans; track plan.id) {
                       <button 
                         type="button"
                         (click)="selectPlan(plan.id)"
-                        class="w-full flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all"
+                        class="owner-tenant-edit-plan-choice w-full flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all"
                         [class.bg-indigo-600/10]="tenantForm.get('planId')?.value === plan.id"
                         [class.dark:bg-indigo-900/20]="tenantForm.get('planId')?.value === plan.id"
                         [class.hover:bg-slate-50]="tenantForm.get('planId')?.value !== plan.id"
@@ -346,12 +346,12 @@
 
               @if (tenantForm.get('isTrial')?.value) {
                 <div class="animate-in fade-in slide-in-from-top-2 duration-200">
-                  <label for="trialDays" class="block text-xs font-bold text-slate-500 uppercase mb-1">Trial Days</label>
+                  <label for="trialDays" class="owner-tenant-edit-label block text-xs font-bold text-slate-500 uppercase mb-1">Trial Days</label>
                   <input 
                     id="trialDays"
                     type="number" 
                     formControlName="trialDays"
-                    class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    class="owner-tenant-edit-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                   >
                 </div>
               }
@@ -359,27 +359,27 @@
           </div>
 
           <!-- Change Password Section -->
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+          <div class="owner-tenant-edit-card bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="owner-tenant-edit-section-title text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
               <mat-icon class="text-sm">lock</mat-icon>
               Security
             </h3>
             
             <div class="space-y-3">
               <div>
-                <label for="newPassword" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">New Password</label>
+                <label for="newPassword" class="owner-tenant-edit-label block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">New Password</label>
                 <div class="relative">
                   <input 
                     [type]="showPassword() ? 'text' : 'password'"
                     id="newPassword"
                     formControlName="newPassword"
                     placeholder="••••••••"
-                    class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all pr-10"
+                    class="owner-tenant-edit-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all pr-10"
                   >
                   <button 
                     type="button"
                     (click)="showPassword.set(!showPassword())"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-500 transition-colors"
+                    class="owner-tenant-edit-password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-500 transition-colors"
                   >
                     <mat-icon class="text-lg">{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
                   </button>
@@ -387,13 +387,13 @@
               </div>
 
               <div>
-                <label for="confirmPassword" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Confirm Password</label>
+                <label for="confirmPassword" class="owner-tenant-edit-label block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Confirm Password</label>
                 <input 
                   [type]="showPassword() ? 'text' : 'password'"
                   id="confirmPassword"
                   formControlName="confirmPassword"
                   placeholder="••••••••"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  class="owner-tenant-edit-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                   [class.border-red-500]="tenantForm.errors?.['passwordMismatch'] && tenantForm.get('confirmPassword')?.touched"
                 >
                 @if (tenantForm.errors?.['passwordMismatch'] && tenantForm.get('confirmPassword')?.touched) {
