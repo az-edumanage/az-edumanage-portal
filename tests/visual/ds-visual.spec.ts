@@ -35,6 +35,7 @@ const P0_ROUTES: Array<{ key: string; path: string; role: UserRole }> = [
   { key: 'owner-provisioning-settings', path: '/owner/provisioning/settings', role: 'owner' },
   { key: 'owner-settings', path: '/owner/settings', role: 'owner' },
   { key: 'tenant-overview', path: '/tenant/overview', role: 'tenant' },
+  { key: 'tenant-teachers', path: '/tenant/teachers', role: 'tenant' },
   { key: 'tenant-students', path: '/tenant/students', role: 'tenant' },
   { key: 'tenant-students-create', path: '/tenant/students/create', role: 'tenant' },
   { key: 'tenant-groups', path: '/tenant/groups', role: 'tenant' },

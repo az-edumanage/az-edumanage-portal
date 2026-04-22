@@ -80,4 +80,5 @@ Build an enterprise-grade Design System on top of the current Angular + Tailwind
 - Epic 6 Owner Slice 21 is completed (`/owner/notifications`).
 - Epic 6 Owner Slice 22 is completed (`/owner/modules`).
 - Epic 6 Owner Slice 23 is completed (`/owner/integrations`).
-- Next active slice is Tenant Slice 01 (`/tenant/teachers`).
+- Epic 6 Tenant Slice 01 is completed (`/tenant/teachers`).
+- Next active slice is Tenant Slice 02 (`/tenant/schedule`).

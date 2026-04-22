@@ -50,6 +50,7 @@ Purpose: define the minimum visual-regression baseline coverage for zero-regress
 | `/owner/provisioning/settings` | owner | High-usage Owner provisioning form route migrated to DS form directives. |
 | `/owner/settings` | owner | Settings toggles and form controls. |
 | `/tenant/overview` | tenant | Tenant dashboard baseline. |
+| `/tenant/teachers` | tenant | Teacher directory with grid/list mode, advanced filters, and action menus. |
 | `/tenant/students` | tenant | Standard list/table rendering. |
 | `/tenant/students/create` | tenant | Create form coverage. |
 | `/tenant/groups` | tenant | Group list and action buttons. |
@@ -66,7 +67,6 @@ Purpose: define the minimum visual-regression baseline coverage for zero-regress
 | Route | Role | Note |
 |---|---|---|
 | `/owner/compliance` | owner | Compliance request progress bars and policy controls. |
-| `/tenant/teachers` | tenant | Secondary list coverage. |
 | `/tenant/schedule` | tenant | Calendar/schedule visual area. |
 | `/tenant/rooms/create` | tenant | Additional create form path. |
 | `/tenant/grades` | tenant | Grades list/table patterns. |

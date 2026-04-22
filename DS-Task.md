@@ -21,6 +21,7 @@ Status legend:
 - [x] `Done` Expand P0 route matrix to include owner security route for migration parity coverage (`docs/ds-critical-route-matrix.md`, `tests/visual/ds-visual.spec.ts`).
 - [x] `Done` Expand P0 route matrix to include owner modules route for focused Slice 22 parity coverage (`docs/ds-critical-route-matrix.md`, `tests/visual/ds-visual.spec.ts`).
 - [x] `Done` Expand P0 route matrix to include owner integrations route for focused Slice 23 parity coverage (`docs/ds-critical-route-matrix.md`, `tests/visual/ds-visual.spec.ts`).
+- [x] `Done` Expand P0 route matrix to include tenant teachers route for focused Tenant Slice 01 parity coverage (`docs/ds-critical-route-matrix.md`, `tests/visual/ds-visual.spec.ts`).
 
 ## Epic 2: Token Foundation
 - [x] `Done` Create `src/styles/tokens` directory structure.
@@ -92,6 +93,7 @@ Status legend:
 - [x] `Done` Execute Owner Slice 21 one-off style extraction on high-usage owner-notifications route with focused visual re-baseline (`docs/ds-feature-adoption-owner-slice-21.md`).
 - [x] `Done` Execute Owner Slice 22 one-off style extraction on high-usage owner-modules route with focused visual re-baseline (`docs/ds-feature-adoption-owner-slice-22.md`).
 - [x] `Done` Execute Owner Slice 23 one-off style extraction on high-usage owner-integrations route with focused visual re-baseline (`docs/ds-feature-adoption-owner-slice-23.md`).
+- [x] `Done` Execute Tenant Slice 01 one-off style extraction on high-usage tenant-teachers route with focused visual re-baseline (`docs/ds-feature-adoption-tenant-slice-01.md`).
 - [x] `Done` Audit and inventory inline styles (`style=\"...\"`, `[style.*]`, `[ngStyle]`) by feature (`docs/ds-inline-style-inventory.md`).
 - [x] `Done` Execute first P0 inline-style conversion to DS CSS-variable pattern (`owner-overview` regional progress bars) (`docs/ds-token-adoption-slice-01.md`).
 - [x] `Done` Execute second P0 inline-style conversion to DS CSS-variable pattern (`owner-billing` revenue bars) (`docs/ds-token-adoption-slice-01.md`).
