@@ -33,6 +33,7 @@ Purpose: define the minimum visual-regression baseline coverage for zero-regress
 | `/owner/plans/create` | owner | High-usage Owner form route migrated to DS form directives. |
 | `/owner/plans/plan-001` | owner | Details layout with cards/sections. |
 | `/owner/subscriptions` | owner | Core subscription listing with filters/status/action patterns. |
+| `/owner/subscriptions/templates` | owner | Template catalog cards and template-management actions. |
 | `/owner/subscriptions/sub-001` | owner | Subscription detail page with plan utilization metrics. |
 | `/owner/subscriptions/orders` | owner | Dense admin page with mixed controls. |
 | `/owner/billing` | owner | Financial table and filters. |
