@@ -83,6 +83,7 @@ Status legend:
 - [x] `Done` Execute Owner Slice 15 one-off style extraction on high-usage subscription-create route with focused visual re-baseline (`docs/ds-feature-adoption-owner-slice-15.md`).
 - [x] `Done` Execute Owner Slice 16 one-off style extraction on high-usage owner-overview route with focused visual re-baseline (`docs/ds-feature-adoption-owner-slice-16.md`).
 - [x] `Done` Execute Owner Slice 17 one-off style extraction on high-usage owner-analytics route with focused visual re-baseline (`docs/ds-feature-adoption-owner-slice-17.md`).
+- [x] `Done` Execute Owner Slice 18 one-off style extraction on high-usage owner-compliance route with focused visual re-baseline (`docs/ds-feature-adoption-owner-slice-18.md`).
 - [x] `Done` Audit and inventory inline styles (`style=\"...\"`, `[style.*]`, `[ngStyle]`) by feature (`docs/ds-inline-style-inventory.md`).
 - [x] `Done` Execute first P0 inline-style conversion to DS CSS-variable pattern (`owner-overview` regional progress bars) (`docs/ds-token-adoption-slice-01.md`).
 - [x] `Done` Execute second P0 inline-style conversion to DS CSS-variable pattern (`owner-billing` revenue bars) (`docs/ds-token-adoption-slice-01.md`).
