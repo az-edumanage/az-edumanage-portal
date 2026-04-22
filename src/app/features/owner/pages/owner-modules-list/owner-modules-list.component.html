@@ -1,22 +1,21 @@
-
-    <div class="space-y-6">
+<div class="owner-modules-page">
       <!-- Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="owner-modules-header">
         <div>
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Modules Management</h2>
-          <p class="text-slate-500 dark:text-slate-500 text-sm">Manage system modules and control availability across plans and tenants.</p>
+          <h2 class="owner-modules-title">Modules Management</h2>
+          <p class="owner-modules-subtitle">Manage system modules and control availability across plans and tenants.</p>
         </div>
-        <button class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20">
+        <button class="owner-modules-create">
           <mat-icon class="text-sm">add</mat-icon>
           Create Module
         </button>
       </div>
 
       <!-- Filters -->
-      <div class="flex flex-wrap gap-2 border-b border-slate-200 dark:border-slate-800 pb-4">
+      <div class="owner-modules-filters">
         <button 
           (click)="setFilter('All')"
-          class="px-4 py-2 rounded-full text-sm font-medium transition-colors"
+          class="owner-modules-filter-btn"
           [class.bg-slate-900]="filter() === 'All'"
           [class.text-white]="filter() === 'All'"
           [class.bg-slate-100]="filter() !== 'All'"
@@ -30,7 +29,7 @@
         </button>
         <button 
           (click)="setFilter('Core Business')"
-          class="px-4 py-2 rounded-full text-sm font-medium transition-colors"
+          class="owner-modules-filter-btn"
           [class.bg-emerald-100]="filter() === 'Core Business'"
           [class.text-emerald-700]="filter() === 'Core Business'"
           [class.bg-slate-100]="filter() !== 'Core Business'"
@@ -44,7 +43,7 @@
         </button>
         <button 
           (click)="setFilter('Core System')"
-          class="px-4 py-2 rounded-full text-sm font-medium transition-colors"
+          class="owner-modules-filter-btn"
           [class.bg-blue-100]="filter() === 'Core System'"
           [class.text-blue-700]="filter() === 'Core System'"
           [class.bg-slate-100]="filter() !== 'Core System'"
@@ -58,7 +57,7 @@
         </button>
         <button 
           (click)="setFilter('Advanced')"
-          class="px-4 py-2 rounded-full text-sm font-medium transition-colors"
+          class="owner-modules-filter-btn"
           [class.bg-amber-100]="filter() === 'Advanced'"
           [class.text-amber-700]="filter() === 'Advanced'"
           [class.bg-slate-100]="filter() !== 'Advanced'"
@@ -73,12 +72,12 @@
       </div>
 
       <!-- Modules Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="owner-modules-grid">
         @for (module of filteredModules(); track module.id) {
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col h-full">
-            <div class="flex items-start justify-between mb-4">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+          <div class="owner-modules-card">
+            <div class="owner-modules-card-head">
+              <div class="owner-modules-meta">
+                <div class="owner-modules-icon"
                   [class.bg-emerald-100]="module.category === 'Core Business'"
                   [class.text-emerald-600]="module.category === 'Core Business'"
                   [class.dark:bg-emerald-900/30]="module.category === 'Core Business'"
@@ -95,8 +94,8 @@
                   <mat-icon>{{ module.icon }}</mat-icon>
                 </div>
                 <div>
-                  <h3 class="font-bold text-slate-900 dark:text-white">{{ module.name }}</h3>
-                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium mt-1"
+                  <h3 class="owner-modules-card-title">{{ module.name }}</h3>
+                  <span class="owner-modules-category"
                     [class.bg-emerald-100]="module.category === 'Core Business'"
                     [class.text-emerald-700]="module.category === 'Core Business'"
                     [class.dark:bg-emerald-900/30]="module.category === 'Core Business'"
@@ -115,8 +114,8 @@
                 </div>
               </div>
               @if (module.category === 'Advanced') {
-                <div class="relative group">
-                  <button class="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500">
+                <div class="owner-modules-menu-wrap">
+                  <button class="owner-modules-menu-btn">
                     <mat-icon>more_vert</mat-icon>
                   </button>
                   <!-- Dropdown would go here -->
@@ -124,12 +123,12 @@
               }
             </div>
 
-            <p class="text-sm text-slate-500 dark:text-slate-500 mb-6 flex-grow">{{ module.description }}</p>
+            <p class="owner-modules-description">{{ module.description }}</p>
 
-            <div class="space-y-4">
-              <div class="flex items-center justify-between text-sm">
-                <span class="text-slate-500 dark:text-slate-500">Status</span>
-                <span class="font-medium"
+            <div class="owner-modules-stats">
+              <div class="owner-modules-stat-row">
+                <span class="owner-modules-label">Status</span>
+                <span class="owner-modules-value"
                   [class.text-green-600]="module.status === 'Enabled'"
                   [class.dark:text-green-400]="module.status === 'Enabled'"
                   [class.text-slate-500]="module.status === 'Disabled'"
@@ -138,28 +137,28 @@
                 </span>
               </div>
 
-              <div class="flex items-center justify-between text-sm">
-                <span class="text-slate-500 dark:text-slate-500">Active Tenants</span>
-                <span class="font-medium text-slate-900 dark:text-white">{{ module.activeTenantsCount }}</span>
+              <div class="owner-modules-stat-row">
+                <span class="owner-modules-label">Active Tenants</span>
+                <span class="owner-modules-value owner-modules-value--primary">{{ module.activeTenantsCount }}</span>
               </div>
 
-              <div class="flex flex-wrap gap-1">
+              <div class="owner-modules-plans">
                 @for (plan of module.includedInPlans; track plan) {
-                  <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-500 text-xs rounded border border-slate-200 dark:border-slate-700">
+                  <span class="owner-modules-plan-chip">
                     {{ plan }}
                   </span>
                 }
               </div>
             </div>
 
-            <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-              <span class="text-xs text-slate-500">Updated {{ module.lastUpdated }}</span>
-              <button [routerLink]="['/owner/modules', module.id]" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 text-sm font-medium">
+            <div class="owner-modules-footer">
+              <span class="owner-modules-updated">Updated {{ module.lastUpdated }}</span>
+              <button [routerLink]="['/owner/modules', module.id]" class="owner-modules-view-link">
                 View Details
               </button>
             </div>
           </div>
         }
       </div>
-    </div>
+</div>
   

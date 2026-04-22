@@ -9,5 +9,15 @@
     --ds-space-8: 2rem;
     --ds-space-10: 2.5rem;
     --ds-space-12: 3rem;
+    /* Backward-compatible aliases for feature styles still using legacy spacing names. */
+    --space-1: var(--ds-space-1);
+    --space-2: var(--ds-space-2);
+    --space-3: var(--ds-space-3);
+    --space-4: var(--ds-space-4);
+    --space-5: var(--ds-space-5);
+    --space-6: var(--ds-space-6);
+    --space-8: var(--ds-space-8);
+    --space-10: var(--ds-space-10);
+    --space-12: var(--ds-space-12);
   }
 }

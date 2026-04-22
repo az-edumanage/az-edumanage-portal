@@ -5,6 +5,7 @@
 .owner-subscription-create-page {
   max-width: 56rem;
   margin-inline: auto;
+  padding-top: var(--space-1);
   padding-bottom: 3rem;
 }
 
@@ -25,7 +26,8 @@
 }
 
 .owner-subscription-create-form {
-  display: block;
+  display: grid;
+  row-gap: var(--space-6);
   align-content: start;
 }
 
@@ -34,11 +36,16 @@
   border: 1px solid var(--color-border-primary, #e2e8f0);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
-  padding: var(--space-6);
+  padding: var(--space-5);
+}
+
+.owner-subscription-create-card > * + * {
+  margin-top: var(--space-4);
 }
 
 .owner-subscription-create-card-title {
   line-height: 1.35;
+  margin-bottom: 0;
 }
 
 .owner-subscription-create-card-icon {
@@ -137,6 +144,7 @@
 }
 
 .owner-subscription-create-action-row {
+  margin-top: var(--space-2);
   justify-content: flex-end;
 }
 
