@@ -1,17 +1,17 @@
-<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="owner-subscription-orders-table-shell bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
   @if (selectedOrderIds().size > 0) {
-    <div class="bg-indigo-600/10 dark:bg-indigo-900/20 px-6 py-3 border-b border-indigo-100 dark:border-indigo-900/30 flex items-center justify-between animate-in slide-in-from-top-2 duration-300">
-      <div class="flex items-center gap-3">
-        <span class="text-sm font-bold text-indigo-600 dark:text-indigo-400">{{ selectedOrderIds().size }} orders selected</span>
-        <div class="h-4 w-px bg-indigo-200 dark:bg-indigo-800"></div>
-        <button class="text-xs font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors" (click)="clearSelectionClicked.emit()">Clear Selection</button>
+    <div class="owner-subscription-orders-bulk-row bg-indigo-600/10 dark:bg-indigo-900/20 px-6 py-3 border-b border-indigo-100 dark:border-indigo-900/30 flex items-center justify-between animate-in slide-in-from-top-2 duration-300">
+      <div class="owner-subscription-orders-bulk-info flex items-center gap-3">
+        <span class="owner-subscription-orders-bulk-count text-sm font-bold text-indigo-600 dark:text-indigo-400">{{ selectedOrderIds().size }} orders selected</span>
+        <div class="owner-subscription-orders-bulk-divider h-4 w-px bg-indigo-200 dark:bg-indigo-800"></div>
+        <button class="owner-subscription-orders-bulk-clear text-xs font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors" (click)="clearSelectionClicked.emit()">Clear Selection</button>
       </div>
-      <div class="flex items-center gap-2">
-        <button class="px-3 py-1.5 bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-800 rounded-lg text-xs font-bold text-green-600 hover:bg-green-50 dark:hover:bg-green-900/10 transition-all flex items-center gap-1.5">
+      <div class="owner-subscription-orders-bulk-actions flex items-center gap-2">
+        <button class="owner-subscription-orders-bulk-btn owner-subscription-orders-bulk-btn-approve px-3 py-1.5 bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-800 rounded-lg text-xs font-bold text-green-600 hover:bg-green-50 dark:hover:bg-green-900/10 transition-all flex items-center gap-1.5">
           <mat-icon class="text-sm">check_circle</mat-icon>
           Bulk Approve
         </button>
-        <button class="px-3 py-1.5 bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-800 rounded-lg text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all flex items-center gap-1.5">
+        <button class="owner-subscription-orders-bulk-btn owner-subscription-orders-bulk-btn-reject px-3 py-1.5 bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-800 rounded-lg text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all flex items-center gap-1.5">
           <mat-icon class="text-sm">cancel</mat-icon>
           Bulk Reject
         </button>
@@ -19,58 +19,58 @@
     </div>
   }
 
-  <div class="overflow-x-auto">
-    <table class="w-full text-left text-sm">
-      <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
+  <div class="owner-subscription-orders-table-scroll overflow-x-auto">
+    <table class="owner-subscription-orders-table w-full text-left text-sm">
+      <thead class="owner-subscription-orders-table-head bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
         <tr>
-          <th class="px-6 py-4 w-10">
+          <th class="owner-subscription-orders-th owner-subscription-orders-th-checkbox px-6 py-4 w-10">
             <input
               type="checkbox"
               [checked]="isAllSelected()"
-              class="w-4 h-4 rounded border-slate-200 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+              class="owner-subscription-orders-checkbox w-4 h-4 rounded border-slate-200 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
               (change)="toggleAllSelection.emit()"
             >
           </th>
-          <th class="px-6 py-4 font-medium">Order ID</th>
-          <th class="px-6 py-4 font-medium">Tenant</th>
-          <th class="px-6 py-4 font-medium">Template</th>
-          <th class="px-6 py-4 font-medium">Amount</th>
-          <th class="px-6 py-4 font-medium">Payment Method</th>
-          <th class="px-6 py-4 font-medium">Status</th>
-          <th class="px-6 py-4 font-medium">Date</th>
-          <th class="px-6 py-4 font-medium text-right">Actions</th>
+          <th class="owner-subscription-orders-th px-6 py-4 font-medium">Order ID</th>
+          <th class="owner-subscription-orders-th px-6 py-4 font-medium">Tenant</th>
+          <th class="owner-subscription-orders-th px-6 py-4 font-medium">Template</th>
+          <th class="owner-subscription-orders-th px-6 py-4 font-medium">Amount</th>
+          <th class="owner-subscription-orders-th px-6 py-4 font-medium">Payment Method</th>
+          <th class="owner-subscription-orders-th px-6 py-4 font-medium">Status</th>
+          <th class="owner-subscription-orders-th px-6 py-4 font-medium">Date</th>
+          <th class="owner-subscription-orders-th owner-subscription-orders-th-actions px-6 py-4 font-medium text-right">Actions</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+      <tbody class="owner-subscription-orders-table-body divide-y divide-slate-200 dark:divide-slate-800">
         @for (order of orders(); track order.id) {
           <tr
             [routerLink]="['/owner/subscriptions/orders', order.id]"
-            class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer"
+            class="owner-subscription-orders-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer"
             [class.bg-indigo-600/10/30]="isSelected(order.id)"
           >
-            <td class="px-6 py-4" (click)="$event.stopPropagation()">
+            <td class="owner-subscription-orders-cell owner-subscription-orders-cell-checkbox px-6 py-4" (click)="$event.stopPropagation()">
               <input
                 type="checkbox"
                 [checked]="isSelected(order.id)"
-                class="w-4 h-4 rounded border-slate-200 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                class="owner-subscription-orders-checkbox w-4 h-4 rounded border-slate-200 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                 (change)="onToggleRow(order.id, $event)"
               >
             </td>
-            <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">#{{ order.id }}</td>
-            <td class="px-6 py-4">
-              <div class="font-medium text-slate-900 dark:text-white">{{ order.tenantName }}</div>
+            <td class="owner-subscription-orders-cell owner-subscription-orders-order-id px-6 py-4 font-medium text-slate-900 dark:text-white">#{{ order.id }}</td>
+            <td class="owner-subscription-orders-cell px-6 py-4">
+              <div class="owner-subscription-orders-tenant font-medium text-slate-900 dark:text-white">{{ order.tenantName }}</div>
             </td>
-            <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ order.templateName }}</td>
-            <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">$ {{ order.amount }}</td>
-            <td class="px-6 py-4 text-slate-500 dark:text-slate-500">
-              <div class="flex items-center gap-2">
-                <mat-icon class="text-sm text-slate-500">payments</mat-icon>
+            <td class="owner-subscription-orders-cell owner-subscription-orders-muted px-6 py-4 text-slate-500 dark:text-slate-500">{{ order.templateName }}</td>
+            <td class="owner-subscription-orders-cell owner-subscription-orders-amount px-6 py-4 font-medium text-slate-900 dark:text-white">$ {{ order.amount }}</td>
+            <td class="owner-subscription-orders-cell owner-subscription-orders-muted px-6 py-4 text-slate-500 dark:text-slate-500">
+              <div class="owner-subscription-orders-method flex items-center gap-2">
+                <mat-icon class="owner-subscription-orders-method-icon text-sm text-slate-500">payments</mat-icon>
                 {{ order.paymentMethod }}
               </div>
             </td>
-            <td class="px-6 py-4">
+            <td class="owner-subscription-orders-cell px-6 py-4">
               <span
-                class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                class="owner-subscription-orders-status px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
                 [class.bg-amber-100]="order.status === 'Pending'"
                 [class.text-amber-700]="order.status === 'Pending'"
                 [class.bg-green-100]="order.status === 'Paid' || order.status === 'Approved'"
@@ -81,12 +81,12 @@
                 {{ order.status }}
               </span>
             </td>
-            <td class="px-6 py-4 text-slate-500">{{ order.orderDate }}</td>
-            <td class="px-6 py-4 text-right">
-              <div class="flex items-center justify-end gap-2">
+            <td class="owner-subscription-orders-cell owner-subscription-orders-order-date px-6 py-4 text-slate-500">{{ order.orderDate }}</td>
+            <td class="owner-subscription-orders-cell owner-subscription-orders-cell-actions px-6 py-4 text-right">
+              <div class="owner-subscription-orders-actions flex items-center justify-end gap-2">
                 @if (order.attachmentUrl) {
                   <button
-                    class="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 rounded-lg transition-all"
+                    class="owner-subscription-orders-action-btn owner-subscription-orders-action-btn-attachment p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 rounded-lg transition-all"
                     title="View Receipt"
                     (click)="onAttachment(order.attachmentUrl, $event)"
                   >
@@ -95,14 +95,14 @@
                 }
                 @if (order.status === 'Pending') {
                   <button
-                    class="p-1.5 text-slate-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all"
+                    class="owner-subscription-orders-action-btn owner-subscription-orders-action-btn-approve p-1.5 text-slate-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all"
                     title="Approve"
                     (click)="onApprove(order, $event)"
                   >
                     <mat-icon class="text-lg">check_circle</mat-icon>
                   </button>
                   <button
-                    class="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-all"
+                    class="owner-subscription-orders-action-btn owner-subscription-orders-action-btn-reject p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-all"
                     title="Reject"
                     (click)="onReject(order, $event)"
                   >
@@ -114,8 +114,8 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="8" class="px-6 py-12 text-center text-slate-500 dark:text-slate-500">
-              <mat-icon class="text-4xl mb-2 opacity-20">search_off</mat-icon>
+            <td colspan="8" class="owner-subscription-orders-empty px-6 py-12 text-center text-slate-500 dark:text-slate-500">
+              <mat-icon class="owner-subscription-orders-empty-icon text-4xl mb-2 opacity-20">search_off</mat-icon>
               <p>No orders found matching your criteria.</p>
             </td>
           </tr>

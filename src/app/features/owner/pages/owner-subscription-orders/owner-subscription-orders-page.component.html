@@ -1,22 +1,22 @@
-<div class="space-y-6">
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="owner-subscription-orders-page space-y-6">
+  <div class="owner-subscription-orders-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
-      <div class="flex items-center gap-3">
-        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Subscription Orders</h2>
+      <div class="owner-subscription-orders-header-title-wrap flex items-center gap-3">
+        <h2 class="owner-subscription-orders-title text-2xl font-bold text-slate-900 dark:text-white">Subscription Orders</h2>
         @if (pendingCount() > 0) {
-          <span class="px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-lg text-xs font-bold">
+          <span class="owner-subscription-orders-pending-chip px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-lg text-xs font-bold">
             {{ pendingCount() }} Pending
           </span>
         }
       </div>
-      <p class="text-slate-500 dark:text-slate-500 text-sm">Review and manage incoming subscription requests and renewals.</p>
+      <p class="owner-subscription-orders-subtitle text-slate-500 dark:text-slate-500 text-sm">Review and manage incoming subscription requests and renewals.</p>
     </div>
-    <div class="flex gap-3">
+    <div class="owner-subscription-orders-header-actions flex gap-3">
       <button
-        class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+        class="owner-subscription-orders-export-btn flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
         (click)="openExportModal()"
       >
-        <mat-icon class="text-sm">download</mat-icon>
+        <mat-icon class="owner-subscription-orders-export-icon text-sm">download</mat-icon>
         Export
       </button>
     </div>
