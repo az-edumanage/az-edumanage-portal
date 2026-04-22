@@ -1,4 +1,122 @@
 
-    :host { display: block; }
-    .prose { max-width: none; }
+:host {
+  display: block;
+}
+
+.prose {
+  max-width: none;
+}
+
+.owner-overview-page {
+  align-content: start;
+}
+
+.owner-overview-header {
+  gap: var(--space-4);
+}
+
+.owner-overview-title {
+  letter-spacing: -0.015em;
+}
+
+.owner-overview-subtitle {
+  line-height: 1.25rem;
+}
+
+.owner-overview-header-actions {
+  flex-wrap: wrap;
+}
+
+.owner-overview-range {
+  border-radius: var(--radius-lg);
+}
+
+.owner-overview-range-btn {
+  transition: all 0.2s ease;
+}
+
+.owner-overview-export-btn {
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.owner-overview-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.owner-overview-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.owner-overview-kpi-head {
+  align-items: flex-start;
+}
+
+.owner-overview-kpi-chip {
+  white-space: nowrap;
+}
+
+.owner-overview-kpi-label {
+  letter-spacing: 0.04em;
+}
+
+.owner-overview-kpi-value {
+  line-height: 1.1;
+}
+
+.owner-overview-section-title {
+  line-height: 1.25;
+}
+
+.owner-overview-section-subtitle {
+  line-height: 1.25rem;
+}
+
+.owner-overview-chart-shell {
+  min-width: 0;
+}
+
+.owner-overview-chart-canvas {
+  min-width: 0;
+}
+
+.owner-overview-legend {
+  gap: var(--space-4);
+}
+
+.owner-overview-legend-item {
+  gap: var(--space-2);
+}
+
+.owner-overview-legend-dot {
+  flex-shrink: 0;
+}
+
+.owner-overview-plan-row {
+  gap: var(--space-3);
+}
+
+.owner-overview-plan-name {
+  line-height: 1.25rem;
+}
+
+.owner-overview-activity-item {
+  gap: var(--space-4);
+}
+
+.owner-overview-activity-icon {
+  flex-shrink: 0;
+}
+
+.owner-overview-live-btn {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.owner-overview-health-badge {
+  white-space: nowrap;
+}
   
