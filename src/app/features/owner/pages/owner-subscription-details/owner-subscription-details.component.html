@@ -1,36 +1,36 @@
 
-    <div class="space-y-6">
+    <div class="owner-subscription-details-page space-y-6">
       <!-- Breadcrumb & Header -->
-      <div>
-        <div class="flex items-center gap-2 text-sm text-slate-500 mb-2">
-          <a routerLink="/owner/subscriptions" class="hover:text-indigo-600 transition-colors">Subscriptions</a>
-          <mat-icon class="text-xs">chevron_right</mat-icon>
-          <span class="text-slate-900 dark:text-white">sub_001</span>
+      <div class="owner-subscription-details-header-wrap">
+        <div class="owner-subscription-details-breadcrumb flex items-center gap-2 text-sm text-slate-500 mb-2">
+          <a routerLink="/owner/subscriptions" class="owner-subscription-details-breadcrumb-link hover:text-indigo-600 transition-colors">Subscriptions</a>
+          <mat-icon class="owner-subscription-details-breadcrumb-icon text-xs">chevron_right</mat-icon>
+          <span class="owner-subscription-details-breadcrumb-current text-slate-900 dark:text-white">sub_001</span>
         </div>
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-xl">
+        <div class="owner-subscription-details-header flex items-center justify-between">
+          <div class="owner-subscription-details-header-main flex items-center gap-4">
+            <div class="owner-subscription-details-avatar w-12 h-12 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-xl">
               <mat-icon>card_membership</mat-icon>
             </div>
-            <div>
-              <h2 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+            <div class="owner-subscription-details-title-wrap">
+              <h2 class="owner-subscription-details-title text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
                 Bright Future Academy
-                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800">Active</span>
+                <span class="owner-subscription-details-status px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800">Active</span>
               </h2>
-              <p class="text-slate-500 dark:text-slate-500 text-sm">Enterprise Plan · Yearly Billing</p>
+              <p class="owner-subscription-details-subtitle text-slate-500 dark:text-slate-500 text-sm">Enterprise Plan · Yearly Billing</p>
             </div>
           </div>
-          <div class="flex gap-3">
-            <button [routerLink]="['/owner/billing']" [queryParams]="{ tenant: 'Bright Future Academy' }" class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-              <mat-icon class="text-sm">history</mat-icon>
+          <div class="owner-subscription-details-header-actions flex gap-3">
+            <button [routerLink]="['/owner/billing']" [queryParams]="{ tenant: 'Bright Future Academy' }" class="owner-subscription-details-header-btn flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+              <mat-icon class="owner-subscription-details-header-btn-icon text-sm">history</mat-icon>
               View Invoices
             </button>
-            <button routerLink="/owner/billing/invoices/INV-2024-001" class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-              <mat-icon class="text-sm">print</mat-icon>
+            <button routerLink="/owner/billing/invoices/INV-2024-001" class="owner-subscription-details-header-btn flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+              <mat-icon class="owner-subscription-details-header-btn-icon text-sm">print</mat-icon>
               Print Last Invoice
             </button>
-            <button class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20">
-              <mat-icon class="text-sm">edit</mat-icon>
+            <button class="owner-subscription-details-header-btn owner-subscription-details-header-btn-primary flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20">
+              <mat-icon class="owner-subscription-details-header-btn-icon text-sm">edit</mat-icon>
               Edit Subscription
             </button>
           </div>
@@ -38,56 +38,56 @@
       </div>
 
       <!-- Content Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="owner-subscription-details-layout grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Left Column: Details & Usage -->
-        <div class="lg:col-span-2 space-y-6">
+        <div class="owner-subscription-details-main lg:col-span-2 space-y-6">
           <!-- Subscription Info -->
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Subscription Details</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <div class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Current Plan</div>
-                <div class="text-slate-900 dark:text-white font-medium flex items-center gap-2">
+          <div class="owner-subscription-details-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+            <h3 class="owner-subscription-details-card-title text-lg font-semibold text-slate-900 dark:text-white mb-4">Subscription Details</h3>
+            <div class="owner-subscription-details-info-grid grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="owner-subscription-details-info-block">
+                <div class="owner-subscription-details-label block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Current Plan</div>
+                <div class="owner-subscription-details-value text-slate-900 dark:text-white font-medium flex items-center gap-2">
                   Enterprise
-                  <span class="text-xs text-slate-500 font-normal">(v2.0)</span>
+                  <span class="owner-subscription-details-inline-note text-xs text-slate-500 font-normal">(v2.0)</span>
                 </div>
               </div>
-              <div>
-                <div class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Billing Cycle</div>
-                <div class="text-slate-900 dark:text-white font-medium">Yearly</div>
+              <div class="owner-subscription-details-info-block">
+                <div class="owner-subscription-details-label block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Billing Cycle</div>
+                <div class="owner-subscription-details-value text-slate-900 dark:text-white font-medium">Yearly</div>
               </div>
-              <div>
-                <div class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Start Date</div>
-                <div class="text-slate-900 dark:text-white font-medium">Jan 15, 2024</div>
+              <div class="owner-subscription-details-info-block">
+                <div class="owner-subscription-details-label block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Start Date</div>
+                <div class="owner-subscription-details-value text-slate-900 dark:text-white font-medium">Jan 15, 2024</div>
               </div>
-              <div>
-                <div class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Renewal Date</div>
-                <div class="text-slate-900 dark:text-white font-medium flex items-center gap-2">
+              <div class="owner-subscription-details-info-block">
+                <div class="owner-subscription-details-label block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Renewal Date</div>
+                <div class="owner-subscription-details-value text-slate-900 dark:text-white font-medium flex items-center gap-2">
                   Jan 15, 2025
-                  <span class="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-500 dark:text-slate-500">328 days left</span>
+                  <span class="owner-subscription-details-inline-note owner-subscription-details-renewal-pill text-xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-500 dark:text-slate-500">328 days left</span>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Financial Info -->
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Financial Information</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <div class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Last Payment</div>
-                <div class="text-slate-900 dark:text-white font-medium">$4,990.00</div>
-                <div class="text-xs text-slate-500">Jan 15, 2024</div>
+          <div class="owner-subscription-details-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+            <h3 class="owner-subscription-details-card-title text-lg font-semibold text-slate-900 dark:text-white mb-4">Financial Information</h3>
+            <div class="owner-subscription-details-financial-grid grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div class="owner-subscription-details-info-block">
+                <div class="owner-subscription-details-label block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Last Payment</div>
+                <div class="owner-subscription-details-value text-slate-900 dark:text-white font-medium">$4,990.00</div>
+                <div class="owner-subscription-details-inline-note text-xs text-slate-500">Jan 15, 2024</div>
               </div>
-              <div>
-                <div class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Next Payment Amount</div>
-                <div class="text-slate-900 dark:text-white font-medium">$4,990.00</div>
-                <div class="text-xs text-slate-500">Due Jan 15, 2025</div>
+              <div class="owner-subscription-details-info-block">
+                <div class="owner-subscription-details-label block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Next Payment Amount</div>
+                <div class="owner-subscription-details-value text-slate-900 dark:text-white font-medium">$4,990.00</div>
+                <div class="owner-subscription-details-inline-note text-xs text-slate-500">Due Jan 15, 2025</div>
               </div>
-              <div>
-                <div class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Payment Method</div>
-                <div class="text-slate-900 dark:text-white font-medium flex items-center gap-2">
-                  <mat-icon class="text-slate-500 text-sm">credit_card</mat-icon>
+              <div class="owner-subscription-details-info-block">
+                <div class="owner-subscription-details-label block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Payment Method</div>
+                <div class="owner-subscription-details-value text-slate-900 dark:text-white font-medium flex items-center gap-2">
+                  <mat-icon class="owner-subscription-details-value-icon text-slate-500 text-sm">credit_card</mat-icon>
                   Visa ending in 4242
                 </div>
               </div>
@@ -95,14 +95,14 @@
           </div>
 
           <!-- Usage Overview -->
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Usage Overview</h3>
-            <div class="space-y-6">
+          <div class="owner-subscription-details-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+            <h3 class="owner-subscription-details-card-title text-lg font-semibold text-slate-900 dark:text-white mb-4">Usage Overview</h3>
+            <div class="owner-subscription-details-usage space-y-6">
               <!-- Students -->
-              <div>
-                <div class="flex justify-between text-sm mb-1">
-                  <span class="text-slate-700 dark:text-slate-300">Students</span>
-                  <span class="font-medium text-slate-900 dark:text-white">450 / 10,000</span>
+              <div class="owner-subscription-details-usage-row">
+                <div class="owner-subscription-details-usage-row-head flex justify-between text-sm mb-1">
+                  <span class="owner-subscription-details-usage-label text-slate-700 dark:text-slate-300">Students</span>
+                  <span class="owner-subscription-details-usage-value font-medium text-slate-900 dark:text-white">450 / 10,000</span>
                 </div>
                 <div class="ds-progress-track h-2">
                   <div class="ds-progress-fill ds-progress-fill--w-4_5"></div>
@@ -110,10 +110,10 @@
               </div>
 
               <!-- Storage -->
-              <div>
-                <div class="flex justify-between text-sm mb-1">
-                  <span class="text-slate-700 dark:text-slate-300">Storage</span>
-                  <span class="font-medium text-slate-900 dark:text-white">4.2 GB / 500 GB</span>
+              <div class="owner-subscription-details-usage-row">
+                <div class="owner-subscription-details-usage-row-head flex justify-between text-sm mb-1">
+                  <span class="owner-subscription-details-usage-label text-slate-700 dark:text-slate-300">Storage</span>
+                  <span class="owner-subscription-details-usage-value font-medium text-slate-900 dark:text-white">4.2 GB / 500 GB</span>
                 </div>
                 <div class="ds-progress-track h-2">
                   <div class="ds-progress-fill ds-progress-fill--blue ds-progress-fill--w-0_8"></div>
@@ -121,10 +121,10 @@
               </div>
 
               <!-- Users -->
-              <div>
-                <div class="flex justify-between text-sm mb-1">
-                  <span class="text-slate-700 dark:text-slate-300">Active Users</span>
-                  <span class="font-medium text-slate-900 dark:text-white">12 / 50</span>
+              <div class="owner-subscription-details-usage-row">
+                <div class="owner-subscription-details-usage-row-head flex justify-between text-sm mb-1">
+                  <span class="owner-subscription-details-usage-label text-slate-700 dark:text-slate-300">Active Users</span>
+                  <span class="owner-subscription-details-usage-value font-medium text-slate-900 dark:text-white">12 / 50</span>
                 </div>
                 <div class="ds-progress-track h-2">
                   <div class="ds-progress-fill ds-progress-fill--green ds-progress-fill--w-24"></div>
@@ -133,15 +133,15 @@
             </div>
 
             <!-- Over Limit Warning (Hidden by default for this demo) -->
-            <div class="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg hidden">
-              <div class="flex items-start gap-3">
-                <mat-icon class="text-amber-600 dark:text-amber-400 shrink-0">warning</mat-icon>
+            <div class="owner-subscription-details-warning mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg hidden">
+              <div class="owner-subscription-details-warning-row flex items-start gap-3">
+                <mat-icon class="owner-subscription-details-warning-icon text-amber-600 dark:text-amber-400 shrink-0">warning</mat-icon>
                 <div>
-                  <h4 class="text-sm font-bold text-amber-800 dark:text-amber-300">Approaching Storage Limit</h4>
-                  <p class="text-xs text-amber-700 dark:text-amber-400 mt-1">
+                  <h4 class="owner-subscription-details-warning-title text-sm font-bold text-amber-800 dark:text-amber-300">Approaching Storage Limit</h4>
+                  <p class="owner-subscription-details-warning-text text-xs text-amber-700 dark:text-amber-400 mt-1">
                     Tenant has used 95% of their storage limit. Consider suggesting an upgrade or purchasing a storage add-on.
                   </p>
-                  <button class="mt-2 text-xs font-medium text-amber-800 dark:text-amber-300 underline">Send Upgrade Suggestion</button>
+                  <button class="owner-subscription-details-warning-action mt-2 text-xs font-medium text-amber-800 dark:text-amber-300 underline">Send Upgrade Suggestion</button>
                 </div>
               </div>
             </div>
@@ -149,36 +149,36 @@
         </div>
 
         <!-- Right Column: Actions -->
-        <div class="space-y-6">
+        <div class="owner-subscription-details-side space-y-6">
           <!-- Quick Actions -->
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-            <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Management</h3>
-            <div class="space-y-3">
-              <button class="w-full py-2 bg-indigo-600/10 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-lg text-sm font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors flex items-center justify-center gap-2">
-                <mat-icon class="text-sm">upgrade</mat-icon>
+          <div class="owner-subscription-details-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+            <h3 class="owner-subscription-details-side-title text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Management</h3>
+            <div class="owner-subscription-details-action-list space-y-3">
+              <button class="owner-subscription-details-action-btn owner-subscription-details-action-btn-primary w-full py-2 bg-indigo-600/10 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-lg text-sm font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors flex items-center justify-center gap-2">
+                <mat-icon class="owner-subscription-details-action-icon text-sm">upgrade</mat-icon>
                 Change Plan / Upgrade
               </button>
-              <button class="w-full py-2 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2">
-                <mat-icon class="text-sm">timer</mat-icon>
+              <button class="owner-subscription-details-action-btn w-full py-2 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2">
+                <mat-icon class="owner-subscription-details-action-icon text-sm">timer</mat-icon>
                 Extend Trial
               </button>
-              <button class="w-full py-2 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2">
-                <mat-icon class="text-sm">local_offer</mat-icon>
+              <button class="owner-subscription-details-action-btn w-full py-2 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2">
+                <mat-icon class="owner-subscription-details-action-icon text-sm">local_offer</mat-icon>
                 Add Discount
               </button>
             </div>
           </div>
 
           <!-- Danger Zone -->
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-red-200 dark:border-red-900/50 shadow-sm p-6">
-            <h3 class="text-sm font-semibold text-red-600 mb-4">Danger Zone</h3>
-            <div class="space-y-3">
-              <button class="w-full py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors text-left px-4 flex items-center gap-2">
-                <mat-icon class="text-sm">pause_circle</mat-icon>
+          <div class="owner-subscription-details-danger bg-white dark:bg-slate-900 rounded-xl border border-red-200 dark:border-red-900/50 shadow-sm p-6">
+            <h3 class="owner-subscription-details-danger-title text-sm font-semibold text-red-600 mb-4">Danger Zone</h3>
+            <div class="owner-subscription-details-action-list space-y-3">
+              <button class="owner-subscription-details-action-btn owner-subscription-details-action-btn-danger w-full py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors text-left px-4 flex items-center gap-2">
+                <mat-icon class="owner-subscription-details-action-icon text-sm">pause_circle</mat-icon>
                 Suspend Subscription
               </button>
-              <button class="w-full py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors text-left px-4 flex items-center gap-2">
-                <mat-icon class="text-sm">cancel</mat-icon>
+              <button class="owner-subscription-details-action-btn owner-subscription-details-action-btn-danger w-full py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors text-left px-4 flex items-center gap-2">
+                <mat-icon class="owner-subscription-details-action-icon text-sm">cancel</mat-icon>
                 Cancel Subscription
               </button>
             </div>
