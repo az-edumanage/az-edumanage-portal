@@ -1,25 +1,26 @@
-# Current Task: Phase 5 - Shared Primitive Migration Slice 07
+# Current Task: Phase 6 - Feature Adoption (Owner Slice 01)
 
 ## Objective
-Add missing automated visual baseline coverage for the two high-usage Owner form routes migrated in Slice 06 and verify parity across theme/viewport matrix.
+Start Owner feature-level semantic/component token adoption by extracting repeated one-off utility bundles from a high-usage Owner route into component-scoped DS-aligned classes.
 
 ## Status
 `Completed`
 
 ## Sub-Tasks
-- [x] Add `owner-plan-create` (`/owner/plans/create`) to automated visual matrix (`tests/visual/ds-visual.spec.ts`).
-- [x] Add `owner-provisioning-settings` (`/owner/provisioning/settings`) to automated visual matrix (`tests/visual/ds-visual.spec.ts`).
-- [x] Update locked route matrix documentation to include both routes in P0 (`docs/ds-critical-route-matrix.md`).
-- [x] Generate baseline snapshots for both routes under `brand`/`light`/`dark` and desktop/mobile (`npm run vr:update -- --grep "owner-plan-create|owner-provisioning-settings"`).
-- [x] Validate focused visual regression run for both routes (`npm run vr:test -- --grep "owner-plan-create|owner-provisioning-settings"`).
+- [x] Select a high-usage Owner page for the first slice (`/owner/provisioning/settings`).
+- [x] Extract repeated utility bundles into component CSS primitives (card, typography, controls, toggle rows, CTA/back action).
+- [x] Replace repeated template class bundles with extracted component classes.
+- [x] Keep behavior and route responsibilities unchanged.
+- [x] Validate build (`npm run build`).
+- [x] Re-baseline and verify focused visual snapshots for updated route (`npm run vr:update -- --grep "owner-provisioning-settings"` + `npm run vr:test -- --grep "owner-provisioning-settings"`).
 
 ## Exit Criteria
-- Both Slice 06 high-usage Owner form routes are included in CI visual matrix.
-- Baseline snapshots exist for all required theme/viewport combinations.
-- Focused visual checks pass with no regressions.
+- First Owner feature slice executed with scoped, reversible changes.
+- Focused visual coverage for touched route remains green.
+- Changes documented for repeatable adoption in next slices.
 
 ## Next Task (Active)
-Phase 6 - Feature Adoption (Owner Slice 01):
-- Start Owner feature-wide semantic/component token adoption.
-- Prioritize high-frequency Owner pages still using one-off patterns.
-- Keep route-by-route parity validation under `brand` as migration guardrail.
+Phase 6 - Feature Adoption (Owner Slice 02):
+- Apply the same extraction pattern to `/owner/plans/create`.
+- Keep route-level parity guardrail via focused visual regression.
+- Continue reducing repeated one-off utility bundles while preserving behavior.

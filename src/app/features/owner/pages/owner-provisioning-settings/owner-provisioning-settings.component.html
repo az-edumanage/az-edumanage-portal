@@ -2,30 +2,30 @@
     <div class="max-w-4xl mx-auto space-y-8 pb-12">
       <!-- Header -->
       <div class="flex items-center gap-4">
-        <button (click)="onCancel()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-500 transition-colors">
+        <button (click)="onCancel()" class="owner-prov-back-btn">
           <mat-icon>arrow_back</mat-icon>
         </button>
         <div>
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Provisioning Settings</h2>
-          <p class="text-slate-500 dark:text-slate-500 text-sm">Configure how new tenants are onboarded and initialized.</p>
+          <h2 class="owner-prov-title">Provisioning Settings</h2>
+          <p class="owner-prov-subtitle">Configure how new tenants are onboarded and initialized.</p>
         </div>
       </div>
 
       <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()" class="space-y-8">
         
         <!-- 1. Database Strategy -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-          <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+        <div class="owner-prov-card">
+          <div class="owner-prov-card-head">
             <div class="flex items-center gap-3">
               <div class="p-2 bg-indigo-600/10 dark:bg-indigo-900/20 rounded-lg">
                 <mat-icon class="text-indigo-600 dark:text-indigo-400">storage</mat-icon>
               </div>
-              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Database Strategy</h3>
+              <h3 class="owner-prov-section-title">Database Strategy</h3>
             </div>
           </div>
-          <div class="p-6 space-y-6">
+          <div class="owner-prov-card-body space-y-6">
             <div>
-              <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Isolation Level</div>
+              <div class="owner-prov-field-label mb-3">Isolation Level</div>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <label class="relative flex flex-col p-4 border rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                   [class.border-indigo-500]="settingsForm.get('dbStrategy')?.value === 'shared'"
@@ -66,7 +66,7 @@
             </div>
 
             <div>
-              <label for="dbRegion" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Region (Optional)</label>
+              <label for="dbRegion" class="owner-prov-field-label">Region (Optional)</label>
               <select appSelect id="dbRegion" formControlName="dbRegion" class="w-full md:w-1/2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
                 <option value="">Auto-detect / Default</option>
                 <option value="us-east-1">US East (N. Virginia)</option>
@@ -78,36 +78,36 @@
         </div>
 
         <!-- 2. Default Plan Configuration -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-          <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+        <div class="owner-prov-card">
+          <div class="owner-prov-card-head">
             <div class="flex items-center gap-3">
               <div class="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
                 <mat-icon class="text-emerald-600 dark:text-emerald-400">card_membership</mat-icon>
               </div>
-              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Default Plan Configuration</h3>
+              <h3 class="owner-prov-section-title">Default Plan Configuration</h3>
             </div>
           </div>
-          <div class="p-6 space-y-6">
+          <div class="owner-prov-card-body space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label for="defaultPlan" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Default Plan</label>
-                <select appSelect id="defaultPlan" formControlName="defaultPlan" class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                <label for="defaultPlan" class="owner-prov-field-label">Default Plan</label>
+                <select appSelect id="defaultPlan" formControlName="defaultPlan" class="owner-prov-control">
                   <option value="starter">Starter Plan</option>
                   <option value="professional">Professional Plan</option>
                   <option value="enterprise">Enterprise Plan</option>
                 </select>
-                <p class="text-xs text-slate-500 mt-1">Applied when no specific plan is selected during signup.</p>
+                <p class="owner-prov-help">Applied when no specific plan is selected during signup.</p>
               </div>
               <div>
-                <label for="defaultTrialDays" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Default Trial Duration (Days)</label>
-                <input appInput id="defaultTrialDays" type="number" formControlName="defaultTrialDays" class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                <label for="defaultTrialDays" class="owner-prov-field-label">Default Trial Duration (Days)</label>
+                <input appInput id="defaultTrialDays" type="number" formControlName="defaultTrialDays" class="owner-prov-control">
               </div>
             </div>
 
             <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
               <div>
-                <div class="font-medium text-slate-900 dark:text-white">Auto Activate</div>
-                <div class="text-sm text-slate-500">Automatically activate tenant status after registration verification.</div>
+                <div class="owner-prov-toggle-title">Auto Activate</div>
+                <div class="owner-prov-toggle-desc">Automatically activate tenant status after registration verification.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
                 <input appToggleInput type="checkbox" formControlName="autoActivate" >
@@ -118,16 +118,16 @@
         </div>
 
         <!-- 3. Default Modules Behavior -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-          <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+        <div class="owner-prov-card">
+          <div class="owner-prov-card-head">
             <div class="flex items-center gap-3">
               <div class="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <mat-icon class="text-indigo-600 dark:text-blue-400">extension</mat-icon>
               </div>
-              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Default Modules Behavior</h3>
+              <h3 class="owner-prov-section-title">Default Modules Behavior</h3>
             </div>
           </div>
-          <div class="p-6 space-y-6">
+          <div class="owner-prov-card-body space-y-6">
             <div class="p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-lg flex items-start gap-3">
               <mat-icon class="text-indigo-600 dark:text-blue-400 mt-0.5">info</mat-icon>
               <div class="text-sm text-blue-800 dark:text-blue-200">
@@ -135,10 +135,10 @@
               </div>
             </div>
 
-            <div class="flex items-center justify-between">
+            <div class="owner-prov-toggle-row">
               <div>
-                <div class="font-medium text-slate-900 dark:text-white">Enable Advanced Modules in Trial</div>
-                <div class="text-sm text-slate-500">Allow trial users to access all advanced features regardless of plan.</div>
+                <div class="owner-prov-toggle-title">Enable Advanced Modules in Trial</div>
+                <div class="owner-prov-toggle-desc">Allow trial users to access all advanced features regardless of plan.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
                 <input appToggleInput type="checkbox" formControlName="enableAdvancedInTrial" >
@@ -147,7 +147,7 @@
             </div>
 
             <div>
-              <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Default Trial Modules</div>
+              <div class="owner-prov-field-label mb-2">Default Trial Modules</div>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50">
                   <input appCheckbox type="checkbox" checked disabled class="text-indigo-600 rounded border-slate-200 focus:ring-indigo-500 disabled:opacity-50">
@@ -171,42 +171,42 @@
         </div>
 
         <!-- 4. Initial Data Templates -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-          <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+        <div class="owner-prov-card">
+          <div class="owner-prov-card-head">
             <div class="flex items-center gap-3">
               <div class="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
                 <mat-icon class="text-amber-600 dark:text-amber-400">dataset</mat-icon>
               </div>
-              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Initial Data Templates</h3>
+              <h3 class="owner-prov-section-title">Initial Data Templates</h3>
             </div>
           </div>
-          <div class="p-6 space-y-4">
-            <div class="flex items-center justify-between">
+          <div class="owner-prov-card-body space-y-4">
+            <div class="owner-prov-toggle-row">
               <div>
-                <div class="font-medium text-slate-900 dark:text-white">Create Default Roles</div>
-                <div class="text-sm text-slate-500">Admin, Teacher, Student, Parent roles with standard permissions.</div>
+                <div class="owner-prov-toggle-title">Create Default Roles</div>
+                <div class="owner-prov-toggle-desc">Admin, Teacher, Student, Parent roles with standard permissions.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
                 <input appToggleInput type="checkbox" formControlName="createDefaultRoles" >
                 <div appToggleTrack></div>
               </div>
             </div>
-            <hr class="border-slate-200 dark:border-slate-800">
-            <div class="flex items-center justify-between">
+            <hr class="owner-prov-divider">
+            <div class="owner-prov-toggle-row">
               <div>
-                <div class="font-medium text-slate-900 dark:text-white">Create Current Academic Year</div>
-                <div class="text-sm text-slate-500">Initialize the current academic year automatically.</div>
+                <div class="owner-prov-toggle-title">Create Current Academic Year</div>
+                <div class="owner-prov-toggle-desc">Initialize the current academic year automatically.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
                 <input appToggleInput type="checkbox" formControlName="createAcademicYear" >
                 <div appToggleTrack></div>
               </div>
             </div>
-            <hr class="border-slate-200 dark:border-slate-800">
-            <div class="flex items-center justify-between">
+            <hr class="owner-prov-divider">
+            <div class="owner-prov-toggle-row">
               <div>
-                <div class="font-medium text-slate-900 dark:text-white">Setup Notification Templates</div>
-                <div class="text-sm text-slate-500">Email and SMS templates for common system events.</div>
+                <div class="owner-prov-toggle-title">Setup Notification Templates</div>
+                <div class="owner-prov-toggle-desc">Email and SMS templates for common system events.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
                 <input appToggleInput type="checkbox" formControlName="setupNotifTemplates" >
@@ -224,42 +224,42 @@
         </div>
 
         <!-- 5. External Services Setup -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-          <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+        <div class="owner-prov-card">
+          <div class="owner-prov-card-head">
             <div class="flex items-center gap-3">
               <div class="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
                 <mat-icon class="text-purple-600 dark:text-purple-400">cloud_sync</mat-icon>
               </div>
-              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">External Services Setup</h3>
+              <h3 class="owner-prov-section-title">External Services Setup</h3>
             </div>
           </div>
-          <div class="p-6 space-y-4">
-            <div class="flex items-center justify-between">
+          <div class="owner-prov-card-body space-y-4">
+            <div class="owner-prov-toggle-row">
               <div>
-                <div class="font-medium text-slate-900 dark:text-white">Create Payment Gateway Customer</div>
-                <div class="text-sm text-slate-500">Register tenant in Stripe/Payment Provider.</div>
+                <div class="owner-prov-toggle-title">Create Payment Gateway Customer</div>
+                <div class="owner-prov-toggle-desc">Register tenant in Stripe/Payment Provider.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
                 <input appToggleInput type="checkbox" formControlName="createPaymentCustomer" >
                 <div appToggleTrack></div>
               </div>
             </div>
-            <hr class="border-slate-200 dark:border-slate-800">
-            <div class="flex items-center justify-between">
+            <hr class="owner-prov-divider">
+            <div class="owner-prov-toggle-row">
               <div>
-                <div class="font-medium text-slate-900 dark:text-white">Send Welcome Email</div>
-                <div class="text-sm text-slate-500">Send onboarding instructions to tenant admin.</div>
+                <div class="owner-prov-toggle-title">Send Welcome Email</div>
+                <div class="owner-prov-toggle-desc">Send onboarding instructions to tenant admin.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
                 <input appToggleInput type="checkbox" formControlName="sendWelcomeEmail" >
                 <div appToggleTrack></div>
               </div>
             </div>
-            <hr class="border-slate-200 dark:border-slate-800">
-            <div class="flex items-center justify-between">
+            <hr class="owner-prov-divider">
+            <div class="owner-prov-toggle-row">
               <div>
-                <div class="font-medium text-slate-900 dark:text-white">Allocate Storage Bucket</div>
-                <div class="text-sm text-slate-500">Create dedicated S3 folder/bucket for tenant files.</div>
+                <div class="owner-prov-toggle-title">Allocate Storage Bucket</div>
+                <div class="owner-prov-toggle-desc">Create dedicated S3 folder/bucket for tenant files.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
                 <input appToggleInput type="checkbox" formControlName="allocateStorage" >
@@ -270,31 +270,31 @@
         </div>
 
         <!-- 6. Failure & Retry Policy -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-          <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+        <div class="owner-prov-card">
+          <div class="owner-prov-card-head">
             <div class="flex items-center gap-3">
               <div class="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
                 <mat-icon class="text-red-600 dark:text-red-400">restart_alt</mat-icon>
               </div>
-              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Failure & Retry Policy</h3>
+              <h3 class="owner-prov-section-title">Failure & Retry Policy</h3>
             </div>
           </div>
-          <div class="p-6 space-y-6">
+          <div class="owner-prov-card-body space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label for="maxRetries" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Max Retry Attempts</label>
-                <input appInput id="maxRetries" type="number" formControlName="maxRetries" class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                <label for="maxRetries" class="owner-prov-field-label">Max Retry Attempts</label>
+                <input appInput id="maxRetries" type="number" formControlName="maxRetries" class="owner-prov-control">
               </div>
               <div>
-                <label for="retryInterval" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Retry Interval (Seconds)</label>
-                <input appInput id="retryInterval" type="number" formControlName="retryInterval" class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                <label for="retryInterval" class="owner-prov-field-label">Retry Interval (Seconds)</label>
+                <input appInput id="retryInterval" type="number" formControlName="retryInterval" class="owner-prov-control">
               </div>
             </div>
 
-            <div class="flex items-center justify-between">
+            <div class="owner-prov-toggle-row">
               <div>
-                <div class="font-medium text-slate-900 dark:text-white">Notify Admin on Failure</div>
-                <div class="text-sm text-slate-500">Send email alert to system admins if provisioning fails.</div>
+                <div class="owner-prov-toggle-title">Notify Admin on Failure</div>
+                <div class="owner-prov-toggle-desc">Send email alert to system admins if provisioning fails.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
                 <input appToggleInput type="checkbox" formControlName="notifyAdmin" >
@@ -302,10 +302,10 @@
               </div>
             </div>
 
-            <div class="flex items-center justify-between">
+            <div class="owner-prov-toggle-row">
               <div>
-                <div class="font-medium text-slate-900 dark:text-white">Rollback on Failure</div>
-                <div class="text-sm text-slate-500">Delete created resources if any step fails.</div>
+                <div class="owner-prov-toggle-title">Rollback on Failure</div>
+                <div class="owner-prov-toggle-desc">Delete created resources if any step fails.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
                 <input appToggleInput type="checkbox" formControlName="rollbackOnFailure" >
@@ -317,7 +317,7 @@
 
         <!-- Save Button -->
         <div class="flex justify-end pt-4">
-          <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium shadow-sm shadow-indigo-500/20 transition-colors flex items-center gap-2">
+          <button type="submit" class="owner-prov-submit-btn">
             <mat-icon>save</mat-icon>
             Save Configuration
           </button>

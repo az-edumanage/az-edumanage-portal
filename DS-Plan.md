@@ -54,3 +54,8 @@ Build an enterprise-grade Design System on top of the current Angular + Tailwind
 - Shared primitives cover repeated UI patterns.
 - Lint/CI prevents token bypass and style drift.
 - Legacy style compatibility shims are removed only after full adoption.
+
+## Current Execution Status
+- Epic 5 slices are completed through Slice 07.
+- Epic 6 has started with Owner Slice 01 completed (`/owner/provisioning/settings`).
+- Next active slice is Owner Slice 02 (`/owner/plans/create`).
