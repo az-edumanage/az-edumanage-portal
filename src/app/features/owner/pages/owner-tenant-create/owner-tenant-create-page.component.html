@@ -1,34 +1,34 @@
 
-    <div class="max-w-4xl mx-auto space-y-6">
+    <div class="owner-tenant-create-page max-w-4xl mx-auto space-y-6">
       <!-- Header -->
-      <div class="flex items-center justify-between">
-        <div class="space-y-1">
-          <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
-            <a routerLink="/owner/tenants" class="hover:text-indigo-600 transition-colors">Tenants</a>
+      <div class="owner-tenant-create-header flex items-center justify-between">
+        <div class="owner-tenant-create-header-text space-y-1">
+          <div class="owner-tenant-create-breadcrumb flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+            <a routerLink="/owner/tenants" class="owner-tenant-create-breadcrumb-link hover:text-indigo-600 transition-colors">Tenants</a>
             <mat-icon class="text-[10px]">chevron_right</mat-icon>
             <span>Provision New Center</span>
           </div>
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Create New Tenant</h2>
+          <h2 class="owner-tenant-create-title text-2xl font-bold text-slate-900 dark:text-white">Create New Tenant</h2>
         </div>
-        <div class="flex gap-3">
+        <div class="owner-tenant-create-header-actions flex gap-3">
           <button 
             type="button"
             (click)="onReset()"
-            class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
+            class="owner-tenant-create-btn owner-tenant-create-btn-secondary px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
           >
             <mat-icon class="text-sm">refresh</mat-icon>
             Reset
           </button>
           <button 
             (click)="onCancel()"
-            class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+            class="owner-tenant-create-btn owner-tenant-create-btn-secondary px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
           >
             Cancel
           </button>
           <button 
             (click)="onSubmit()"
             [disabled]="tenantForm.invalid || isSubmitting()"
-            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+            class="owner-tenant-create-btn owner-tenant-create-btn-primary px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
           >
             @if (isSubmitting()) {
               <mat-icon class="animate-spin text-sm">sync</mat-icon>
@@ -41,26 +41,26 @@
         </div>
       </div>
 
-      <form [formGroup]="tenantForm" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <form [formGroup]="tenantForm" class="owner-tenant-create-form grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Main Form Section -->
         <div class="lg:col-span-2 space-y-6">
           <!-- Basic Information -->
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+          <div class="owner-tenant-create-card bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="owner-tenant-create-section-title text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
               <mat-icon class="text-sm">business</mat-icon>
               Tenant Information
             </h3>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="md:col-span-2">
-                <label for="centerName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tenant Name</label>
+                <label for="centerName" class="owner-tenant-create-label block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tenant Name</label>
                 <div class="relative">
                   <input 
                     id="centerName"
                     type="text" 
                     formControlName="centerName"
                     placeholder="e.g. Cairo Excellence Academy"
-                    class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border rounded-lg text-sm outline-none transition-all pr-10"
+                    class="owner-tenant-create-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border rounded-lg text-sm outline-none transition-all pr-10"
                     [class.border-red-500]="tenantForm.get('centerName')?.hasError('alreadyExists')"
                     [class.focus:ring-red-500]="tenantForm.get('centerName')?.hasError('alreadyExists')"
                     [class.border-green-500]="tenantForm.get('centerName')?.valid && tenantForm.get('centerName')?.value"
@@ -98,7 +98,7 @@
               </div>
               
               <div class="md:col-span-2">
-                <label for="subdomain" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Subdomain</label>
+                <label for="subdomain" class="owner-tenant-create-label block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Subdomain</label>
                 <div class="flex rounded-lg transition-all border bg-slate-50 dark:bg-slate-800"
                   [class.border-red-500]="tenantForm.get('subdomain')?.hasError('alreadyExists')"
                   [class.focus-within:ring-red-500]="tenantForm.get('subdomain')?.hasError('alreadyExists')"
@@ -115,7 +115,7 @@
                       type="text" 
                       formControlName="subdomain"
                       placeholder="cairo-academy"
-                      class="w-full px-3 py-2 bg-transparent text-sm focus:outline-none pr-10"
+                      class="owner-tenant-create-control owner-tenant-create-control-ghost w-full px-3 py-2 bg-transparent text-sm focus:outline-none pr-10"
                     >
                     @if (tenantForm.get('subdomain')?.valid && tenantForm.get('subdomain')?.value) {
                       <mat-icon class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500 text-[18px]">check_circle</mat-icon>
@@ -166,33 +166,33 @@
           </div>
 
           <!-- Contact Information -->
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+          <div class="owner-tenant-create-card bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="owner-tenant-create-section-title text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
               <mat-icon class="text-sm">contact_mail</mat-icon>
               Contact Info
             </h3>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="md:col-span-2">
-                <label for="contactName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+                <label for="contactName" class="owner-tenant-create-label block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
                 <input 
                   id="contactName"
                   type="text" 
                   formControlName="contactName"
                   placeholder="John Doe"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  class="owner-tenant-create-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                 >
               </div>
 
               <div>
-                <label for="contactEmail" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Contact Email</label>
+                <label for="contactEmail" class="owner-tenant-create-label block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Contact Email</label>
                 <div class="relative">
                   <input 
                     id="contactEmail"
                     type="email" 
                     formControlName="contactEmail"
                     placeholder="contact@center.com"
-                    class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border rounded-lg text-sm outline-none transition-all pr-10"
+                    class="owner-tenant-create-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border rounded-lg text-sm outline-none transition-all pr-10"
                     [class.border-red-500]="tenantForm.get('contactEmail')?.hasError('alreadyExists')"
                     [class.focus:ring-red-500]="tenantForm.get('contactEmail')?.hasError('alreadyExists')"
                     [class.border-green-500]="tenantForm.get('contactEmail')?.valid && tenantForm.get('contactEmail')?.value"
@@ -212,14 +212,14 @@
               </div>
               
               <div>
-                <label for="contactPhone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Phone Number</label>
+                <label for="contactPhone" class="owner-tenant-create-label block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Phone Number</label>
                 <div class="relative">
                   <input 
                     id="contactPhone"
                     type="tel" 
                     formControlName="contactPhone"
                     placeholder="+20 123 456 7890"
-                    class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border rounded-lg text-sm outline-none transition-all pr-10"
+                    class="owner-tenant-create-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border rounded-lg text-sm outline-none transition-all pr-10"
                     [class.border-red-500]="tenantForm.get('contactPhone')?.hasError('alreadyExists')"
                     [class.focus:ring-red-500]="tenantForm.get('contactPhone')?.hasError('alreadyExists')"
                     [class.border-green-500]="tenantForm.get('contactPhone')?.valid && tenantForm.get('contactPhone')?.value"
@@ -239,13 +239,13 @@
               </div>
 
               <div class="md:col-span-2">
-                <label for="address" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Address</label>
+                <label for="address" class="owner-tenant-create-label block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Address</label>
                 <input 
                   id="address"
                   type="text" 
                   formControlName="address"
                   placeholder="123 Education St"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  class="owner-tenant-create-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                 >
               </div>
 
@@ -291,8 +291,8 @@
         <!-- Sidebar Options -->
         <div class="space-y-6">
           <!-- Plan & Billing -->
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-            <h3 id="planLabel" class="text-sm font-bold text-slate-500 uppercase tracking-wider">Subscription Plan</h3>
+          <div class="owner-tenant-create-card bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 id="planLabel" class="owner-tenant-create-section-title text-sm font-bold text-slate-500 uppercase tracking-wider">Subscription Plan</h3>
             
             <div class="relative">
               <app-owner-plan-dropdown
@@ -313,7 +313,7 @@
                 <button 
                   type="button"
                   (click)="openCustomizationMenu($event)"
-                  class="w-full px-4 py-2 bg-indigo-600/10 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/30 rounded-lg text-sm font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors flex items-center justify-center gap-2"
+                  class="owner-tenant-create-customize-btn w-full px-4 py-2 bg-indigo-600/10 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/30 rounded-lg text-sm font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors flex items-center justify-center gap-2"
                 >
                   <mat-icon class="text-sm">tune</mat-icon>
                   Customize features
@@ -329,7 +329,7 @@
 
               @if (tenantForm.get('isTrial')?.value) {
                 <div class="animate-in fade-in slide-in-from-top-2 duration-200">
-                  <label for="trialDays" class="block text-xs font-bold text-slate-500 uppercase mb-1">Trial Days</label>
+                  <label for="trialDays" class="owner-tenant-create-sub-label block text-xs font-bold text-slate-500 uppercase mb-1">Trial Days</label>
                   <input 
                     id="trialDays"
                     type="number" 
@@ -337,7 +337,7 @@
                     placeholder="14"
                     min="1"
                     step="1"
-                    class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    class="owner-tenant-create-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                   >
                 </div>
               }
@@ -345,12 +345,12 @@
           </div>
 
           <!-- Provisioning Settings -->
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Provisioning</h3>
+          <div class="owner-tenant-create-card bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="owner-tenant-create-section-title text-sm font-bold text-slate-500 uppercase tracking-wider">Provisioning</h3>
             
             <div>
-              <label for="region" class="block text-xs font-bold text-slate-500 uppercase mb-1">Data Region</label>
-              <select id="region" formControlName="region" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+              <label for="region" class="owner-tenant-create-sub-label block text-xs font-bold text-slate-500 uppercase mb-1">Data Region</label>
+              <select id="region" formControlName="region" class="owner-tenant-create-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
                 <option value="us-east-1">US East (N. Virginia)</option>
                 <option value="eu-central-1">Europe (Frankfurt)</option>
                 <option value="me-south-1">Middle East (Bahrain)</option>
@@ -398,7 +398,7 @@
 
     <!-- Customization Side Menu -->
     @if (showCustomizationMenu()) {
-      <div class="fixed inset-0 flex justify-end tenant-customization-overlay">
+      <div class="tenant-customization-overlay owner-tenant-create-overlay fixed inset-0 flex justify-end">
         <!-- Backdrop -->
         <div 
           class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity animate-in fade-in duration-200 cursor-pointer"
@@ -410,8 +410,8 @@
         ></div>
         
         <!-- Drawer -->
-        <div class="relative w-[30%] min-w-[320px] max-w-[400px] h-full bg-white dark:bg-slate-900 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
-          <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
+        <div class="owner-tenant-create-drawer relative w-[30%] min-w-[320px] max-w-[400px] h-full bg-white dark:bg-slate-900 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+          <div class="owner-tenant-create-drawer-head flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
             <div>
               <h2 class="text-lg font-bold text-slate-900 dark:text-white">Customize Features</h2>
               <p class="text-sm text-slate-500 dark:text-slate-500">Override plan defaults for this tenant</p>
@@ -424,45 +424,45 @@
             </button>
           </div>
           
-          <div class="flex-1 overflow-y-auto p-6 space-y-8">
+          <div class="owner-tenant-create-drawer-body flex-1 overflow-y-auto p-6 space-y-8">
             <!-- Discount Section -->
             <div class="space-y-4">
-              <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Discount</h3>
+              <h3 class="owner-tenant-create-drawer-title text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Discount</h3>
               <div class="space-y-3">
                 <div>
-                  <label for="drawerDiscountType" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Discount Type</label>
-                  <select id="drawerDiscountType" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                  <label for="drawerDiscountType" class="owner-tenant-create-label block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Discount Type</label>
+                  <select id="drawerDiscountType" class="owner-tenant-create-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
                     <option value="none">No Discount</option>
                     <option value="percentage">Percentage (%)</option>
                     <option value="fixed">Fixed Amount</option>
                   </select>
                 </div>
                 <div>
-                  <label for="drawerDiscountValue" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Value</label>
-                  <input id="drawerDiscountValue" type="number" placeholder="0" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                  <label for="drawerDiscountValue" class="owner-tenant-create-label block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Value</label>
+                  <input id="drawerDiscountValue" type="number" placeholder="0" class="owner-tenant-create-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
                 </div>
               </div>
             </div>
 
             <!-- Additional Modules Section -->
             <div class="space-y-4">
-              <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Additional Modules</h3>
+              <h3 class="owner-tenant-create-drawer-title text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Additional Modules</h3>
               <p class="text-xs text-slate-500 dark:text-slate-500">Select extra modules to include beyond the base plan.</p>
               
               <div class="space-y-2">
-                <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                <label class="owner-tenant-create-module-option flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                   <input type="checkbox" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
                   <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Advanced Analytics</span>
                 </label>
-                <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                <label class="owner-tenant-create-module-option flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                   <input type="checkbox" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
                   <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Parent Portal</span>
                 </label>
-                <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                <label class="owner-tenant-create-module-option flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                   <input type="checkbox" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
                   <span class="text-sm font-medium text-slate-700 dark:text-slate-300">LMS</span>
                 </label>
-                <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                <label class="owner-tenant-create-module-option flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                   <input type="checkbox" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
                   <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Question Bank</span>
                 </label>
@@ -471,24 +471,24 @@
             
             <!-- Usage Limits Override -->
             <div class="space-y-4">
-              <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Usage Limits Override</h3>
+              <h3 class="owner-tenant-create-drawer-title text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Usage Limits Override</h3>
               <div class="space-y-3">
                 <div>
-                  <label for="extraStorage" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Extra Storage (GB)</label>
-                  <input id="extraStorage" type="number" placeholder="0" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                  <label for="extraStorage" class="owner-tenant-create-label block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Extra Storage (GB)</label>
+                  <input id="extraStorage" type="number" placeholder="0" class="owner-tenant-create-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
                 </div>
                 <div>
-                  <label for="extraBranches" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Extra Branches</label>
-                  <input id="extraBranches" type="number" placeholder="0" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                  <label for="extraBranches" class="owner-tenant-create-label block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Extra Branches</label>
+                  <input id="extraBranches" type="number" placeholder="0" class="owner-tenant-create-control w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
                 </div>
               </div>
             </div>
           </div>
           
-          <div class="p-6 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+          <div class="owner-tenant-create-drawer-foot p-6 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
             <button 
               (click)="closeCustomizationMenu()"
-              class="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20"
+              class="owner-tenant-create-btn owner-tenant-create-btn-primary w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20"
             >
               Apply Customizations
             </button>

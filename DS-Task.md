@@ -68,6 +68,9 @@ Status legend:
 - [ ] `Not Started` Migrate Teacher feature styles to semantic/component tokens.
 - [x] `Done` Execute Owner Slice 01 one-off style extraction on high-usage provisioning settings page with focused visual re-baseline (`docs/ds-feature-adoption-owner-slice-01.md`).
 - [x] `Done` Execute Owner Slice 02 one-off style extraction on high-usage plan-create page with focused visual re-baseline (`docs/ds-feature-adoption-owner-slice-02.md`).
+- [x] `Done` Execute Owner Slice 03 one-off style extraction on high-usage tenants-list page with focused visual re-baseline (`docs/ds-feature-adoption-owner-slice-03.md`).
+- [x] `Done` Execute Owner Slice 04 one-off style extraction on high-usage tenant-create page with focused visual re-baseline (`docs/ds-feature-adoption-owner-slice-04.md`).
+- [x] `Done` Execute Owner Slice 05 one-off style extraction on high-usage tenant-details page with focused visual re-baseline (`docs/ds-feature-adoption-owner-slice-05.md`).
 - [x] `Done` Audit and inventory inline styles (`style=\"...\"`, `[style.*]`, `[ngStyle]`) by feature (`docs/ds-inline-style-inventory.md`).
 - [x] `Done` Execute first P0 inline-style conversion to DS CSS-variable pattern (`owner-overview` regional progress bars) (`docs/ds-token-adoption-slice-01.md`).
 - [x] `Done` Execute second P0 inline-style conversion to DS CSS-variable pattern (`owner-billing` revenue bars) (`docs/ds-token-adoption-slice-01.md`).

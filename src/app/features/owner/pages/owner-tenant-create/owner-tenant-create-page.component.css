@@ -1,7 +1,95 @@
 
-    :host { display: block; }
+:host {
+  display: block;
+}
 
-    .tenant-customization-overlay {
-      z-index: var(--ds-layer-overlay);
-    }
+.owner-tenant-create-page {
+  align-content: start;
+}
+
+.owner-tenant-create-header {
+  gap: 1rem;
+}
+
+.owner-tenant-create-title {
+  letter-spacing: -0.01em;
+}
+
+.owner-tenant-create-breadcrumb-link {
+  font-weight: 600;
+}
+
+.owner-tenant-create-header-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.owner-tenant-create-btn {
+  white-space: nowrap;
+}
+
+.owner-tenant-create-btn-primary {
+  box-shadow:
+    0 10px 15px -3px rgb(99 102 241 / 0.22),
+    0 4px 6px -4px rgb(99 102 241 / 0.18);
+}
+
+.owner-tenant-create-card {
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.owner-tenant-create-section-title {
+  letter-spacing: 0.04em;
+}
+
+.owner-tenant-create-label {
+  line-height: 1.25rem;
+}
+
+.owner-tenant-create-sub-label {
+  letter-spacing: 0.04em;
+}
+
+.owner-tenant-create-control {
+  min-height: 2.5rem;
+}
+
+.owner-tenant-create-control-ghost {
+  min-height: 0;
+}
+
+.owner-tenant-create-customize-btn {
+  font-weight: 600;
+}
+
+.owner-tenant-create-overlay,
+.tenant-customization-overlay {
+  z-index: var(--ds-layer-overlay);
+}
+
+.owner-tenant-create-drawer {
+  box-shadow:
+    -10px 0 15px -3px rgb(0 0 0 / 0.12),
+    -4px 0 6px -4px rgb(0 0 0 / 0.08);
+}
+
+.owner-tenant-create-drawer-title {
+  letter-spacing: 0.04em;
+}
+
+.owner-tenant-create-module-option {
+  user-select: none;
+}
+
+@media (max-width: 1024px) {
+  .owner-tenant-create-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .owner-tenant-create-header-actions {
+    justify-content: flex-start;
+    width: 100%;
+  }
+}
   

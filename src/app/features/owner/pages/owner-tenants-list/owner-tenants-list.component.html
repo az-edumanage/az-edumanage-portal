@@ -1,21 +1,21 @@
 
-    <div class="space-y-6">
+    <div class="owner-tenants-page space-y-6">
       <!-- Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="owner-tenants-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Tenants Management</h2>
-          <p class="text-slate-500 dark:text-slate-500 text-sm">Manage all organizations and centers on the platform.</p>
+          <h2 class="owner-tenants-title text-2xl font-bold text-slate-900 dark:text-white">Tenants Management</h2>
+          <p class="owner-tenants-subtitle text-slate-500 dark:text-slate-500 text-sm">Manage all organizations and centers on the platform.</p>
         </div>
-        <a routerLink="/owner/tenants/create" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20 self-start sm:self-auto">
+        <a routerLink="/owner/tenants/create" class="owner-tenants-create-btn flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20 self-start sm:self-auto">
           <mat-icon class="text-sm">add</mat-icon>
           Create Tenant
         </a>
       </div>
 
       <!-- Filters -->
-      <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-4">
+      <div class="owner-tenants-filter-card bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-4">
         <div class="flex-1 relative">
-          <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">search</mat-icon>
+          <mat-icon class="owner-tenants-search-icon absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">search</mat-icon>
           <input 
             type="text" 
             [ngModel]="searchQuery()"
@@ -24,15 +24,15 @@
             class="ds-owner-tenant-search-input pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"
           >
         </div>
-        <div class="flex flex-wrap gap-3 pb-2 md:pb-0 relative">
+        <div class="owner-tenants-filter-actions flex flex-wrap gap-3 pb-2 md:pb-0 relative">
           <button 
             (click)="showFiltersDropdown.set(!showFiltersDropdown())"
-            class="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            class="owner-tenants-filter-btn flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
           >
             <mat-icon class="text-sm">filter_list</mat-icon>
             Filters
             @if (activeFilterCount() > 0) {
-              <span class="bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ activeFilterCount() }}</span>
+              <span class="owner-tenants-filter-count bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ activeFilterCount() }}</span>
             }
           </button>
 
@@ -43,11 +43,11 @@
               (click)="showFiltersDropdown.set(false)"
               aria-label="Close filters"
             ></button>
-            <div class="absolute right-0 top-full mt-2 z-20 w-72 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-              <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                <h3 class="font-semibold text-slate-900 dark:text-white">Filters</h3>
+            <div class="owner-tenants-filters-dropdown absolute right-0 top-full mt-2 z-20 w-72 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+              <div class="owner-tenants-filters-head p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <h3 class="owner-tenants-filters-title font-semibold text-slate-900 dark:text-white">Filters</h3>
                 @if (activeFilterCount() > 0) {
-                  <button (click)="clearFilters()" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Clear all</button>
+                  <button (click)="clearFilters()" class="owner-tenants-clear-filters text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Clear all</button>
                 }
               </div>
               
@@ -112,9 +112,9 @@
       </div>
 
       <!-- Tenants Table -->
-      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
+      <div class="owner-tenants-table-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="owner-tenants-table-wrap overflow-x-auto">
+          <table class="owner-tenants-table w-full text-left text-sm">
             <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
               <tr>
                 <th class="px-6 py-4 font-medium">Name</th>
@@ -128,10 +128,10 @@
             </thead>
             <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
               @for (tenant of filteredTenants(); track tenant.id; let i = $index) {
-                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                <tr class="owner-tenants-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
                   <td class="px-6 py-4">
                     <button 
-                      class="font-medium text-slate-900 dark:text-white flex items-center gap-2 hover:text-indigo-600 transition-colors group/cell focus:outline-none" 
+                      class="owner-tenants-name-btn font-medium text-slate-900 dark:text-white flex items-center gap-2 hover:text-indigo-600 transition-colors group/cell focus:outline-none" 
                       (click)="copyToClipboard(tenant.name)"
                       title="Click to copy name"
                     >
@@ -139,7 +139,7 @@
                       <mat-icon class="text-[14px] opacity-0 group-hover/cell:opacity-100 text-slate-500 transition-opacity">content_copy</mat-icon>
                     </button>
                     <button 
-                      class="text-xs text-slate-500 flex items-center gap-1 hover:text-indigo-600 transition-colors group/id focus:outline-none mt-1" 
+                      class="owner-tenants-id-btn text-xs text-slate-500 flex items-center gap-1 hover:text-indigo-600 transition-colors group/id focus:outline-none mt-1" 
                       (click)="copyToClipboard(tenant.id)"
                       title="Click to copy ID"
                     >
@@ -183,11 +183,11 @@
                   <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ tenant.plan }}</td>
                   <td class="px-6 py-4 text-slate-500 dark:text-slate-500">
                     <button 
-                      class="flex items-center gap-2 hover:text-indigo-600 transition-colors group/email focus:outline-none" 
+                      class="owner-tenants-owner-btn flex items-center gap-2 hover:text-indigo-600 transition-colors group/email focus:outline-none" 
                       (click)="copyToClipboard(tenant.ownerEmail)"
                       title="Click to copy email"
                     >
-                      <div class="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs text-slate-500 dark:text-slate-300">
+                      <div class="owner-tenants-owner-avatar w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs text-slate-500 dark:text-slate-300">
                         {{ tenant.ownerEmail.charAt(0).toUpperCase() }}
                       </div>
                       <span class="truncate max-w-[150px]" [title]="tenant.ownerEmail">{{ tenant.ownerEmail }}</span>
@@ -211,17 +211,17 @@
                     </div>
                   </td>
                   <td class="px-6 py-4 text-right">
-                    <div class="flex items-center justify-end gap-2">
+                    <div class="owner-tenants-actions flex items-center justify-end gap-2">
                       <button 
                         [routerLink]="['/owner/tenants', tenant.id]"
-                        class="p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors" 
+                        class="owner-tenants-icon-btn p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors" 
                         title="View Details"
                       >
                         <mat-icon class="text-lg">visibility</mat-icon>
                       </button>
                       <button 
                         (click)="impersonate(tenant)"
-                        class="p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors" 
+                        class="owner-tenants-icon-btn p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors" 
                         title="Impersonate"
                       >
                         <mat-icon class="text-lg">login</mat-icon>
@@ -230,7 +230,7 @@
                       <div class="relative">
                         <button 
                           (click)="activeStatusDropdown.set(activeStatusDropdown() === tenant.id ? null : tenant.id)"
-                          class="p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors" 
+                          class="owner-tenants-icon-btn p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors" 
                           [title]="'Change Status (Current: ' + tenant.status + ')'"
                         >
                           <mat-icon class="text-lg">
@@ -244,7 +244,7 @@
                         </button>
 
                         @if (activeStatusDropdown() === tenant.id) {
-                          <div class="absolute right-0 z-30 w-40 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl overflow-hidden animate-in fade-in duration-200"
+                          <div class="owner-tenants-status-dropdown absolute right-0 z-30 w-40 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl overflow-hidden animate-in fade-in duration-200"
                             [class.top-full]="i < 3"
                             [class.mt-2]="i < 3"
                             [class.slide-in-from-top-2]="i < 3"
@@ -289,14 +289,14 @@
                       <div class="relative">
                         <button 
                           (click)="activePlanDropdown.set(activePlanDropdown() === tenant.id ? null : tenant.id)"
-                          class="p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors" 
+                          class="owner-tenants-icon-btn p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors" 
                           title="Upgrade Plan"
                         >
                           <mat-icon class="text-lg">upgrade</mat-icon>
                         </button>
 
                         @if (activePlanDropdown() === tenant.id) {
-                          <div class="absolute right-0 z-30 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl overflow-hidden animate-in fade-in duration-200"
+                          <div class="owner-tenants-plan-dropdown absolute right-0 z-30 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl overflow-hidden animate-in fade-in duration-200"
                             [class.top-full]="i < 3"
                             [class.mt-2]="i < 3"
                             [class.slide-in-from-top-2]="i < 3"
@@ -348,7 +348,7 @@
         </div>
         
         <!-- Pagination -->
-        <div class="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-sm text-slate-500 dark:text-slate-500">
+        <div class="owner-tenants-pagination p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-sm text-slate-500 dark:text-slate-500">
           <span>Showing 1-5 of 124 tenants</span>
           <div class="flex gap-2">
             <app-pager-button [disabled]="true">Previous</app-pager-button>
@@ -359,10 +359,10 @@
 
       <!-- Confirmation Modal -->
       @if (pendingStatusChange()) {
-        <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-            <div class="p-6 text-center">
-              <div class="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div class="owner-tenants-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div class="owner-tenants-modal bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div class="owner-tenants-modal-content p-6 text-center">
+              <div class="owner-tenants-modal-icon owner-tenants-modal-icon-status w-16 h-16 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4">
                 <mat-icon class="text-3xl">warning</mat-icon>
               </div>
               <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Confirm Status Change</h3>
@@ -373,16 +373,16 @@
                 to <span class="font-semibold text-indigo-600">{{ pendingStatusChange()?.status }}</span>?
               </p>
             </div>
-            <div class="p-4 bg-slate-50 dark:bg-slate-800/50 flex gap-3">
+            <div class="owner-tenants-modal-actions p-4 bg-slate-50 dark:bg-slate-800/50 flex gap-3">
               <button 
                 (click)="cancelStatusChange()"
-                class="flex-1 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-colors"
+                class="owner-tenants-modal-btn-cancel flex-1 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-colors"
               >
                 Cancel
               </button>
               <button 
                 (click)="confirmStatusChange()"
-                class="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-colors shadow-lg shadow-indigo-500/20"
+                class="owner-tenants-modal-btn-primary flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-colors shadow-lg shadow-indigo-500/20"
               >
                 Confirm Change
               </button>
@@ -393,10 +393,10 @@
 
       <!-- Plan Change Confirmation Modal -->
       @if (pendingPlanChange()) {
-        <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-            <div class="p-6 text-center">
-              <div class="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div class="owner-tenants-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div class="owner-tenants-modal bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div class="owner-tenants-modal-content p-6 text-center">
+              <div class="owner-tenants-modal-icon owner-tenants-modal-icon-plan w-16 h-16 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4">
                 <mat-icon class="text-3xl">upgrade</mat-icon>
               </div>
               <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Confirm Plan Upgrade</h3>
@@ -404,7 +404,7 @@
                 Are you sure you want to upgrade the plan for 
                 <span class="font-semibold text-slate-900 dark:text-white">{{ pendingPlanChange()?.tenant?.name }}</span>?
               </p>
-              <div class="mt-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-4">
+              <div class="owner-tenants-plan-summary mt-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-4">
                 <div class="text-center">
                   <div class="text-[10px] uppercase font-bold text-slate-500">Current</div>
                   <div class="font-semibold text-slate-700 dark:text-slate-300">{{ pendingPlanChange()?.tenant?.plan }}</div>
@@ -416,16 +416,16 @@
                 </div>
               </div>
             </div>
-            <div class="p-4 bg-slate-50 dark:bg-slate-800/50 flex gap-3">
+            <div class="owner-tenants-modal-actions p-4 bg-slate-50 dark:bg-slate-800/50 flex gap-3">
               <button 
                 (click)="cancelPlanChange()"
-                class="flex-1 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-colors"
+                class="owner-tenants-modal-btn-cancel flex-1 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-colors"
               >
                 Cancel
               </button>
               <button 
                 (click)="confirmPlanChange()"
-                class="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-colors shadow-lg shadow-indigo-500/20"
+                class="owner-tenants-modal-btn-primary flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-colors shadow-lg shadow-indigo-500/20"
               >
                 Confirm Upgrade
               </button>
@@ -436,8 +436,8 @@
 
       <!-- Copy Notification Toast -->
       @if (copyNotification()) {
-        <div class="fixed bottom-24 left-1/2 -translate-x-1/2 z-[110] animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <div class="bg-slate-900 text-white px-4 py-2 rounded-full shadow-2xl flex items-center gap-2 text-sm font-medium border border-slate-800">
+        <div class="owner-tenants-toast fixed bottom-24 left-1/2 -translate-x-1/2 z-[110] animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div class="owner-tenants-toast-content bg-slate-900 text-white px-4 py-2 rounded-full shadow-2xl flex items-center gap-2 text-sm font-medium border border-slate-800">
             <mat-icon class="text-green-400 text-sm">check_circle</mat-icon>
             <span>Copied to clipboard</span>
           </div>

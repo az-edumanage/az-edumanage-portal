@@ -8,7 +8,9 @@ import { OwnerTenantDetailsFacade } from '../../state/owner-tenant-details.facad
   selector: 'app-owner-tenant-details',
   standalone: true,
   imports: [CommonModule, RouterModule, MatIconModule, TitleCasePipe],
-  templateUrl: './owner-tenant-details.component.html'})
+  templateUrl: './owner-tenant-details.component.html',
+  styleUrl: './owner-tenant-details.component.css'
+})
 export class OwnerTenantDetailsComponent {
   private readonly facade = inject(OwnerTenantDetailsFacade);
 

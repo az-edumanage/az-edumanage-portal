@@ -12,7 +12,9 @@ import { Tenant } from '../../models/owner-tenants.models';
   selector: 'app-owner-tenants-list',
   standalone: true,
   imports: [CommonModule, RouterModule, MatIconModule, FormsModule, UiPagerButtonComponent],
-  templateUrl: './owner-tenants-list.component.html'})
+  templateUrl: './owner-tenants-list.component.html',
+  styleUrl: './owner-tenants-list.component.css'
+})
 export class OwnerTenantsListComponent {
   private router = inject(Router);
   private dashboardService = inject(DashboardService);

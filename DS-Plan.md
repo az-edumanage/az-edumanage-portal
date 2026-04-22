@@ -57,6 +57,9 @@ Build an enterprise-grade Design System on top of the current Angular + Tailwind
 
 ## Current Execution Status
 - Epic 5 slices are completed through Slice 07.
-- Epic 6 has started with Owner Slice 01 completed (`/owner/provisioning/settings`).
+- Epic 6 Owner Slice 01 is completed (`/owner/provisioning/settings`).
 - Epic 6 Owner Slice 02 is completed (`/owner/plans/create`).
-- Next active slice is Owner Slice 03 (`/owner/tenants`).
+- Epic 6 Owner Slice 03 is completed (`/owner/tenants`).
+- Epic 6 Owner Slice 04 is completed (`/owner/tenants/create`).
+- Epic 6 Owner Slice 05 is completed (`/owner/tenants/:id`).
+- Next active slice is Owner Slice 06 (`/owner/tenants/:id/edit`).

@@ -1,0 +1,68 @@
+:host {
+  display: block;
+}
+
+.owner-tenant-details-page {
+  align-content: start;
+}
+
+.owner-tenant-details-head {
+  gap: 1rem;
+}
+
+.owner-tenant-details-avatar {
+  flex-shrink: 0;
+}
+
+.owner-tenant-details-status {
+  letter-spacing: 0.02em;
+}
+
+.owner-tenant-details-btn {
+  white-space: nowrap;
+}
+
+.owner-tenant-details-card {
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.owner-tenant-details-label {
+  letter-spacing: 0.04em;
+}
+
+.owner-tenant-details-metric {
+  min-height: 7.5rem;
+}
+
+.owner-tenant-details-module {
+  white-space: nowrap;
+}
+
+.owner-tenant-details-table-row {
+  transition: background-color 150ms ease;
+}
+
+.owner-tenant-details-upgrade-btn {
+  font-weight: 600;
+}
+
+.owner-tenant-details-plan-dropdown {
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.owner-tenant-details-timeline {
+  isolation: isolate;
+}
+
+.owner-tenant-details-danger-btn {
+  justify-content: flex-start;
+}
+
+@media (max-width: 1024px) {
+  .owner-tenant-details-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -1,31 +1,31 @@
 
-    <div class="space-y-6">
+    <div class="owner-tenant-details-page space-y-6">
       <!-- Breadcrumb & Header -->
       <div>
-        <div class="flex items-center gap-3 text-sm text-slate-500 mb-2">
+        <div class="owner-tenant-details-breadcrumb flex items-center gap-3 text-sm text-slate-500 mb-2">
           <button 
             (click)="goBack()"
-            class="flex items-center gap-1 font-medium hover:text-indigo-600 transition-colors"
+            class="owner-tenant-details-back-btn flex items-center gap-1 font-medium hover:text-indigo-600 transition-colors"
           >
             <mat-icon class="text-sm">arrow_back</mat-icon>
             Back
           </button>
           <div class="h-3 w-px bg-slate-300 dark:bg-slate-700"></div>
           <div class="flex items-center gap-2">
-            <a routerLink="/owner/tenants" class="hover:text-indigo-600 transition-colors">Tenants</a>
+            <a routerLink="/owner/tenants" class="owner-tenant-details-link hover:text-indigo-600 transition-colors">Tenants</a>
             <mat-icon class="text-xs">chevron_right</mat-icon>
             <span class="text-slate-900 dark:text-white">{{ tenant.centerName }}</span>
           </div>
         </div>
-        <div class="flex items-center justify-between">
+        <div class="owner-tenant-details-head flex items-center justify-between">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-xl">
+            <div class="owner-tenant-details-avatar w-12 h-12 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-xl">
               {{ tenant.centerName[0] }}
             </div>
             <div>
               <h2 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
                 {{ tenant.centerName }}
-                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800">{{ tenant.status }}</span>
+                <span class="owner-tenant-details-status px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800">{{ tenant.status }}</span>
               </h2>
               <p class="text-slate-500 dark:text-slate-500 text-sm">ID: {{ tenant.id }} · Created {{ tenant.createdDate }}</p>
             </div>
@@ -34,7 +34,7 @@
             <button 
               type="button"
               (click)="impersonate()"
-              class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              class="owner-tenant-details-btn owner-tenant-details-btn-secondary flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
             >
               <mat-icon class="text-sm">login</mat-icon>
               Impersonate
@@ -42,7 +42,7 @@
             <button 
               type="button"
               [routerLink]="['/owner/tenants', tenant.id, 'edit']"
-              class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20"
+              class="owner-tenant-details-btn owner-tenant-details-btn-primary flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20"
             >
               <mat-icon class="text-sm">edit</mat-icon>
               Edit Details
@@ -52,36 +52,36 @@
       </div>
 
       <!-- Content Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="owner-tenant-details-grid grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Left Column: Info & Stats -->
         <div class="lg:col-span-2 space-y-6">
           <!-- Basic Info Card -->
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+          <div class="owner-tenant-details-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
             <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Center Information</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <div class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Tenant Type</div>
+                <div class="owner-tenant-details-label block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Tenant Type</div>
                 <div class="text-slate-900 dark:text-white flex items-center gap-2">
                   <mat-icon class="text-slate-500 text-sm">category</mat-icon>
                   {{ tenant.tenantType }}
                 </div>
               </div>
               <div>
-                <div class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Industry</div>
+                <div class="owner-tenant-details-label block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Industry</div>
                 <div class="text-slate-900 dark:text-white flex items-center gap-2">
                   <mat-icon class="text-slate-500 text-sm">business_center</mat-icon>
                   {{ tenant.industry }}
                 </div>
               </div>
               <div>
-                <div class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Subdomain</div>
+                <div class="owner-tenant-details-label block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Subdomain</div>
                 <div class="text-slate-900 dark:text-white flex items-center gap-2">
                   <mat-icon class="text-slate-500 text-sm">link</mat-icon>
                   {{ tenant.subdomain }}{{ tenant.domain }}
                 </div>
               </div>
               <div>
-                <div class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Data Region</div>
+                <div class="owner-tenant-details-label block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Data Region</div>
                 <div class="text-slate-900 dark:text-white flex items-center gap-2">
                   <mat-icon class="text-slate-500 text-sm">public</mat-icon>
                   {{ tenant.region }}
@@ -91,32 +91,32 @@
           </div>
 
           <!-- Contact Info Card -->
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+          <div class="owner-tenant-details-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
             <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Contact Information</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <div class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Contact Name</div>
+                <div class="owner-tenant-details-label block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Contact Name</div>
                 <div class="text-slate-900 dark:text-white flex items-center gap-2">
                   <mat-icon class="text-slate-500 text-sm">person</mat-icon>
                   {{ tenant.contactName }}
                 </div>
               </div>
               <div>
-                <div class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Contact Email</div>
+                <div class="owner-tenant-details-label block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Contact Email</div>
                 <div class="text-slate-900 dark:text-white flex items-center gap-2">
                   <mat-icon class="text-slate-500 text-sm">email</mat-icon>
                   {{ tenant.contactEmail }}
                 </div>
               </div>
               <div>
-                <div class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Phone</div>
+                <div class="owner-tenant-details-label block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Phone</div>
                 <div class="text-slate-900 dark:text-white flex items-center gap-2">
                   <mat-icon class="text-slate-500 text-sm">phone</mat-icon>
                   {{ tenant.contactPhone }}
                 </div>
               </div>
               <div>
-                <div class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Address</div>
+                <div class="owner-tenant-details-label block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Address</div>
                 <div class="text-slate-900 dark:text-white flex items-center gap-2">
                   <mat-icon class="text-slate-500 text-sm">location_on</mat-icon>
                   {{ tenant.address }}, {{ tenant.city }}, {{ tenant.country }}
@@ -126,24 +126,24 @@
           </div>
 
           <!-- Usage Metrics -->
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+          <div class="owner-tenant-details-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
             <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Usage Metrics</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+              <div class="owner-tenant-details-metric p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
                 <div class="text-sm text-slate-500 mb-1">Active Students</div>
                 <div class="text-2xl font-bold text-slate-900 dark:text-white">450 <span class="text-xs font-normal text-slate-500">/ 500</span></div>
                 <div class="ds-progress-track mt-2">
                   <div class="ds-progress-fill ds-progress-fill--w-90"></div>
                 </div>
               </div>
-              <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+              <div class="owner-tenant-details-metric p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
                 <div class="text-sm text-slate-500 mb-1">Storage Usage</div>
                 <div class="text-2xl font-bold text-slate-900 dark:text-white">4.2 GB <span class="text-xs font-normal text-slate-500">/ 10 GB</span></div>
                 <div class="ds-progress-track mt-2">
                   <div class="ds-progress-fill ds-progress-fill--blue ds-progress-fill--w-42"></div>
                 </div>
               </div>
-              <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+              <div class="owner-tenant-details-metric p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
                 <div class="text-sm text-slate-500 mb-1">API Calls</div>
                 <div class="text-2xl font-bold text-slate-900 dark:text-white">12.5k <span class="text-xs font-normal text-slate-500">/ 50k</span></div>
                 <div class="ds-progress-track mt-2">
@@ -155,7 +155,7 @@
             <h4 class="text-sm font-medium text-slate-900 dark:text-white mb-3">Enabled Modules</h4>
             <div class="flex flex-wrap gap-2">
               @for (module of modules; track module) {
-                <span class="px-3 py-1 bg-indigo-600/10 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-300 rounded-full text-xs font-medium border border-indigo-100 dark:border-indigo-800">
+                <span class="owner-tenant-details-module px-3 py-1 bg-indigo-600/10 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-300 rounded-full text-xs font-medium border border-indigo-100 dark:border-indigo-800">
                   {{ module }}
                 </span>
               }
@@ -163,7 +163,7 @@
           </div>
 
           <!-- Billing History -->
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div class="owner-tenant-details-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
             <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
               <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Billing History</h3>
               <button class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">View All</button>
@@ -179,14 +179,14 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
-                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                <tr class="owner-tenant-details-table-row hover:bg-slate-50 dark:hover:bg-slate-800/50">
                   <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">INV-2024-001</td>
                   <td class="px-6 py-4 text-slate-500">Feb 01, 2024</td>
                   <td class="px-6 py-4 text-slate-900 dark:text-white">$199.00</td>
                   <td class="px-6 py-4"><span class="text-green-600 text-xs font-bold bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full">Paid</span></td>
                   <td class="px-6 py-4 text-right"><button class="text-slate-500 hover:text-slate-500"><mat-icon class="text-lg">download</mat-icon></button></td>
                 </tr>
-                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                <tr class="owner-tenant-details-table-row hover:bg-slate-50 dark:hover:bg-slate-800/50">
                   <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">INV-2024-002</td>
                   <td class="px-6 py-4 text-slate-500">Jan 01, 2024</td>
                   <td class="px-6 py-4 text-slate-900 dark:text-white">$199.00</td>
@@ -201,7 +201,7 @@
         <!-- Right Column: Status & Actions -->
         <div class="space-y-6">
           <!-- Subscription Status -->
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+          <div class="owner-tenant-details-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
             <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Subscription</h3>
             <div class="flex items-center justify-between mb-2">
               <span class="text-xl font-bold text-slate-900 dark:text-white">{{ tenant.planId | titlecase }} Plan</span>
@@ -260,7 +260,7 @@
             <div class="relative">
               <button 
                 (click)="showPlanDropdown.set(!showPlanDropdown())"
-                class="w-full py-2 border border-indigo-600 text-indigo-600 dark:text-indigo-400 rounded-lg text-sm font-medium hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 transition-colors flex items-center justify-center gap-2"
+                class="owner-tenant-details-upgrade-btn w-full py-2 border border-indigo-600 text-indigo-600 dark:text-indigo-400 rounded-lg text-sm font-medium hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 transition-colors flex items-center justify-center gap-2"
               >
                 <mat-icon class="text-sm">upgrade</mat-icon>
                 Upgrade Plan
@@ -273,7 +273,7 @@
                   (click)="showPlanDropdown.set(false)"
                   aria-label="Close dropdown"
                 ></button>
-                <div class="absolute right-0 bottom-full mb-2 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
+                <div class="owner-tenant-details-plan-dropdown absolute right-0 bottom-full mb-2 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
                   <div class="p-2 space-y-1">
                     @for (plan of plans; track plan.id) {
                       <button 
@@ -301,7 +301,7 @@
           </div>
 
           <!-- Provisioning Settings -->
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+          <div class="owner-tenant-details-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
             <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Provisioning Settings</h3>
             <div class="space-y-3">
               <div class="flex items-center justify-between text-sm">
@@ -332,9 +332,9 @@
           </div>
 
           <!-- Provisioning Status -->
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+          <div class="owner-tenant-details-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
             <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Provisioning Status</h3>
-            <div class="space-y-4 relative before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-700">
+            <div class="owner-tenant-details-timeline space-y-4 relative before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-700">
               <div class="relative pl-8">
                 <div class="absolute left-0 top-0 w-4 h-4 rounded-full bg-green-500 border-2 border-white dark:border-slate-900"></div>
                 <h4 class="text-sm font-medium text-slate-900 dark:text-white">Account Created</h4>
@@ -354,14 +354,14 @@
           </div>
 
           <!-- Danger Zone -->
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-red-200 dark:border-red-900/50 shadow-sm p-6">
+          <div class="owner-tenant-details-danger bg-white dark:bg-slate-900 rounded-xl border border-red-200 dark:border-red-900/50 shadow-sm p-6">
             <h3 class="text-sm font-semibold text-red-600 mb-4">Danger Zone</h3>
             <div class="space-y-3">
-              <button class="w-full py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors text-left px-4 flex items-center gap-2">
+              <button class="owner-tenant-details-danger-btn w-full py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors text-left px-4 flex items-center gap-2">
                 <mat-icon class="text-sm">pause_circle</mat-icon>
                 Suspend Tenant
               </button>
-              <button class="w-full py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors text-left px-4 flex items-center gap-2">
+              <button class="owner-tenant-details-danger-btn w-full py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors text-left px-4 flex items-center gap-2">
                 <mat-icon class="text-sm">delete_forever</mat-icon>
                 Delete Tenant
               </button>
