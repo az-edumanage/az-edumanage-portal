@@ -71,4 +71,5 @@ Build an enterprise-grade Design System on top of the current Angular + Tailwind
 - Epic 6 Owner Slice 12 is completed (`/owner/subscriptions/templates`).
 - Epic 6 Owner Slice 13 is completed (`/owner/subscriptions/templates/:id`).
 - Epic 6 Owner Slice 14 is completed (`/owner/subscriptions/:id`).
-- Next active slice is Owner Slice 15 (`/owner/subscriptions/create`).
+- Epic 6 Owner Slice 15 is completed (`/owner/subscriptions/create`).
+- Next active slice is Owner Slice 16 (`/owner/overview`).

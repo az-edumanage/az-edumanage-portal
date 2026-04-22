@@ -36,6 +36,7 @@ Purpose: define the minimum visual-regression baseline coverage for zero-regress
 | `/owner/subscriptions/templates` | owner | Template catalog cards and template-management actions. |
 | `/owner/subscriptions/templates/TMP_001` | owner | Subscription template details with configuration and pricing side panels. |
 | `/owner/subscriptions/sub-001` | owner | Subscription detail page with plan utilization metrics. |
+| `/owner/subscriptions/create` | owner | Subscription template creation form with dense policy/notification controls. |
 | `/owner/subscriptions/orders` | owner | Dense admin page with mixed controls. |
 | `/owner/billing` | owner | Financial table and filters. |
 | `/owner/analytics` | owner | Usage analytics tables and feature adoption progress bars. |
