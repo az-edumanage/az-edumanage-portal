@@ -1,24 +1,25 @@
-# Current Task: Phase 6 - Feature Adoption (Owner Slice 16)
+# Current Task: Phase 6 - Feature Adoption (Owner Slice 17)
 
 ## Objective
-Apply the Owner feature adoption extraction pattern to `/owner/overview` by replacing repeated one-off utility bundles with component-scoped DS-aligned classes.
+Apply the Owner feature adoption extraction pattern to `/owner/analytics` by replacing repeated one-off utility bundles with component-scoped DS-aligned classes.
 
 ## Status
 `Completed`
 
 ## Sub-Tasks
-- [x] Add page-scoped DS-aligned classes for repeated page/header shell, card wrappers, KPI rows, and action controls.
+- [x] Enable external stylesheet metadata for analytics page component (`styleUrl`).
+- [x] Add page-scoped DS-aligned classes for repeated header controls, KPI cards, table rows, and panel alerts.
 - [x] Replace repeated one-off utility bundles in template while keeping chart/signals interactions unchanged.
 - [x] Validate build (`npm run build`).
 - [x] Validate lint (`npm run lint`).
-- [x] Re-baseline and verify focused visual snapshots (`npm run vr:update -- --grep "owner-overview"` + `npm run vr:test -- --grep "owner-overview"`).
+- [x] Re-baseline and verify focused visual snapshots (`npm run vr:update -- --grep "owner-analytics"` + `npm run vr:test -- --grep "owner-analytics"`).
 
 ## Exit Criteria
-- High-frequency Owner overview route reduced repeated one-off utility bundles.
+- High-frequency Owner analytics route reduced repeated one-off utility bundles.
 - No behavior change introduced.
 - Focused route visual checks pass.
 
 ## Next Task (Active)
-Phase 6 - Feature Adoption (Owner Slice 17):
-- Apply the same extraction pattern to next high-frequency Owner surface (`/owner/analytics`).
+Phase 6 - Feature Adoption (Owner Slice 18):
+- Apply the same extraction pattern to next high-frequency Owner surface (`/owner/compliance`).
 - Keep route-level parity guardrail via focused visual regression.

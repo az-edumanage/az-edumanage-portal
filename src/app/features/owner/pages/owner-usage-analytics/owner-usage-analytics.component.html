@@ -1,26 +1,26 @@
 
-    <div class="space-y-8 pb-12">
+    <div class="owner-usage-analytics-page space-y-8 pb-12">
       <!-- Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="owner-usage-analytics-header flex flex-col sm:flex-row sm:items-center justify-between">
         <div>
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Usage Analytics</h2>
-          <p class="text-slate-500 dark:text-slate-500 text-sm">Monitor tenant activity, module adoption, and system limits.</p>
+          <h2 class="owner-usage-analytics-title text-2xl font-bold text-slate-900 dark:text-white">Usage Analytics</h2>
+          <p class="owner-usage-analytics-subtitle text-slate-500 dark:text-slate-500 text-sm">Monitor tenant activity, module adoption, and system limits.</p>
         </div>
-        <div class="flex items-center gap-3">
-          <div class="relative">
+        <div class="owner-usage-analytics-actions flex items-center gap-3">
+          <div class="owner-usage-analytics-select-wrap">
             <select 
               [(ngModel)]="selectedDateRange"
               (change)="updateData()"
-              class="appearance-none bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 py-2 pl-4 pr-10 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              class="owner-usage-analytics-select py-2 pl-4 pr-10 text-sm font-medium dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
             >
               <option value="today">Today</option>
               <option value="7days">Last 7 Days</option>
               <option value="30days">Last 30 Days</option>
               <option value="custom">Custom Range</option>
             </select>
-            <mat-icon class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none">expand_more</mat-icon>
+            <mat-icon class="owner-usage-analytics-select-icon text-slate-500 text-sm">expand_more</mat-icon>
           </div>
-          <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+          <button class="owner-usage-analytics-export-btn gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
             <mat-icon class="text-sm">download</mat-icon>
             Export
           </button>
@@ -30,17 +30,17 @@
       <!-- KPI Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- Active Tenants -->
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div class="flex justify-between items-start mb-4">
+        <div class="owner-usage-analytics-card p-6">
+          <div class="owner-usage-analytics-kpi-head flex justify-between mb-4">
             <div>
-              <p class="text-sm font-medium text-slate-500 dark:text-slate-500">Total Active Tenants</p>
-              <h3 class="text-3xl font-bold text-slate-900 dark:text-white mt-1">124</h3>
+              <p class="owner-usage-analytics-kpi-title text-sm font-medium text-slate-500 dark:text-slate-500">Total Active Tenants</p>
+              <h3 class="owner-usage-analytics-kpi-value text-3xl font-bold text-slate-900 dark:text-white mt-1">124</h3>
             </div>
             <div class="p-2 bg-indigo-600/10 dark:bg-indigo-900/20 rounded-lg">
               <mat-icon class="text-indigo-600 dark:text-indigo-400">business</mat-icon>
             </div>
           </div>
-          <div class="flex items-center gap-2 text-sm">
+          <div class="owner-usage-analytics-kpi-trend flex items-center gap-2 text-sm">
             <span class="text-green-600 flex items-center font-medium">
               <mat-icon class="text-xs mr-0.5">trending_up</mat-icon>
               12%
@@ -50,17 +50,17 @@
         </div>
 
         <!-- Active Users -->
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div class="flex justify-between items-start mb-4">
+        <div class="owner-usage-analytics-card p-6">
+          <div class="owner-usage-analytics-kpi-head flex justify-between mb-4">
             <div>
-              <p class="text-sm font-medium text-slate-500 dark:text-slate-500">Total Active Users</p>
-              <h3 class="text-3xl font-bold text-slate-900 dark:text-white mt-1">8,542</h3>
+              <p class="owner-usage-analytics-kpi-title text-sm font-medium text-slate-500 dark:text-slate-500">Total Active Users</p>
+              <h3 class="owner-usage-analytics-kpi-value text-3xl font-bold text-slate-900 dark:text-white mt-1">8,542</h3>
             </div>
             <div class="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
               <mat-icon class="text-emerald-600 dark:text-emerald-400">people</mat-icon>
             </div>
           </div>
-          <div class="flex items-center gap-2 text-sm">
+          <div class="owner-usage-analytics-kpi-trend flex items-center gap-2 text-sm">
             <span class="text-green-600 flex items-center font-medium">
               <mat-icon class="text-xs mr-0.5">trending_up</mat-icon>
               5.4%
@@ -70,17 +70,17 @@
         </div>
 
         <!-- API Calls -->
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div class="flex justify-between items-start mb-4">
+        <div class="owner-usage-analytics-card p-6">
+          <div class="owner-usage-analytics-kpi-head flex justify-between mb-4">
             <div>
-              <p class="text-sm font-medium text-slate-500 dark:text-slate-500">API Calls (Monthly)</p>
-              <h3 class="text-3xl font-bold text-slate-900 dark:text-white mt-1">2.4M</h3>
+              <p class="owner-usage-analytics-kpi-title text-sm font-medium text-slate-500 dark:text-slate-500">API Calls (Monthly)</p>
+              <h3 class="owner-usage-analytics-kpi-value text-3xl font-bold text-slate-900 dark:text-white mt-1">2.4M</h3>
             </div>
             <div class="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
               <mat-icon class="text-indigo-600 dark:text-blue-400">api</mat-icon>
             </div>
           </div>
-          <div class="flex items-center gap-2 text-sm">
+          <div class="owner-usage-analytics-kpi-trend flex items-center gap-2 text-sm">
             <span class="text-green-600 flex items-center font-medium">
               <mat-icon class="text-xs mr-0.5">trending_up</mat-icon>
               8.1%
@@ -90,17 +90,17 @@
         </div>
 
         <!-- Storage Used -->
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div class="flex justify-between items-start mb-4">
+        <div class="owner-usage-analytics-card p-6">
+          <div class="owner-usage-analytics-kpi-head flex justify-between mb-4">
             <div>
-              <p class="text-sm font-medium text-slate-500 dark:text-slate-500">Storage Used</p>
-              <h3 class="text-3xl font-bold text-slate-900 dark:text-white mt-1">450 GB</h3>
+              <p class="owner-usage-analytics-kpi-title text-sm font-medium text-slate-500 dark:text-slate-500">Storage Used</p>
+              <h3 class="owner-usage-analytics-kpi-value text-3xl font-bold text-slate-900 dark:text-white mt-1">450 GB</h3>
             </div>
             <div class="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
               <mat-icon class="text-amber-600 dark:text-amber-400">storage</mat-icon>
             </div>
           </div>
-          <div class="flex items-center gap-2 text-sm">
+          <div class="owner-usage-analytics-kpi-trend flex items-center gap-2 text-sm">
             <span class="text-slate-500 flex items-center font-medium">
               <mat-icon class="text-xs mr-0.5">trending_flat</mat-icon>
               Stable
@@ -113,30 +113,30 @@
       <!-- Charts Section -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Top Modules Chart -->
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-6">Most Used Modules</h3>
-          <div class="relative h-64 w-full">
+        <div class="owner-usage-analytics-card p-6">
+          <h3 class="owner-usage-analytics-chart-title text-lg font-semibold text-slate-900 dark:text-white mb-6">Most Used Modules</h3>
+          <div class="owner-usage-analytics-chart-canvas relative h-64 w-full">
             <canvas #topModulesChart></canvas>
           </div>
         </div>
 
         <!-- Usage Trend Chart -->
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-6">Usage Trend (Last 6 Months)</h3>
-          <div class="relative h-64 w-full">
+        <div class="owner-usage-analytics-card p-6">
+          <h3 class="owner-usage-analytics-chart-title text-lg font-semibold text-slate-900 dark:text-white mb-6">Usage Trend (Last 6 Months)</h3>
+          <div class="owner-usage-analytics-chart-canvas relative h-64 w-full">
             <canvas #usageTrendChart></canvas>
           </div>
         </div>
       </div>
 
       <!-- Usage by Module Table -->
-      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <div class="owner-usage-analytics-card overflow-hidden">
         <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Usage by Module</h3>
+          <h3 class="owner-usage-analytics-table-title text-lg font-semibold text-slate-900 dark:text-white">Usage by Module</h3>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-left text-sm">
-            <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
+            <thead class="owner-usage-analytics-table-head bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
               <tr>
                 <th class="px-6 py-3 font-medium">Module Name</th>
                 <th class="px-6 py-3 font-medium">Category</th>
@@ -149,10 +149,10 @@
             </thead>
             <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
               @for (module of modules(); track module.name) {
-                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                <tr class="owner-usage-analytics-table-row hover:bg-slate-50 dark:hover:bg-slate-800/50">
                   <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">{{ module.name }}</td>
                   <td class="px-6 py-4">
-                    <span class="px-2 py-1 rounded-full text-xs font-medium"
+                    <span class="owner-usage-analytics-category-badge px-2 py-1 rounded-full text-xs font-medium"
                       [class.bg-emerald-100]="module.category === 'Core'"
                       [class.text-emerald-700]="module.category === 'Core'"
                       [class.dark:bg-emerald-900/30]="module.category === 'Core'"
@@ -168,7 +168,7 @@
                   <td class="px-6 py-4 text-right text-slate-500 dark:text-slate-500">{{ module.enabledTenants }}</td>
                   <td class="px-6 py-4 text-right text-slate-500 dark:text-slate-500">{{ module.activeTenants }}</td>
                   <td class="px-6 py-4 text-right">
-                    <div class="flex items-center justify-end gap-2">
+                    <div class="owner-usage-analytics-usage-cell flex items-center justify-end">
                       <span class="text-slate-900 dark:text-white font-medium">{{ module.usageRate }}%</span>
                       <div class="ds-progress-track w-16">
                         <div class="ds-progress-fill" [style.--ds-progress]="module.usageRate + '%'"></div>
@@ -196,9 +196,9 @@
       <!-- Tenant Usage & Limits -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Usage by Tenant (Takes 2 columns) -->
-        <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="owner-usage-analytics-card lg:col-span-2 overflow-hidden">
           <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Tenant Usage</h3>
+            <h3 class="owner-usage-analytics-table-title text-lg font-semibold text-slate-900 dark:text-white">Tenant Usage</h3>
             <div class="flex gap-2">
               <input type="text" placeholder="Search tenant..." class="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
             </div>
@@ -216,13 +216,13 @@
               </thead>
               <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
                 @for (tenant of tenants(); track tenant.id) {
-                  <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <tr class="owner-usage-analytics-table-row hover:bg-slate-50 dark:hover:bg-slate-800/50">
                     <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">{{ tenant.name }}</td>
                     <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ tenant.plan }}</td>
                     <td class="px-6 py-4 text-right text-slate-500 dark:text-slate-500">{{ tenant.activeUsers | number }}</td>
                     <td class="px-6 py-4 text-right text-slate-500 dark:text-slate-500">{{ tenant.storageUsed }} GB</td>
                     <td class="px-6 py-4">
-                      <span class="px-2 py-1 rounded-full text-xs font-medium"
+                      <span class="owner-usage-analytics-risk-badge px-2 py-1 rounded-full text-xs font-medium"
                         [class.bg-green-100]="tenant.riskLevel === 'Low'"
                         [class.text-green-700]="tenant.riskLevel === 'Low'"
                         [class.dark:bg-green-900/30]="tenant.riskLevel === 'Low'"
@@ -249,10 +249,10 @@
         <!-- Limits Monitoring & Plan Utilization -->
         <div class="space-y-6">
           <!-- Limits Monitoring -->
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Limits Monitoring</h3>
+          <div class="owner-usage-analytics-card p-6">
+            <h3 class="owner-usage-analytics-table-title text-lg font-semibold text-slate-900 dark:text-white mb-4">Limits Monitoring</h3>
             <div class="space-y-4">
-              <div class="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-lg">
+              <div class="owner-usage-analytics-panel-alert flex justify-between p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-lg">
                 <div class="flex items-center gap-3">
                   <mat-icon class="text-red-600 dark:text-red-400">warning</mat-icon>
                   <div>
@@ -263,7 +263,7 @@
                 <button class="text-xs font-medium text-red-700 dark:text-red-300 hover:underline">View</button>
               </div>
               
-              <div class="flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/30 rounded-lg">
+              <div class="owner-usage-analytics-panel-alert flex justify-between p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/30 rounded-lg">
                 <div class="flex items-center gap-3">
                   <mat-icon class="text-amber-600 dark:text-amber-400">people_outline</mat-icon>
                   <div>
@@ -274,7 +274,7 @@
                 <button class="text-xs font-medium text-amber-700 dark:text-amber-300 hover:underline">View</button>
               </div>
 
-              <div class="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 rounded-lg">
+              <div class="owner-usage-analytics-panel-alert flex justify-between p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 rounded-lg">
                 <div class="flex items-center gap-3">
                   <mat-icon class="text-indigo-600 dark:text-blue-400">api</mat-icon>
                   <div>
@@ -288,8 +288,8 @@
           </div>
 
           <!-- Feature Adoption -->
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Feature Adoption</h3>
+          <div class="owner-usage-analytics-card p-6">
+            <h3 class="owner-usage-analytics-table-title text-lg font-semibold text-slate-900 dark:text-white mb-4">Feature Adoption</h3>
             <div class="space-y-4">
               <div>
                 <div class="flex justify-between text-sm mb-1">
