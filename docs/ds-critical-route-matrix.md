@@ -40,6 +40,7 @@ Purpose: define the minimum visual-regression baseline coverage for zero-regress
 | `/owner/subscriptions/orders` | owner | Dense admin page with mixed controls. |
 | `/owner/billing` | owner | Financial table and filters. |
 | `/owner/analytics` | owner | Usage analytics tables and feature adoption progress bars. |
+| `/owner/security` | owner | Security controls and dense settings UI. |
 | `/owner/users` | owner | User list patterns and badges/chips. |
 | `/owner/tenants/tenant-001` | owner | Tenant details page with utilization progress metrics. |
 | `/owner/tenants/tenant-001/edit` | owner | Tenant edit form with dense dropdown/control combinations. |
@@ -62,7 +63,6 @@ Purpose: define the minimum visual-regression baseline coverage for zero-regress
 | Route | Role | Note |
 |---|---|---|
 | `/owner/notifications` | owner | Notification list patterns. |
-| `/owner/security` | owner | Security controls and dense settings UI. |
 | `/owner/compliance` | owner | Compliance request progress bars and policy controls. |
 | `/owner/modules` | owner | Module listing variants. |
 | `/owner/integrations` | owner | Integration list/detail patterns. |

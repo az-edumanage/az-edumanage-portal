@@ -25,6 +25,7 @@ const P0_ROUTES: Array<{ key: string; path: string; role: UserRole }> = [
   { key: 'owner-billing', path: '/owner/billing', role: 'owner' },
   { key: 'owner-analytics', path: '/owner/analytics', role: 'owner' },
   { key: 'owner-compliance', path: '/owner/compliance', role: 'owner' },
+  { key: 'owner-security', path: '/owner/security', role: 'owner' },
   { key: 'owner-users', path: '/owner/users', role: 'owner' },
   { key: 'owner-tenant-details', path: '/owner/tenants/tenant-001', role: 'owner' },
   { key: 'owner-tenant-edit', path: '/owner/tenants/tenant-001/edit', role: 'owner' },

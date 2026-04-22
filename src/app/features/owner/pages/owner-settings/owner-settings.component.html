@@ -1,26 +1,26 @@
 
-    <div class="space-y-6">
+    <div class="owner-settings-page space-y-6">
       <!-- Header -->
-      <div class="flex items-center justify-between">
+      <div class="owner-settings-header flex items-center justify-between">
         <div>
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Global System Settings</h2>
-          <p class="text-slate-500 dark:text-slate-500 text-sm">Configure platform-wide defaults and policies for all tenants.</p>
+          <h2 class="owner-settings-title text-2xl font-bold text-slate-900 dark:text-white">Global System Settings</h2>
+          <p class="owner-settings-subtitle text-slate-500 dark:text-slate-500 text-sm">Configure platform-wide defaults and policies for all tenants.</p>
         </div>
       </div>
 
       <!-- Tabs Navigation -->
-      <div class="border-b border-slate-200 dark:border-slate-800 overflow-x-auto custom-scrollbar">
-        <nav class="flex gap-8 min-w-max">
+      <div class="owner-settings-tabs-wrap owner-settings-custom-scrollbar border-b border-slate-200 dark:border-slate-800">
+        <nav class="owner-settings-tabs flex">
           @for (tab of tabs; track tab.id) {
             <button 
               (click)="activeTab.set(tab.id)"
-              class="pb-4 text-sm font-medium transition-colors relative whitespace-nowrap"
+              class="owner-settings-tab-btn pb-4 text-sm font-medium"
               [class.text-indigo-600]="activeTab() === tab.id"
               [class.text-slate-500]="activeTab() !== tab.id"
             >
               {{ tab.label }}
               @if (activeTab() === tab.id) {
-                <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600"></div>
+                <div class="owner-settings-tab-indicator"></div>
               }
             </button>
           }
@@ -31,31 +31,31 @@
       <div class="mt-6">
         <!-- 1. General Settings -->
         @if (activeTab() === 'general') {
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div class="owner-settings-card owner-settings-card--shell">
             <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">General Configuration</h3>
+              <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">General Configuration</h3>
             </div>
             <div class="p-6 space-y-6">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label for="platform-name" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Platform Name</label>
-                  <input id="platform-name" type="text" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm" value="Remix Education Center">
+                  <label for="platform-name" class="owner-settings-field-label">Platform Name</label>
+                  <input id="platform-name" type="text" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="Remix Education Center">
                 </div>
                 <div>
-                  <label for="support-email" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Support Email</label>
-                  <input id="support-email" type="email" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm" value="support@remix.com">
+                  <label for="support-email" class="owner-settings-field-label">Support Email</label>
+                  <input id="support-email" type="email" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="support@remix.com">
                 </div>
                 <div>
-                  <label for="def-lang" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Default Language</label>
-                  <select id="def-lang" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+                  <label for="def-lang" class="owner-settings-field-label">Default Language</label>
+                  <select id="def-lang" class="owner-settings-select dark:bg-slate-800 dark:border-slate-700">
                     <option selected>English</option>
                     <option>Arabic</option>
                     <option>French</option>
                   </select>
                 </div>
                 <div>
-                  <label for="def-tz" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Default Timezone</label>
-                  <select id="def-tz" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+                  <label for="def-tz" class="owner-settings-field-label">Default Timezone</label>
+                  <select id="def-tz" class="owner-settings-select dark:bg-slate-800 dark:border-slate-700">
                     <option selected>UTC (Coordinated Universal Time)</option>
                     <option>GMT+2 (Cairo, Egypt)</option>
                     <option>GMT-5 (New York, USA)</option>
@@ -63,7 +63,7 @@
                 </div>
               </div>
 
-              <div class="flex items-center justify-between p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+              <div class="owner-settings-banner flex justify-between p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
                 <div class="flex gap-3">
                   <mat-icon class="text-amber-600">construction</mat-icon>
                   <div>
@@ -77,8 +77,8 @@
                 </label>
               </div>
             </div>
-            <div class="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex justify-end">
-              <button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">Save Changes</button>
+            <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
+              <button class="owner-settings-btn-primary px-4 py-2 shadow-sm">Save Changes</button>
             </div>
           </div>
         }
@@ -87,13 +87,13 @@
         @if (activeTab() === 'presets') {
           <div class="space-y-6">
             <!-- Subscription Cycles -->
-            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="owner-settings-card owner-settings-card--shell">
               <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                 <div>
-                  <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Subscription Cycles</h3>
+                  <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Subscription Cycles</h3>
                   <p class="text-sm text-slate-500">Define available billing intervals for plans and subscriptions.</p>
                 </div>
-                <button (click)="addCycle()" class="flex items-center gap-2 px-3 py-1.5 bg-indigo-600/10 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg text-sm font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
+                <button (click)="addCycle()" class="owner-settings-btn-chip gap-2 px-3 py-1.5 bg-indigo-600/10 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg text-sm font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/50">
                   <mat-icon class="text-sm">add</mat-icon>
                   Add Cycle
                 </button>
@@ -131,13 +131,13 @@
             </div>
 
             <!-- Payment Methods -->
-            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="owner-settings-card owner-settings-card--shell">
               <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                 <div>
-                  <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Payment Methods</h3>
+                  <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Payment Methods</h3>
                   <p class="text-sm text-slate-500">Configure available payment options for tenants.</p>
                 </div>
-                <button (click)="addPaymentMethod()" class="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-sm font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors">
+                <button (click)="addPaymentMethod()" class="owner-settings-btn-chip gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-sm font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/50">
                   <mat-icon class="text-sm">add_card</mat-icon>
                   Add Method
                 </button>
@@ -171,7 +171,7 @@
             </div>
             
             <div class="flex justify-end gap-3">
-              <button (click)="savePresets()" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20">
+              <button (click)="savePresets()" class="owner-settings-btn-primary px-6 py-2 shadow-sm shadow-indigo-500/20">
                 Save Presets Configuration
               </button>
             </div>
@@ -180,35 +180,35 @@
 
         <!-- 2. Security Settings -->
         @if (activeTab() === 'security') {
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div class="owner-settings-card owner-settings-card--shell">
             <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Security & Access Policies</h3>
+              <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Security & Access Policies</h3>
             </div>
             <div class="p-6 space-y-6">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label for="pass-policy" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Password Policy</label>
-                  <select id="pass-policy" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+                  <label for="pass-policy" class="owner-settings-field-label">Password Policy</label>
+                  <select id="pass-policy" class="owner-settings-select dark:bg-slate-800 dark:border-slate-700">
                     <option>Standard (8 chars)</option>
                     <option selected>Strong (12 chars, mixed case, symbols)</option>
                     <option>Enterprise (16 chars, rotate every 90 days)</option>
                   </select>
                 </div>
                 <div>
-                  <label for="sess-timeout" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Session Timeout (Minutes)</label>
-                  <input id="sess-timeout" type="number" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm" value="30">
+                  <label for="sess-timeout" class="owner-settings-field-label">Session Timeout (Minutes)</label>
+                  <input id="sess-timeout" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="30">
                 </div>
                 <div>
-                  <label for="max-login" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Max Login Attempts</label>
-                  <input id="max-login" type="number" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm" value="5">
+                  <label for="max-login" class="owner-settings-field-label">Max Login Attempts</label>
+                  <input id="max-login" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="5">
                 </div>
                 <div>
-                  <label for="rate-limit" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">API Rate Limit (Req/Min)</label>
-                  <input id="rate-limit" type="number" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm" value="1000">
+                  <label for="rate-limit" class="owner-settings-field-label">API Rate Limit (Req/Min)</label>
+                  <input id="rate-limit" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="1000">
                 </div>
               </div>
 
-              <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+              <div class="owner-settings-banner flex justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                 <div>
                   <p class="text-sm font-medium text-slate-900 dark:text-white">Enforce MFA Globally</p>
                   <p class="text-xs text-slate-500">Require all users (including tenants) to use Multi-Factor Authentication.</p>
@@ -219,39 +219,39 @@
                 </label>
               </div>
             </div>
-            <div class="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex justify-end">
-              <button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">Save Security Policies</button>
+            <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
+              <button class="owner-settings-btn-primary px-4 py-2 shadow-sm">Save Security Policies</button>
             </div>
           </div>
         }
 
         <!-- 3. Billing & Financial -->
         @if (activeTab() === 'billing') {
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div class="owner-settings-card owner-settings-card--shell">
             <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Billing & Financial Defaults</h3>
+              <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Billing & Financial Defaults</h3>
             </div>
             <div class="p-6 space-y-6">
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div>
-                  <label for="def-vat" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Default VAT (%)</label>
-                  <input id="def-vat" type="number" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm" value="14">
+                  <label for="def-vat" class="owner-settings-field-label">Default VAT (%)</label>
+                  <input id="def-vat" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="14">
                 </div>
                 <div>
-                  <label for="grace-period" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Grace Period (Days)</label>
-                  <input id="grace-period" type="number" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm" value="7">
+                  <label for="grace-period" class="owner-settings-field-label">Grace Period (Days)</label>
+                  <input id="grace-period" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="7">
                 </div>
                 <div>
-                  <label for="trial-dur" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Trial Duration (Days)</label>
-                  <input id="trial-dur" type="number" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm" value="14">
+                  <label for="trial-dur" class="owner-settings-field-label">Trial Duration (Days)</label>
+                  <input id="trial-dur" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="14">
                 </div>
                 <div>
-                  <label for="inv-prefix" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Invoice Prefix</label>
-                  <input id="inv-prefix" type="text" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm" value="REMIX-">
+                  <label for="inv-prefix" class="owner-settings-field-label">Invoice Prefix</label>
+                  <input id="inv-prefix" type="text" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="REMIX-">
                 </div>
               </div>
 
-              <div class="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <div class="owner-settings-banner flex justify-between p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                 <div class="flex gap-3">
                   <mat-icon class="text-red-600">block</mat-icon>
                   <div>
@@ -265,37 +265,37 @@
                 </label>
               </div>
             </div>
-            <div class="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex justify-end">
-              <button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">Save Financial Settings</button>
+            <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
+              <button class="owner-settings-btn-primary px-4 py-2 shadow-sm">Save Financial Settings</button>
             </div>
           </div>
         }
 
         <!-- 4. Communication -->
         @if (activeTab() === 'communication') {
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div class="owner-settings-card owner-settings-card--shell">
             <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Communication & Providers</h3>
+              <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Communication & Providers</h3>
             </div>
             <div class="p-6 space-y-6">
               <div class="space-y-4">
                 <h4 class="text-sm font-bold text-slate-500 uppercase tracking-wider">SMTP Configuration</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label for="smtp-host" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">SMTP Host</label>
-                    <input id="smtp-host" type="text" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm" value="smtp.sendgrid.net">
+                    <label for="smtp-host" class="owner-settings-field-label">SMTP Host</label>
+                    <input id="smtp-host" type="text" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="smtp.sendgrid.net">
                   </div>
                   <div>
-                    <label for="smtp-port" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">SMTP Port</label>
-                    <input id="smtp-port" type="number" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm" value="587">
+                    <label for="smtp-port" class="owner-settings-field-label">SMTP Port</label>
+                    <input id="smtp-port" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="587">
                   </div>
                   <div>
-                    <label for="from-email" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Default From Email</label>
-                    <input id="from-email" type="email" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm" value="no-reply@remix.com">
+                    <label for="from-email" class="owner-settings-field-label">Default From Email</label>
+                    <input id="from-email" type="email" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="no-reply@remix.com">
                   </div>
                   <div>
-                    <label for="sms-prov" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">SMS Provider</label>
-                    <select id="sms-prov" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+                    <label for="sms-prov" class="owner-settings-field-label">SMS Provider</label>
+                    <select id="sms-prov" class="owner-settings-select dark:bg-slate-800 dark:border-slate-700">
                       <option selected>Twilio</option>
                       <option>MessageBird</option>
                       <option>AWS SNS</option>
@@ -304,68 +304,68 @@
                 </div>
               </div>
 
-              <div class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex items-center justify-between">
+              <div class="owner-settings-banner p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex justify-between">
                 <div class="flex gap-3">
                   <mat-icon class="text-indigo-600">mail</mat-icon>
                   <p class="text-sm text-blue-800 dark:text-blue-400">Test your SMTP configuration by sending a test email.</p>
                 </div>
-                <button class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-medium transition-colors">Send Test Email</button>
+                <button class="owner-settings-btn-chip px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-medium">Send Test Email</button>
               </div>
             </div>
-            <div class="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex justify-end">
-              <button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">Save Communication Config</button>
+            <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
+              <button class="owner-settings-btn-primary px-4 py-2 shadow-sm">Save Communication Config</button>
             </div>
           </div>
         }
 
         <!-- 5. Storage -->
         @if (activeTab() === 'storage') {
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div class="owner-settings-card owner-settings-card--shell">
             <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Storage & File Management</h3>
+              <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Storage & File Management</h3>
             </div>
             <div class="p-6 space-y-6">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label for="def-storage" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Default Storage Limit (GB)</label>
-                  <input id="def-storage" type="number" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm" value="10">
+                  <label for="def-storage" class="owner-settings-field-label">Default Storage Limit (GB)</label>
+                  <input id="def-storage" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="10">
                 </div>
                 <div>
-                  <label for="max-upload" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Max Upload Size (MB)</label>
-                  <input id="max-upload" type="number" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm" value="50">
+                  <label for="max-upload" class="owner-settings-field-label">Max Upload Size (MB)</label>
+                  <input id="max-upload" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="50">
                 </div>
               </div>
               <div>
-                <label for="file-types" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Allowed File Types</label>
-                <input id="file-types" type="text" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm" value=".pdf, .doc, .docx, .xls, .xlsx, .png, .jpg, .jpeg">
+                <label for="file-types" class="owner-settings-field-label">Allowed File Types</label>
+                <input id="file-types" type="text" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value=".pdf, .doc, .docx, .xls, .xlsx, .png, .jpg, .jpeg">
                 <p class="text-xs text-slate-500 mt-1">Comma-separated list of file extensions.</p>
               </div>
             </div>
-            <div class="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex justify-end">
-              <button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">Save Storage Settings</button>
+            <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
+              <button class="owner-settings-btn-primary px-4 py-2 shadow-sm">Save Storage Settings</button>
             </div>
           </div>
         }
 
         <!-- 6. Audit & Compliance -->
         @if (activeTab() === 'compliance') {
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div class="owner-settings-card owner-settings-card--shell">
             <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Audit & Compliance Policies</h3>
+              <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Audit & Compliance Policies</h3>
             </div>
             <div class="p-6 space-y-6">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label for="log-ret" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Log Retention Period (Days)</label>
-                  <input id="log-ret" type="number" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm" value="90">
+                  <label for="log-ret" class="owner-settings-field-label">Log Retention Period (Days)</label>
+                  <input id="log-ret" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="90">
                 </div>
                 <div>
-                  <label for="data-ret" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Data Retention Policy (Years)</label>
-                  <input id="data-ret" type="number" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm" value="5">
+                  <label for="data-ret" class="owner-settings-field-label">Data Retention Policy (Years)</label>
+                  <input id="data-ret" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="5">
                 </div>
               </div>
 
-              <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+              <div class="owner-settings-banner flex justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                 <div>
                   <p class="text-sm font-medium text-slate-900 dark:text-white">Allow Tenant Data Export</p>
                   <p class="text-xs text-slate-500">Enable self-service data portability for all tenants.</p>
@@ -376,8 +376,8 @@
                 </label>
               </div>
             </div>
-            <div class="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex justify-end">
-              <button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">Save Compliance Policies</button>
+            <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
+              <button class="owner-settings-btn-primary px-4 py-2 shadow-sm">Save Compliance Policies</button>
             </div>
           </div>
         }

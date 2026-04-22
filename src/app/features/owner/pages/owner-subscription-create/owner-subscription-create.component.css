@@ -25,12 +25,13 @@
 }
 
 .owner-subscription-create-form {
+  display: block;
   align-content: start;
 }
 
 .owner-subscription-create-card {
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-card, #ffffff);
+  border: 1px solid var(--color-border-primary, #e2e8f0);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
   padding: var(--space-6);
@@ -49,7 +50,7 @@
   margin-bottom: 0.25rem;
   font-size: var(--font-size-sm);
   font-weight: 500;
-  color: var(--color-text-secondary);
+  color: var(--color-text-secondary, #334155);
 }
 
 .owner-subscription-create-field-label--xs {
@@ -60,14 +61,18 @@
 .owner-subscription-create-select,
 .owner-subscription-create-textarea {
   width: 100%;
-  border: 1px solid var(--color-border-primary);
+  border: 1px solid var(--color-border-primary, #e2e8f0);
   border-radius: var(--radius-lg);
-  background: var(--color-bg-input);
-  color: var(--color-text-primary);
+  background: var(--color-bg-input, #f8fafc);
+  color: var(--color-text-primary, #0f172a);
   font-size: var(--font-size-sm);
   padding: 0.5rem 1rem;
   outline: 0;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.owner-subscription-create-select {
+  appearance: none;
 }
 
 .owner-subscription-create-input:focus,
@@ -97,7 +102,7 @@
 .owner-subscription-create-help {
   margin-top: 0.25rem;
   font-size: 0.75rem;
-  color: var(--color-text-muted);
+  color: var(--color-text-muted, #64748b);
 }
 
 .owner-subscription-create-select-all {
@@ -120,7 +125,7 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--color-text-muted);
+  color: var(--color-text-muted, #64748b);
 }
 
 .owner-subscription-create-input-affix--left {
@@ -143,18 +148,38 @@
 }
 
 .owner-subscription-create-btn--secondary {
-  border: 1px solid var(--color-border-primary);
-  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-primary, #cbd5e1);
+  color: var(--color-text-secondary, #334155);
+  background: var(--color-bg-card, #ffffff);
 }
 
 .owner-subscription-create-btn--primary {
-  background: var(--color-action-primary);
+  background: var(--color-action-primary, #4f46e5);
   color: var(--color-text-on-action, #fff);
   box-shadow: var(--shadow-sm);
 }
 
 .owner-subscription-create-btn--primary:hover {
   background: var(--color-action-primary-hover, var(--color-action-primary));
+}
+
+.dark .owner-subscription-create-card {
+  background: var(--color-bg-card, #0f172a);
+  border-color: var(--color-border-primary, #334155);
+}
+
+.dark .owner-subscription-create-input,
+.dark .owner-subscription-create-select,
+.dark .owner-subscription-create-textarea {
+  background: var(--color-bg-input, #1e293b);
+  border-color: var(--color-border-primary, #334155);
+  color: var(--color-text-primary, #e2e8f0);
+}
+
+.dark .owner-subscription-create-btn--secondary {
+  background: var(--color-bg-card, #0f172a);
+  border-color: var(--color-border-primary, #334155);
+  color: var(--color-text-secondary, #cbd5e1);
 }
 
 .owner-subscription-create-btn--primary:disabled {

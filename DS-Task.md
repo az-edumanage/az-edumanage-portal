@@ -18,6 +18,7 @@ Status legend:
 - [x] `Done` Add acceptance thresholds and diff approval policy (`docs/ds-baseline-capture-strategy.md`).
 - [x] `Done` Expand P0 route matrix to include migrated owner analytics/detail routes for brand snapshot coverage (`docs/ds-critical-route-matrix.md`, `tests/visual/ds-visual.spec.ts`).
 - [x] `Done` Expand P0 route matrix to include owner subscription details for migrated inline-style visual coverage (`docs/ds-critical-route-matrix.md`, `tests/visual/ds-visual.spec.ts`).
+- [x] `Done` Expand P0 route matrix to include owner security route for migration parity coverage (`docs/ds-critical-route-matrix.md`, `tests/visual/ds-visual.spec.ts`).
 
 ## Epic 2: Token Foundation
 - [x] `Done` Create `src/styles/tokens` directory structure.
@@ -84,6 +85,8 @@ Status legend:
 - [x] `Done` Execute Owner Slice 16 one-off style extraction on high-usage owner-overview route with focused visual re-baseline (`docs/ds-feature-adoption-owner-slice-16.md`).
 - [x] `Done` Execute Owner Slice 17 one-off style extraction on high-usage owner-analytics route with focused visual re-baseline (`docs/ds-feature-adoption-owner-slice-17.md`).
 - [x] `Done` Execute Owner Slice 18 one-off style extraction on high-usage owner-compliance route with focused visual re-baseline (`docs/ds-feature-adoption-owner-slice-18.md`).
+- [x] `Done` Execute Owner Slice 19 one-off style extraction on high-usage owner-settings route with focused visual re-baseline (`docs/ds-feature-adoption-owner-slice-19.md`).
+- [x] `Done` Execute Owner Slice 20 one-off style extraction on high-usage owner-security route with focused visual re-baseline (`docs/ds-feature-adoption-owner-slice-20.md`).
 - [x] `Done` Audit and inventory inline styles (`style=\"...\"`, `[style.*]`, `[ngStyle]`) by feature (`docs/ds-inline-style-inventory.md`).
 - [x] `Done` Execute first P0 inline-style conversion to DS CSS-variable pattern (`owner-overview` regional progress bars) (`docs/ds-token-adoption-slice-01.md`).
 - [x] `Done` Execute second P0 inline-style conversion to DS CSS-variable pattern (`owner-billing` revenue bars) (`docs/ds-token-adoption-slice-01.md`).
