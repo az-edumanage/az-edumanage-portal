@@ -10,7 +10,8 @@ import { FORM_COMPONENTS } from '../../../../shared/components/form';
   selector: 'app-owner-plan-create',
   standalone: true,
   imports: [CommonModule, RouterModule, MatIconModule, FormsModule, ReactiveFormsModule, ...FORM_COMPONENTS],
-  templateUrl: './owner-plan-create.component.html'})
+  templateUrl: './owner-plan-create.component.html',
+  styleUrl: './owner-plan-create.component.css'})
 export class OwnerPlanCreateComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly facade = inject(OwnerPlanCreateFacade);

@@ -2,26 +2,26 @@
     <div class="max-w-4xl mx-auto space-y-6 pb-12">
       <!-- Header -->
       <div class="flex items-center gap-4">
-        <button routerLink="/owner/plans" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-500 transition-colors">
+        <button routerLink="/owner/plans" class="owner-plan-back-btn">
           <mat-icon>arrow_back</mat-icon>
         </button>
         <div>
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ isEditMode() ? 'Edit Plan' : 'Create New Plan' }}</h2>
-          <p class="text-slate-500 dark:text-slate-500 text-sm">{{ isEditMode() ? 'Update plan details and limits.' : 'Define a new subscription tier for your SaaS product.' }}</p>
+          <h2 class="owner-plan-title">{{ isEditMode() ? 'Edit Plan' : 'Create New Plan' }}</h2>
+          <p class="owner-plan-subtitle">{{ isEditMode() ? 'Update plan details and limits.' : 'Define a new subscription tier for your SaaS product.' }}</p>
         </div>
       </div>
 
       <form [formGroup]="planForm" (ngSubmit)="onSubmit()" class="space-y-8">
         
         <!-- 1. Basic Info -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-          <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs flex items-center justify-center">1</span>
+        <div class="owner-plan-card">
+          <h3 class="owner-plan-section-title mb-6 flex items-center gap-2">
+            <span class="owner-plan-step-pill">1</span>
             Basic Information
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="md:col-span-2">
-              <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Plan Name</div>
+              <div class="owner-plan-label">Plan Name</div>
               <div class="relative">
                 <input appInput 
                   type="text" 
@@ -52,11 +52,11 @@
               }
             </div>
             <div class="md:col-span-2">
-              <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Description</div>
-              <textarea formControlName="description" rows="3" placeholder="Brief description of who this plan is for..." class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"></textarea>
+              <div class="owner-plan-label">Description</div>
+              <textarea formControlName="description" rows="3" placeholder="Brief description of who this plan is for..." class="owner-plan-control"></textarea>
             </div>
             <div class="relative">
-              <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Status</div>
+              <div class="owner-plan-label">Status</div>
               <div 
                 (click)="showStatusDropdown.set(!showStatusDropdown())"
                 (keydown.enter)="showStatusDropdown.set(!showStatusDropdown())"
@@ -105,7 +105,7 @@
               }
             </div>
             <div class="relative">
-              <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Visibility</div>
+              <div class="owner-plan-label">Visibility</div>
               <div 
                 (click)="showVisibilityDropdown.set(!showVisibilityDropdown())"
                 (keydown.enter)="showVisibilityDropdown.set(!showVisibilityDropdown())"
@@ -157,14 +157,14 @@
         </div>
 
         <!-- 2. Pricing Configuration -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-          <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs flex items-center justify-center">2</span>
+        <div class="owner-plan-card">
+          <h3 class="owner-plan-section-title mb-6 flex items-center gap-2">
+            <span class="owner-plan-step-pill">2</span>
             Pricing Configuration
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="relative">
-              <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Currency</div>
+              <div class="owner-plan-label">Currency</div>
               <div 
                 (click)="showCurrencyDropdown.set(!showCurrencyDropdown())"
                 (keydown.enter)="showCurrencyDropdown.set(!showCurrencyDropdown())"
@@ -213,14 +213,14 @@
               }
             </div>
             <div>
-              <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Monthly Price</div>
+              <div class="owner-plan-label">Monthly Price</div>
               <div class="relative">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                 <input appInput type="number" formControlName="monthlyPrice" class="w-full pl-8 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
               </div>
             </div>
             <div>
-              <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Yearly Price</div>
+              <div class="owner-plan-label">Yearly Price</div>
               <div class="relative">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                 <input appInput type="number" formControlName="yearlyPrice" class="w-full pl-8 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
@@ -237,7 +237,7 @@
               
               @if (planForm.get('hasTrial')?.value) {
                 <div class="relative">
-                  <input appInput type="number" formControlName="trialDays" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                  <input appInput type="number" formControlName="trialDays" class="owner-plan-control">
                   <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">Days</span>
                 </div>
               } @else {
@@ -248,111 +248,111 @@
         </div>
 
         <!-- 3. Limits -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-          <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs flex items-center justify-center">3</span>
+        <div class="owner-plan-card">
+          <h3 class="owner-plan-section-title mb-6 flex items-center gap-2">
+            <span class="owner-plan-step-pill">3</span>
             Usage Limits
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Max Students</div>
-              <input appInput type="number" formControlName="maxStudents" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
-              <p class="text-xs text-slate-500 mt-1">Set to -1 for unlimited</p>
+              <div class="owner-plan-label">Max Students</div>
+              <input appInput type="number" formControlName="maxStudents" class="owner-plan-control">
+              <p class="owner-plan-help">Set to -1 for unlimited</p>
             </div>
             <div>
-              <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Max Teachers</div>
-              <input appInput type="number" formControlName="maxTeachers" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+              <div class="owner-plan-label">Max Teachers</div>
+              <input appInput type="number" formControlName="maxTeachers" class="owner-plan-control">
             </div>
             <div>
-              <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Max Storage (GB)</div>
-              <input appInput type="number" formControlName="maxStorage" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+              <div class="owner-plan-label">Max Storage (GB)</div>
+              <input appInput type="number" formControlName="maxStorage" class="owner-plan-control">
             </div>
             <div>
-              <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Max Branches</div>
-              <input appInput type="number" formControlName="maxBranches" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+              <div class="owner-plan-label">Max Branches</div>
+              <input appInput type="number" formControlName="maxBranches" class="owner-plan-control">
             </div>
           </div>
         </div>
 
         <!-- 4. Included Modules -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-          <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs flex items-center justify-center">4</span>
+        <div class="owner-plan-card">
+          <h3 class="owner-plan-section-title mb-6 flex items-center gap-2">
+            <span class="owner-plan-step-pill">4</span>
             Included Modules
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" formGroupName="modules">
-            <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <label class="owner-plan-module-item">
               <input appCheckbox type="checkbox" formControlName="academicStructure" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Academic Structure</span>
+              <span class="owner-plan-module-text">Academic Structure</span>
             </label>
-            <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <label class="owner-plan-module-item">
               <input appCheckbox type="checkbox" formControlName="studentsManagement" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Students Management</span>
+              <span class="owner-plan-module-text">Students Management</span>
             </label>
-            <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <label class="owner-plan-module-item">
               <input appCheckbox type="checkbox" formControlName="scheduling" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Scheduling & Timetable</span>
+              <span class="owner-plan-module-text">Scheduling & Timetable</span>
             </label>
-            <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <label class="owner-plan-module-item">
               <input appCheckbox type="checkbox" formControlName="usersManagement" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Users Management</span>
+              <span class="owner-plan-module-text">Users Management</span>
             </label>
-            <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <label class="owner-plan-module-item">
               <input appCheckbox type="checkbox" formControlName="auditLogs" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Audit Logs</span>
+              <span class="owner-plan-module-text">Audit Logs</span>
             </label>
-            <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <label class="owner-plan-module-item">
               <input appCheckbox type="checkbox" formControlName="examsAndGrades" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Exams & Grades</span>
+              <span class="owner-plan-module-text">Exams & Grades</span>
             </label>
-            <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <label class="owner-plan-module-item">
               <input appCheckbox type="checkbox" formControlName="finance" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Finance</span>
+              <span class="owner-plan-module-text">Finance</span>
             </label>
-            <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <label class="owner-plan-module-item">
               <input appCheckbox type="checkbox" formControlName="smsIntegration" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="text-sm font-medium text-slate-700 dark:text-slate-300">SMS Integration</span>
+              <span class="owner-plan-module-text">SMS Integration</span>
             </label>
-            <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <label class="owner-plan-module-item">
               <input appCheckbox type="checkbox" formControlName="advancedAnalytics" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Advanced Analytics</span>
+              <span class="owner-plan-module-text">Advanced Analytics</span>
             </label>
-            <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <label class="owner-plan-module-item">
               <input appCheckbox type="checkbox" formControlName="parentPortal" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Parent Portal</span>
+              <span class="owner-plan-module-text">Parent Portal</span>
             </label>
-            <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <label class="owner-plan-module-item">
               <input appCheckbox type="checkbox" formControlName="lms" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="text-sm font-medium text-slate-700 dark:text-slate-300">LMS</span>
+              <span class="owner-plan-module-text">LMS</span>
             </label>
-            <label class="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <label class="owner-plan-module-item">
               <input appCheckbox type="checkbox" formControlName="questionBank" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Question Bank</span>
+              <span class="owner-plan-module-text">Question Bank</span>
             </label>
           </div>
         </div>
 
         <!-- 5. Billing Rules -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-          <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs flex items-center justify-center">5</span>
+        <div class="owner-plan-card">
+          <h3 class="owner-plan-section-title mb-6 flex items-center gap-2">
+            <span class="owner-plan-step-pill">5</span>
             Billing Rules
           </h3>
           <div class="space-y-4">
-            <label class="flex items-center justify-between p-4 border border-slate-200 dark:border-slate-700 rounded-lg">
+            <label class="owner-plan-billing-item">
               <div>
-                <div class="font-medium text-slate-900 dark:text-white">Auto-renew Enabled</div>
-                <div class="text-xs text-slate-500">Subscriptions will automatically renew at the end of the cycle.</div>
+                <div class="owner-plan-billing-title">Auto-renew Enabled</div>
+                <div class="owner-plan-billing-desc">Subscriptions will automatically renew at the end of the cycle.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
                 <input appToggleInput type="checkbox" formControlName="autoRenew" >
                 <div appToggleTrack></div>
               </div>
             </label>
-            <label class="flex items-center justify-between p-4 border border-slate-200 dark:border-slate-700 rounded-lg">
+            <label class="owner-plan-billing-item">
               <div>
-                <div class="font-medium text-slate-900 dark:text-white">Allow Downgrade</div>
-                <div class="text-xs text-slate-500">Tenants can switch to a lower tier plan.</div>
+                <div class="owner-plan-billing-title">Allow Downgrade</div>
+                <div class="owner-plan-billing-desc">Tenants can switch to a lower tier plan.</div>
               </div>
               <div class="relative inline-flex items-center cursor-pointer">
                 <input appToggleInput type="checkbox" formControlName="allowDowngrade" >
@@ -363,11 +363,11 @@
         </div>
 
         <!-- Actions -->
-        <div class="flex items-center justify-end gap-4 pt-4 border-t border-slate-200 dark:border-slate-800">
-          <button type="button" (click)="onCancel()" class="px-6 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+        <div class="owner-plan-actions">
+          <button type="button" (click)="onCancel()" class="owner-plan-btn-cancel">
             Cancel
           </button>
-          <button type="submit" [disabled]="planForm.invalid" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
+          <button type="submit" [disabled]="planForm.invalid" class="owner-plan-btn-submit disabled:opacity-50 disabled:cursor-not-allowed">
             {{ isEditMode() ? 'Update Plan' : 'Create Plan' }}
           </button>
         </div>
