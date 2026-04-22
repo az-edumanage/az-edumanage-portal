@@ -1,71 +1,71 @@
 
-    <div class="space-y-6">
+    <div class="owner-billing-page space-y-6">
       <!-- Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="owner-billing-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Billing & Revenue</h2>
-          <p class="text-slate-500 dark:text-slate-500 text-sm">Monitor financial health, invoices, and payment gateways.</p>
+          <h2 class="owner-billing-title text-2xl font-bold text-slate-900 dark:text-white">Billing & Revenue</h2>
+          <p class="owner-billing-subtitle text-slate-500 dark:text-slate-500 text-sm">Monitor financial health, invoices, and payment gateways.</p>
         </div>
-        <div class="flex gap-3">
+        <div class="owner-billing-header-actions flex gap-3">
           <app-button variant="outline" size="md">
-            <mat-icon class="text-sm mr-2">download</mat-icon>
+            <mat-icon class="owner-billing-btn-icon text-sm mr-2">download</mat-icon>
             Export Reports
           </app-button>
           <app-button variant="primary" size="md">
-            <mat-icon class="text-sm mr-2">settings</mat-icon>
+            <mat-icon class="owner-billing-btn-icon text-sm mr-2">settings</mat-icon>
             Configure Gateway
           </app-button>
         </div>
       </div>
 
       <!-- Dashboard Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div class="owner-billing-stats grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <!-- Total Revenue -->
-        <app-card class="p-4">
-          <div class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Total Revenue</div>
-          <div class="text-xl font-bold text-slate-900 dark:text-white">$142,300</div>
-          <div class="text-xs text-green-600 flex items-center gap-1 mt-1">
-            <mat-icon class="text-xs">trending_up</mat-icon> +12%
+        <app-card class="owner-billing-stat-card p-4">
+          <div class="owner-billing-stat-label text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Total Revenue</div>
+          <div class="owner-billing-stat-value text-xl font-bold text-slate-900 dark:text-white">$142,300</div>
+          <div class="owner-billing-stat-trend owner-billing-stat-trend-up text-xs text-green-600 flex items-center gap-1 mt-1">
+            <mat-icon class="owner-billing-stat-trend-icon text-xs">trending_up</mat-icon> +12%
           </div>
         </app-card>
         
         <!-- MRR -->
-        <app-card class="p-4">
-          <div class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">MRR</div>
-          <div class="text-xl font-bold text-slate-900 dark:text-white">$118,500</div>
-          <div class="text-xs text-green-600 flex items-center gap-1 mt-1">
-            <mat-icon class="text-xs">trending_up</mat-icon> +8.4%
+        <app-card class="owner-billing-stat-card p-4">
+          <div class="owner-billing-stat-label text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">MRR</div>
+          <div class="owner-billing-stat-value text-xl font-bold text-slate-900 dark:text-white">$118,500</div>
+          <div class="owner-billing-stat-trend owner-billing-stat-trend-up text-xs text-green-600 flex items-center gap-1 mt-1">
+            <mat-icon class="owner-billing-stat-trend-icon text-xs">trending_up</mat-icon> +8.4%
           </div>
         </app-card>
 
         <!-- Churned Revenue -->
-        <app-card class="p-4">
-          <div class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Churned</div>
-          <div class="text-xl font-bold text-slate-900 dark:text-white">$2,400</div>
-          <div class="text-xs text-red-600 flex items-center gap-1 mt-1">
-            <mat-icon class="text-xs">trending_down</mat-icon> -1.2%
+        <app-card class="owner-billing-stat-card p-4">
+          <div class="owner-billing-stat-label text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Churned</div>
+          <div class="owner-billing-stat-value text-xl font-bold text-slate-900 dark:text-white">$2,400</div>
+          <div class="owner-billing-stat-trend owner-billing-stat-trend-down text-xs text-red-600 flex items-center gap-1 mt-1">
+            <mat-icon class="owner-billing-stat-trend-icon text-xs">trending_down</mat-icon> -1.2%
           </div>
         </app-card>
 
         <!-- Failed Payments -->
-        <app-card class="p-4">
-          <div class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Failed</div>
+        <app-card class="owner-billing-stat-card p-4">
+          <div class="owner-billing-stat-label text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Failed</div>
           <div class="text-xl font-bold text-red-600">$850</div>
-          <div class="text-xs text-slate-500 mt-1">12 transactions</div>
+          <div class="owner-billing-stat-meta text-xs text-slate-500 mt-1">12 transactions</div>
         </app-card>
 
         <!-- Refunds -->
-        <app-card class="p-4">
-          <div class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Refunds</div>
-          <div class="text-xl font-bold text-slate-900 dark:text-white">$320</div>
-          <div class="text-xs text-slate-500 mt-1">4 processed</div>
+        <app-card class="owner-billing-stat-card p-4">
+          <div class="owner-billing-stat-label text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Refunds</div>
+          <div class="owner-billing-stat-value text-xl font-bold text-slate-900 dark:text-white">$320</div>
+          <div class="owner-billing-stat-meta text-xs text-slate-500 mt-1">4 processed</div>
         </app-card>
 
         <!-- Growth -->
-        <app-card class="p-4">
-          <div class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Growth</div>
+        <app-card class="owner-billing-stat-card p-4">
+          <div class="owner-billing-stat-label text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Growth</div>
           <div class="text-xl font-bold text-green-600">+15.3%</div>
-          <div class="text-xs text-slate-500 mt-1">vs last month</div>
+          <div class="owner-billing-stat-meta text-xs text-slate-500 mt-1">vs last month</div>
         </app-card>
       </div>
 
@@ -87,16 +87,16 @@
       />
 
       <!-- Tab Content -->
-      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden min-h-[400px]">
+      <div class="owner-billing-tab-shell bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden min-h-[400px]">
         
         <!-- Filter Indicator -->
         @if (tenantFilter()) {
-          <div class="px-6 py-3 bg-indigo-600/10 dark:bg-indigo-900/20 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-            <div class="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-300">
+          <div class="owner-billing-filter-indicator px-6 py-3 bg-indigo-600/10 dark:bg-indigo-900/20 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <div class="owner-billing-filter-indicator-text flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-300">
               <mat-icon class="text-sm">filter_list</mat-icon>
               <span>Showing results for: <strong>{{ tenantFilter() }}</strong></span>
             </div>
-            <button (click)="clearTenantFilter()" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-wider">
+            <button (click)="clearTenantFilter()" class="owner-billing-filter-clear text-xs font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-wider">
               Clear Filter
             </button>
           </div>
@@ -114,7 +114,7 @@
 
         <!-- Refund Confirmation Modal -->
         @if (showRefundModal()) {
-          <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div class="owner-billing-modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
               <div class="p-6 text-center">
                 <div class="w-16 h-16 bg-red-50 dark:bg-red-900/30 rounded-full flex items-center justify-center text-red-600 mx-auto mb-4">
@@ -150,7 +150,7 @@
 
         <!-- Proof Preview Modal -->
         @if (showProofModal()) {
-          <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div class="owner-billing-modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div class="bg-white dark:bg-slate-900 w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
               <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div class="flex items-center gap-3">
@@ -248,9 +248,9 @@
                 @for (fail of filteredFailedPayments(); track fail.id) {
                   <tr appTableRow>
                     <td appTableCell class="font-medium text-slate-900 dark:text-white">
-                      <button 
+                      <button
                         (click)="copyToClipboard(fail.tenant)"
-                        class="hover:text-indigo-600 transition-colors focus:outline-none focus:underline text-left"
+                        class="owner-billing-copy-btn hover:text-indigo-600 transition-colors focus:outline-none focus:underline text-left"
                         title="Click to copy tenant name"
                       >
                         {{ fail.tenant }}
@@ -262,7 +262,7 @@
                     <td appTableCell class="text-slate-500">{{ fail.lastAttempt }}</td>
                     <td appTableCell class="text-amber-600 font-medium">{{ fail.gracePeriodEnd }}</td>
                     <td appTableCell class="text-right">
-                      <button class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 font-medium text-xs border border-indigo-200 dark:border-indigo-800 px-2 py-1 rounded hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30">
+                      <button class="owner-billing-retry-btn text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 font-medium text-xs border border-indigo-200 dark:border-indigo-800 px-2 py-1 rounded hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30">
                         Retry
                       </button>
                     </td>
@@ -291,18 +291,18 @@
                 @for (ref of filteredRefunds(); track ref.id) {
                   <tr appTableRow>
                     <td appTableCell class="font-medium text-slate-900 dark:text-white">
-                      <button 
+                      <button
                         (click)="copyToClipboard(ref.id)"
-                        class="hover:text-indigo-600 transition-colors focus:outline-none focus:underline"
+                        class="owner-billing-copy-btn hover:text-indigo-600 transition-colors focus:outline-none focus:underline"
                         title="Click to copy ID"
                       >
                         {{ ref.id }}
                       </button>
                     </td>
                     <td appTableCell class="text-slate-500 dark:text-slate-500">
-                      <button 
+                      <button
                         (click)="copyToClipboard(ref.tenant)"
-                        class="hover:text-indigo-600 transition-colors focus:outline-none focus:underline text-left"
+                        class="owner-billing-copy-btn hover:text-indigo-600 transition-colors focus:outline-none focus:underline text-left"
                         title="Click to copy tenant name"
                       >
                         {{ ref.tenant }}
@@ -321,12 +321,12 @@
 
         <!-- Settings Tab -->
         @if (activeTab() === 'settings') {
-          <div class="p-6 space-y-8">
+          <div class="owner-billing-settings p-6 space-y-8">
             <!-- Payment Gateways -->
             <div>
               <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Payment Gateways</h3>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                <div class="owner-billing-gateway-card p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50">
                   <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-2">
                       <mat-icon class="text-indigo-600">payment</mat-icon>
@@ -353,7 +353,7 @@
                   </div>
                 </div>
 
-                <div class="p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                <div class="owner-billing-gateway-card p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50">
                   <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-2">
                       <mat-icon class="text-indigo-600">account_balance_wallet</mat-icon>
@@ -381,7 +381,7 @@
             <!-- Tax Configuration -->
             <div>
               <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Tax Configuration</h3>
-              <div class="p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 max-w-2xl">
+              <div class="owner-billing-tax-card p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 max-w-2xl">
                 <div class="grid grid-cols-2 gap-4">
                   <div>
                     <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Default VAT %</div>
@@ -405,15 +405,15 @@
 
         <!-- Reports Tab -->
         @if (activeTab() === 'reports') {
-          <div class="p-6 space-y-6">
+          <div class="owner-billing-reports p-6 space-y-6">
             <div class="flex items-center justify-between">
               <div>
                 <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Financial Performance Analysis</h3>
                 <p class="text-xs text-slate-500">Monthly breakdown of revenue, refunds, and growth trends.</p>
               </div>
-              <button 
+              <button
                 (click)="generateReport()"
-                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20 flex items-center gap-2"
+                class="owner-billing-report-btn px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20 flex items-center gap-2"
               >
                 <mat-icon class="text-sm">analytics</mat-icon>
                 Generate Latest Report
@@ -467,7 +467,7 @@
                           class="ds-revenue-column"
                           [style.--ds-bar-height]="((report.netRevenue / maxRevenue()) * 100) + '%'"
                         >
-                          <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          <div class="owner-billing-revenue-tooltip absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                             \${{ report.netRevenue.toLocaleString() }}
                           </div>
                         </div>
