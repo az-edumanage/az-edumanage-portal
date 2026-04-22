@@ -10,7 +10,9 @@ import { OwnerSubscriptionsListFacade } from '../../state/owner-subscriptions-li
   selector: 'app-owner-subscriptions-list',
   standalone: true,
   imports: [CommonModule, RouterModule, MatIconModule, FormsModule, UiPagerButtonComponent],
-  templateUrl: './owner-subscriptions-list.component.html'})
+  templateUrl: './owner-subscriptions-list.component.html',
+  styleUrl: './owner-subscriptions-list.component.css'
+})
 export class OwnerSubscriptionsListComponent {
   private readonly facade = inject(OwnerSubscriptionsListFacade);
 

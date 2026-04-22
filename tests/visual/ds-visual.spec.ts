@@ -16,6 +16,7 @@ const P0_ROUTES: Array<{ key: string; path: string; role: UserRole }> = [
   { key: 'owner-plans', path: '/owner/plans', role: 'owner' },
   { key: 'owner-plan-create', path: '/owner/plans/create', role: 'owner' },
   { key: 'owner-plans-details', path: '/owner/plans/plan-001', role: 'owner' },
+  { key: 'owner-subscriptions', path: '/owner/subscriptions', role: 'owner' },
   { key: 'owner-subscription-details', path: '/owner/subscriptions/sub-001', role: 'owner' },
   { key: 'owner-subscriptions-orders', path: '/owner/subscriptions/orders', role: 'owner' },
   { key: 'owner-billing', path: '/owner/billing', role: 'owner' },

@@ -1,45 +1,45 @@
 
-    <div class="space-y-6">
+    <div class="owner-subscriptions-page space-y-6">
       <!-- Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="owner-subscriptions-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div class="flex items-center gap-3">
-            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Subscriptions</h2>
+          <div class="owner-subscriptions-heading flex items-center gap-3">
+            <h2 class="owner-subscriptions-title text-2xl font-bold text-slate-900 dark:text-white">Subscriptions</h2>
             @if (pendingOrdersCount() > 0) {
               <a 
                 routerLink="/owner/subscriptions/orders"
-                class="flex items-center gap-2 px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors"
+                class="owner-subscriptions-pending flex items-center gap-2 px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors"
               >
                 <span class="relative flex h-2 w-2">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                  <span class="owner-subscriptions-pending-ping animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span class="owner-subscriptions-pending-dot relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                 </span>
                 {{ pendingOrdersCount() }} Pending Orders
               </a>
             }
           </div>
-          <p class="text-slate-500 dark:text-slate-500 text-sm">Manage tenant subscriptions, renewals, and billing status.</p>
+          <p class="owner-subscriptions-subtitle text-slate-500 dark:text-slate-500 text-sm">Manage tenant subscriptions, renewals, and billing status.</p>
         </div>
-        <div class="flex gap-3">
-          <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-            <mat-icon class="text-sm">download</mat-icon>
+        <div class="owner-subscriptions-header-actions flex gap-3">
+          <button class="owner-subscriptions-export-btn flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            <mat-icon class="owner-subscriptions-export-icon text-sm">download</mat-icon>
             Export
           </button>
         </div>
       </div>
 
       <!-- Filters -->
-      <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-4">
-        <div class="flex-1 relative">
-          <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">search</mat-icon>
+      <div class="owner-subscriptions-filters bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-4">
+        <div class="owner-subscriptions-search-wrap flex-1 relative">
+          <mat-icon class="owner-subscriptions-search-icon absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">search</mat-icon>
           <input 
             type="text" 
             placeholder="Search by tenant or subscription ID..." 
-            class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"
+            class="owner-subscriptions-search-input w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"
           >
         </div>
-        <div class="flex gap-3 overflow-x-auto pb-2 md:pb-0">
-          <select class="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <div class="owner-subscriptions-filter-controls flex gap-3 overflow-x-auto pb-2 md:pb-0">
+          <select class="owner-subscriptions-filter-select px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
             <option value="">All Statuses</option>
             <option value="Active">Active</option>
             <option value="Trial">Trial</option>
@@ -47,7 +47,7 @@
             <option value="Suspended">Suspended</option>
             <option value="Cancelled">Cancelled</option>
           </select>
-          <select class="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <select class="owner-subscriptions-filter-select px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
             <option value="">All Plans</option>
             <option value="Starter">Starter</option>
             <option value="Professional">Professional</option>
@@ -57,38 +57,38 @@
       </div>
 
       <!-- Subscriptions Table -->
-      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
+      <div class="owner-subscriptions-table-shell bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="owner-subscriptions-table-scroll overflow-x-auto">
+          <table class="owner-subscriptions-table w-full text-left text-sm">
+            <thead class="owner-subscriptions-thead bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
               <tr>
-                <th class="px-6 py-4 font-medium">Tenant</th>
-                <th class="px-6 py-4 font-medium">Plan</th>
-                <th class="px-6 py-4 font-medium">Billing Cycle</th>
-                <th class="px-6 py-4 font-medium">Status</th>
-                <th class="px-6 py-4 font-medium">Renewal Date</th>
-                <th class="px-6 py-4 font-medium">Amount</th>
-                <th class="px-6 py-4 font-medium text-right">Actions</th>
+                <th class="owner-subscriptions-th px-6 py-4 font-medium">Tenant</th>
+                <th class="owner-subscriptions-th px-6 py-4 font-medium">Plan</th>
+                <th class="owner-subscriptions-th px-6 py-4 font-medium">Billing Cycle</th>
+                <th class="owner-subscriptions-th px-6 py-4 font-medium">Status</th>
+                <th class="owner-subscriptions-th px-6 py-4 font-medium">Renewal Date</th>
+                <th class="owner-subscriptions-th px-6 py-4 font-medium">Amount</th>
+                <th class="owner-subscriptions-th owner-subscriptions-th-actions px-6 py-4 font-medium text-right">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+            <tbody class="owner-subscriptions-tbody divide-y divide-slate-200 dark:divide-slate-800">
               @for (sub of subscriptions(); track sub.id) {
-                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
-                  <td class="px-6 py-4">
-                    <div class="font-medium text-slate-900 dark:text-white">{{ sub.tenantName }}</div>
-                    <div class="text-xs text-slate-500">ID: {{ sub.id }}</div>
+                <tr class="owner-subscriptions-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                  <td class="owner-subscriptions-cell px-6 py-4">
+                    <div class="owner-subscriptions-tenant font-medium text-slate-900 dark:text-white">{{ sub.tenantName }}</div>
+                    <div class="owner-subscriptions-tenant-id text-xs text-slate-500">ID: {{ sub.id }}</div>
                   </td>
-                  <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ sub.planName }}</td>
-                  <td class="px-6 py-4 text-slate-500 dark:text-slate-500">
-                    <div class="flex items-center gap-1">
-                      <mat-icon class="text-sm text-slate-500">
+                  <td class="owner-subscriptions-cell owner-subscriptions-muted px-6 py-4 text-slate-500 dark:text-slate-500">{{ sub.planName }}</td>
+                  <td class="owner-subscriptions-cell owner-subscriptions-muted px-6 py-4 text-slate-500 dark:text-slate-500">
+                    <div class="owner-subscriptions-cycle flex items-center gap-1">
+                      <mat-icon class="owner-subscriptions-cycle-icon text-sm text-slate-500">
                         {{ sub.billingCycle === 'Monthly' ? 'calendar_view_month' : 'calendar_today' }}
                       </mat-icon>
                       {{ sub.billingCycle }}
                     </div>
                   </td>
-                  <td class="px-6 py-4">
-                    <span class="px-2 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1"
+                  <td class="owner-subscriptions-cell px-6 py-4">
+                    <span class="owner-subscriptions-status px-2 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1"
                       [class.bg-green-100]="sub.status === 'Active'"
                       [class.text-green-700]="sub.status === 'Active'"
                       [class.dark:bg-green-900/30]="sub.status === 'Active'"
@@ -109,25 +109,25 @@
                       {{ sub.status }}
                     </span>
                   </td>
-                  <td class="px-6 py-4 text-slate-500 dark:text-slate-500">
+                  <td class="owner-subscriptions-cell owner-subscriptions-muted owner-subscriptions-renewal px-6 py-4 text-slate-500 dark:text-slate-500">
                     {{ sub.endDate }}
                     @if (sub.autoRenew && sub.status === 'Active') {
-                      <mat-icon class="text-xs text-green-500 ml-1" title="Auto-renew enabled">autorenew</mat-icon>
+                      <mat-icon class="owner-subscriptions-autorenew text-xs text-green-500 ml-1" title="Auto-renew enabled">autorenew</mat-icon>
                     }
                   </td>
-                  <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">
+                  <td class="owner-subscriptions-cell owner-subscriptions-amount px-6 py-4 font-medium text-slate-900 dark:text-white">
                     \${{ sub.amount }}
                   </td>
-                  <td class="px-6 py-4 text-right">
-                    <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <td class="owner-subscriptions-cell owner-subscriptions-actions-cell px-6 py-4 text-right">
+                    <div class="owner-subscriptions-actions flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
                         [routerLink]="['/owner/subscriptions', sub.id]"
-                        class="p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors" 
+                        class="owner-subscriptions-action-btn owner-subscriptions-action-btn-view p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors" 
                         title="View Details"
                       >
                         <mat-icon class="text-lg">visibility</mat-icon>
                       </button>
-                      <button class="p-1.5 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors" title="More Actions">
+                      <button class="owner-subscriptions-action-btn owner-subscriptions-action-btn-more p-1.5 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors" title="More Actions">
                         <mat-icon class="text-lg">more_vert</mat-icon>
                       </button>
                     </div>
@@ -139,9 +139,9 @@
         </div>
         
         <!-- Pagination -->
-        <div class="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-sm text-slate-500 dark:text-slate-500">
-          <span>Showing 1-5 of 84 subscriptions</span>
-          <div class="flex gap-2">
+        <div class="owner-subscriptions-pagination p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-sm text-slate-500 dark:text-slate-500">
+          <span class="owner-subscriptions-pagination-label">Showing 1-5 of 84 subscriptions</span>
+          <div class="owner-subscriptions-pagination-actions flex gap-2">
             <app-pager-button [disabled]="true">Previous</app-pager-button>
             <app-pager-button>Next</app-pager-button>
           </div>

@@ -1,0 +1,115 @@
+:host {
+  display: block;
+}
+
+.owner-subscriptions-page {
+  align-content: start;
+}
+
+.owner-subscriptions-title {
+  letter-spacing: -0.01em;
+}
+
+.owner-subscriptions-subtitle {
+  line-height: 1.25rem;
+}
+
+.owner-subscriptions-header-actions {
+  flex-wrap: wrap;
+}
+
+.owner-subscriptions-pending {
+  white-space: nowrap;
+}
+
+.owner-subscriptions-export-btn,
+.owner-subscriptions-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.owner-subscriptions-export-icon {
+  flex-shrink: 0;
+}
+
+.owner-subscriptions-filters {
+  align-items: center;
+}
+
+.owner-subscriptions-search-wrap {
+  min-width: 14rem;
+}
+
+.owner-subscriptions-search-icon {
+  pointer-events: none;
+}
+
+.owner-subscriptions-filter-controls {
+  align-items: center;
+}
+
+.owner-subscriptions-filter-select {
+  min-width: 8.5rem;
+}
+
+.owner-subscriptions-table {
+  border-collapse: collapse;
+}
+
+.owner-subscriptions-th,
+.owner-subscriptions-cell {
+  vertical-align: middle;
+}
+
+.owner-subscriptions-th {
+  letter-spacing: 0.01em;
+}
+
+.owner-subscriptions-th-actions {
+  width: 7.5rem;
+}
+
+.owner-subscriptions-tenant {
+  line-height: 1.2;
+}
+
+.owner-subscriptions-tenant-id {
+  line-height: 1rem;
+}
+
+.owner-subscriptions-cycle {
+  white-space: nowrap;
+}
+
+.owner-subscriptions-status {
+  white-space: nowrap;
+}
+
+.owner-subscriptions-renewal {
+  white-space: nowrap;
+}
+
+.owner-subscriptions-autorenew {
+  vertical-align: text-bottom;
+}
+
+.owner-subscriptions-amount {
+  white-space: nowrap;
+}
+
+.owner-subscriptions-actions {
+  min-height: 1.75rem;
+}
+
+.owner-subscriptions-pagination {
+  gap: var(--space-4);
+}
+
+.owner-subscriptions-pagination-label {
+  white-space: nowrap;
+}
+
+.owner-subscriptions-pagination-actions {
+  flex-shrink: 0;
+}
