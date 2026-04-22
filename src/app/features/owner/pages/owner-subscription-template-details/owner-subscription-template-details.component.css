@@ -1,1 +1,56 @@
-:host { display: block; }
+:host {
+  display: block;
+}
+
+.owner-subscription-template-details-page {
+  align-content: start;
+}
+
+.owner-subscription-template-details-title {
+  letter-spacing: -0.01em;
+}
+
+.owner-subscription-template-details-subtitle {
+  line-height: 1.25rem;
+}
+
+.owner-subscription-template-details-header-actions {
+  flex-wrap: wrap;
+}
+
+.owner-subscription-template-details-edit-btn,
+.owner-subscription-template-details-delete-btn,
+.owner-subscription-template-details-back-btn {
+  white-space: nowrap;
+}
+
+.owner-subscription-template-details-edit-icon,
+.owner-subscription-template-details-delete-icon {
+  flex-shrink: 0;
+}
+
+.owner-subscription-template-details-main-grid {
+  row-gap: var(--space-5);
+}
+
+.owner-subscription-template-details-main-label,
+.owner-subscription-template-details-status,
+.owner-subscription-template-details-section-label,
+.owner-subscription-template-details-pricing-discount-label {
+  letter-spacing: 0.04em;
+}
+
+.owner-subscription-template-details-main-value,
+.owner-subscription-template-details-chip,
+.owner-subscription-template-details-pricing-value,
+.owner-subscription-template-details-pricing-discount-value {
+  line-height: 1.2;
+}
+
+.owner-subscription-template-details-chip-list {
+  align-items: center;
+}
+
+.owner-subscription-template-details-chip {
+  white-space: nowrap;
+}
