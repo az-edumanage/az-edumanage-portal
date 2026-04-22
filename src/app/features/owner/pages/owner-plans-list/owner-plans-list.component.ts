@@ -10,7 +10,9 @@ import { OwnerPlansListFacade } from '../../state/owner-plans-list.facade';
   selector: 'app-owner-plans-list',
   standalone: true,
   imports: [CommonModule, RouterModule, MatIconModule, FormsModule],
-  templateUrl: './owner-plans-list.component.html'})
+  templateUrl: './owner-plans-list.component.html',
+  styleUrl: './owner-plans-list.component.css'
+})
 export class OwnerPlansListComponent {
   private readonly facade = inject(OwnerPlansListFacade);
 

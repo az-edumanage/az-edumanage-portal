@@ -1,0 +1,61 @@
+:host {
+  display: block;
+}
+
+.owner-plans-page {
+  align-content: start;
+}
+
+.owner-plans-title {
+  letter-spacing: -0.01em;
+}
+
+.owner-plans-subtitle {
+  line-height: 1.25rem;
+}
+
+.owner-plans-create-btn {
+  white-space: nowrap;
+}
+
+.owner-plans-card {
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.owner-plans-card-top {
+  min-height: 1.75rem;
+}
+
+.owner-plans-status {
+  white-space: nowrap;
+}
+
+.owner-plans-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.owner-plans-toggle {
+  flex-shrink: 0;
+}
+
+.owner-plans-card-title {
+  letter-spacing: -0.01em;
+}
+
+.owner-plans-savings {
+  line-height: 1.1rem;
+}
+
+.owner-plans-limit-row {
+  min-height: 1.25rem;
+}
+
+.owner-plans-limit-label {
+  min-width: 0;
+}
+
+.owner-plans-card-foot {
+  letter-spacing: 0.01em;
+}
