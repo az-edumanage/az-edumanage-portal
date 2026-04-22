@@ -1,37 +1,36 @@
-
-    <div class="max-w-2xl mx-auto space-y-6">
+<div class="tenant-room-create-page">
       <!-- Header -->
-      <div class="flex items-center justify-between">
-        <div class="space-y-1">
-          <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
-            <a routerLink="/tenant/rooms" class="hover:text-indigo-600 transition-colors">Rooms</a>
+      <div class="tenant-room-create-header">
+        <div class="tenant-room-create-header-stack">
+          <div class="tenant-room-create-breadcrumb">
+            <a routerLink="/tenant/rooms" class="tenant-room-create-breadcrumb-link">Rooms</a>
             <mat-icon class="text-[10px]">chevron_right</mat-icon>
             <span>{{ isEditMode() ? 'Edit Room' : 'Add New Room' }}</span>
           </div>
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ isEditMode() ? 'Edit Room' : 'Create Room' }}</h2>
+          <h2 class="tenant-room-create-title">{{ isEditMode() ? 'Edit Room' : 'Create Room' }}</h2>
         </div>
       </div>
 
-      <form [formGroup]="roomForm" (ngSubmit)="onSubmit()" class="space-y-6">
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="md:col-span-2">
-              <label for="roomName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Room Name / Number</label>
+      <form [formGroup]="roomForm" (ngSubmit)="onSubmit()" class="tenant-room-create-form">
+        <div class="tenant-room-create-card">
+          <div class="tenant-room-create-grid">
+            <div class="tenant-room-create-field tenant-room-create-field--full">
+              <label for="roomName" class="tenant-room-create-label">Room Name / Number</label>
               <input 
                 id="roomName"
                 type="text" 
                 formControlName="name"
                 placeholder="e.g. Room 101 or Physics Lab"
-                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                class="tenant-room-create-input"
               >
             </div>
 
-            <div>
-              <label for="roomType" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Room Type</label>
+            <div class="tenant-room-create-field">
+              <label for="roomType" class="tenant-room-create-label">Room Type</label>
               <select 
                 id="roomType"
                 formControlName="type"
-                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                class="tenant-room-create-input"
               >
                 <option value="Classroom">Classroom</option>
                 <option value="Laboratory">Laboratory</option>
@@ -40,61 +39,61 @@
               </select>
             </div>
 
-            <div>
-              <label for="capacity" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Capacity (Seats)</label>
+            <div class="tenant-room-create-field">
+              <label for="capacity" class="tenant-room-create-label">Capacity (Seats)</label>
               <input 
                 id="capacity"
                 type="number" 
                 formControlName="capacity"
                 placeholder="30"
-                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                class="tenant-room-create-input"
               >
             </div>
 
-            <div class="md:col-span-2">
-              <p class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Equipment & Facilities</p>
-              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div class="tenant-room-create-field tenant-room-create-field--full">
+              <p class="tenant-room-create-label tenant-room-create-label--equipment">Equipment & Facilities</p>
+              <div class="tenant-room-create-equipment-grid">
                 @for (item of availableEquipment; track item) {
-                  <div class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                  <div class="tenant-room-create-equipment-item">
                     <input 
                       type="checkbox" 
                       [value]="item"
                       [id]="'equip-' + item"
                       [checked]="isEquipmentSelected(item)"
                       (change)="onEquipmentChange($event)"
-                      class="rounded border-slate-200 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                      class="tenant-room-create-checkbox"
                     >
-                    <label [for]="'equip-' + item" class="text-xs text-slate-500 dark:text-slate-500 cursor-pointer flex-1">{{ item }}</label>
+                    <label [for]="'equip-' + item" class="tenant-room-create-equipment-label">{{ item }}</label>
                   </div>
                 }
               </div>
             </div>
 
-            <div class="md:col-span-2">
-              <label for="notes" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Additional Notes</label>
+            <div class="tenant-room-create-field tenant-room-create-field--full">
+              <label for="notes" class="tenant-room-create-label">Additional Notes</label>
               <textarea 
                 id="notes"
                 formControlName="notes"
                 rows="3"
                 placeholder="Any special instructions or maintenance notes..."
-                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                class="tenant-room-create-input tenant-room-create-textarea"
               ></textarea>
             </div>
           </div>
         </div>
 
-        <div class="flex items-center justify-end gap-3">
+        <div class="tenant-room-create-actions">
           <button 
             type="button"
             (click)="onCancel()"
-            class="px-6 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+            class="tenant-room-create-btn tenant-room-create-btn--secondary"
           >
             Cancel
           </button>
           <button 
             type="submit"
             [disabled]="roomForm.invalid || isSubmitting()"
-            class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+            class="tenant-room-create-btn tenant-room-create-btn--primary"
           >
             @if (isSubmitting()) {
               <mat-icon class="animate-spin text-sm">sync</mat-icon>
@@ -106,5 +105,5 @@
           </button>
         </div>
       </form>
-    </div>
+</div>
   

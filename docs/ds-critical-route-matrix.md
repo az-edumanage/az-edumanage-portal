@@ -57,6 +57,7 @@ Purpose: define the minimum visual-regression baseline coverage for zero-regress
 | `/tenant/groups/create` | tenant | Complex multi-section form coverage. |
 | `/tenant/groups/group-001` | tenant | Detail view and schedule sections. |
 | `/tenant/groups/group-001/attendance` | tenant | Attendance page with DS-migrated progress bars. |
+| `/tenant/rooms/create` | tenant | Room creation form with equipment selector and action controls. |
 | `/tenant/schedule` | tenant | Calendar/schedule view with dense timetable grid and session cards. |
 | `/tenant/rooms` | tenant | List + card/table hybrid layout. |
 | `/teacher/overview` | teacher | Teacher main dashboard baseline. |
@@ -68,7 +69,6 @@ Purpose: define the minimum visual-regression baseline coverage for zero-regress
 | Route | Role | Note |
 |---|---|---|
 | `/owner/compliance` | owner | Compliance request progress bars and policy controls. |
-| `/tenant/rooms/create` | tenant | Additional create form path. |
 | `/tenant/grades` | tenant | Grades list/table patterns. |
 | `/tenant/grades/grade-001` | tenant | Grade details with static performance progress bars. |
 | `/teacher/schedule` | teacher | Shared dashboard variant route. |
