@@ -89,10 +89,13 @@ Build an enterprise-grade Design System on top of the current Angular + Tailwind
 - Epic 6 Teacher Slice 03 is completed (`/teacher/media`).
 - Feature Adoption Cleanup 01 is completed (duplicate one-off style patterns reduced on impacted migrated routes).
 - Safety Net Checklist 01 is completed (`docs/manual-smoke-checklist.md`).
-- Feature Adoption Closeout 01 is in progress (`docs/ds-feature-adoption-owner-closeout-01.md`).
+- Feature Adoption Closeout 01 is completed (`docs/ds-feature-adoption-owner-closeout-01.md`).
 - Feature Adoption Closeout 02 is completed for `owner-module-details` (`docs/ds-feature-adoption-owner-closeout-02.md`).
 - Feature Adoption Closeout 03 is completed for `owner-settings` icon utility extraction (`docs/ds-feature-adoption-owner-closeout-03.md`).
 - Feature Adoption Closeout 04 is completed for `owner-settings` non-layout text utility extraction (`docs/ds-feature-adoption-owner-closeout-04.md`).
 - Feature Adoption Closeout 05 is completed for `owner-module-details` muted-copy/meta-value utility extraction (`docs/ds-feature-adoption-owner-closeout-05.md`).
-- `owner-tenant-details` closeout extraction remains rollback-protected pending parity-safe strategy.
-- Next active slice is Owner Closeout 01 / Slice 6 (continue parity-safe micro extractions in `owner-settings`; keep `owner-tenant-details` rollback-protected until parity-safe pattern is identified).
+- Feature Adoption Closeout 06 is completed for `owner-settings` section headings/subsection labels/helper note utility extraction (`docs/ds-feature-adoption-owner-closeout-06.md`).
+- Governance enforcement is active via DS style guard in lint (`scripts/ds-style-guard.mjs`, `docs/ds-style-guard-baseline.json`, `package.json`).
+- DS contribution/review governance is active (`docs/ds-contribution-guide.md`, `.github/pull_request_template.md`).
+- Final full-route visual regression sweep is completed (`npm run vr:update`, `npm run vr:test`, `257 passed`).
+- DS v1 migration is complete (`docs/ds-v1-complete.md`).

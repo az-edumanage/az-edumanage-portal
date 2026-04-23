@@ -5,5 +5,14 @@
     --ds-radius-lg: 0.75rem;
     --ds-radius-xl: 1rem;
     --ds-radius-full: 9999px;
+
+      /*Backward-compatible aliases for feature styles*/
+      --radius-full: var(--ds-radius-full);
+      --radius-sm: var(--ds-radius-sm);
+      --radius-md: var(--ds-radius-md);
+      --radius-lg: var(--ds-radius-lg);
+      --radius-xl: var(--ds-radius-xl);
   }
+
+
 }

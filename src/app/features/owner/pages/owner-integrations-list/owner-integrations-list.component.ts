@@ -10,7 +10,8 @@ import { OwnerIntegrationsListFacade } from '../../state/owner-integrations-list
   selector: 'app-owner-integrations-list',
   standalone: true,
   imports: [CommonModule, RouterModule, MatIconModule, FormsModule],
-  templateUrl: './owner-integrations-list.component.html'})
+  templateUrl: './owner-integrations-list.component.html',
+  styleUrl: './owner-integrations-list.component.css'})
 export class OwnerIntegrationsListComponent {
   private readonly facade = inject(OwnerIntegrationsListFacade);
 

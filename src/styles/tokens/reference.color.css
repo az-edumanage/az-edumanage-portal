@@ -12,7 +12,6 @@
     --brand-800: #3730a3;
     --brand-900: #312e81;
     --brand-950: #1e1b4b;
-
     /* Backward-compatible alias layer for DS-prefixed usage. */
     --ds-brand-50: var(--brand-50);
     --ds-brand-100: var(--brand-100);

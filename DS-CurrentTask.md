@@ -1,28 +1,25 @@
-# Current Task: Phase 6 - Feature Adoption (Owner Closeout 01)
+# Current Task: Design System Program Closeout
 
 ## Objective
-Complete Owner migration closure to semantic/component token classes by targeting the highest remaining utility-heavy Owner pages first.
+Finalize DS migration governance/stabilization and close the DS v1 program with full regression validation.
 
 ## Status
-`In Progress`
+`Done`
 
 ## Sub-Tasks
-- [x] Run Owner utility-density audit and rank pages by migration priority.
-- [x] Document closeout queue and execution strategy (`docs/ds-feature-adoption-owner-closeout-01.md`).
-- [ ] Execute first closeout extraction pair (`owner-settings`, `owner-tenant-details`) with strict parity lock.
-- [x] Execute `owner-settings` extraction micro-pass (icon utility replacement) with focused parity lock (`docs/ds-feature-adoption-owner-closeout-03.md`).
-- [x] Execute `owner-settings` extraction micro-pass (text utility bundles) with focused parity lock (`docs/ds-feature-adoption-owner-closeout-04.md`).
-- [ ] Execute `owner-tenant-details` extraction pass (blocked by focused parity drift; rollback applied).
-- [x] Execute safe closeout extraction pass on `owner-module-details` (`docs/ds-feature-adoption-owner-closeout-02.md`).
-- [x] Execute `owner-module-details` follow-up extraction pass (titles/meta labels) with no owner-modules visual drift.
-- [x] Execute `owner-module-details` follow-up extraction pass (muted copy/meta values) with no owner-modules visual drift (`docs/ds-feature-adoption-owner-closeout-05.md`).
-- [x] Validate build/lint and refresh focused visual parity baseline for `owner-settings` route.
-- [x] Validate focused visual parity for `owner-modules` and `owner-tenant-details` after rollback/adjustments.
+- [x] Add DS style guard enforcement for raw hex and semantic-token bypass (`scripts/ds-style-guard.mjs`, `docs/ds-style-guard-baseline.json`, `package.json`).
+- [x] Add DS contribution guide and naming rules (`docs/ds-contribution-guide.md`).
+- [x] Add UI PR DS review checklist template (`.github/pull_request_template.md`).
+- [x] Apply parity-safe owner closeout continuation and integrations layout fix (`owner-settings`, `owner-integrations`).
+- [x] Run full visual baseline refresh for critical route matrix (`npm run vr:update`).
+- [x] Run full non-update visual regression verification (`npm run vr:test`, `257 passed`).
+- [x] Record DS v1 completion artifact (`docs/ds-v1-complete.md`).
 
 ## Exit Criteria
-- Owner migration umbrella item has no remaining high-volume utility-heavy hotspots.
-- Route-level behavior and visuals remain parity-safe under `brand` baseline.
+- Governance/lint enforcement active in CI lint pipeline.
+- Contribution/review standards documented.
+- Full critical route matrix passes regression verification.
+- DS task tracker contains no remaining open migration/stabilization items.
 
 ## Next Task (Active)
-Phase 6 - Feature Adoption (Owner Closeout 01 / Slice 2):
-- Continue closeout on remaining Owner hotspots with parity-safe slices, next: continue `owner-settings` follow-up extraction and keep `owner-tenant-details` rollback-protected until zero-drift pattern is found.
+None. DS v1 is complete.

@@ -11,17 +11,3 @@
     --ds-color-border-muted: #cbd5e1;
   }
 }
-
-@theme {
-  /*
-   * DS-first utility aliases for incremental migration.
-   * Existing Tailwind utility colors remain untouched to preserve parity.
-   */
-  --color-ds-primary: var(--ds-color-primary);
-  --color-ds-primary-hover: var(--ds-color-primary-hover);
-  --color-ds-text: var(--ds-color-text-primary);
-  --color-ds-text-muted: var(--ds-color-text-muted);
-  --color-ds-surface: var(--ds-color-surface-default);
-  --color-ds-surface-card: var(--ds-color-surface-card);
-  --color-ds-border: var(--ds-color-border-default);
-}
