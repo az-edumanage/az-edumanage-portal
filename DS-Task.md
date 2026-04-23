@@ -14,7 +14,7 @@ Status legend:
 - [x] `Done` Define visual snapshot matrix (light/dark + key breakpoints).
 - [x] `Done` Create baseline execution strategy for `brand`/light/dark + desktop/mobile matrix (`docs/ds-baseline-capture-strategy.md`).
 - [x] `Done` Add visual regression job to CI pipeline (`.github/workflows/visual-regression.yml`, `playwright.visual.config.ts`, `tests/visual/ds-visual.spec.ts`).
-- [ ] `Not Started` Add manual smoke checklist for DS-sensitive interactions.
+- [x] `Done` Add manual smoke checklist for DS-sensitive interactions (`docs/manual-smoke-checklist.md`).
 - [x] `Done` Add acceptance thresholds and diff approval policy (`docs/ds-baseline-capture-strategy.md`).
 - [x] `Done` Expand P0 route matrix to include migrated owner analytics/detail routes for brand snapshot coverage (`docs/ds-critical-route-matrix.md`, `tests/visual/ds-visual.spec.ts`).
 - [x] `Done` Expand P0 route matrix to include owner subscription details for migrated inline-style visual coverage (`docs/ds-critical-route-matrix.md`, `tests/visual/ds-visual.spec.ts`).
@@ -72,7 +72,7 @@ Status legend:
 - [x] `Done` Execute Slice 06 extended form primitive adoption on owner high-usage forms (`owner-plan-create`, `owner-provisioning-settings`) (`docs/ds-shared-primitive-migration-slice-06.md`).
 
 ## Epic 6: Feature-by-Feature Adoption
-- [ ] `Not Started` Migrate Owner feature styles to semantic/component tokens.
+- [ ] `In Progress` Migrate Owner feature styles to semantic/component tokens (`docs/ds-feature-adoption-owner-closeout-01.md`).
 - [ ] `Not Started` Migrate Tenant feature styles to semantic/component tokens.
 - [ ] `Not Started` Migrate Teacher feature styles to semantic/component tokens.
 - [x] `Done` Execute Owner Slice 01 one-off style extraction on high-usage provisioning settings page with focused visual re-baseline (`docs/ds-feature-adoption-owner-slice-01.md`).
@@ -105,6 +105,9 @@ Status legend:
 - [x] `Done` Execute Teacher Slice 01 one-off style extraction on high-usage teacher-schedule route (dashboard-backed) with focused visual re-baseline (`docs/ds-feature-adoption-teacher-slice-01.md`).
 - [x] `Done` Execute Teacher Slice 02 parity adoption on high-usage teacher-messages route (dashboard-backed) with focused visual re-baseline (`docs/ds-feature-adoption-teacher-slice-02.md`).
 - [x] `Done` Execute Teacher Slice 03 one-off style extraction on high-usage teacher-media route with focused visual re-baseline (`docs/ds-feature-adoption-teacher-slice-03.md`).
+- [x] `Done` Execute Owner Closeout 02 safe extraction on `owner-module-details` with focused owner-modules parity validation (`docs/ds-feature-adoption-owner-closeout-02.md`).
+- [x] `Done` Execute Owner Closeout 03 parity-safe micro extraction on `owner-settings` (icon utility replacement) with focused owner-settings parity validation (`docs/ds-feature-adoption-owner-closeout-03.md`).
+- [x] `Done` Execute Owner Closeout 04 parity-safe micro extraction on `owner-settings` (non-layout text utility bundles) with focused owner-settings parity validation (`docs/ds-feature-adoption-owner-closeout-04.md`).
 - [x] `Done` Audit and inventory inline styles (`style=\"...\"`, `[style.*]`, `[ngStyle]`) by feature (`docs/ds-inline-style-inventory.md`).
 - [x] `Done` Execute first P0 inline-style conversion to DS CSS-variable pattern (`owner-overview` regional progress bars) (`docs/ds-token-adoption-slice-01.md`).
 - [x] `Done` Execute second P0 inline-style conversion to DS CSS-variable pattern (`owner-billing` revenue bars) (`docs/ds-token-adoption-slice-01.md`).

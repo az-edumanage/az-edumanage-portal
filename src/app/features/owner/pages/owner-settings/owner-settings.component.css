@@ -113,6 +113,30 @@
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+.owner-settings-icon-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.owner-settings-muted-body {
+  font-size: var(--font-size-sm);
+  line-height: 1.25rem;
+  color: var(--color-text-secondary);
+}
+
+.owner-settings-toggle-title {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  line-height: 1.25rem;
+  color: var(--color-text-primary);
+}
+
+.owner-settings-toggle-note {
+  font-size: var(--font-size-xs);
+  line-height: 1rem;
+  color: var(--color-text-secondary);
+}
+
 .owner-settings-custom-scrollbar::-webkit-scrollbar {
   height: 4px;
 }

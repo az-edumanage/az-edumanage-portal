@@ -91,10 +91,10 @@
               <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                 <div>
                   <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Subscription Cycles</h3>
-                  <p class="text-sm text-slate-500">Define available billing intervals for plans and subscriptions.</p>
+                  <p class="owner-settings-muted-body">Define available billing intervals for plans and subscriptions.</p>
                 </div>
                 <button (click)="addCycle()" class="owner-settings-btn-chip gap-2 px-3 py-1.5 bg-indigo-600/10 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg text-sm font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/50">
-                  <mat-icon class="text-sm">add</mat-icon>
+                  <mat-icon class="owner-settings-icon-sm">add</mat-icon>
                   Add Cycle
                 </button>
               </div>
@@ -103,7 +103,7 @@
                   @for (cycle of subscriptionCycles(); track cycle.id) {
                     <div class="p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 group relative">
                       <button (click)="removeCycle(cycle.id)" class="absolute top-2 right-2 p-1 text-slate-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <mat-icon class="text-sm">delete</mat-icon>
+                        <mat-icon class="owner-settings-icon-sm">delete</mat-icon>
                       </button>
                       <div class="flex items-center gap-3 mb-3">
                         <div class="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg text-indigo-600 dark:text-indigo-400">
@@ -135,10 +135,10 @@
               <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                 <div>
                   <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Payment Methods</h3>
-                  <p class="text-sm text-slate-500">Configure available payment options for tenants.</p>
+                  <p class="owner-settings-muted-body">Configure available payment options for tenants.</p>
                 </div>
                 <button (click)="addPaymentMethod()" class="owner-settings-btn-chip gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-sm font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/50">
-                  <mat-icon class="text-sm">add_card</mat-icon>
+                  <mat-icon class="owner-settings-icon-sm">add_card</mat-icon>
                   Add Method
                 </button>
               </div>
@@ -161,7 +161,7 @@
                           <div class="w-9 h-5 bg-slate-200 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:bg-emerald-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
                         </label>
                         <button (click)="removePaymentMethod(method.id)" class="p-1 text-slate-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <mat-icon class="text-sm">delete</mat-icon>
+                          <mat-icon class="owner-settings-icon-sm">delete</mat-icon>
                         </button>
                       </div>
                     </div>
@@ -210,8 +210,8 @@
 
               <div class="owner-settings-banner flex justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                 <div>
-                  <p class="text-sm font-medium text-slate-900 dark:text-white">Enforce MFA Globally</p>
-                  <p class="text-xs text-slate-500">Require all users (including tenants) to use Multi-Factor Authentication.</p>
+                  <p class="owner-settings-toggle-title">Enforce MFA Globally</p>
+                  <p class="owner-settings-toggle-note">Require all users (including tenants) to use Multi-Factor Authentication.</p>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" class="sr-only peer" checked>
@@ -367,8 +367,8 @@
 
               <div class="owner-settings-banner flex justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                 <div>
-                  <p class="text-sm font-medium text-slate-900 dark:text-white">Allow Tenant Data Export</p>
-                  <p class="text-xs text-slate-500">Enable self-service data portability for all tenants.</p>
+                  <p class="owner-settings-toggle-title">Allow Tenant Data Export</p>
+                  <p class="owner-settings-toggle-note">Enable self-service data portability for all tenants.</p>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" class="sr-only peer" checked>

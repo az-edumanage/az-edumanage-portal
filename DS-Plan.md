@@ -88,4 +88,10 @@ Build an enterprise-grade Design System on top of the current Angular + Tailwind
 - Epic 6 Teacher Slice 02 is completed (`/teacher/messages`).
 - Epic 6 Teacher Slice 03 is completed (`/teacher/media`).
 - Feature Adoption Cleanup 01 is completed (duplicate one-off style patterns reduced on impacted migrated routes).
-- Next active task is Safety Net Checklist 01 (add manual smoke checklist for DS-sensitive interactions).
+- Safety Net Checklist 01 is completed (`docs/manual-smoke-checklist.md`).
+- Feature Adoption Closeout 01 is in progress (`docs/ds-feature-adoption-owner-closeout-01.md`).
+- Feature Adoption Closeout 02 is completed for `owner-module-details` (`docs/ds-feature-adoption-owner-closeout-02.md`).
+- Feature Adoption Closeout 03 is completed for `owner-settings` icon utility extraction (`docs/ds-feature-adoption-owner-closeout-03.md`).
+- Feature Adoption Closeout 04 is completed for `owner-settings` non-layout text utility extraction (`docs/ds-feature-adoption-owner-closeout-04.md`).
+- `owner-tenant-details` closeout extraction remains rollback-protected pending parity-safe strategy.
+- Next active slice is Owner Closeout 01 / Slice 5 (continue parity-safe micro extractions in `owner-settings`; keep `owner-tenant-details` rollback-protected until parity-safe pattern is identified).

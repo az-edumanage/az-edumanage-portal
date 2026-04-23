@@ -59,7 +59,7 @@
         @if (module().category === 'Advanced') {
           <div class="flex gap-3">
             <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-              <mat-icon class="text-sm">edit</mat-icon>
+              <mat-icon class="owner-module-details-action-icon">edit</mat-icon>
               Edit Module
             </button>
             <button 
@@ -72,7 +72,7 @@
               [class.hover:bg-green-700]="module().status === 'Disabled'"
               [class.text-white]="module().status === 'Disabled'"
             >
-              <mat-icon class="text-sm">{{ module().status === 'Enabled' ? 'block' : 'check_circle' }}</mat-icon>
+              <mat-icon class="owner-module-details-action-icon">{{ module().status === 'Enabled' ? 'block' : 'check_circle' }}</mat-icon>
               {{ module().status === 'Enabled' ? 'Disable Module' : 'Enable Module' }}
             </button>
           </div>
@@ -84,7 +84,7 @@
         <nav class="flex gap-6 overflow-x-auto" aria-label="Tabs">
           <button 
             (click)="activeTab.set('overview')"
-            class="pb-4 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+            class="owner-module-details-tab-button"
             [class.border-indigo-500]="activeTab() === 'overview'"
             [class.text-indigo-600]="activeTab() === 'overview'"
             [class.dark:text-indigo-400]="activeTab() === 'overview'"
@@ -97,7 +97,7 @@
           </button>
           <button 
             (click)="activeTab.set('settings')"
-            class="pb-4 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+            class="owner-module-details-tab-button"
             [class.border-indigo-500]="activeTab() === 'settings'"
             [class.text-indigo-600]="activeTab() === 'settings'"
             [class.dark:text-indigo-400]="activeTab() === 'settings'"
@@ -110,7 +110,7 @@
           </button>
           <button 
             (click)="activeTab.set('plans')"
-            class="pb-4 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+            class="owner-module-details-tab-button"
             [class.border-indigo-500]="activeTab() === 'plans'"
             [class.text-indigo-600]="activeTab() === 'plans'"
             [class.dark:text-indigo-400]="activeTab() === 'plans'"
@@ -123,7 +123,7 @@
           </button>
           <button 
             (click)="activeTab.set('overrides')"
-            class="pb-4 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+            class="owner-module-details-tab-button"
             [class.border-indigo-500]="activeTab() === 'overrides'"
             [class.text-indigo-600]="activeTab() === 'overrides'"
             [class.dark:text-indigo-400]="activeTab() === 'overrides'"
@@ -136,7 +136,7 @@
           </button>
           <button 
             (click)="activeTab.set('dependencies')"
-            class="pb-4 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+            class="owner-module-details-tab-button"
             [class.border-indigo-500]="activeTab() === 'dependencies'"
             [class.text-indigo-600]="activeTab() === 'dependencies'"
             [class.dark:text-indigo-400]="activeTab() === 'dependencies'"
@@ -149,7 +149,7 @@
           </button>
           <button 
             (click)="activeTab.set('changelog')"
-            class="pb-4 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+            class="owner-module-details-tab-button"
             [class.border-indigo-500]="activeTab() === 'changelog'"
             [class.text-indigo-600]="activeTab() === 'changelog'"
             [class.dark:text-indigo-400]="activeTab() === 'changelog'"
@@ -172,7 +172,7 @@
             <!-- Features Section -->
             <div class="space-y-4">
               <div>
-                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Feature Catalog</h3>
+                <h3 class="owner-module-details-section-title">Feature Catalog</h3>
                 <p class="text-sm text-slate-500 dark:text-slate-500">Select which features are available when this module is activated.</p>
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -196,7 +196,7 @@
             <!-- Limits Section -->
             <div class="space-y-4 pt-6 border-t border-slate-200 dark:border-slate-800">
               <div>
-                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Limits / Rules</h3>
+                <h3 class="owner-module-details-section-title">Limits / Rules</h3>
                 <p class="text-sm text-slate-500 dark:text-slate-500">Define system constraints and business rules for this module.</p>
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -240,19 +240,19 @@
           <div class="p-6 space-y-8">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Module Information</h3>
+                <h3 class="owner-module-details-panel-title">Module Information</h3>
                 <div class="space-y-4">
                   <div>
-                    <div class="text-sm font-medium text-slate-500 dark:text-slate-500">Description</div>
+                    <div class="owner-module-details-meta-label">Description</div>
                     <div class="text-slate-900 dark:text-white mt-1">{{ module().description }}</div>
                   </div>
                   <div class="grid grid-cols-2 gap-4">
                     <div>
-                      <div class="text-sm font-medium text-slate-500 dark:text-slate-500">Created At</div>
+                      <div class="owner-module-details-meta-label">Created At</div>
                       <div class="text-slate-900 dark:text-white mt-1">Jan 12, 2023</div>
                     </div>
                     <div>
-                      <div class="text-sm font-medium text-slate-500 dark:text-slate-500">Last Updated</div>
+                      <div class="owner-module-details-meta-label">Last Updated</div>
                       <div class="text-slate-900 dark:text-white mt-1">{{ module().lastUpdated }}</div>
                     </div>
                   </div>
@@ -260,7 +260,7 @@
               </div>
 
               <div>
-                <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Global Status</h3>
+                <h3 class="owner-module-details-panel-title">Global Status</h3>
                 <div class="p-4 rounded-lg border"
                   [class.bg-green-50]="module().status === 'Enabled'"
                   [class.border-green-200]="module().status === 'Enabled'"
@@ -399,7 +399,7 @@
         <!-- Dependencies Tab -->
         @if (activeTab() === 'dependencies') {
           <div class="p-6">
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Module Dependencies</h3>
+            <h3 class="owner-module-details-panel-title">Module Dependencies</h3>
             
             <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6 flex gap-3">
               <mat-icon class="text-indigo-600 dark:text-blue-400">info</mat-icon>
