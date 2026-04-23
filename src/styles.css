@@ -1,53 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 @import "tailwindcss";
-
-/* 
-  Design Tokens (Branding System)
-  We map standard CSS variables here so they can be changed dynamically by JS per Tenant!
-*/
-@layer base {
-  :root {
-    /* Brand Palette (defaults to Tailwind's Indigo exactly to match current design) */
-    --brand-50: #eef2ff;
-    --brand-100: #e0e7ff;
-    --brand-200: #c7d2fe;
-    --brand-300: #a5b4fc;
-    --brand-400: #818cf8;
-    --brand-500: #6366f1;
-    --brand-600: #4f46e5;
-    --brand-700: #4338ca;
-    --brand-800: #3730a3;
-    --brand-900: #312e81;
-    --brand-950: #1e1b4b;
-  }
-}
-
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-
-  /* 
-    Intercept current Tailwind classes in the app (like text-indigo-600).
-    Instead of hardcoding the color, it will read our CSS variables above.
-    This safely creates a theming engine without touching a single HTML file! 
-  */
-  --color-indigo-50: var(--brand-50);
-  --color-indigo-100: var(--brand-100);
-  --color-indigo-200: var(--brand-200);
-  --color-indigo-300: var(--brand-300);
-  --color-indigo-400: var(--brand-400);
-  --color-indigo-500: var(--brand-500);
-  --color-indigo-600: var(--brand-600);
-  --color-indigo-700: var(--brand-700);
-  --color-indigo-800: var(--brand-800);
-  --color-indigo-900: var(--brand-900);
-  --color-indigo-950: var(--brand-950);
-}
+@import "./styles/tokens/index.css";
 
 html {
   transition: background-color 0.3s ease, color 0.3s ease;
   font-family: var(--font-sans);
+}
+
+html[lang='ar'] {
+  font-family: 'Cairo', var(--font-sans);
 }
 
 body {

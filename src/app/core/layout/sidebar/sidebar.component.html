@@ -1,51 +1,55 @@
 
-    <aside 
-      class="fixed left-0 top-0 z-40 h-screen bg-slate-900 text-white transition-all duration-300 border-r border-slate-800 flex flex-col"
-      [class.w-64]="!collapsed()"
-      [class.w-20]="collapsed()"
-    >
+	    <aside 
+		      class="fixed top-0 z-40 h-screen bg-slate-900 text-white transition-all duration-300 flex flex-col border-slate-800"
+	      [class.left-0]="!isRtl()"
+	      [class.right-0]="isRtl()"
+	      [class.border-r]="!isRtl()"
+	      [class.border-l]="isRtl()"
+	      [class.w-64]="!collapsed()"
+	      [class.w-20]="collapsed()"
+	    >
       <!-- Logo Area -->
       <div class="h-16 flex items-center px-6 border-b border-slate-800 shrink-0">
         <div class="flex items-center gap-3 overflow-hidden">
           <div class="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center shrink-0">
             <mat-icon class="text-white text-sm scale-75">description</mat-icon>
           </div>
-          <span class="font-bold text-xl tracking-tight whitespace-nowrap opacity-100 transition-opacity duration-300"
-            [class.opacity-0]="collapsed()"
-            [class.hidden]="collapsed()"
-          >
-            EDUCATION MANAGER
-          </span>
+	          <span class="font-bold text-xl tracking-tight whitespace-nowrap opacity-100 transition-opacity duration-300"
+	            [class.opacity-0]="collapsed()"
+	            [class.hidden]="collapsed()"
+		          >
+		            {{ t('sidebar.appName') }}
+	          </span>
         </div>
       </div>
 
       <!-- Navigation -->
       <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1 custom-scrollbar">
-        @for (section of menuSections(); track section.title) {
-          @if (!collapsed() && section.title) {
-            <div class="px-3 mb-2 mt-6 first:mt-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-              {{ section.title }}
-            </div>
-          }
-          @if (collapsed() && section.title) {
-             <div class="h-px bg-slate-800 mx-3 my-4"></div>
-          }
-          
-          @for (item of section.items; track item.label) {
-            @if (!item.children) {
+	        @for (section of menuSections(); track section.titleKey) {
+		          @if (!collapsed() && section.titleKey) {
+		            <div class="px-3 mb-2 mt-6 first:mt-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+		              {{ t(section.titleKey) }}
+		            </div>
+		          }
+	          @if (collapsed() && section.titleKey) {
+	             <div class="h-px bg-slate-800 mx-3 my-4"></div>
+	          }
+	          
+	          @for (item of section.items; track item.labelKey) {
+	            @if (!item.children) {
               <a 
                 [routerLink]="item.route"
                 routerLinkActive="bg-indigo-500/10 text-indigo-400"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 hover:text-white hover:bg-slate-800 transition-colors group relative"
-                [title]="collapsed() ? item.label : ''"
-              >
-                <mat-icon class="shrink-0 text-[20px]">{{ item.icon }}</mat-icon>
-                <span class="whitespace-nowrap font-medium text-sm transition-opacity duration-300"
-                  [class.opacity-0]="collapsed()"
-                  [class.hidden]="collapsed()"
-                >
-                  {{ item.label }}
-                </span>
+			                [title]="collapsed() ? t(item.labelKey) : ''"
+		              >
+		                <mat-icon class="shrink-0 text-[20px]">{{ item.icon }}</mat-icon>
+	                <span class="whitespace-nowrap font-medium text-sm transition-opacity duration-300"
+	                  [class.opacity-0]="collapsed()"
+	                  [class.hidden]="collapsed()"
+	                >
+		                  {{ t(item.labelKey) }}
+		                </span>
 
                 @if (item.badge && item.badge > 0 && !collapsed()) {
                   <span class="ml-auto bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
@@ -57,28 +61,37 @@
                   <div class="absolute top-1 right-1 w-2 h-2 bg-amber-500 rounded-full border border-slate-900"></div>
                 }
                 
-                @if (collapsed()) {
-                  <div class="absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl border border-slate-700">
-                    {{ item.label }}
-                  </div>
-                }
-              </a>
+	                @if (collapsed()) {
+		                  <div
+                        class="absolute px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl border border-slate-700"
+                        [class.left-full]="!isRtl()"
+                        [class.ml-2]="!isRtl()"
+                        [class.right-full]="isRtl()"
+                        [class.mr-2]="isRtl()"
+                      >
+			                    {{ t(item.labelKey) }}
+			                  </div>
+			                }
+		              </a>
             } @else {
               <!-- Accordion Item -->
               <div class="space-y-1">
                 <button 
-                  (click)="toggleAccordion(item.label)"
-                  class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 hover:text-white hover:bg-slate-800 transition-colors group relative"
-                  [class.text-white]="isAccordionOpen(item.label)"
-                  [title]="collapsed() ? item.label : ''"
-                >
-                  <mat-icon class="shrink-0 text-[20px]">{{ item.icon }}</mat-icon>
-                  <span class="flex-1 text-left whitespace-nowrap font-medium text-sm transition-opacity duration-300"
-                    [class.opacity-0]="collapsed()"
-                    [class.hidden]="collapsed()"
-                  >
-                    {{ item.label }}
-                  </span>
+	                  (click)="toggleAccordion(item.labelKey)"
+	                  class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 hover:text-white hover:bg-slate-800 transition-colors group relative"
+	                  [class.text-white]="isAccordionOpen(item.labelKey)"
+		                  [title]="collapsed() ? t(item.labelKey) : ''"
+		                >
+	                  <mat-icon class="shrink-0 text-[20px]">{{ item.icon }}</mat-icon>
+	                  <span
+                      class="flex-1 whitespace-nowrap font-medium text-sm transition-opacity duration-300"
+                      [class.text-left]="!isRtl()"
+                      [class.text-right]="isRtl()"
+	                    [class.opacity-0]="collapsed()"
+	                    [class.hidden]="collapsed()"
+                    >
+		                    {{ t(item.labelKey) }}
+		                  </span>
 
                   @if (item.badge && item.badge > 0 && !collapsed()) {
                     <span class="bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center mr-1">
@@ -90,29 +103,35 @@
                     <div class="absolute top-1 right-1 w-2 h-2 bg-amber-500 rounded-full border border-slate-900"></div>
                   }
                   
-                  @if (!collapsed()) {
-                    <mat-icon class="text-sm transition-transform duration-200" [class.rotate-180]="isAccordionOpen(item.label)">
-                      expand_more
-                    </mat-icon>
-                  }
+	                  @if (!collapsed()) {
+	                    <mat-icon class="text-sm transition-transform duration-200" [class.rotate-180]="isAccordionOpen(item.labelKey)">
+	                      expand_more
+	                    </mat-icon>
+	                  }
 
-                  @if (collapsed()) {
-                    <div class="absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl border border-slate-700">
-                      {{ item.label }}
-                    </div>
-                  }
-                </button>
-
-                @if (isAccordionOpen(item.label) && !collapsed()) {
-                  <div class="pl-10 space-y-1">
-                    @for (child of item.children; track child.label) {
-                      <a 
-                        [routerLink]="child.route"
-                        routerLinkActive="text-indigo-400"
-                        class="flex items-center justify-between py-2 text-sm text-slate-500 hover:text-white transition-colors"
+	                  @if (collapsed()) {
+	                    <div
+                        class="absolute px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl border border-slate-700"
+                        [class.left-full]="!isRtl()"
+                        [class.ml-2]="!isRtl()"
+                        [class.right-full]="isRtl()"
+                        [class.mr-2]="isRtl()"
                       >
-                        <span>{{ child.label }}</span>
-                        @if (child.badge && child.badge > 0) {
+		                      {{ t(item.labelKey) }}
+		                    </div>
+		                  }
+		                </button>
+
+	                @if (isAccordionOpen(item.labelKey) && !collapsed()) {
+	                  <div class="pl-10 space-y-1">
+	                    @for (child of item.children; track child.labelKey) {
+	                      <a 
+	                        [routerLink]="child.route"
+	                        routerLinkActive="text-indigo-400"
+	                        class="flex items-center justify-between py-2 text-sm text-slate-500 hover:text-white transition-colors"
+		                      >
+		                        <span>{{ t(child.labelKey) }}</span>
+	                        @if (child.badge && child.badge > 0) {
                           <span class="bg-amber-500/20 text-amber-500 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                             {{ child.badge }}
                           </span>
@@ -134,13 +153,13 @@
             {{ userInitials() }}
           </div>
           <div class="flex flex-col min-w-0 transition-opacity duration-300"
-            [class.opacity-0]="collapsed()"
-            [class.hidden]="collapsed()"
-          >
-            <span class="text-sm font-medium truncate text-white">Current User</span>
-            <span class="text-xs text-slate-500 truncate capitalize">{{ currentRole() }}</span>
-          </div>
-        </div>
-      </div>
-    </aside>
+	            [class.opacity-0]="collapsed()"
+	            [class.hidden]="collapsed()"
+	          >
+		            <span class="text-sm font-medium truncate text-white">{{ t('sidebar.currentUser') }}</span>
+		            <span class="text-xs text-slate-500 truncate">{{ t('topbar.role.' + currentRole()) }}</span>
+		          </div>
+	        </div>
+	      </div>
+	    </aside>
   

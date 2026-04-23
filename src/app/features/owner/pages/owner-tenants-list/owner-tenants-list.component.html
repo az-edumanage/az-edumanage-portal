@@ -1,0 +1,447 @@
+
+    <div class="owner-tenants-page space-y-6">
+      <!-- Header -->
+      <div class="owner-tenants-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="owner-tenants-title text-2xl font-bold text-slate-900 dark:text-white">{{ t('owner.tenants.title') }}</h2>
+          <p class="owner-tenants-subtitle text-slate-500 dark:text-slate-500 text-sm">{{ t('owner.tenants.subtitle') }}</p>
+        </div>
+        <a routerLink="/owner/tenants/create" class="owner-tenants-create-btn flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20 self-start sm:self-auto">
+          <mat-icon class="text-sm">add</mat-icon>
+          {{ t('owner.tenants.createTenant') }}
+        </a>
+      </div>
+
+      <!-- Filters -->
+      <div class="owner-tenants-filter-card bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-4">
+        <div class="flex-1 relative">
+          <mat-icon class="owner-tenants-search-icon absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">search</mat-icon>
+          <input 
+            type="text" 
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+            placeholder="Search by tenant or subscription ID..." 
+            class="ds-owner-tenant-search-input pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"
+          >
+        </div>
+        <div class="owner-tenants-filter-actions flex flex-wrap gap-3 pb-2 md:pb-0 relative">
+          <button 
+            (click)="showFiltersDropdown.set(!showFiltersDropdown())"
+            class="owner-tenants-filter-btn flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          >
+            <mat-icon class="text-sm">filter_list</mat-icon>
+            {{ t('owner.tenants.filters') }}
+            @if (activeFilterCount() > 0) {
+              <span class="owner-tenants-filter-count bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ activeFilterCount() }}</span>
+            }
+          </button>
+
+          @if (showFiltersDropdown()) {
+            <button 
+              type="button"
+              class="fixed inset-0 z-10 w-full h-full cursor-default" 
+              (click)="showFiltersDropdown.set(false)"
+              aria-label="Close filters"
+            ></button>
+            <div class="owner-tenants-filters-dropdown absolute right-0 top-full mt-2 z-20 w-72 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+              <div class="owner-tenants-filters-head p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <h3 class="owner-tenants-filters-title font-semibold text-slate-900 dark:text-white">{{ t('owner.tenants.filters') }}</h3>
+                @if (activeFilterCount() > 0) {
+                  <button (click)="clearFilters()" class="owner-tenants-clear-filters text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Clear all</button>
+                }
+              </div>
+              
+              <div class="max-h-96 overflow-y-auto p-4 space-y-6">
+                <!-- Status -->
+                <div>
+                  <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Status</h4>
+                  <div class="space-y-2">
+                    @for (status of statuses; track status) {
+                      <label class="flex items-center gap-2 cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          [checked]="selectedStatuses().has(status)"
+                          (change)="toggleFilter('status', status)"
+                          class="rounded border-slate-200 text-indigo-600 focus:ring-indigo-500"
+                        >
+                        <span class="text-sm text-slate-700 dark:text-slate-300">{{ status }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
+
+                <!-- Plan -->
+                <div>
+                  <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Plan</h4>
+                  <div class="space-y-2">
+                    @for (plan of plans; track plan) {
+                      <label class="flex items-center gap-2 cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          [checked]="selectedPlans().has(plan)"
+                          (change)="toggleFilter('plan', plan)"
+                          class="rounded border-slate-200 text-indigo-600 focus:ring-indigo-500"
+                        >
+                        <span class="text-sm text-slate-700 dark:text-slate-300">{{ plan }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
+
+                <!-- Health -->
+                <div>
+                  <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Health</h4>
+                  <div class="space-y-2">
+                    @for (health of healths; track health) {
+                      <label class="flex items-center gap-2 cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          [checked]="selectedHealths().has(health)"
+                          (change)="toggleFilter('health', health)"
+                          class="rounded border-slate-200 text-indigo-600 focus:ring-indigo-500"
+                        >
+                        <span class="text-sm text-slate-700 dark:text-slate-300">{{ health }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Tenants Table -->
+      <div class="owner-tenants-table-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="owner-tenants-table-wrap overflow-x-auto">
+          <table class="owner-tenants-table w-full text-left text-sm">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
+              <tr>
+                <th class="px-6 py-4 font-medium">Name</th>
+                <th class="px-6 py-4 font-medium">Status</th>
+                <th class="px-6 py-4 font-medium">Plan</th>
+                <th class="px-6 py-4 font-medium">Owner</th>
+                <th class="px-6 py-4 font-medium">Created</th>
+                <th class="px-6 py-4 font-medium">Health</th>
+                <th class="px-6 py-4 font-medium text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+              @for (tenant of filteredTenants(); track tenant.id; let i = $index) {
+                <tr class="owner-tenants-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                  <td class="px-6 py-4">
+                    <button 
+                      class="owner-tenants-name-btn font-medium text-slate-900 dark:text-white flex items-center gap-2 hover:text-indigo-600 transition-colors group/cell focus:outline-none" 
+                      (click)="copyToClipboard(tenant.name)"
+                      title="Click to copy name"
+                    >
+                      {{ tenant.name }}
+                      <mat-icon class="text-[14px] opacity-0 group-hover/cell:opacity-100 text-slate-500 transition-opacity">content_copy</mat-icon>
+                    </button>
+                    <button 
+                      class="owner-tenants-id-btn text-xs text-slate-500 flex items-center gap-1 hover:text-indigo-600 transition-colors group/id focus:outline-none mt-1" 
+                      (click)="copyToClipboard(tenant.id)"
+                      title="Click to copy ID"
+                    >
+                      ID: {{ tenant.id }}
+                      <mat-icon class="text-[12px] opacity-0 group-hover/id:opacity-100 text-slate-500 transition-opacity">content_copy</mat-icon>
+                    </button>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="px-2 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1"
+                      [class.bg-green-100]="tenant.status === 'Active'"
+                      [class.text-green-700]="tenant.status === 'Active'"
+                      [class.dark:bg-green-900/30]="tenant.status === 'Active'"
+                      [class.dark:text-green-400]="tenant.status === 'Active'"
+                      [class.bg-amber-100]="tenant.status === 'Trial'"
+                      [class.text-amber-700]="tenant.status === 'Trial'"
+                      [class.dark:bg-amber-900/30]="tenant.status === 'Trial'"
+                      [class.dark:text-amber-400]="tenant.status === 'Trial'"
+                      [class.bg-red-100]="tenant.status === 'Suspended'"
+                      [class.text-red-700]="tenant.status === 'Suspended'"
+                      [class.dark:bg-red-900/30]="tenant.status === 'Suspended'"
+                      [class.dark:text-red-400]="tenant.status === 'Suspended'"
+                      [class.bg-orange-100]="tenant.status === 'Past Due'"
+                      [class.text-orange-700]="tenant.status === 'Past Due'"
+                      [class.dark:bg-orange-900/30]="tenant.status === 'Past Due'"
+                      [class.dark:text-orange-400]="tenant.status === 'Past Due'"
+                      [class.bg-slate-100]="tenant.status === 'Cancelled'"
+                      [class.text-slate-700]="tenant.status === 'Cancelled'"
+                      [class.dark:bg-slate-900/30]="tenant.status === 'Cancelled'"
+                      [class.dark:text-slate-500]="tenant.status === 'Cancelled'"
+                    >
+                      <span class="w-1.5 h-1.5 rounded-full" 
+                        [class.bg-green-500]="tenant.status === 'Active'"
+                        [class.bg-amber-500]="tenant.status === 'Trial'"
+                        [class.bg-red-500]="tenant.status === 'Suspended'"
+                        [class.bg-orange-500]="tenant.status === 'Past Due'"
+                        [class.bg-slate-500]="tenant.status === 'Cancelled'"
+                      ></span>
+                      {{ tenant.status }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ tenant.plan }}</td>
+                  <td class="px-6 py-4 text-slate-500 dark:text-slate-500">
+                    <button 
+                      class="owner-tenants-owner-btn flex items-center gap-2 hover:text-indigo-600 transition-colors group/email focus:outline-none" 
+                      (click)="copyToClipboard(tenant.ownerEmail)"
+                      title="Click to copy email"
+                    >
+                      <div class="owner-tenants-owner-avatar w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs text-slate-500 dark:text-slate-300">
+                        {{ tenant.ownerEmail.charAt(0).toUpperCase() }}
+                      </div>
+                      <span class="truncate max-w-[150px]" [title]="tenant.ownerEmail">{{ tenant.ownerEmail }}</span>
+                      <mat-icon class="text-[14px] opacity-0 group-hover/email:opacity-100 text-slate-500 transition-opacity">content_copy</mat-icon>
+                    </button>
+                  </td>
+                  <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ tenant.createdDate }}</td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-2 text-xs font-medium"
+                      [class.text-green-600]="tenant.healthStatus === 'Healthy'"
+                      [class.dark:text-green-400]="tenant.healthStatus === 'Healthy'"
+                      [class.text-amber-600]="tenant.healthStatus === 'Degraded'"
+                      [class.dark:text-amber-400]="tenant.healthStatus === 'Degraded'"
+                      [class.text-red-600]="tenant.healthStatus === 'Down'"
+                      [class.dark:text-red-400]="tenant.healthStatus === 'Down'"
+                    >
+                      <mat-icon class="text-sm">
+                        {{ tenant.healthStatus === 'Healthy' ? 'check_circle' : tenant.healthStatus === 'Degraded' ? 'warning' : 'error' }}
+                      </mat-icon>
+                      {{ tenant.healthStatus }}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 text-right">
+                    <div class="owner-tenants-actions flex items-center justify-end gap-2">
+                      <button 
+                        [routerLink]="['/owner/tenants', tenant.id]"
+                        class="owner-tenants-icon-btn p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors" 
+                        title="View Details"
+                      >
+                        <mat-icon class="text-lg">visibility</mat-icon>
+                      </button>
+                      <button 
+                        (click)="impersonate(tenant)"
+                        class="owner-tenants-icon-btn p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors" 
+                        title="Impersonate"
+                      >
+                        <mat-icon class="text-lg">login</mat-icon>
+                      </button>
+                      
+                      <div class="relative">
+                        <button 
+                          (click)="activeStatusDropdown.set(activeStatusDropdown() === tenant.id ? null : tenant.id)"
+                          class="owner-tenants-icon-btn p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors" 
+                          [title]="'Change Status (Current: ' + tenant.status + ')'"
+                        >
+                          <mat-icon class="text-lg">
+                            {{ 
+                              tenant.status === 'Active' ? 'check_circle' : 
+                              tenant.status === 'Suspended' ? 'pause_circle' : 
+                              tenant.status === 'Trial' ? 'hourglass_empty' : 
+                              tenant.status === 'Past Due' ? 'priority_high' : 'cancel'
+                            }}
+                          </mat-icon>
+                        </button>
+
+                        @if (activeStatusDropdown() === tenant.id) {
+                          <div class="owner-tenants-status-dropdown absolute right-0 z-30 w-40 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl overflow-hidden animate-in fade-in duration-200"
+                            [class.top-full]="i < 3"
+                            [class.mt-2]="i < 3"
+                            [class.slide-in-from-top-2]="i < 3"
+                            [class.bottom-full]="i >= 3"
+                            [class.mb-2]="i >= 3"
+                            [class.slide-in-from-bottom-2]="i >= 3"
+                          >
+                            <div class="p-2 space-y-1">
+                              @for (status of statuses; track status) {
+                                <button 
+                                  (click)="requestStatusChange(tenant, status); activeStatusDropdown.set(null)"
+                                  class="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md transition-colors"
+                                  [class.bg-indigo-600/10]="tenant.status === status"
+                                  [class.text-indigo-600]="tenant.status === status"
+                                  [class.dark:bg-indigo-900/30]="tenant.status === status"
+                                  [class.text-slate-700]="tenant.status !== status"
+                                  [class.dark:text-slate-300]="tenant.status !== status"
+                                  [class.hover:bg-slate-50]="tenant.status !== status"
+                                  [class.dark:hover:bg-slate-700]="tenant.status !== status"
+                                >
+                                  <span class="w-2 h-2 rounded-full"
+                                    [class.bg-green-500]="status === 'Active'"
+                                    [class.bg-amber-500]="status === 'Trial'"
+                                    [class.bg-red-500]="status === 'Suspended'"
+                                    [class.bg-orange-500]="status === 'Past Due'"
+                                    [class.bg-slate-500]="status === 'Cancelled'"
+                                  ></span>
+                                  {{ status }}
+                                </button>
+                              }
+                            </div>
+                          </div>
+                          <button 
+                            type="button"
+                            class="fixed inset-0 z-20 w-full h-full cursor-default" 
+                            (click)="activeStatusDropdown.set(null)"
+                            aria-label="Close status dropdown"
+                          ></button>
+                        }
+                      </div>
+
+                      <div class="relative">
+                        <button 
+                          (click)="activePlanDropdown.set(activePlanDropdown() === tenant.id ? null : tenant.id)"
+                          class="owner-tenants-icon-btn p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors" 
+                          title="Upgrade Plan"
+                        >
+                          <mat-icon class="text-lg">upgrade</mat-icon>
+                        </button>
+
+                        @if (activePlanDropdown() === tenant.id) {
+                          <div class="owner-tenants-plan-dropdown absolute right-0 z-30 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl overflow-hidden animate-in fade-in duration-200"
+                            [class.top-full]="i < 3"
+                            [class.mt-2]="i < 3"
+                            [class.slide-in-from-top-2]="i < 3"
+                            [class.bottom-full]="i >= 3"
+                            [class.mb-2]="i >= 3"
+                            [class.slide-in-from-bottom-2]="i >= 3"
+                          >
+                            <div class="p-3 border-b border-slate-200 dark:border-slate-700">
+                              <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Select New Plan</h4>
+                            </div>
+                            <div class="p-2 space-y-1">
+                              @for (plan of plans; track plan) {
+                                <button 
+                                  (click)="requestPlanChange(tenant, plan); activePlanDropdown.set(null)"
+                                  class="w-full flex flex-col items-start gap-0.5 px-3 py-2 text-xs font-medium rounded-md transition-colors text-left"
+                                  [class.bg-indigo-600/10]="tenant.plan === plan"
+                                  [class.text-indigo-600]="tenant.plan === plan"
+                                  [class.dark:bg-indigo-900/30]="tenant.plan === plan"
+                                  [class.text-slate-700]="tenant.plan !== plan"
+                                  [class.dark:text-slate-300]="tenant.plan !== plan"
+                                  [class.hover:bg-slate-50]="tenant.plan !== plan"
+                                  [class.dark:hover:bg-slate-700]="tenant.plan !== plan"
+                                >
+                                  <div class="flex items-center gap-2">
+                                    <mat-icon class="text-sm">{{ plan === 'Enterprise' ? 'rocket_launch' : plan === 'Professional' ? 'auto_awesome' : 'star_outline' }}</mat-icon>
+                                    <span>{{ plan }}</span>
+                                  </div>
+                                  <span class="text-[10px] opacity-70 font-normal">
+                                    {{ plan === 'Enterprise' ? 'Custom limits & support' : plan === 'Professional' ? 'Advanced features for teams' : 'Basic features for individuals' }}
+                                  </span>
+                                </button>
+                              }
+                            </div>
+                          </div>
+                          <button 
+                            type="button"
+                            class="fixed inset-0 z-20 w-full h-full cursor-default" 
+                            (click)="activePlanDropdown.set(null)"
+                            aria-label="Close plan dropdown"
+                          ></button>
+                        }
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="owner-tenants-pagination p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-sm text-slate-500 dark:text-slate-500">
+          <span>Showing 1-5 of 124 tenants</span>
+          <div class="flex gap-2">
+            <app-pager-button [disabled]="true">Previous</app-pager-button>
+            <app-pager-button>Next</app-pager-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Confirmation Modal -->
+      @if (pendingStatusChange()) {
+        <div class="owner-tenants-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div class="owner-tenants-modal bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div class="owner-tenants-modal-content p-6 text-center">
+              <div class="owner-tenants-modal-icon owner-tenants-modal-icon-status w-16 h-16 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                <mat-icon class="text-3xl">warning</mat-icon>
+              </div>
+              <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Confirm Status Change</h3>
+              <p class="text-slate-500 dark:text-slate-500">
+                Are you sure you want to change the status of 
+                <span class="font-semibold text-slate-900 dark:text-white">{{ pendingStatusChange()?.tenant?.name }}</span> 
+                from <span class="font-semibold text-indigo-600">{{ pendingStatusChange()?.tenant?.status }}</span> 
+                to <span class="font-semibold text-indigo-600">{{ pendingStatusChange()?.status }}</span>?
+              </p>
+            </div>
+            <div class="owner-tenants-modal-actions p-4 bg-slate-50 dark:bg-slate-800/50 flex gap-3">
+              <button 
+                (click)="cancelStatusChange()"
+                class="owner-tenants-modal-btn-cancel flex-1 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                (click)="confirmStatusChange()"
+                class="owner-tenants-modal-btn-primary flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-colors shadow-lg shadow-indigo-500/20"
+              >
+                Confirm Change
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Plan Change Confirmation Modal -->
+      @if (pendingPlanChange()) {
+        <div class="owner-tenants-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div class="owner-tenants-modal bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div class="owner-tenants-modal-content p-6 text-center">
+              <div class="owner-tenants-modal-icon owner-tenants-modal-icon-plan w-16 h-16 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                <mat-icon class="text-3xl">upgrade</mat-icon>
+              </div>
+              <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Confirm Plan Upgrade</h3>
+              <p class="text-slate-500 dark:text-slate-500">
+                Are you sure you want to upgrade the plan for 
+                <span class="font-semibold text-slate-900 dark:text-white">{{ pendingPlanChange()?.tenant?.name }}</span>?
+              </p>
+              <div class="owner-tenants-plan-summary mt-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-4">
+                <div class="text-center">
+                  <div class="text-[10px] uppercase font-bold text-slate-500">Current</div>
+                  <div class="font-semibold text-slate-700 dark:text-slate-300">{{ pendingPlanChange()?.tenant?.plan }}</div>
+                </div>
+                <mat-icon class="text-slate-300">arrow_forward</mat-icon>
+                <div class="text-center">
+                  <div class="text-[10px] uppercase font-bold text-indigo-600">New Plan</div>
+                  <div class="font-semibold text-indigo-600 dark:text-indigo-400">{{ pendingPlanChange()?.plan }}</div>
+                </div>
+              </div>
+            </div>
+            <div class="owner-tenants-modal-actions p-4 bg-slate-50 dark:bg-slate-800/50 flex gap-3">
+              <button 
+                (click)="cancelPlanChange()"
+                class="owner-tenants-modal-btn-cancel flex-1 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                (click)="confirmPlanChange()"
+                class="owner-tenants-modal-btn-primary flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-colors shadow-lg shadow-indigo-500/20"
+              >
+                Confirm Upgrade
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Copy Notification Toast -->
+      @if (copyNotification()) {
+        <div class="owner-tenants-toast fixed bottom-24 left-1/2 -translate-x-1/2 z-[110] animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div class="owner-tenants-toast-content bg-slate-900 text-white px-4 py-2 rounded-full shadow-2xl flex items-center gap-2 text-sm font-medium border border-slate-800">
+            <mat-icon class="text-green-400 text-sm">check_circle</mat-icon>
+            <span>Copied to clipboard</span>
+          </div>
+        </div>
+      }
+    </div>
+  

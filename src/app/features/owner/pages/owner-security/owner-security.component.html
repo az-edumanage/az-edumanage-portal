@@ -1,0 +1,264 @@
+
+    <div class="owner-security-page space-y-8">
+      <!-- Header -->
+      <div class="owner-security-header flex gap-4">
+        <button (click)="onCancel()" class="owner-security-back-btn p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-500">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div>
+          <h2 class="owner-security-title text-2xl font-bold text-slate-900 dark:text-white">Security Policies</h2>
+          <p class="owner-security-subtitle text-slate-500 dark:text-slate-500 text-sm">Manage platform-wide security settings and access controls.</p>
+        </div>
+      </div>
+
+      <!-- 1. Authentication Policies -->
+      <div class="owner-security-card">
+        <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-indigo-600/10 dark:bg-indigo-900/20 rounded-lg">
+              <mat-icon class="text-indigo-600 dark:text-indigo-400">lock</mat-icon>
+            </div>
+            <h3 class="owner-security-card-title text-lg font-semibold text-slate-900 dark:text-white">Authentication Policies</h3>
+          </div>
+          <button (click)="saveAuthPolicies()" class="owner-security-save-link text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">Save Changes</button>
+        </div>
+        <div class="p-6 space-y-6" [formGroup]="authForm">
+          <div>
+            <h4 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Password Policy</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label for="minLength" class="owner-security-field-label">Minimum Length</label>
+                <input id="minLength" type="number" formControlName="minLength" class="owner-security-input">
+              </div>
+              <div>
+                <label for="passwordExpiry" class="owner-security-field-label">Password Expiry (Days)</label>
+                <input id="passwordExpiry" type="number" formControlName="passwordExpiry" class="owner-security-input">
+              </div>
+            </div>
+            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" formControlName="requireUppercase" class="text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+                <span class="text-sm text-slate-700 dark:text-slate-300">Require Uppercase</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" formControlName="requireNumbers" class="text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+                <span class="text-sm text-slate-700 dark:text-slate-300">Require Numbers</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" formControlName="requireSpecialChars" class="text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+                <span class="text-sm text-slate-700 dark:text-slate-300">Require Special Chars</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="border-t border-slate-200 dark:border-slate-800 pt-6">
+            <h4 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Account Lock Policy</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label for="maxFailedAttempts" class="owner-security-field-label">Max Failed Attempts</label>
+                <input id="maxFailedAttempts" type="number" formControlName="maxFailedAttempts" class="owner-security-input">
+              </div>
+              <div>
+                <label for="lockDuration" class="owner-security-field-label">Lock Duration (Minutes)</label>
+                <input id="lockDuration" type="number" formControlName="lockDuration" class="owner-security-input">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Multi-Factor Authentication -->
+      <div class="owner-security-card">
+        <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+              <mat-icon class="text-emerald-600 dark:text-emerald-400">security</mat-icon>
+            </div>
+            <h3 class="owner-security-card-title text-lg font-semibold text-slate-900 dark:text-white">Multi-Factor Authentication</h3>
+          </div>
+          <button (click)="saveMfaPolicies()" class="owner-security-save-link text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">Save Changes</button>
+        </div>
+        <div class="p-6 space-y-6" [formGroup]="mfaForm">
+          <div class="owner-security-toggle-row flex justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+            <div>
+              <div class="font-medium text-slate-900 dark:text-white">Enable MFA Globally</div>
+              <div class="text-sm text-slate-500">Enforce multi-factor authentication for all users across the platform.</div>
+            </div>
+            <div class="relative inline-flex items-center cursor-pointer">
+              <input id="enableGlobalMfa" type="checkbox" formControlName="enableGlobalMfa" class="sr-only peer">
+              <label for="enableGlobalMfa" class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 cursor-pointer"></label>
+            </div>
+          </div>
+
+          <div>
+            <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Required for Roles</div>
+            <div class="flex flex-wrap gap-3">
+              <label for="roleSuperAdmin" class="flex items-center gap-2 px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                <input id="roleSuperAdmin" type="checkbox" formControlName="roleSuperAdmin" class="text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+                <span class="text-sm text-slate-700 dark:text-slate-300">Super Admin</span>
+              </label>
+              <label for="roleTenantAdmin" class="flex items-center gap-2 px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                <input id="roleTenantAdmin" type="checkbox" formControlName="roleTenantAdmin" class="text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+                <span class="text-sm text-slate-700 dark:text-slate-300">Tenant Admin</span>
+              </label>
+              <label for="roleSupport" class="flex items-center gap-2 px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                <input id="roleSupport" type="checkbox" formControlName="roleSupport" class="text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+                <span class="text-sm text-slate-700 dark:text-slate-300">Support Agent</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <div class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Allowed Methods</div>
+              <div class="space-y-2">
+                <label for="methodOtp" class="flex items-center gap-3 cursor-pointer">
+                  <input id="methodOtp" type="checkbox" formControlName="methodOtp" class="text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+                  <span class="text-sm text-slate-700 dark:text-slate-300">Authenticator App (TOTP)</span>
+                </label>
+                <label for="methodSms" class="flex items-center gap-3 cursor-pointer">
+                  <input id="methodSms" type="checkbox" formControlName="methodSms" class="text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+                  <span class="text-sm text-slate-700 dark:text-slate-300">SMS Code</span>
+                </label>
+                <label for="methodEmail" class="flex items-center gap-3 cursor-pointer">
+                  <input id="methodEmail" type="checkbox" formControlName="methodEmail" class="text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
+                  <span class="text-sm text-slate-700 dark:text-slate-300">Email Code</span>
+                </label>
+              </div>
+            </div>
+            <div>
+              <label for="gracePeriod" class="owner-security-field-label">Grace Period (Days)</label>
+              <input id="gracePeriod" type="number" formControlName="gracePeriod" class="owner-security-input">
+              <p class="text-xs text-slate-500 mt-1">Time allowed for new users to set up MFA before enforcement.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Session Management -->
+      <div class="owner-security-card">
+        <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <mat-icon class="text-indigo-600 dark:text-blue-400">timer</mat-icon>
+            </div>
+            <h3 class="owner-security-card-title text-lg font-semibold text-slate-900 dark:text-white">Session Management</h3>
+          </div>
+          <button (click)="saveSessionPolicies()" class="owner-security-save-link text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">Save Changes</button>
+        </div>
+        <div class="p-6 space-y-6" [formGroup]="sessionForm">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label for="sessionTimeout" class="owner-security-field-label">Session Timeout (Hours)</label>
+              <input id="sessionTimeout" type="number" formControlName="sessionTimeout" class="owner-security-input">
+            </div>
+            <div>
+              <label for="idleTimeout" class="owner-security-field-label">Idle Timeout (Minutes)</label>
+              <input id="idleTimeout" type="number" formControlName="idleTimeout" class="owner-security-input">
+            </div>
+            <div>
+              <label for="maxConcurrentSessions" class="owner-security-field-label">Max Concurrent Sessions</label>
+              <input id="maxConcurrentSessions" type="number" formControlName="maxConcurrentSessions" class="owner-security-input">
+            </div>
+          </div>
+          
+          <div class="owner-security-toggle-row flex justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+            <div>
+              <div class="font-medium text-slate-900 dark:text-white">Force Logout on Password Change</div>
+              <div class="text-sm text-slate-500">Terminate all other active sessions when a user changes their password.</div>
+            </div>
+            <div class="relative inline-flex items-center cursor-pointer">
+              <input id="forceLogoutOnPassChange" type="checkbox" formControlName="forceLogoutOnPassChange" class="sr-only peer">
+              <label for="forceLogoutOnPassChange" class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 cursor-pointer"></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. API & Rate Limiting -->
+      <div class="owner-security-card">
+        <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+              <mat-icon class="text-amber-600 dark:text-amber-400">speed</mat-icon>
+            </div>
+            <h3 class="owner-security-card-title text-lg font-semibold text-slate-900 dark:text-white">API & Rate Limiting</h3>
+          </div>
+          <button (click)="saveApiPolicies()" class="owner-security-save-link text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">Save Changes</button>
+        </div>
+        <div class="p-6 space-y-6" [formGroup]="apiForm">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label for="globalRateLimit" class="owner-security-field-label">Global Rate Limit (Req/Min)</label>
+              <input id="globalRateLimit" type="number" formControlName="globalRateLimit" class="owner-security-input">
+            </div>
+            <div>
+              <label for="tenantRateLimit" class="owner-security-field-label">Per-Tenant Rate Limit</label>
+              <input id="tenantRateLimit" type="number" formControlName="tenantRateLimit" class="owner-security-input">
+            </div>
+            <div>
+              <label for="ipRateLimit" class="owner-security-field-label">Per-IP Rate Limit</label>
+              <input id="ipRateLimit" type="number" formControlName="ipRateLimit" class="owner-security-input">
+            </div>
+          </div>
+
+          <div>
+            <label for="ipWhitelist" class="owner-security-field-label">Global IP Whitelist</label>
+            <textarea id="ipWhitelist" formControlName="ipWhitelist" rows="3" placeholder="Enter IP addresses or CIDR blocks, separated by commas" class="owner-security-textarea"></textarea>
+          </div>
+
+          <div>
+            <label for="corsOrigins" class="owner-security-field-label">CORS Allowed Origins</label>
+            <textarea id="corsOrigins" formControlName="corsOrigins" rows="2" placeholder="https://example.com, https://app.example.com" class="owner-security-textarea"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Data Protection -->
+      <div class="owner-security-card">
+        <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <mat-icon class="text-red-600 dark:text-red-400">shield</mat-icon>
+            </div>
+            <h3 class="owner-security-card-title text-lg font-semibold text-slate-900 dark:text-white">Data Protection</h3>
+          </div>
+          <button (click)="saveDataProtection()" class="owner-security-save-link text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">Save Changes</button>
+        </div>
+        <div class="p-6 space-y-4" [formGroup]="dataForm">
+          <div class="owner-security-toggle-row flex justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+            <div>
+              <div class="font-medium text-slate-900 dark:text-white">Force HTTPS Only</div>
+              <div class="text-sm text-slate-500">Redirect all HTTP traffic to HTTPS and enable HSTS.</div>
+            </div>
+            <div class="relative inline-flex items-center cursor-pointer">
+              <input id="forceHttps" type="checkbox" formControlName="forceHttps" class="sr-only peer">
+              <label for="forceHttps" class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 cursor-pointer"></label>
+            </div>
+          </div>
+
+          <div class="owner-security-toggle-row flex justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+            <div>
+              <div class="font-medium text-slate-900 dark:text-white">Secure Cookies</div>
+              <div class="text-sm text-slate-500">Set Secure and HttpOnly flags on all session cookies.</div>
+            </div>
+            <div class="relative inline-flex items-center cursor-pointer">
+              <input id="secureCookies" type="checkbox" formControlName="secureCookies" class="sr-only peer">
+              <label for="secureCookies" class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 cursor-pointer"></label>
+            </div>
+          </div>
+
+          <div class="owner-security-toggle-row flex justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+            <div>
+              <div class="font-medium text-slate-900 dark:text-white">CSRF Protection</div>
+              <div class="text-sm text-slate-500">Enable Cross-Site Request Forgery tokens on all forms.</div>
+            </div>
+            <div class="relative inline-flex items-center cursor-pointer">
+              <input id="csrfProtection" type="checkbox" formControlName="csrfProtection" class="sr-only peer">
+              <label for="csrfProtection" class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 cursor-pointer"></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  

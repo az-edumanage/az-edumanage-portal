@@ -1,0 +1,210 @@
+@if (isOpen()) {
+  <div class="fixed inset-0 z-[120] flex items-center justify-center p-4">
+    <div
+      class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300 cursor-pointer"
+      (click)="closed.emit()"
+      (keydown.enter)="closed.emit()"
+      tabindex="0"
+      role="button"
+      aria-label="Close modal backdrop"
+    ></div>
+
+    <div class="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in duration-300 flex flex-col">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-indigo-600/10 dark:bg-indigo-900/20 rounded-lg">
+            <mat-icon class="text-indigo-600 dark:text-indigo-400">download</mat-icon>
+          </div>
+          <h3 class="font-bold text-slate-900 dark:text-white">Export Data</h3>
+        </div>
+        <button class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors" (click)="closed.emit()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-6">
+        @if (exportStep() === 1) {
+          <div class="space-y-4">
+            <p class="text-sm font-medium text-slate-700 dark:text-slate-300">Choose your preferred export format:</p>
+            <div class="grid grid-cols-2 gap-4">
+              <button
+                class="flex flex-col items-center gap-3 p-6 border-2 rounded-xl transition-all group"
+                [class]="exportFormat() === 'excel' ? 'border-green-500 bg-green-50 dark:bg-green-900/10' : 'border-slate-200 dark:border-slate-800 hover:border-green-200 hover:bg-slate-50 dark:hover:bg-slate-800'"
+                (click)="exportFormatSelected.emit('excel')"
+              >
+                <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-full text-green-600 group-hover:scale-110 transition-transform">
+                  <mat-icon class="text-3xl h-8 w-8">table_view</mat-icon>
+                </div>
+                <span class="font-bold text-slate-900 dark:text-white">Excel Sheet</span>
+                <span class="text-[10px] text-slate-500 uppercase tracking-widest">.xlsx format</span>
+              </button>
+
+              <button
+                class="flex flex-col items-center gap-3 p-6 border-2 rounded-xl transition-all group"
+                [class]="exportFormat() === 'pdf' ? 'border-red-500 bg-red-50 dark:bg-red-900/10' : 'border-slate-200 dark:border-slate-800 hover:border-red-200 hover:bg-slate-50 dark:hover:bg-slate-800'"
+                (click)="exportFormatSelected.emit('pdf')"
+              >
+                <div class="p-3 bg-red-100 dark:bg-red-900/30 rounded-full text-red-600 group-hover:scale-110 transition-transform">
+                  <mat-icon class="text-3xl h-8 w-8">picture_as_pdf</mat-icon>
+                </div>
+                <span class="font-bold text-slate-900 dark:text-white">PDF Document</span>
+                <span class="text-[10px] text-slate-500 uppercase tracking-widest">.pdf format</span>
+              </button>
+            </div>
+          </div>
+        } @else {
+          <div class="space-y-6 animate-in slide-in-from-right-4 duration-300">
+            @if (exportFormat() === 'pdf') {
+              <div class="space-y-3">
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">PDF Layout Style</span>
+                <div class="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    class="flex items-center gap-3 p-3 border-2 rounded-xl transition-all"
+                    [class]="exportPdfType() === 'rows' ? 'border-indigo-500 bg-indigo-600/10 dark:bg-indigo-900/10' : 'border-slate-200 dark:border-slate-800 hover:border-slate-200'"
+                    (click)="exportPdfTypeSelected.emit('rows')"
+                  >
+                    <mat-icon class="text-indigo-600">view_list</mat-icon>
+                    <div class="flex flex-col text-left">
+                      <span class="text-xs font-bold text-slate-900 dark:text-white">Table View</span>
+                      <span class="text-[9px] text-slate-500">Compact rows</span>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    class="flex items-center gap-3 p-3 border-2 rounded-xl transition-all"
+                    [class]="exportPdfType() === 'details' ? 'border-indigo-500 bg-indigo-600/10 dark:bg-indigo-900/10' : 'border-slate-200 dark:border-slate-800 hover:border-slate-200'"
+                    (click)="exportPdfTypeSelected.emit('details')"
+                  >
+                    <mat-icon class="text-indigo-600">description</mat-icon>
+                    <div class="flex flex-col text-left">
+                      <span class="text-xs font-bold text-slate-900 dark:text-white">Formal Details</span>
+                      <span class="text-[9px] text-slate-500">Full record info</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            }
+
+            <div class="space-y-3">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Duration Range</span>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1">
+                  <label class="text-[10px] text-slate-500 ml-1" for="exportFrom">From</label>
+                  <input
+                    id="exportFrom"
+                    type="date"
+                    [value]="exportDateFrom()"
+                    class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:text-white"
+                    (input)="onDateFromInput($event)"
+                  >
+                </div>
+                <div class="space-y-1">
+                  <label class="text-[10px] text-slate-500 ml-1" for="exportTo">To</label>
+                  <input
+                    id="exportTo"
+                    type="date"
+                    [value]="exportDateTo()"
+                    class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:text-white"
+                    (input)="onDateToInput($event)"
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Data Selection</span>
+              <div class="space-y-2">
+                <label class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                  <input
+                    type="radio"
+                    name="exportMode"
+                    value="all"
+                    [checked]="exportMode() === 'all'"
+                    class="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                    (change)="onModeChange($event)"
+                  >
+                  <div class="flex flex-col">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-semibold text-slate-900 dark:text-white">All Records</span>
+                      <span class="text-[10px] px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 rounded text-slate-500 dark:text-slate-500">{{ totalOrders() }}</span>
+                    </div>
+                    <span class="text-[10px] text-slate-500">Export every order in the system</span>
+                  </div>
+                </label>
+                <label class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                  <input
+                    type="radio"
+                    name="exportMode"
+                    value="filtered"
+                    [checked]="exportMode() === 'filtered'"
+                    class="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                    (change)="onModeChange($event)"
+                  >
+                  <div class="flex flex-col">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-semibold text-slate-900 dark:text-white">Filtered Results</span>
+                      <span class="text-[10px] px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 rounded text-indigo-600 dark:text-indigo-400">{{ filteredOrdersCount() }}</span>
+                    </div>
+                    <span class="text-[10px] text-slate-500">Export data based on active filters</span>
+                  </div>
+                </label>
+                @if (selectedOrdersCount() > 0) {
+                  <label class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                    <input
+                      type="radio"
+                      name="exportMode"
+                      value="page"
+                      [checked]="exportMode() === 'page'"
+                      class="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                      (change)="onModeChange($event)"
+                    >
+                    <div class="flex flex-col">
+                      <div class="flex items-center justify-between">
+                        <span class="text-sm font-semibold text-slate-900 dark:text-white">Selected Rows</span>
+                        <span class="text-[10px] px-1.5 py-0.5 bg-green-100 dark:bg-green-900/40 rounded text-green-600 dark:text-green-400">{{ selectedOrdersCount() }}</span>
+                      </div>
+                      <span class="text-[10px] text-slate-500">Only export selected rows</span>
+                    </div>
+                  </label>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex justify-between gap-3">
+        @if (exportStep() === 2) {
+          <button
+            class="px-4 py-2 text-sm font-medium text-slate-500 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors flex items-center gap-2"
+            (click)="exportStepChanged.emit(1)"
+          >
+            <mat-icon class="text-sm">arrow_back</mat-icon>
+            Back
+          </button>
+        } @else {
+          <div></div>
+        }
+
+        <div class="flex gap-3">
+          <button
+            class="px-4 py-2 text-sm font-medium text-slate-500 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            (click)="closed.emit()"
+          >
+            Cancel
+          </button>
+          <button
+            class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg transition-all shadow-lg shadow-indigo-200 dark:shadow-none flex items-center gap-2"
+            (click)="nextClicked.emit()"
+          >
+            {{ exportStep() === 1 ? 'Next' : 'Start Export' }}
+            @if (exportStep() === 2) {
+              <mat-icon class="text-sm">download</mat-icon>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

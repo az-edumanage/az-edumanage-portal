@@ -1,0 +1,121 @@
+
+    <div class="owner-notifications-page">
+      <!-- Header -->
+      <div class="owner-notifications-header">
+        <div>
+          <h2 class="owner-notifications-header-title">Platform Notifications</h2>
+          <p class="owner-notifications-header-subtitle">Broadcast announcements, maintenance alerts, and security updates to tenants.</p>
+        </div>
+        <div class="owner-notifications-header-actions">
+          <button class="owner-notifications-action owner-notifications-action--secondary">
+            <mat-icon class="text-sm">filter_list</mat-icon>
+            Filter
+          </button>
+          <a routerLink="/owner/notifications/create" class="owner-notifications-action owner-notifications-action--primary">
+            <mat-icon class="text-sm">add</mat-icon>
+            Create Notification
+          </a>
+        </div>
+      </div>
+
+      <!-- Stats Summary -->
+      <div class="owner-notifications-stats">
+        <div class="owner-notifications-stat-card">
+          <p class="owner-notifications-stat-label">Sent This Month</p>
+          <p class="owner-notifications-stat-value">24</p>
+        </div>
+        <div class="owner-notifications-stat-card">
+          <p class="owner-notifications-stat-label">Scheduled</p>
+          <p class="owner-notifications-stat-value text-indigo-600">3</p>
+        </div>
+        <div class="owner-notifications-stat-card">
+          <p class="owner-notifications-stat-label">Avg. Open Rate</p>
+          <p class="owner-notifications-stat-value text-emerald-600">78.4%</p>
+        </div>
+        <div class="owner-notifications-stat-card">
+          <p class="owner-notifications-stat-label">Active Banners</p>
+          <p class="owner-notifications-stat-value text-amber-500">1</p>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="owner-notifications-table-shell">
+        <div class="overflow-x-auto">
+          <table class="owner-notifications-table">
+            <thead class="owner-notifications-table-head">
+              <tr>
+                <th class="owner-notifications-table-head-cell">Notification Title</th>
+                <th class="owner-notifications-table-head-cell">Type</th>
+                <th class="owner-notifications-table-head-cell">Target</th>
+                <th class="owner-notifications-table-head-cell">Channels</th>
+                <th class="owner-notifications-table-head-cell">Status</th>
+                <th class="owner-notifications-table-head-cell">Created Date</th>
+                <th class="owner-notifications-table-head-cell owner-notifications-actions-cell">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="owner-notifications-table-body">
+              @for (item of notifications(); track item.id) {
+                <tr class="owner-notifications-table-row">
+                  <td class="owner-notifications-table-cell">
+                    <div class="flex flex-col">
+                      <span class="owner-notifications-title">{{ item.title }}</span>
+                      <span class="owner-notifications-meta">By {{ item.createdBy }}</span>
+                    </div>
+                  </td>
+                  <td class="owner-notifications-table-cell">
+                    <span class="owner-notifications-type"
+                      [class.bg-blue-100]="item.type === 'Announcement'"
+                      [class.text-blue-700]="item.type === 'Announcement'"
+                      [class.bg-amber-100]="item.type === 'Maintenance'"
+                      [class.text-amber-700]="item.type === 'Maintenance'"
+                      [class.bg-red-100]="item.type === 'Security'"
+                      [class.text-red-700]="item.type === 'Security'"
+                      [class.bg-emerald-100]="item.type === 'Billing'"
+                      [class.text-emerald-700]="item.type === 'Billing'"
+                    >
+                      {{ item.type }}
+                    </span>
+                  </td>
+                  <td class="owner-notifications-table-cell owner-notifications-target">{{ item.target }}</td>
+                  <td class="owner-notifications-table-cell">
+                    <div class="owner-notifications-channels">
+                      @for (channel of item.channels; track channel) {
+                        <mat-icon class="owner-notifications-channel-icon" [title]="channel">
+                          {{ channel === 'In-App' ? 'notifications' : channel === 'Email' ? 'email' : 'sms' }}
+                        </mat-icon>
+                      }
+                    </div>
+                  </td>
+                  <td class="owner-notifications-table-cell">
+                    <span class="owner-notifications-status">
+                      <span class="owner-notifications-status-dot"
+                        [class.bg-slate-400]="item.status === 'Draft'"
+                        [class.bg-blue-500]="item.status === 'Scheduled'"
+                        [class.bg-green-500]="item.status === 'Sent'"
+                        [class.bg-red-500]="item.status === 'Cancelled'"
+                      ></span>
+                      {{ item.status }}
+                    </span>
+                  </td>
+                  <td class="owner-notifications-table-cell owner-notifications-date">{{ item.createdDate }}</td>
+                  <td class="owner-notifications-table-cell owner-notifications-actions-cell">
+                    <div class="owner-notifications-row-actions">
+                      <a [routerLink]="['/owner/notifications', item.id]" class="owner-notifications-row-action">
+                        <mat-icon class="text-sm">visibility</mat-icon>
+                      </a>
+                      <button class="owner-notifications-row-action">
+                        <mat-icon class="text-sm">edit</mat-icon>
+                      </button>
+                      <button class="owner-notifications-row-action">
+                        <mat-icon class="text-sm">content_copy</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  

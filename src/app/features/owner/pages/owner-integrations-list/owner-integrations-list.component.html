@@ -1,0 +1,197 @@
+<div class="owner-integrations-page">
+      <!-- Header -->
+      <div class="owner-integrations-header">
+        <div>
+          <h2 class="owner-integrations-title">Integrations</h2>
+          <p class="owner-integrations-subtitle">Manage external services and third-party connections.</p>
+        </div>
+        <div class="owner-integrations-header-actions">
+          <div class="owner-integrations-search">
+            <input 
+              type="text" 
+              placeholder="Search integrations..." 
+              class="owner-integrations-search-input"
+            >
+            <mat-icon class="owner-integrations-search-icon">search</mat-icon>
+          </div>
+          <button class="owner-integrations-add-btn">
+            <mat-icon class="text-sm">add</mat-icon>
+            Add Integration
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="owner-integrations-filters">
+        <button 
+          (click)="setFilter('All')"
+          class="owner-integrations-filter-btn"
+          [class.bg-slate-900]="filter() === 'All'"
+          [class.text-white]="filter() === 'All'"
+          [class.bg-slate-100]="filter() !== 'All'"
+          [class.text-slate-500]="filter() !== 'All'"
+          [class.dark:bg-white]="filter() === 'All'"
+          [class.dark:text-slate-900]="filter() === 'All'"
+          [class.dark:bg-slate-800]="filter() !== 'All'"
+          [class.dark:text-slate-500]="filter() !== 'All'"
+        >
+          All
+        </button>
+        <button 
+          (click)="setFilter('Payment')"
+          class="owner-integrations-filter-btn"
+          [class.bg-emerald-100]="filter() === 'Payment'"
+          [class.text-emerald-700]="filter() === 'Payment'"
+          [class.bg-slate-100]="filter() !== 'Payment'"
+          [class.text-slate-500]="filter() !== 'Payment'"
+          [class.dark:bg-emerald-900/30]="filter() === 'Payment'"
+          [class.dark:text-emerald-400]="filter() === 'Payment'"
+          [class.dark:bg-slate-800]="filter() !== 'Payment'"
+          [class.dark:text-slate-500]="filter() !== 'Payment'"
+        >
+          Payment
+        </button>
+        <button 
+          (click)="setFilter('SMS')"
+          class="owner-integrations-filter-btn"
+          [class.bg-blue-100]="filter() === 'SMS'"
+          [class.text-blue-700]="filter() === 'SMS'"
+          [class.bg-slate-100]="filter() !== 'SMS'"
+          [class.text-slate-500]="filter() !== 'SMS'"
+          [class.dark:bg-blue-900/30]="filter() === 'SMS'"
+          [class.dark:text-blue-400]="filter() === 'SMS'"
+          [class.dark:bg-slate-800]="filter() !== 'SMS'"
+          [class.dark:text-slate-500]="filter() !== 'SMS'"
+        >
+          SMS / WhatsApp
+        </button>
+        <button 
+          (click)="setFilter('Email')"
+          class="owner-integrations-filter-btn"
+          [class.bg-amber-100]="filter() === 'Email'"
+          [class.text-amber-700]="filter() === 'Email'"
+          [class.bg-slate-100]="filter() !== 'Email'"
+          [class.text-slate-500]="filter() !== 'Email'"
+          [class.dark:bg-amber-900/30]="filter() === 'Email'"
+          [class.dark:text-amber-400]="filter() === 'Email'"
+          [class.dark:bg-slate-800]="filter() !== 'Email'"
+          [class.dark:text-slate-500]="filter() !== 'Email'"
+        >
+          Email
+        </button>
+        <button 
+          (click)="setFilter('Storage')"
+          class="owner-integrations-filter-btn"
+          [class.bg-purple-100]="filter() === 'Storage'"
+          [class.text-purple-700]="filter() === 'Storage'"
+          [class.bg-slate-100]="filter() !== 'Storage'"
+          [class.text-slate-500]="filter() !== 'Storage'"
+          [class.dark:bg-purple-900/30]="filter() === 'Storage'"
+          [class.dark:text-purple-400]="filter() === 'Storage'"
+          [class.dark:bg-slate-800]="filter() !== 'Storage'"
+          [class.dark:text-slate-500]="filter() !== 'Storage'"
+        >
+          Storage
+        </button>
+      </div>
+
+      <!-- Integrations Grid -->
+      <div class="owner-integrations-grid">
+        @for (integration of filteredIntegrations(); track integration.id) {
+          <div class="owner-integrations-card">
+            <div class="owner-integrations-card-head">
+              <div class="owner-integrations-meta">
+                <div class="owner-integrations-logo">
+                  <!-- In a real app, use actual logos -->
+                  <mat-icon class="owner-integrations-logo-icon">{{ integration.icon }}</mat-icon>
+                </div>
+                <div>
+                  <h3 class="owner-integrations-card-title">{{ integration.name }}</h3>
+                  <div class="owner-integrations-provider-row">
+                    <span class="owner-integrations-provider">{{ integration.provider }}</span>
+                    <span class="owner-integrations-provider-dot"></span>
+                    <span class="owner-integrations-type"
+                      [class.text-emerald-600]="integration.type === 'Payment'"
+                      [class.dark:text-emerald-400]="integration.type === 'Payment'"
+                      [class.text-indigo-600]="integration.type === 'SMS'"
+                      [class.dark:text-blue-400]="integration.type === 'SMS'"
+                      [class.text-amber-600]="integration.type === 'Email'"
+                      [class.dark:text-amber-400]="integration.type === 'Email'"
+                      [class.text-purple-600]="integration.type === 'Storage'"
+                      [class.dark:text-purple-400]="integration.type === 'Storage'"
+                      [class.text-pink-600]="integration.type === 'Identity'"
+                      [class.dark:text-pink-400]="integration.type === 'Identity'"
+                    >
+                      {{ integration.type }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="owner-integrations-menu-wrap">
+                <button class="owner-integrations-menu-btn">
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <p class="owner-integrations-description">{{ integration.description }}</p>
+
+            <div class="owner-integrations-stats">
+              <div class="owner-integrations-stat-row">
+                <span class="owner-integrations-label">Status</span>
+                <span class="owner-integrations-status-chip"
+                  [class.bg-green-100]="integration.status === 'Connected'"
+                  [class.text-green-700]="integration.status === 'Connected'"
+                  [class.dark:bg-green-900/30]="integration.status === 'Connected'"
+                  [class.dark:text-green-400]="integration.status === 'Connected'"
+                  [class.bg-slate-100]="integration.status === 'Not Configured'"
+                  [class.text-slate-500]="integration.status === 'Not Configured'"
+                  [class.dark:bg-slate-800]="integration.status === 'Not Configured'"
+                  [class.dark:text-slate-500]="integration.status === 'Not Configured'"
+                  [class.bg-red-100]="integration.status === 'Error'"
+                  [class.text-red-700]="integration.status === 'Error'"
+                  [class.dark:bg-red-900/30]="integration.status === 'Error'"
+                  [class.dark:text-red-400]="integration.status === 'Error'"
+                >
+                  <span class="owner-integrations-status-dot"
+                    [class.bg-green-500]="integration.status === 'Connected'"
+                    [class.bg-slate-400]="integration.status === 'Not Configured'"
+                    [class.bg-red-500]="integration.status === 'Error'"
+                  ></span>
+                  {{ integration.status }}
+                </span>
+              </div>
+
+              <div class="owner-integrations-stat-row">
+                <span class="owner-integrations-label">Mode</span>
+                <span class="owner-integrations-mode"
+                  [class.text-slate-900]="integration.mode === 'Live'"
+                  [class.dark:text-white]="integration.mode === 'Live'"
+                  [class.text-amber-600]="integration.mode === 'Test'"
+                  [class.dark:text-amber-400]="integration.mode === 'Test'"
+                >
+                  {{ integration.mode }}
+                </span>
+              </div>
+
+              <div class="owner-integrations-stat-row">
+                <span class="owner-integrations-label">Last Check</span>
+                <span class="owner-integrations-last-check">{{ integration.lastHealthCheck }}</span>
+              </div>
+            </div>
+
+            <div class="owner-integrations-footer">
+              <div class="owner-integrations-toggle-wrap">
+                <div class="owner-integrations-toggle">
+                  <input type="checkbox" [checked]="integration.status === 'Connected'" class="sr-only peer">
+                  <div class="owner-integrations-toggle-track"></div>
+                </div>
+              </div>
+              <button [routerLink]="['/owner/integrations', integration.id]" class="owner-integrations-configure-link">
+                Configure
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+</div>

@@ -1,0 +1,18 @@
+@layer base {
+  /*
+   * Tenant theme namespace contract:
+   * - Always keep one `theme-tenant-*` class on `html`.
+   * - `theme-tenant-default` is strict no-op parity.
+   * - Non-default tenant themes override DS tokens only.
+   */
+  .theme-tenant-default {
+    /* Intentionally empty for parity baseline. */
+  }
+
+  .theme-tenant-ocean {
+    --ds-color-primary: #0284c7;
+    --ds-color-primary-hover: #0369a1;
+    --ds-progress-fill-bg: #0284c7;
+    --ds-revenue-column-bg-hover: #0284c7;
+  }
+}

@@ -58,3 +58,16 @@ src/app/
   app.routes.ts                       # root routes, lazy-load feature routes
   app.config.ts
 ```
+
+## Component Folder Convention
+
+All components inside `features/*/components` must use folder-per-component:
+
+```txt
+features/<feature>/components/<component-name>/
+  <component-name>.component.ts
+  <component-name>.component.html
+  <component-name>.component.css
+```
+
+This convention is mandatory for all newly created feature components.

@@ -1,0 +1,18 @@
+@layer base {
+  /* Brand is parity baseline. Keeping values equal to current visual output. */
+  .theme-brand {
+    --ds-color-primary: var(--brand-600);
+    --ds-color-primary-hover: var(--brand-700);
+  }
+
+  /* Future mode scopes (non-breaking scaffolding for DS expansion). */
+  .theme-light {
+    --ds-color-text-primary: #0f172a;
+    --ds-color-surface-default: #f8fafc;
+  }
+
+  .theme-dark {
+    --ds-color-text-primary: #f8fafc;
+    --ds-color-surface-default: #020617;
+  }
+}

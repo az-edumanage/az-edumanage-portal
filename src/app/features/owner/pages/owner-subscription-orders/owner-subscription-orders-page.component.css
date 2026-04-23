@@ -1,0 +1,31 @@
+:host {
+  display: block;
+}
+
+.owner-subscription-orders-page {
+  align-content: start;
+}
+
+.owner-subscription-orders-title {
+  letter-spacing: -0.01em;
+}
+
+.owner-subscription-orders-subtitle {
+  line-height: 1.25rem;
+}
+
+.owner-subscription-orders-pending-chip {
+  white-space: nowrap;
+}
+
+.owner-subscription-orders-header-actions {
+  flex-wrap: wrap;
+}
+
+.owner-subscription-orders-export-btn {
+  white-space: nowrap;
+}
+
+.owner-subscription-orders-export-icon {
+  flex-shrink: 0;
+}

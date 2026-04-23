@@ -1,0 +1,87 @@
+
+:host {
+  display: block;
+}
+
+.owner-tenant-edit-page {
+  align-content: start;
+}
+
+.owner-tenant-edit-header {
+  gap: 1rem;
+}
+
+.owner-tenant-edit-title {
+  letter-spacing: -0.01em;
+}
+
+.owner-tenant-edit-breadcrumb-link {
+  font-weight: 600;
+}
+
+.owner-tenant-edit-header-actions {
+  flex-wrap: wrap;
+}
+
+.owner-tenant-edit-btn {
+  white-space: nowrap;
+}
+
+.owner-tenant-edit-btn-primary {
+  box-shadow:
+    0 10px 15px -3px rgb(99 102 241 / 0.22),
+    0 4px 6px -4px rgb(99 102 241 / 0.18);
+}
+
+.owner-tenant-edit-card {
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.owner-tenant-edit-section-title {
+  letter-spacing: 0.04em;
+}
+
+.owner-tenant-edit-label {
+  line-height: 1.25rem;
+}
+
+.owner-tenant-edit-control {
+  min-height: 2.5rem;
+}
+
+.owner-tenant-edit-control-ghost {
+  min-height: 0;
+}
+
+.owner-tenant-edit-readonly-subdomain {
+  user-select: none;
+}
+
+.owner-tenant-edit-dropdown-menu {
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.owner-tenant-edit-plan-choice {
+  text-align: left;
+}
+
+.owner-tenant-edit-password-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 1024px) {
+  .owner-tenant-edit-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .owner-tenant-edit-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+  

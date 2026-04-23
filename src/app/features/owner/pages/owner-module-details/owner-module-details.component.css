@@ -1,0 +1,63 @@
+.owner-module-details-action-icon {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.owner-module-details-tab-button {
+  padding-right: 0.25rem;
+  padding-left: 0.25rem;
+  padding-bottom: 1rem;
+  border-bottom-width: 2px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  white-space: nowrap;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.owner-module-details-section-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.75rem;
+  color: #0f172a;
+}
+
+:host-context(.dark) .owner-module-details-section-title {
+  color: #fff;
+}
+
+.owner-module-details-panel-title {
+  margin-bottom: 1rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.75rem;
+  color: #0f172a;
+}
+
+:host-context(.dark) .owner-module-details-panel-title {
+  color: #fff;
+}
+
+.owner-module-details-meta-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  color: #64748b;
+}
+
+.owner-module-details-meta-value {
+  margin-top: 0.25rem;
+  color: #0f172a;
+}
+
+:host-context(.dark) .owner-module-details-meta-value {
+  color: #fff;
+}
+
+.owner-module-details-muted-copy {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #64748b;
+}

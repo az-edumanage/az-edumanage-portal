@@ -1,0 +1,113 @@
+<div class="tenant-schedule-page">
+      <!-- Header -->
+      <div class="tenant-schedule-header">
+        <div>
+          <h2 class="tenant-schedule-title">Academic Schedule</h2>
+          <p class="tenant-schedule-subtitle">Weekly timetable for all groups and facilities.</p>
+        </div>
+        <div class="tenant-schedule-header-actions">
+          <button class="tenant-schedule-btn tenant-schedule-btn--secondary">
+            <mat-icon class="text-sm">print</mat-icon>
+            Print Schedule
+          </button>
+          <button class="tenant-schedule-btn tenant-schedule-btn--primary">
+            <mat-icon class="text-sm">add</mat-icon>
+            Add Session
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="tenant-schedule-filters-shell">
+        <div class="tenant-schedule-filters" [formGroup]="filterForm">
+          <div class="tenant-schedule-filter-field">
+            <label for="filter-teacher" class="tenant-schedule-filter-label">Filter by Teacher</label>
+            <select id="filter-teacher" formControlName="teacher" class="tenant-schedule-filter-select">
+              <option value="">All Teachers</option>
+              @for (teacher of teachers(); track teacher) {
+                <option [value]="teacher">{{ teacher }}</option>
+              }
+            </select>
+          </div>
+          <div class="tenant-schedule-filter-field">
+            <label for="filter-room" class="tenant-schedule-filter-label">Filter by Room</label>
+            <select id="filter-room" formControlName="room" class="tenant-schedule-filter-select">
+              <option value="">All Rooms</option>
+              @for (room of rooms(); track room) {
+                <option [value]="room">{{ room }}</option>
+              }
+            </select>
+          </div>
+          <div class="tenant-schedule-filter-field">
+            <label for="filter-day" class="tenant-schedule-filter-label">Filter by Day</label>
+            <select id="filter-day" formControlName="day" class="tenant-schedule-filter-select">
+              <option value="">Full Week</option>
+              @for (day of days; track day) {
+                <option [value]="day">{{ day }}</option>
+              }
+            </select>
+          </div>
+          @if (activeFiltersCount() > 0) {
+            <button (click)="resetFilters()" class="tenant-schedule-reset-btn">
+              <mat-icon class="text-sm">restart_alt</mat-icon>
+              Reset
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Schedule Grid -->
+      <div class="tenant-schedule-grid-shell">
+        <div class="tenant-schedule-grid-scroll">
+          <div class="tenant-schedule-grid-min">
+            <!-- Grid Header (Days) -->
+            <div class="tenant-schedule-grid-head">
+              <div class="tenant-schedule-grid-head-time"></div>
+              @for (day of days; track day) {
+                <div class="tenant-schedule-grid-head-day">
+                  {{ day }}
+                </div>
+              }
+            </div>
+
+            <!-- Grid Body (Time Slots) -->
+            <div class="relative">
+              @for (time of timeSlots; track time) {
+                <div class="tenant-schedule-grid-row">
+                  <div class="tenant-schedule-grid-time">
+                    {{ time }}
+                  </div>
+                  @for (day of days; track day) {
+                    <div class="tenant-schedule-grid-cell">
+                      @for (session of getSessionsFor(day, time); track session.id) {
+                        <div 
+                          [class]="session.color"
+                          class="tenant-schedule-session group/session"
+                        >
+                          <div class="tenant-schedule-session-head">
+                            <span class="tenant-schedule-session-time">{{ session.startTime }}</span>
+                            <button class="tenant-schedule-session-menu">
+                              <mat-icon class="text-[10px]">more_vert</mat-icon>
+                            </button>
+                          </div>
+                          <div class="tenant-schedule-session-group">{{ session.groupName }}</div>
+                          <div class="tenant-schedule-session-meta">
+                            <mat-icon class="text-[10px]">person</mat-icon>
+                            {{ session.teacherName }}
+                          </div>
+                          <div class="tenant-schedule-session-meta">
+                            <mat-icon class="text-[10px]">location_on</mat-icon>
+                            {{ session.roomName }}
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+</div>
+  

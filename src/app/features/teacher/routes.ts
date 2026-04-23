@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
-import { TeacherDashboardComponent } from './teacher-dashboard/teacher-dashboard.component';
-import { TeacherMediaComponent } from './teacher-media/teacher-media.component';
+import { TeacherDashboardComponent } from './pages/teacher-dashboard/teacher-dashboard.component';
+import { TeacherMediaComponent } from './pages/teacher-media/teacher-media.component';
 
 export const TEACHER_ROUTES: Routes = [
   { path: 'overview', component: TeacherDashboardComponent },

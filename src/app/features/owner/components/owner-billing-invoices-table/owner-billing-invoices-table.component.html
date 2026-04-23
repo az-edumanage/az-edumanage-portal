@@ -1,0 +1,98 @@
+<div class="overflow-x-auto">
+  <table appTable>
+    <thead appTableHeader>
+      <tr>
+        <th appTableHead>Invoice #</th>
+        <th appTableHead>Tenant</th>
+        <th appTableHead>Plan</th>
+        <th appTableHead>Amount</th>
+        <th appTableHead>Due Date</th>
+        <th appTableHead>Payment Date</th>
+        <th appTableHead>Status</th>
+        <th appTableHead class="text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody appTableBody>
+      @for (inv of invoices(); track inv.id) {
+        <tr appTableRow>
+          <td appTableCell class="font-medium text-slate-900 dark:text-white">
+            <button
+              (click)="copyValue.emit(inv.id)"
+              class="hover:text-indigo-600 transition-colors focus:outline-none focus:underline"
+              title="Click to copy ID"
+            >
+              {{ inv.id }}
+            </button>
+          </td>
+          <td appTableCell class="text-slate-500 dark:text-slate-500">
+            <a [routerLink]="['/owner/tenants', inv.tenantId]" class="hover:text-indigo-600 transition-colors font-medium" title="View tenant details">
+              {{ inv.tenant }}
+            </a>
+          </td>
+          <td appTableCell class="text-slate-500 dark:text-slate-500">{{ inv.plan }}</td>
+          <td appTableCell class="font-medium text-slate-900 dark:text-white">\${{ inv.amount }}</td>
+          <td appTableCell class="text-slate-500">{{ inv.dueDate }}</td>
+          <td appTableCell class="text-slate-500">
+            @if (inv.status === 'Paid' || inv.status === 'Refunded') {
+              {{ inv.issueDate }}
+            } @else {
+              <span class="text-slate-500 italic">Not yet</span>
+            }
+          </td>
+          <td appTableCell>
+            @if (inv.status === 'Paid') {
+              <app-badge variant="success">{{ inv.status }}</app-badge>
+            } @else if (inv.status === 'Unpaid' || inv.status === 'Overdue') {
+              <app-badge variant="warning">{{ inv.status }}</app-badge>
+            } @else if (inv.status === 'Cancelled') {
+              <app-badge variant="default">{{ inv.status }}</app-badge>
+            } @else if (inv.status === 'Refunded') {
+              <app-badge variant="info">{{ inv.status }}</app-badge>
+            }
+          </td>
+          <td appTableCell class="text-right">
+            <div class="flex items-center justify-end gap-1">
+              @if (inv.status === 'Paid') {
+                <button
+                  (click)="initiateRefund.emit(inv)"
+                  class="p-1.5 text-red-600 dark:text-red-400 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
+                  title="Refund Invoice"
+                >
+                  <mat-icon class="text-lg">undo</mat-icon>
+                </button>
+              }
+
+              <button
+                (click)="viewProof.emit(inv)"
+                class="p-1.5 rounded transition-colors"
+                [class.text-green-700]="inv.status === 'Paid'"
+                [class.dark:text-green-400]="inv.status === 'Paid'"
+                [class.hover:bg-green-50]="inv.status === 'Paid'"
+                [class.dark:hover:bg-green-900/30]="inv.status === 'Paid'"
+                [class.text-amber-700]="inv.status === 'Unpaid' || inv.status === 'Overdue'"
+                [class.dark:text-amber-400]="inv.status === 'Unpaid' || inv.status === 'Overdue'"
+                [class.hover:bg-amber-50]="inv.status === 'Unpaid' || inv.status === 'Overdue'"
+                [class.dark:hover:bg-amber-900/30]="inv.status === 'Unpaid' || inv.status === 'Overdue'"
+                [class.text-slate-700]="inv.status === 'Cancelled'"
+                [class.dark:text-slate-500]="inv.status === 'Cancelled'"
+                [class.hover:bg-slate-100]="inv.status === 'Cancelled'"
+                [class.dark:hover:bg-slate-800]="inv.status === 'Cancelled'"
+                [title]="inv.status === 'Paid' ? 'View Proof' : 'Review Payment Proof'"
+              >
+                <mat-icon class="text-lg">receipt_long</mat-icon>
+              </button>
+
+              <button
+                [routerLink]="['/owner/billing/invoices', inv.id]"
+                class="p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors"
+                title="View Details"
+              >
+                <mat-icon class="text-lg">visibility</mat-icon>
+              </button>
+            </div>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

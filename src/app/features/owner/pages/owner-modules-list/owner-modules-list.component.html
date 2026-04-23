@@ -1,0 +1,164 @@
+<div class="owner-modules-page">
+      <!-- Header -->
+      <div class="owner-modules-header">
+        <div>
+          <h2 class="owner-modules-title">Modules Management</h2>
+          <p class="owner-modules-subtitle">Manage system modules and control availability across plans and tenants.</p>
+        </div>
+        <button class="owner-modules-create">
+          <mat-icon class="text-sm">add</mat-icon>
+          Create Module
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div class="owner-modules-filters">
+        <button 
+          (click)="setFilter('All')"
+          class="owner-modules-filter-btn"
+          [class.bg-slate-900]="filter() === 'All'"
+          [class.text-white]="filter() === 'All'"
+          [class.bg-slate-100]="filter() !== 'All'"
+          [class.text-slate-500]="filter() !== 'All'"
+          [class.dark:bg-white]="filter() === 'All'"
+          [class.dark:text-slate-900]="filter() === 'All'"
+          [class.dark:bg-slate-800]="filter() !== 'All'"
+          [class.dark:text-slate-500]="filter() !== 'All'"
+        >
+          All
+        </button>
+        <button 
+          (click)="setFilter('Core Business')"
+          class="owner-modules-filter-btn"
+          [class.bg-emerald-100]="filter() === 'Core Business'"
+          [class.text-emerald-700]="filter() === 'Core Business'"
+          [class.bg-slate-100]="filter() !== 'Core Business'"
+          [class.text-slate-500]="filter() !== 'Core Business'"
+          [class.dark:bg-emerald-900/30]="filter() === 'Core Business'"
+          [class.dark:text-emerald-400]="filter() === 'Core Business'"
+          [class.dark:bg-slate-800]="filter() !== 'Core Business'"
+          [class.dark:text-slate-500]="filter() !== 'Core Business'"
+        >
+          Core Business
+        </button>
+        <button 
+          (click)="setFilter('Core System')"
+          class="owner-modules-filter-btn"
+          [class.bg-blue-100]="filter() === 'Core System'"
+          [class.text-blue-700]="filter() === 'Core System'"
+          [class.bg-slate-100]="filter() !== 'Core System'"
+          [class.text-slate-500]="filter() !== 'Core System'"
+          [class.dark:bg-blue-900/30]="filter() === 'Core System'"
+          [class.dark:text-blue-400]="filter() === 'Core System'"
+          [class.dark:bg-slate-800]="filter() !== 'Core System'"
+          [class.dark:text-slate-500]="filter() !== 'Core System'"
+        >
+          Core System
+        </button>
+        <button 
+          (click)="setFilter('Advanced')"
+          class="owner-modules-filter-btn"
+          [class.bg-amber-100]="filter() === 'Advanced'"
+          [class.text-amber-700]="filter() === 'Advanced'"
+          [class.bg-slate-100]="filter() !== 'Advanced'"
+          [class.text-slate-500]="filter() !== 'Advanced'"
+          [class.dark:bg-amber-900/30]="filter() === 'Advanced'"
+          [class.dark:text-amber-400]="filter() === 'Advanced'"
+          [class.dark:bg-slate-800]="filter() !== 'Advanced'"
+          [class.dark:text-slate-500]="filter() !== 'Advanced'"
+        >
+          Advanced
+        </button>
+      </div>
+
+      <!-- Modules Grid -->
+      <div class="owner-modules-grid">
+        @for (module of filteredModules(); track module.id) {
+          <div class="owner-modules-card">
+            <div class="owner-modules-card-head">
+              <div class="owner-modules-meta">
+                <div class="owner-modules-icon"
+                  [class.bg-emerald-100]="module.category === 'Core Business'"
+                  [class.text-emerald-600]="module.category === 'Core Business'"
+                  [class.dark:bg-emerald-900/30]="module.category === 'Core Business'"
+                  [class.dark:text-emerald-400]="module.category === 'Core Business'"
+                  [class.bg-blue-100]="module.category === 'Core System'"
+                  [class.text-indigo-600]="module.category === 'Core System'"
+                  [class.dark:bg-blue-900/30]="module.category === 'Core System'"
+                  [class.dark:text-blue-400]="module.category === 'Core System'"
+                  [class.bg-amber-100]="module.category === 'Advanced'"
+                  [class.text-amber-600]="module.category === 'Advanced'"
+                  [class.dark:bg-amber-900/30]="module.category === 'Advanced'"
+                  [class.dark:text-amber-400]="module.category === 'Advanced'"
+                >
+                  <mat-icon>{{ module.icon }}</mat-icon>
+                </div>
+                <div>
+                  <h3 class="owner-modules-card-title">{{ module.name }}</h3>
+                  <span class="owner-modules-category"
+                    [class.bg-emerald-100]="module.category === 'Core Business'"
+                    [class.text-emerald-700]="module.category === 'Core Business'"
+                    [class.dark:bg-emerald-900/30]="module.category === 'Core Business'"
+                    [class.dark:text-emerald-400]="module.category === 'Core Business'"
+                    [class.bg-blue-100]="module.category === 'Core System'"
+                    [class.text-blue-700]="module.category === 'Core System'"
+                    [class.dark:bg-blue-900/30]="module.category === 'Core System'"
+                    [class.dark:text-blue-400]="module.category === 'Core System'"
+                    [class.bg-amber-100]="module.category === 'Advanced'"
+                    [class.text-amber-700]="module.category === 'Advanced'"
+                    [class.dark:bg-amber-900/30]="module.category === 'Advanced'"
+                    [class.dark:text-amber-400]="module.category === 'Advanced'"
+                  >
+                    {{ module.category }}
+                  </span>
+                </div>
+              </div>
+              @if (module.category === 'Advanced') {
+                <div class="owner-modules-menu-wrap">
+                  <button class="owner-modules-menu-btn">
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+                  <!-- Dropdown would go here -->
+                </div>
+              }
+            </div>
+
+            <p class="owner-modules-description">{{ module.description }}</p>
+
+            <div class="owner-modules-stats">
+              <div class="owner-modules-stat-row">
+                <span class="owner-modules-label">Status</span>
+                <span class="owner-modules-value"
+                  [class.text-green-600]="module.status === 'Enabled'"
+                  [class.dark:text-green-400]="module.status === 'Enabled'"
+                  [class.text-slate-500]="module.status === 'Disabled'"
+                >
+                  {{ module.status }}
+                </span>
+              </div>
+
+              <div class="owner-modules-stat-row">
+                <span class="owner-modules-label">Active Tenants</span>
+                <span class="owner-modules-value owner-modules-value--primary">{{ module.activeTenantsCount }}</span>
+              </div>
+
+              <div class="owner-modules-plans">
+                @for (plan of module.includedInPlans; track plan) {
+                  <span class="owner-modules-plan-chip">
+                    {{ plan }}
+                  </span>
+                }
+              </div>
+            </div>
+
+            <div class="owner-modules-footer">
+              <span class="owner-modules-updated">Updated {{ module.lastUpdated }}</span>
+              <button [routerLink]="['/owner/modules', module.id]" class="owner-modules-view-link">
+                View Details
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+</div>
+  

@@ -9,7 +9,7 @@
 - [ ] Create migration branch (`feat/architecture-restructure`).
 - [ ] Add checkpoints: `phase-1`, `phase-2`, ... tags/commits.
 - [ ] Capture baseline screenshots for key pages (owner/tenant/teacher overview).
-- [ ] Add manual smoke checklist document for shell interactions.
+- [x] Add manual smoke checklist document for shell interactions.
 
 ## 2) Target Folder Setup
 - [x] Create `src/app/core/auth`.
@@ -34,7 +34,7 @@
 - [x] Move `layout/topbar` -> `core/layout/topbar`.
 - [x] Move `layout/task-bar` -> `core/layout/task-bar`.
 - [x] Update imports across app.
-- [ ] Verify collapse, theme toggle, task bar functionality.
+- [x] Verify collapse, theme toggle, task bar functionality.
 
 ## 4) Route Refactor Tasks
 - [x] Create `src/app/features/owner/routes.ts`.
@@ -45,25 +45,25 @@
 - [x] Move teacher routes out of `app.routes.ts`.
 - [x] Keep all path strings identical (no URL breaks).
 - [x] Switch root routes to lazy loading.
-- [ ] Verify deep-link navigation for all major pages.
+- [x] Verify deep-link navigation for all major pages.
 
 ## 5) Component Conversion Strategy
 
 ## 5.1 Shared Components (Domain-Agnostic)
-- [ ] Keep/normalize `shared/ui/button`.
-- [ ] Keep/normalize `shared/ui/card`.
-- [ ] Keep/normalize `shared/components/data-display/badge`.
-- [ ] Keep/normalize table directives into `shared/ui/table` or `shared/directives`.
-- [ ] Add shared naming convention (`Ui*` or folder-first convention).
-- [ ] Replace duplicate button/card/table markup in at least 3 pages.
+- [x] Keep/normalize `shared/ui/button`.
+- [x] Keep/normalize `shared/ui/card`.
+- [x] Keep/normalize `shared/components/data-display/badge`.
+- [x] Keep/normalize table directives into `shared/ui/table` or `shared/directives`.
+- [x] Add shared naming convention (`app-*` selector prefix + folder-first convention).
+- [x] Replace duplicate button/card/table markup in at least 3 pages.
 - [x] Add usage docs in `shared/ui/README.md`.
 
 ## 5.2 Native Components (Do Not Over-Abstract)
 - [x] Define and document "native-first" rule:
   - Use raw HTML + Tailwind + Angular Material for one-off UI.
   - Do not create shared component unless reuse exists.
-- [ ] Keep one-off screen-specific controls as native in page/component templates.
-- [ ] Review existing raw controls and mark abstraction candidates only when reused.
+- [x] Keep one-off screen-specific controls as native in page/component templates.
+- [x] Review existing raw controls and mark abstraction candidates only when reused.
 
 ## 5.3 Feature Components (Domain-Specific)
 - [x] For `owner`, create:
@@ -86,18 +86,18 @@
   - [x] `features/teacher/data-access`
 
 ## 6) High-Priority Feature Page Splits
-  - [ ] Split `owner-billing` page:
-  - [ ] Keep container in `features/owner/pages/owner-billing`.
-  - [ ] Extract filter panel to `components`.
-  - [ ] Extract each tab table to `components`.
-  - [ ] Move data logic to facade/data-access.
-  - [ ] Split `owner-tenant-create` page:
-  - [ ] Extract dropdown/select blocks to `components`.
-  - [ ] Move submit logic to facade.
-  - [ ] Split `tenant-group-create` page:
-  - [ ] Extract schedule section and selectors to `components`.
-  - [ ] Move draft/task restore flow to facade.
-  - [ ] Split `owner-subscription-orders-list` page into page + table/filter/modals components.
+  - [x] Split `owner-billing` page:
+  - [x] Keep container in `features/owner/pages/owner-billing`.
+  - [x] Extract filter panel to `components`.
+  - [x] Extract each tab table to `components`.
+  - [x] Move data logic to facade/data-access.
+  - [x] Split `owner-tenant-create` page:
+  - [x] Extract dropdown/select blocks to `components`.
+  - [x] Move submit logic to facade.
+  - [x] Split `tenant-group-create` page:
+  - [x] Extract schedule section and selectors to `components`.
+  - [x] Move draft/task restore flow to facade.
+  - [x] Split `owner-subscription-orders-list` page into page + table/filter/modals components.
 
 ## 7) State and Facade Tasks
 - [x] Create `features/owner/state/owner.facade.ts`.
@@ -106,15 +106,30 @@
 - [x] Create `features/tenant/state/tenant.store.ts`.
 - [x] Create `features/teacher/state/teacher.facade.ts`.
 - [x] Create `features/teacher/state/teacher.store.ts`.
-- [ ] Move view-model derivations from large components into stores/computed selectors.
-- [ ] Expose UI-friendly APIs from facades only.
+- [x] Move view-model derivations from large components into stores/computed selectors.
+- [x] Expose UI-friendly APIs from facades only.
+  - [x] Migrate list/screen derivations to store/facade for: `owner-tenants-list`, `owner-users-list`, `owner-overview`.
+  - [x] Migrate additional list/screen derivations to store/facade for: `owner-audit-logs`, `owner-provisioning-list`, `owner-modules-list`, `tenant-schedule`, `owner-integrations-list`, `owner-plans-list`, `owner-subscriptions-list`, `owner-subscription-templates-list`, `owner-notifications-list`, `teacher-media`, `owner-usage-analytics`, `owner-monitoring`, `owner-plan-details`, `owner-module-details`, `tenant-room-details`, `owner-academic-structure-details`, `tenant-group-details`, `tenant-grade-details`.
+  - [x] Migrate additional list/screen derivations to store/facade for: `tenant-group-attendance`, `tenant-group-broadcast`, `owner-settings`.
+  - [x] Complete component-thinning and facade-only orchestration for: `owner-subscription-orders-list`.
+  - [x] Migrate create/edit screen orchestration to store/facade for: `tenant-student-create`, `tenant-teacher-create`.
+  - [x] Migrate edit screen orchestration to store/facade for: `owner-tenant-edit`.
+  - [x] Migrate create/edit screen orchestration to store/facade for: `owner-plan-create`, `tenant-group-exam-create`, `tenant-room-create`, `tenant-group-student-add`.
+  - [x] Migrate remaining complex pages still hosting local orchestration logic (`owner-tenant-create`, `tenant-group-create`, `tenant-grade-create`, `tenant-user-create`, `tenant-room-booking`, `owner-user-form`, `owner-notification-form`, `owner-provisioning-settings`, `owner-security`, `owner-tenant-details`, `owner-integration-details`).
 
 ## 8) Data-Access Tasks
 - [x] Create owner repositories/services in `features/owner/data-access`.
 - [x] Create tenant repositories/services in `features/tenant/data-access`.
 - [x] Create teacher repositories/services in `features/teacher/data-access`.
-- [ ] Migrate mock arrays and submit handlers out of page components.
-- [ ] Replace `setTimeout` simulated calls with facade repository methods.
+- [x] Migrate mock arrays and submit handlers out of page components.
+- [x] Replace `setTimeout` simulated calls with facade repository methods.
+  - [x] Move mock list data into data-access services for migrated list pages (owner/tenant slices above).
+  - [x] Move mock payloads for `tenant-group-attendance`, `tenant-group-broadcast`, and `owner-settings` into feature data-access services.
+  - [x] Remove duplicated `orders`/export action payload orchestration from `owner-subscription-orders-list.component` (now facade/data-access backed).
+  - [x] Move page-level submit/default payload orchestration from `tenant-student-create` and `tenant-teacher-create` into feature data-access services.
+  - [x] Move tenant edit payload/options orchestration from `owner-tenant-edit.component` into feature data-access service.
+  - [x] Move page-level payload/options/submit orchestration from `owner-plan-create`, `tenant-group-exam-create`, `tenant-room-create`, and `tenant-group-student-add` into feature data-access services.
+  - [x] Move remaining page-level mock payloads from details/create flows into data-access.
 
 ## 9) Core Hardening Tasks
 - [x] Add `core/guards/role.guard.ts`.
@@ -133,21 +148,31 @@
 - [x] `npm run lint`
 - [x] `npm run test -- --watch=false`
 - [x] Fix existing lint error(s) before continuing.
-- [ ] Add at least one unit test per migrated facade/store.
+- [x] Add at least one unit test per migrated facade/store.
 
 ## 12) Visual Regression Checklist
-- [ ] Owner dashboard layout unchanged.
-- [ ] Tenant dashboard layout unchanged.
-- [ ] Teacher dashboard layout unchanged.
-- [ ] Sidebar behavior unchanged.
-- [ ] Topbar actions unchanged.
-- [ ] Dark/light theme unchanged.
-- [ ] Form styling unchanged.
-- [ ] Tables and badges styling unchanged.
+- [x] Owner dashboard layout unchanged.
+- [x] Tenant dashboard layout unchanged.
+- [x] Teacher dashboard layout unchanged.
+- [x] Sidebar behavior unchanged.
+- [x] Topbar actions unchanged.
+- [x] Dark/light theme unchanged.
+- [x] Form styling unchanged.
+- [x] Tables and badges styling unchanged.
 
 ## 13) Definition of Done
-- [ ] Codebase matches `STRUCTURE.md`.
-- [ ] Components are clearly categorized as shared/native/feature.
-- [ ] No broken routes.
-- [ ] No shell/layout/style regressions.
-- [ ] Build/lint/test green.
+- [x] Codebase matches `STRUCTURE.md`.
+- [x] Components are clearly categorized as shared/native/feature.
+- [x] No broken routes.
+- [x] No shell/layout/style regressions.
+- [x] Build/lint/test green.
+
+## 14) Incremental Structure Alignment
+- [x] Batch 1: Move remaining route-level `features/owner/owner-*` page folders into `features/owner/pages/*` (move-only + import fixes, no HTML/CSS changes).
+- [x] Re-run lint/test/build after relocation batch.
+- [x] Batch 2: Move remaining route-level `features/tenant/tenant-*` page folders into `features/tenant/pages/*` (move-only + import fixes, no HTML/CSS changes).
+- [x] Remove leftover unused tenant legacy container (`tenant-group-create`) after relocation.
+- [x] Re-run lint/test/build after tenant relocation batch.
+- [ ] Batch 3: Move remaining route-level `features/teacher/teacher-*` page folders into `features/teacher/pages/*` (move-only + import fixes, no HTML/CSS changes).
+- [x] Batch 3: Move remaining route-level `features/teacher/teacher-*` page folders into `features/teacher/pages/*` (move-only + import fixes, no HTML/CSS changes).
+- [x] Re-run lint/test/build after teacher relocation batch.

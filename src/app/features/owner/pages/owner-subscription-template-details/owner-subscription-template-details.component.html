@@ -1,0 +1,145 @@
+
+    <div class="owner-subscription-template-details-page max-w-4xl mx-auto space-y-6 pb-12">
+      <!-- Header -->
+      <div class="owner-subscription-template-details-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="owner-subscription-template-details-header-main flex items-center gap-4">
+          <button 
+            (click)="goBack()" 
+            class="owner-subscription-template-details-back-btn p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-500 transition-colors flex items-center justify-center"
+            aria-label="Back to templates"
+          >
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+          <div class="owner-subscription-template-details-title-wrap">
+            <h2 class="owner-subscription-template-details-title text-2xl font-bold text-slate-900 dark:text-white">{{ template()?.name }}</h2>
+            <p class="owner-subscription-template-details-subtitle text-slate-500 dark:text-slate-500 text-sm">Template ID: {{ template()?.id }}</p>
+          </div>
+        </div>
+        <div class="owner-subscription-template-details-header-actions flex gap-3">
+          <button 
+            (click)="editTemplate()"
+            class="owner-subscription-template-details-edit-btn flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            <mat-icon class="owner-subscription-template-details-edit-icon text-sm">edit</mat-icon>
+            Edit Template
+          </button>
+          <button 
+            (click)="deleteTemplate()"
+            [disabled]="template()?.hasActiveSubscriptions"
+            class="owner-subscription-template-details-delete-btn flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-100 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <mat-icon class="owner-subscription-template-details-delete-icon text-sm">delete</mat-icon>
+            Delete
+          </button>
+        </div>
+      </div>
+
+      <div class="owner-subscription-template-details-layout grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Info -->
+        <div class="owner-subscription-template-details-main lg:col-span-2 space-y-6">
+          <div class="owner-subscription-template-details-main-card bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+            <h3 class="owner-subscription-template-details-main-title text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+              <mat-icon class="owner-subscription-template-details-main-title-icon text-indigo-600">info</mat-icon>
+              Configuration Details
+            </h3>
+            
+            <div class="owner-subscription-template-details-main-grid grid grid-cols-2 gap-8">
+              <div class="owner-subscription-template-details-main-block">
+                <span class="owner-subscription-template-details-main-label text-xs text-slate-500 uppercase font-bold block mb-1">Billing Cycle</span>
+                <div class="owner-subscription-template-details-main-value flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                  <mat-icon class="owner-subscription-template-details-main-value-icon text-slate-500">schedule</mat-icon>
+                  {{ template()?.billingCycle }}
+                </div>
+              </div>
+              <div class="owner-subscription-template-details-main-block">
+                <span class="owner-subscription-template-details-main-label text-xs text-slate-500 uppercase font-bold block mb-1">Grace Period</span>
+                <div class="owner-subscription-template-details-main-value flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                  <mat-icon class="owner-subscription-template-details-main-value-icon text-slate-500">event_repeat</mat-icon>
+                  {{ template()?.gracePeriod }} Days
+                </div>
+              </div>
+              <div class="owner-subscription-template-details-main-block">
+                <span class="owner-subscription-template-details-main-label text-xs text-slate-500 uppercase font-bold block mb-1">Status</span>
+                <span class="owner-subscription-template-details-status px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider"
+                  [class.bg-green-100]="template()?.status === 'Active'"
+                  [class.text-green-700]="template()?.status === 'Active'"
+                  [class.bg-slate-100]="template()?.status === 'Draft'"
+                  [class.text-slate-700]="template()?.status === 'Draft'"
+                >
+                  {{ template()?.status }}
+                </span>
+              </div>
+              <div class="owner-subscription-template-details-main-block">
+                <span class="owner-subscription-template-details-main-label text-xs text-slate-500 uppercase font-bold block mb-1">Created At</span>
+                <div class="owner-subscription-template-details-main-value text-slate-700 dark:text-slate-300">{{ template()?.createdAt }}</div>
+              </div>
+            </div>
+
+            <div class="owner-subscription-template-details-plans pt-6 border-t border-slate-200 dark:border-slate-800">
+              <span class="owner-subscription-template-details-section-label text-xs text-slate-500 uppercase font-bold block mb-3">Compatible Plans</span>
+              <div class="owner-subscription-template-details-chip-list flex flex-wrap gap-2">
+                @for (plan of template()?.plans; track plan) {
+                  <span class="owner-subscription-template-details-chip owner-subscription-template-details-chip-plan px-3 py-1 bg-indigo-600/10 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 rounded-lg text-sm border border-indigo-100 dark:border-indigo-800/50">
+                    {{ plan }}
+                  </span>
+                }
+              </div>
+            </div>
+
+            <div class="owner-subscription-template-details-methods pt-6 border-t border-slate-200 dark:border-slate-800">
+              <span class="owner-subscription-template-details-section-label text-xs text-slate-500 uppercase font-bold block mb-3">Allowed Payment Methods</span>
+              <div class="owner-subscription-template-details-chip-list flex flex-wrap gap-2">
+                @for (method of template()?.paymentMethods; track method) {
+                  <span class="owner-subscription-template-details-chip owner-subscription-template-details-chip-method px-3 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-lg text-sm border border-emerald-100 dark:border-emerald-800/50 flex items-center gap-2">
+                    <mat-icon class="owner-subscription-template-details-chip-icon text-sm">check_circle</mat-icon>
+                    {{ method }}
+                  </span>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pricing Sidebar -->
+        <div class="owner-subscription-template-details-side space-y-6">
+          <div class="owner-subscription-template-details-pricing-card bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <h3 class="owner-subscription-template-details-pricing-title text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <mat-icon class="owner-subscription-template-details-pricing-title-icon text-indigo-600">sell</mat-icon>
+              Pricing Rules
+            </h3>
+            <div class="owner-subscription-template-details-pricing-body space-y-4">
+              <div class="owner-subscription-template-details-pricing-block p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                <span class="owner-subscription-template-details-main-label text-xs text-slate-500 uppercase font-bold block mb-1">Adjustment Type</span>
+                <div class="owner-subscription-template-details-pricing-value font-semibold text-slate-900 dark:text-white">
+                  {{ template()?.discountType === 'percentage' ? 'Percentage Discount' : template()?.discountType === 'fixed' ? 'Fixed Amount Discount' : 'No Adjustment' }}
+                </div>
+              </div>
+              
+              @if (template()?.discountType !== 'none') {
+                <div class="owner-subscription-template-details-pricing-block owner-subscription-template-details-pricing-discount p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-100 dark:border-emerald-800/50">
+                  <span class="owner-subscription-template-details-pricing-discount-label text-xs text-emerald-600 uppercase font-bold block mb-1">Discount Value</span>
+                  <div class="owner-subscription-template-details-pricing-discount-value text-2xl font-bold text-emerald-700 dark:text-emerald-400">
+                    {{ template()?.discountType === 'percentage' ? template()?.discountValue + '%' : '$' + template()?.discountValue }}
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="owner-subscription-template-details-notice bg-amber-50 dark:bg-amber-900/20 p-6 rounded-xl border border-amber-100 dark:border-amber-800/50 space-y-3">
+            <div class="owner-subscription-template-details-notice-title flex items-center gap-2 text-amber-800 dark:text-amber-300 font-semibold">
+              <mat-icon class="owner-subscription-template-details-notice-icon">warning</mat-icon>
+              Usage Notice
+            </div>
+            <p class="owner-subscription-template-details-notice-text text-sm text-amber-700 dark:text-amber-400">
+              @if (template()?.hasActiveSubscriptions) {
+                This template is currently used by active tenant subscriptions and cannot be deleted.
+              } @else {
+                This template is not currently in use and can be safely modified or deleted.
+              }
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  

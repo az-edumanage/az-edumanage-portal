@@ -1,0 +1,257 @@
+<div class="tenant-grades-page">
+  <!-- Header -->
+  <div class="tenant-grades-header">
+    <div>
+      <h2 class="tenant-grades-title">Grades & Levels</h2>
+      <p class="tenant-grades-subtitle">Manage academic grades and educational levels.</p>
+    </div>
+    <div class="tenant-grades-header-actions">
+      <div class="tenant-grades-view-switch">
+        <button
+          (click)="viewMode.set('grid')"
+          [class.bg-indigo-600/10]="viewMode() === 'grid'"
+          [class.text-indigo-600]="viewMode() === 'grid'"
+          [class.text-slate-500]="viewMode() !== 'grid'"
+          class="tenant-grades-view-btn"
+          title="Grid View"
+        >
+          <mat-icon class="text-sm block">grid_view</mat-icon>
+        </button>
+        <button
+          (click)="viewMode.set('list')"
+          [class.bg-indigo-600/10]="viewMode() === 'list'"
+          [class.text-indigo-600]="viewMode() === 'list'"
+          [class.text-slate-500]="viewMode() !== 'list'"
+          class="tenant-grades-view-btn"
+          title="List View"
+        >
+          <mat-icon class="text-sm block">view_list</mat-icon>
+        </button>
+      </div>
+      <a routerLink="/tenant/grades/create" class="tenant-grades-add-btn">
+        <mat-icon class="text-sm">add</mat-icon>
+        Add Grade
+      </a>
+    </div>
+  </div>
+
+  <!-- Search & Filter Bar -->
+  <div class="tenant-grades-filter-shell">
+    <div class="tenant-grades-filter-row">
+      <div class="tenant-grades-search">
+        <mat-icon class="tenant-grades-search-icon">search</mat-icon>
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Search grades by name or level..."
+          class="tenant-grades-search-input"
+        >
+      </div>
+
+      <div class="tenant-grades-filter-actions">
+        <div class="relative">
+          <button
+            (click)="toggleFilterPanel()"
+            [class.bg-indigo-600/10]="showFilterPanel() || activeFiltersCount() > 0"
+            [class.text-indigo-600]="showFilterPanel() || activeFiltersCount() > 0"
+            [class.border-indigo-200]="showFilterPanel() || activeFiltersCount() > 0"
+            class="tenant-grades-advanced-filter-btn"
+          >
+            <mat-icon class="text-sm">filter_list</mat-icon>
+            Advanced Filters
+            @if (activeFiltersCount() > 0) {
+              <span class="tenant-grades-filter-count">
+                {{ activeFiltersCount() }}
+              </span>
+            }
+            <mat-icon class="text-xs transition-transform duration-200" [class.rotate-180]="showFilterPanel()">expand_more</mat-icon>
+          </button>
+
+          <!-- Dropdown Panel -->
+          @if (showFilterPanel()) {
+            <div class="tenant-grades-filter-dropdown">
+              <div class="tenant-grades-filter-dropdown-head">
+                <h3 class="tenant-grades-filter-dropdown-title">Filter Options</h3>
+                <button (click)="clearAdvancedFilters()" class="tenant-grades-filter-reset">Reset</button>
+              </div>
+
+              <div class="tenant-grades-filter-fields">
+                <div [formGroup]="filterForm">
+                  <label for="filter-level" class="tenant-grades-filter-label">Academic Level</label>
+                  <select
+                    id="filter-level"
+                    formControlName="level"
+                    class="tenant-grades-filter-select"
+                  >
+                    <option value="">All Levels</option>
+                    <option value="Primary">Primary</option>
+                    <option value="Preparatory">Preparatory</option>
+                    <option value="Secondary">Secondary</option>
+                  </select>
+                </div>
+
+                <div class="tenant-grades-filter-grid">
+                  <div [formGroup]="filterForm">
+                    <label for="filter-min" class="tenant-grades-filter-label">Min Students</label>
+                    <input
+                      id="filter-min"
+                      type="number"
+                      formControlName="minStudents"
+                      placeholder="0"
+                      class="tenant-grades-filter-select"
+                    >
+                  </div>
+
+                  <div [formGroup]="filterForm">
+                    <label for="filter-max" class="tenant-grades-filter-label">Max Students</label>
+                    <input
+                      id="filter-max"
+                      type="number"
+                      formControlName="maxStudents"
+                      placeholder="500"
+                      class="tenant-grades-filter-select"
+                    >
+                  </div>
+                </div>
+
+                <div [formGroup]="filterForm">
+                  <label for="filter-sort" class="tenant-grades-filter-label">Sort By</label>
+                  <select
+                    id="filter-sort"
+                    formControlName="sortBy"
+                    class="tenant-grades-filter-select"
+                  >
+                    <option value="name">Name (A-Z)</option>
+                    <option value="students-desc">Students (High to Low)</option>
+                    <option value="students-asc">Students (Low to High)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="tenant-grades-filter-apply-wrap">
+                <button
+                  (click)="toggleFilterPanel()"
+                  class="tenant-grades-filter-apply"
+                >
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        @if (activeFiltersCount() > 0 || searchQuery()) {
+          <button
+            (click)="clearAllFilters()"
+            class="tenant-grades-reset-all"
+          >
+            <mat-icon class="text-sm">restart_alt</mat-icon>
+            Reset All
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Grid/List -->
+  @if (filteredGrades().length > 0) {
+    @if (viewMode() === 'grid') {
+      <div class="tenant-grades-grid">
+        @for (grade of filteredGrades(); track grade.id) {
+          <div class="tenant-grades-card">
+            <div class="tenant-grades-card-head">
+              <div class="tenant-grades-card-icon-wrap">
+                <mat-icon class="tenant-grades-card-icon">school</mat-icon>
+              </div>
+              <div class="tenant-grades-card-actions">
+                <button class="tenant-grades-icon-btn" title="Edit">
+                  <mat-icon class="text-sm">edit</mat-icon>
+                </button>
+                <button class="tenant-grades-icon-btn tenant-grades-icon-btn--danger" title="Delete">
+                  <mat-icon class="text-sm">delete</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <h3 class="tenant-grades-card-name">{{ grade.name }}</h3>
+            <p class="tenant-grades-card-level">{{ grade.level }}</p>
+
+            <div class="tenant-grades-card-footer">
+              <div class="tenant-grades-card-students">
+                <mat-icon class="text-sm">groups</mat-icon>
+                <span>{{ grade.studentCount }} Students</span>
+              </div>
+              <a [routerLink]="['/tenant/grades', grade.id]" class="tenant-grades-view-link">
+                View Details
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="tenant-grades-table-shell">
+        <div class="tenant-grades-table-scroll">
+          <table class="tenant-grades-table">
+            <thead class="tenant-grades-table-head">
+              <tr>
+                <th class="tenant-grades-th">Grade Name</th>
+                <th class="tenant-grades-th">Level</th>
+                <th class="tenant-grades-th tenant-grades-th--center">Students</th>
+                <th class="tenant-grades-th tenant-grades-th--actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="tenant-grades-tbody">
+              @for (grade of filteredGrades(); track grade.id) {
+                <tr class="tenant-grades-tr">
+                  <td class="tenant-grades-td">
+                    <div class="tenant-grades-row-name-wrap">
+                      <div class="tenant-grades-row-icon-wrap">
+                        <mat-icon class="text-sm block">school</mat-icon>
+                      </div>
+                      <span class="tenant-grades-row-name">{{ grade.name }}</span>
+                    </div>
+                  </td>
+                  <td class="tenant-grades-td">
+                    <span class="tenant-grades-level-chip">
+                      {{ grade.level }}
+                    </span>
+                  </td>
+                  <td class="tenant-grades-td tenant-grades-td--center">
+                    <div class="tenant-grades-row-students">
+                      <mat-icon class="text-xs">groups</mat-icon>
+                      <span>{{ grade.studentCount }}</span>
+                    </div>
+                  </td>
+                  <td class="tenant-grades-td tenant-grades-td--actions">
+                    <div class="tenant-grades-row-actions">
+                      <a [routerLink]="['/tenant/grades', grade.id]" class="tenant-grades-row-btn tenant-grades-row-btn--view" title="View Details">
+                        <mat-icon class="text-sm block">visibility</mat-icon>
+                      </a>
+                      <button class="tenant-grades-row-btn tenant-grades-row-btn--edit" title="Edit">
+                        <mat-icon class="text-sm block">edit</mat-icon>
+                      </button>
+                      <button class="tenant-grades-row-btn tenant-grades-row-btn--delete" title="Delete">
+                        <mat-icon class="text-sm block">delete</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  } @else {
+    <div class="tenant-grades-empty">
+      <div class="tenant-grades-empty-icon-wrap">
+        <mat-icon class="text-slate-500">search_off</mat-icon>
+      </div>
+      <h3 class="tenant-grades-empty-title">No grades found</h3>
+      <p class="tenant-grades-empty-text">We couldn't find any grades matching your current search and filter criteria.</p>
+      <button (click)="clearAllFilters()" class="tenant-grades-empty-btn">
+        Clear All Filters
+      </button>
+    </div>
+  }
+</div>

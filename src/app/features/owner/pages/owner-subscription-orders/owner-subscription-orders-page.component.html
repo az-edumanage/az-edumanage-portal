@@ -1,0 +1,85 @@
+<div class="owner-subscription-orders-page space-y-6">
+  <div class="owner-subscription-orders-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <div class="owner-subscription-orders-header-title-wrap flex items-center gap-3">
+        <h2 class="owner-subscription-orders-title text-2xl font-bold text-slate-900 dark:text-white">Subscription Orders</h2>
+        @if (pendingCount() > 0) {
+          <span class="owner-subscription-orders-pending-chip px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-lg text-xs font-bold">
+            {{ pendingCount() }} Pending
+          </span>
+        }
+      </div>
+      <p class="owner-subscription-orders-subtitle text-slate-500 dark:text-slate-500 text-sm">Review and manage incoming subscription requests and renewals.</p>
+    </div>
+    <div class="owner-subscription-orders-header-actions flex gap-3">
+      <button
+        class="owner-subscription-orders-export-btn flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+        (click)="openExportModal()"
+      >
+        <mat-icon class="owner-subscription-orders-export-icon text-sm">download</mat-icon>
+        Export
+      </button>
+    </div>
+  </div>
+
+  <app-owner-subscription-orders-filter
+    [searchQuery]="searchQuery()"
+    [selectedStatus]="selectedStatus()"
+    [pendingCount]="pendingCount()"
+    [isStatusDropdownOpen]="isStatusDropdownOpen()"
+    [statusDropdownSearchQuery]="statusDropdownSearchQuery()"
+    [filteredStatuses]="filteredStatuses()"
+    (searchQueryChanged)="setSearchQuery($event)"
+    (statusDropdownToggled)="toggleStatusDropdown()"
+    (statusDropdownClosed)="closeStatusDropdown()"
+    (statusDropdownSearchQueryChanged)="setStatusDropdownSearchQuery($event)"
+    (statusSelected)="selectStatus($event)"
+  />
+
+  <app-owner-subscription-orders-table
+    [orders]="filteredOrders()"
+    [selectedOrderIds]="selectedOrderIds()"
+    [isAllSelected]="isAllSelected()"
+    (toggleAllSelection)="toggleAllSelection()"
+    (orderSelectionToggled)="toggleOrderSelection($event)"
+    (clearSelectionClicked)="clearSelection()"
+    (attachmentViewed)="viewAttachment($event)"
+    (approveClicked)="openApproveModal($event)"
+    (rejectClicked)="openRejectModal($event)"
+  />
+
+  <app-owner-subscription-orders-attachment-modal
+    [isOpen]="showAttachmentModal()"
+    [attachmentUrl]="currentAttachmentUrl()"
+    (closed)="closeAttachmentModal()"
+  />
+
+  <app-owner-subscription-orders-confirm-modal
+    [isOpen]="showConfirmModal()"
+    [order]="orderToAction()"
+    [actionType]="actionType()"
+    (closed)="closeConfirmModal()"
+    (confirmed)="processAction()"
+  />
+
+  <app-owner-subscription-orders-export-modal
+    [isOpen]="showExportModal()"
+    [exportStep]="exportStep()"
+    [exportFormat]="exportFormat()"
+    [exportPdfType]="exportPdfType()"
+    [exportDateFrom]="exportDateFrom()"
+    [exportDateTo]="exportDateTo()"
+    [exportMode]="exportMode()"
+    [totalOrders]="orders().length"
+    [filteredOrdersCount]="filteredOrders().length"
+    [selectedOrdersCount]="selectedOrderIds().size"
+    (closed)="closeExportModal()"
+    (exportFormatSelected)="selectExportFormat($event)"
+    (exportPdfTypeSelected)="setExportPdfType($event)"
+    (exportDateFromChanged)="setExportDateFrom($event)"
+    (exportDateToChanged)="setExportDateTo($event)"
+    (exportModeChanged)="setExportMode($event)"
+    (exportStepChanged)="setExportStep($event)"
+    (nextClicked)="nextExportStep()"
+  />
+</div>

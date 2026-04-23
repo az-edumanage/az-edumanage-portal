@@ -1,0 +1,67 @@
+<div class="teacher-media-page">
+  <!-- Header -->
+  <div class="teacher-media-header">
+    <div>
+      <h2 class="teacher-media-title">My Media Library</h2>
+      <p class="teacher-media-subtitle">Manage your exams, videos, and teaching materials.</p>
+    </div>
+    <div class="teacher-media-actions">
+      <button class="teacher-media-action teacher-media-action--upload">
+        <mat-icon class="teacher-media-icon-sm">upload</mat-icon>
+        Upload File
+      </button>
+      <button class="teacher-media-action teacher-media-action--primary">
+        <mat-icon class="teacher-media-icon-sm">add</mat-icon>
+        Create New
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="teacher-media-tabs">
+    @for (tab of tabs; track tab) {
+      <button
+        (click)="setActiveTab(tab)"
+        class="teacher-media-tab"
+        [class.teacher-media-tab--active]="activeTab() === tab"
+        [class.teacher-media-tab--inactive]="activeTab() !== tab"
+      >
+        {{ tab }}
+        @if (activeTab() === tab) {
+          <div class="teacher-media-tab-indicator"></div>
+        }
+      </button>
+    }
+  </div>
+
+  <!-- Media Grid -->
+  <div class="teacher-media-grid">
+    @for (item of filteredMedia(); track item.id) {
+      <div class="teacher-media-card group">
+        <div class="teacher-media-thumb">
+          <mat-icon class="teacher-media-thumb-icon">
+            {{ getIcon(item.type) }}
+          </mat-icon>
+          <div class="teacher-media-type-chip">
+            {{ item.type }}
+          </div>
+        </div>
+        <div class="teacher-media-card-body">
+          <h3 class="teacher-media-card-title">{{ item.title }}</h3>
+          <div class="teacher-media-meta">
+            <span>{{ item.date }}</span>
+            <span>{{ item.size || item.group }}</span>
+          </div>
+          <div class="teacher-media-card-footer">
+            <button class="teacher-media-preview-btn">Preview</button>
+            <div class="teacher-media-icon-actions">
+              <button class="teacher-media-icon-btn teacher-media-icon-btn--share"><mat-icon class="teacher-media-icon-sm">share</mat-icon></button>
+              <button class="teacher-media-icon-btn teacher-media-icon-btn--delete"><mat-icon class="teacher-media-icon-sm">delete</mat-icon></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+  

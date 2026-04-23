@@ -1,0 +1,217 @@
+
+:host {
+  display: block;
+}
+
+.tenant-room-create-page {
+  max-width: 42rem;
+  margin-inline: auto;
+  display: grid;
+  gap: var(--space-6);
+}
+
+.tenant-room-create-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tenant-room-create-header-stack {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.tenant-room-create-breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted, #64748b);
+}
+
+.tenant-room-create-breadcrumb-link {
+  transition: color 0.2s ease;
+}
+
+.tenant-room-create-breadcrumb-link:hover {
+  color: var(--color-action-primary, #4f46e5);
+}
+
+.tenant-room-create-title {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary, #0f172a);
+}
+
+.tenant-room-create-form {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.tenant-room-create-card {
+  padding: var(--space-6);
+  border-radius: var(--radius-2xl, 1rem);
+  border: 1px solid var(--color-border-primary, #e2e8f0);
+  background: var(--color-bg-card, #ffffff);
+  box-shadow: var(--shadow-sm);
+}
+
+.tenant-room-create-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.tenant-room-create-field {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.tenant-room-create-field--full {
+  grid-column: span 1 / span 1;
+}
+
+.tenant-room-create-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary, #334155);
+}
+
+.tenant-room-create-label--equipment {
+  margin-bottom: var(--space-2);
+}
+
+.tenant-room-create-input {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-primary, #e2e8f0);
+  background: var(--color-bg-muted, #f8fafc);
+  font-size: var(--font-size-sm);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.tenant-room-create-input:focus {
+  outline: none;
+  border-color: var(--color-action-primary, #4f46e5);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-action-primary, #4f46e5) 25%, transparent);
+}
+
+.tenant-room-create-textarea {
+  resize: vertical;
+}
+
+.tenant-room-create-equipment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.tenant-room-create-equipment-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-primary, #e2e8f0);
+  transition: background-color 0.2s ease;
+}
+
+.tenant-room-create-equipment-item:hover {
+  background: var(--color-bg-muted, #f8fafc);
+}
+
+.tenant-room-create-checkbox {
+  cursor: pointer;
+}
+
+.tenant-room-create-equipment-label {
+  flex: 1;
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted, #64748b);
+}
+
+.tenant-room-create-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.tenant-room-create-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-6);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+
+.tenant-room-create-btn--secondary {
+  border: 1px solid var(--color-border-primary, #e2e8f0);
+  background: var(--color-bg-card, #ffffff);
+  color: var(--color-text-secondary, #334155);
+}
+
+.tenant-room-create-btn--secondary:hover {
+  background: var(--color-bg-muted, #f8fafc);
+}
+
+.tenant-room-create-btn--primary {
+  color: var(--color-text-on-action, #ffffff);
+  background: var(--color-action-primary, #4f46e5);
+  box-shadow: var(--shadow-lg, 0 10px 15px -3px rgb(79 70 229 / 0.2));
+}
+
+.tenant-room-create-btn--primary:hover {
+  background: var(--color-action-primary-hover, #4338ca);
+}
+
+.tenant-room-create-btn--primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dark .tenant-room-create-title {
+  color: var(--color-text-primary, #e2e8f0);
+}
+
+.dark .tenant-room-create-card,
+.dark .tenant-room-create-input,
+.dark .tenant-room-create-equipment-item,
+.dark .tenant-room-create-btn--secondary {
+  border-color: var(--color-border-primary, #334155);
+}
+
+.dark .tenant-room-create-card,
+.dark .tenant-room-create-btn--secondary {
+  background: var(--color-bg-card, #0f172a);
+}
+
+.dark .tenant-room-create-input,
+.dark .tenant-room-create-equipment-item:hover {
+  background: var(--color-bg-muted, #1e293b);
+}
+
+@media (min-width: 48rem) {
+  .tenant-room-create-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tenant-room-create-field--full {
+    grid-column: span 2 / span 2;
+  }
+}
+
+@media (min-width: 40rem) {
+  .tenant-room-create-equipment-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+  

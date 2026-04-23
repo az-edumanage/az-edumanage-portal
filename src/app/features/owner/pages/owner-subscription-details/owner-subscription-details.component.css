@@ -1,0 +1,72 @@
+:host {
+  display: block;
+}
+
+.owner-subscription-details-page {
+  align-content: start;
+}
+
+.owner-subscription-details-title {
+  letter-spacing: -0.01em;
+}
+
+.owner-subscription-details-subtitle {
+  line-height: 1.25rem;
+}
+
+.owner-subscription-details-header {
+  gap: var(--space-4);
+}
+
+.owner-subscription-details-header-actions {
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.owner-subscription-details-header-btn {
+  white-space: nowrap;
+}
+
+.owner-subscription-details-header-btn-icon {
+  flex-shrink: 0;
+}
+
+.owner-subscription-details-layout {
+  align-items: start;
+}
+
+.owner-subscription-details-card-title,
+.owner-subscription-details-side-title,
+.owner-subscription-details-danger-title {
+  letter-spacing: 0.01em;
+}
+
+.owner-subscription-details-label,
+.owner-subscription-details-status {
+  letter-spacing: 0.04em;
+}
+
+.owner-subscription-details-value {
+  line-height: 1.2;
+}
+
+.owner-subscription-details-inline-note {
+  white-space: nowrap;
+}
+
+.owner-subscription-details-usage-row-head {
+  gap: var(--space-3);
+}
+
+.owner-subscription-details-usage-value {
+  white-space: nowrap;
+}
+
+.owner-subscription-details-action-btn {
+  display: inline-flex;
+  align-items: center;
+}
+
+.owner-subscription-details-action-icon {
+  flex-shrink: 0;
+}

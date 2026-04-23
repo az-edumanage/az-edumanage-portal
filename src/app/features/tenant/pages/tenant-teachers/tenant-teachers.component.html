@@ -1,0 +1,355 @@
+<div class="tenant-teachers-page">
+      <!-- Header -->
+      <div class="tenant-teachers-header">
+        <div>
+          <h2 class="tenant-teachers-title">Teachers Faculty</h2>
+          <p class="tenant-teachers-subtitle">Manage teaching staff and department assignments.</p>
+        </div>
+        <div class="tenant-teachers-header-actions">
+          <div class="tenant-teachers-view-switch">
+            <button 
+              (click)="viewMode.set('grid')"
+              [class.bg-indigo-600/10]="viewMode() === 'grid'"
+              [class.text-indigo-600]="viewMode() === 'grid'"
+              [class.text-slate-500]="viewMode() !== 'grid'"
+              class="tenant-teachers-view-btn"
+              title="Grid View"
+            >
+              <mat-icon class="text-sm block">grid_view</mat-icon>
+            </button>
+            <button 
+              (click)="viewMode.set('list')"
+              [class.bg-indigo-600/10]="viewMode() === 'list'"
+              [class.text-indigo-600]="viewMode() === 'list'"
+              [class.text-slate-500]="viewMode() !== 'list'"
+              class="tenant-teachers-view-btn"
+              title="List View"
+            >
+              <mat-icon class="text-sm block">view_list</mat-icon>
+            </button>
+          </div>
+          <a routerLink="/tenant/teachers/create" class="tenant-teachers-add-btn">
+            <mat-icon class="text-sm">person_add</mat-icon>
+            Add Teacher
+          </a>
+        </div>
+      </div>
+
+      <!-- Search & Filter Bar -->
+      <div class="tenant-teachers-filter-shell">
+        <div class="tenant-teachers-filter-row">
+          <div class="tenant-teachers-search">
+            <mat-icon class="tenant-teachers-search-icon">search</mat-icon>
+            <input 
+              type="text" 
+              [(ngModel)]="searchQuery"
+              placeholder="Search teachers by name, subject or email..."
+              class="tenant-teachers-search-input"
+            >
+          </div>
+          
+          <div class="tenant-teachers-filter-actions">
+            <div class="relative">
+              <button 
+                (click)="toggleFilterPanel()"
+                [class.bg-indigo-600/10]="showFilterPanel() || activeFiltersCount() > 0"
+                [class.text-indigo-600]="showFilterPanel() || activeFiltersCount() > 0"
+                [class.border-indigo-200]="showFilterPanel() || activeFiltersCount() > 0"
+                class="tenant-teachers-advanced-filter-btn"
+              >
+                <mat-icon class="text-sm">filter_list</mat-icon>
+                Advanced Filters
+                @if (activeFiltersCount() > 0) {
+                  <span class="tenant-teachers-filter-count">
+                    {{ activeFiltersCount() }}
+                  </span>
+                }
+                <mat-icon class="text-xs transition-transform duration-200" [class.rotate-180]="showFilterPanel()">expand_more</mat-icon>
+              </button>
+
+              <!-- Dropdown Panel -->
+              @if (showFilterPanel()) {
+                <div class="tenant-teachers-filter-dropdown">
+                  <div class="tenant-teachers-filter-dropdown-head">
+                    <h3 class="tenant-teachers-filter-dropdown-title">Filter Options</h3>
+                    <button (click)="clearAdvancedFilters()" class="tenant-teachers-filter-reset">Reset</button>
+                  </div>
+
+                  <div class="tenant-teachers-filter-fields">
+                    <div [formGroup]="filterForm">
+                      <label for="filter-subject" class="tenant-teachers-filter-label">Subject</label>
+                      <select 
+                        id="filter-subject"
+                        formControlName="subject"
+                        class="tenant-teachers-filter-select"
+                      >
+                        <option value="">All Subjects</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Biology">Biology</option>
+                        <option value="English">English</option>
+                        <option value="Arabic">Arabic</option>
+                      </select>
+                    </div>
+
+                    <div [formGroup]="filterForm">
+                      <label for="filter-status" class="tenant-teachers-filter-label">Status</label>
+                      <select 
+                        id="filter-status"
+                        formControlName="status"
+                        class="tenant-teachers-filter-select"
+                      >
+                        <option value="">All Statuses</option>
+                        <option value="Active">Active</option>
+                        <option value="On Leave">On Leave</option>
+                        <option value="Inactive">Inactive</option>
+                      </select>
+                    </div>
+
+                    <div [formGroup]="filterForm">
+                      <label for="filter-sort" class="tenant-teachers-filter-label">Sort By</label>
+                      <select 
+                        id="filter-sort"
+                        formControlName="sortBy"
+                        class="tenant-teachers-filter-select"
+                      >
+                        <option value="name">Name (A-Z)</option>
+                        <option value="date-desc">Newest First</option>
+                        <option value="date-asc">Oldest First</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="tenant-teachers-filter-apply-wrap">
+                    <button 
+                      (click)="toggleFilterPanel()"
+                      class="tenant-teachers-filter-apply"
+                    >
+                      Apply Filters
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+
+            @if (activeFiltersCount() > 0 || searchQuery()) {
+              <button 
+                (click)="clearAllFilters()"
+                class="tenant-teachers-reset-all"
+              >
+                <mat-icon class="text-sm">restart_alt</mat-icon>
+                Reset All
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Grid/List -->
+      @if (filteredTeachers().length > 0) {
+        @if (viewMode() === 'grid') {
+          <div class="tenant-teachers-grid">
+            @for (teacher of filteredTeachers(); track teacher.id) {
+              <div class="tenant-teachers-card">
+                <div class="tenant-teachers-card-head">
+                  <div class="tenant-teachers-avatar">
+                    {{ teacher.name.charAt(0) }}
+                  </div>
+                  <span class="tenant-teachers-status-chip"
+                    [class.bg-emerald-100]="teacher.status === 'Active'"
+                    [class.text-emerald-700]="teacher.status === 'Active'"
+                    [class.bg-amber-100]="teacher.status === 'On Leave'"
+                    [class.text-amber-700]="teacher.status === 'On Leave'"
+                    [class.bg-slate-100]="teacher.status === 'Inactive'"
+                    [class.text-slate-500]="teacher.status === 'Inactive'"
+                  >
+                    {{ teacher.status }}
+                  </span>
+                </div>
+                <h3 class="tenant-teachers-card-name">{{ teacher.name }}</h3>
+                <p class="tenant-teachers-card-email">{{ teacher.email }}</p>
+                
+                <div class="tenant-teachers-card-subject-wrap">
+                  <div class="tenant-teachers-subject-chip">
+                    {{ teacher.subject }}
+                  </div>
+                </div>
+
+                <div class="tenant-teachers-card-footer">
+                  <span class="tenant-teachers-joined">Joined {{ teacher.joinDate }}</span>
+                  <div class="tenant-teachers-card-actions">
+                    <button 
+                      (click)="openChat(teacher)"
+                      class="tenant-teachers-icon-btn"
+                      title="Send Message"
+                    >
+                      <mat-icon class="text-sm">mail</mat-icon>
+                    </button>
+                    <button 
+                      (click)="toggleSettings($event, teacher.id)"
+                      class="tenant-teachers-icon-btn"
+                      title="Teacher Settings"
+                    >
+                      <mat-icon class="text-sm">settings</mat-icon>
+                    </button>
+
+                    <!-- Settings Dropdown -->
+                    @if (activeSettingsId() === teacher.id) {
+                      <div class="tenant-teachers-settings-menu">
+                        <button 
+                          [routerLink]="['/tenant/teachers', teacher.id, 'edit']"
+                          class="tenant-teachers-settings-item"
+                        >
+                          <mat-icon class="text-sm">edit</mat-icon>
+                          Edit Profile
+                        </button>
+                        <div class="tenant-teachers-settings-divider"></div>
+                        <button 
+                          (click)="updateStatus(teacher.id, 'Active')"
+                          class="tenant-teachers-settings-item tenant-teachers-settings-item--active"
+                        >
+                          <mat-icon class="text-sm">check_circle</mat-icon>
+                          Set as Active
+                        </button>
+                        <button 
+                          (click)="updateStatus(teacher.id, 'Inactive')"
+                          class="tenant-teachers-settings-item tenant-teachers-settings-item--inactive"
+                        >
+                          <mat-icon class="text-sm">block</mat-icon>
+                          Set as Inactive
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="tenant-teachers-table-shell">
+            <div class="tenant-teachers-table-scroll">
+              <table class="tenant-teachers-table">
+                <thead class="tenant-teachers-table-head">
+                  <tr>
+                    <th class="tenant-teachers-th">Teacher</th>
+                    <th class="tenant-teachers-th">Subject</th>
+                    <th class="tenant-teachers-th">Status</th>
+                    <th class="tenant-teachers-th">Joined</th>
+                    <th class="tenant-teachers-th tenant-teachers-th--actions">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="tenant-teachers-tbody">
+                  @for (teacher of filteredTeachers(); track teacher.id) {
+                    <tr class="tenant-teachers-tr">
+                      <td class="tenant-teachers-td">
+                        <div class="tenant-teachers-row-user">
+                          <div class="tenant-teachers-row-avatar">
+                            {{ teacher.name.charAt(0) }}
+                          </div>
+                          <div>
+                            <div class="tenant-teachers-row-name">{{ teacher.name }}</div>
+                            <div class="tenant-teachers-row-email">{{ teacher.email }}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="tenant-teachers-td">
+                        <span class="tenant-teachers-subject-chip tenant-teachers-subject-chip--list">
+                          {{ teacher.subject }}
+                        </span>
+                      </td>
+                      <td class="tenant-teachers-td">
+                        <span class="tenant-teachers-status-chip tenant-teachers-status-chip--list"
+                          [class.bg-emerald-100]="teacher.status === 'Active'"
+                          [class.text-emerald-700]="teacher.status === 'Active'"
+                          [class.bg-amber-100]="teacher.status === 'On Leave'"
+                          [class.text-amber-700]="teacher.status === 'On Leave'"
+                          [class.bg-slate-100]="teacher.status === 'Inactive'"
+                          [class.text-slate-500]="teacher.status === 'Inactive'"
+                        >
+                          {{ teacher.status }}
+                        </span>
+                      </td>
+                      <td class="tenant-teachers-td tenant-teachers-joined-date">{{ teacher.joinDate }}</td>
+                      <td class="tenant-teachers-td tenant-teachers-td--actions">
+                        <div class="tenant-teachers-row-actions">
+                          <button (click)="openChat(teacher)" class="tenant-teachers-row-btn tenant-teachers-row-btn--message" title="Message">
+                            <mat-icon class="text-sm block">mail</mat-icon>
+                          </button>
+                          <button [routerLink]="['/tenant/teachers', teacher.id, 'edit']" class="tenant-teachers-row-btn tenant-teachers-row-btn--edit" title="Edit">
+                            <mat-icon class="text-sm block">edit</mat-icon>
+                          </button>
+                          <button (click)="updateStatus(teacher.id, 'Inactive')" class="tenant-teachers-row-btn tenant-teachers-row-btn--deactivate" title="Deactivate">
+                            <mat-icon class="text-sm block">block</mat-icon>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      } @else {
+        <div class="tenant-teachers-empty">
+          <div class="tenant-teachers-empty-icon-wrap">
+            <mat-icon class="text-slate-500">search_off</mat-icon>
+          </div>
+          <h3 class="tenant-teachers-empty-title">No teachers found</h3>
+          <p class="tenant-teachers-empty-text">We couldn't find any teachers matching your current search and filter criteria.</p>
+          <button (click)="clearAllFilters()" class="tenant-teachers-empty-btn">
+            Clear All Filters
+          </button>
+        </div>
+      }
+
+      <!-- Floating Chat Window -->
+      @if (activeChatTeacher(); as teacher) {
+        <div class="tenant-teachers-chat">
+          <!-- Chat Header -->
+          <div class="tenant-teachers-chat-head">
+            <div class="tenant-teachers-chat-head-user">
+              <div class="tenant-teachers-chat-avatar">
+                {{ teacher.name.charAt(0) }}
+              </div>
+              <div class="tenant-teachers-chat-head-meta">
+                <p class="tenant-teachers-chat-name">{{ teacher.name }}</p>
+                <p class="tenant-teachers-chat-status">Online</p>
+              </div>
+            </div>
+            <button (click)="activeChatTeacher.set(null)" class="tenant-teachers-chat-close">
+              <mat-icon class="text-sm">close</mat-icon>
+            </button>
+          </div>
+
+          <!-- Chat Messages Area -->
+          <div class="tenant-teachers-chat-messages">
+            <div class="tenant-teachers-chat-row tenant-teachers-chat-row--incoming">
+              <div class="tenant-teachers-chat-bubble tenant-teachers-chat-bubble--incoming">
+                Hello! How can I help you today?
+              </div>
+            </div>
+            <div class="tenant-teachers-chat-row tenant-teachers-chat-row--outgoing">
+              <div class="tenant-teachers-chat-bubble tenant-teachers-chat-bubble--outgoing">
+                I wanted to check the schedule for next week.
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat Input -->
+          <div class="tenant-teachers-chat-input-wrap">
+            <div class="tenant-teachers-chat-input-row">
+              <input 
+                type="text" 
+                placeholder="Type a message..." 
+                class="tenant-teachers-chat-input"
+              >
+              <button class="tenant-teachers-chat-send">
+                <mat-icon class="text-sm">send</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+</div>

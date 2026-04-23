@@ -1,0 +1,34 @@
+<button
+  type="button"
+  class="px-3 py-2 h-full flex items-center gap-1 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors rounded-r-lg text-xs text-slate-500"
+  (click)="onToggle()"
+>
+  <span>{{ selectedDomain() }}</span>
+  <mat-icon class="text-[14px]">arrow_drop_down</mat-icon>
+</button>
+
+@if (isOpen()) {
+  <button
+    type="button"
+    class="fixed inset-0 z-10 w-full h-full cursor-default"
+    (click)="onClose()"
+    aria-label="Close dropdown"
+  ></button>
+
+  <div class="absolute right-0 z-20 w-40 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+    <div class="max-h-48 overflow-y-auto py-1">
+      @for (domain of domains(); track domain) {
+        <button
+          type="button"
+          class="w-full px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer flex items-center justify-between transition-colors"
+          (click)="onSelect(domain)"
+        >
+          <span class="text-slate-700 dark:text-slate-300">{{ domain }}</span>
+          @if (selectedDomain() === domain) {
+            <mat-icon class="text-indigo-600 text-sm">check</mat-icon>
+          }
+        </button>
+      }
+    </div>
+  </div>
+}

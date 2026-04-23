@@ -1,0 +1,103 @@
+<div class="owner-subscription-orders-filter bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-4">
+  <div class="owner-subscription-orders-filter-search-wrap flex-1 relative">
+    <mat-icon class="owner-subscription-orders-filter-search-icon absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">search</mat-icon>
+    <input
+      type="text"
+      [value]="searchQuery()"
+      placeholder="Search by tenant or order ID..."
+      class="owner-subscription-orders-filter-search-input w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"
+      (input)="onSearchInput($event)"
+    >
+  </div>
+
+  <div class="owner-subscription-orders-filter-controls flex gap-3 relative">
+    <div class="owner-subscription-orders-filter-dropdown-wrap relative w-48">
+      <button
+        class="owner-subscription-orders-filter-dropdown-btn w-full flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+        (click)="statusDropdownToggled.emit()"
+      >
+        <span class="owner-subscription-orders-filter-dropdown-label flex items-center gap-2">
+          <mat-icon class="owner-subscription-orders-filter-dropdown-label-icon text-sm text-slate-500">filter_list</mat-icon>
+          {{ selectedStatus() || 'All Statuses' }}
+        </span>
+        <mat-icon class="owner-subscription-orders-filter-dropdown-chevron text-sm transition-transform" [class.rotate-180]="isStatusDropdownOpen()">expand_more</mat-icon>
+      </button>
+
+      @if (isStatusDropdownOpen()) {
+        <button
+          type="button"
+          class="fixed inset-0 z-40 w-full h-full cursor-default"
+          (click)="statusDropdownClosed.emit()"
+          aria-label="Close status dropdown"
+        ></button>
+
+        <div class="owner-subscription-orders-filter-dropdown-panel absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in duration-200">
+          <div class="owner-subscription-orders-filter-dropdown-panel-head p-2 border-b border-slate-200 dark:border-slate-800">
+            <div class="owner-subscription-orders-filter-dropdown-search-wrap relative">
+              <mat-icon class="owner-subscription-orders-filter-dropdown-search-icon absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-500">search</mat-icon>
+              <input
+                type="text"
+                [value]="statusDropdownSearchQuery()"
+                placeholder="Search status..."
+                class="owner-subscription-orders-filter-dropdown-search-input w-full pl-7 pr-3 py-1.5 bg-slate-50 dark:bg-slate-800 border-none rounded-md text-xs focus:ring-1 focus:ring-indigo-500 dark:text-white"
+                (input)="onStatusSearchInput($event)"
+                (click)="$event.stopPropagation()"
+              >
+            </div>
+          </div>
+
+          <div class="owner-subscription-orders-filter-dropdown-options max-h-48 overflow-y-auto p-1">
+            <button
+              class="owner-subscription-orders-filter-dropdown-option w-full text-left px-3 py-2 rounded-lg text-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between"
+              [class.bg-indigo-600/10]="selectedStatus() === ''"
+              [class.text-indigo-600]="selectedStatus() === ''"
+              (click)="statusSelected.emit('')"
+            >
+              All Statuses
+              @if (selectedStatus() === '') {
+                <mat-icon class="text-xs">check</mat-icon>
+              }
+            </button>
+
+            @for (status of filteredStatuses(); track status) {
+              <button
+                class="owner-subscription-orders-filter-dropdown-option w-full text-left px-3 py-2 rounded-lg text-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between"
+                [class.bg-indigo-600/10]="selectedStatus() === status"
+                [class.text-indigo-600]="selectedStatus() === status"
+                (click)="statusSelected.emit(status)"
+              >
+                {{ status }}
+                @if (selectedStatus() === status) {
+                  <mat-icon class="text-xs">check</mat-icon>
+                }
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+@if (pendingCount() > 0) {
+  <div class="owner-subscription-orders-filter-pending-row flex items-center gap-3 mt-4">
+    <button
+      class="owner-subscription-orders-filter-pending-btn flex items-center gap-2 px-3 py-1.5 border rounded-full text-sm font-medium transition-all group shadow-sm"
+      [class]="selectedStatus() === 'Pending' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-300 text-amber-700 dark:text-amber-400' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-500 hover:border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20'"
+      (click)="statusSelected.emit('Pending')"
+    >
+      <span>Pending Orders</span>
+      <span class="owner-subscription-orders-filter-pending-count bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full text-[10px] group-hover:bg-amber-200">{{ pendingCount() }}</span>
+    </button>
+
+    @if (selectedStatus() !== '') {
+      <button
+        class="owner-subscription-orders-filter-clear-btn text-xs text-slate-500 hover:text-indigo-600 flex items-center gap-1"
+        (click)="statusSelected.emit('')"
+      >
+        <mat-icon class="text-sm">close</mat-icon>
+        Clear Filter
+      </button>
+    }
+  </div>
+}

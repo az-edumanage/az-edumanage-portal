@@ -1,0 +1,350 @@
+
+    <div class="space-y-6 relative min-h-screen">
+      <!-- Header -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+            <a routerLink="/tenant/groups" class="hover:text-indigo-600 transition-colors">Groups</a>
+            <mat-icon class="text-[10px]">chevron_right</mat-icon>
+            <span>Group Details</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ group()?.name }}</h2>
+            <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase rounded-full">
+              {{ group()?.status }}
+            </span>
+          </div>
+          <p class="text-slate-500 dark:text-slate-500 text-sm">{{ group()?.subject }} • {{ group()?.teacher }}</p>
+        </div>
+        <div class="flex gap-2">
+          <a 
+            [routerLink]="['/tenant/groups', group()?.id, 'edit']"
+            class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
+          >
+            <mat-icon class="text-sm">edit</mat-icon>
+            Edit Group
+          </a>
+          <a 
+            [routerLink]="['/tenant/groups', group()?.id, 'enroll']"
+            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+          >
+            <mat-icon class="text-sm">person_add</mat-icon>
+            Enroll Student
+          </a>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Total Students</p>
+          <div class="flex items-end justify-between">
+            <h4 class="text-2xl font-bold text-slate-900 dark:text-white">{{ group()?.enrolled }} / {{ group()?.capacity }}</h4>
+            <div class="text-emerald-500 flex items-center text-xs font-medium">
+              <mat-icon class="text-xs">trending_up</mat-icon>
+              82%
+            </div>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Avg. Attendance</p>
+          <div class="flex items-end justify-between">
+            <h4 class="text-2xl font-bold text-slate-900 dark:text-white">94.2%</h4>
+            <div class="text-emerald-500 flex items-center text-xs font-medium">
+              <mat-icon class="text-xs">trending_up</mat-icon>
+              2.4%
+            </div>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Absence Rate</p>
+          <div class="flex items-end justify-between">
+            <h4 class="text-2xl font-bold text-slate-900 dark:text-white">5.8%</h4>
+            <div class="text-rose-500 flex items-center text-xs font-medium">
+              <mat-icon class="text-xs">trending_down</mat-icon>
+              1.1%
+            </div>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Monthly Revenue</p>
+          <div class="flex items-end justify-between">
+            <h4 class="text-2xl font-bold text-slate-900 dark:text-white">{{ (group()?.enrolled || 0) * (group()?.fees || 0) }} EGP</h4>
+            <div class="text-slate-500 flex items-center text-xs font-medium">
+              Target Met
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Students List -->
+        <div class="lg:col-span-2 space-y-4">
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+              <h3 class="font-bold text-slate-900 dark:text-white">Enrolled Students</h3>
+              <div class="flex gap-2">
+                <button class="p-1.5 text-slate-500 hover:text-indigo-600 transition-colors"><mat-icon class="text-sm">search</mat-icon></button>
+                <button class="p-1.5 text-slate-500 hover:text-indigo-600 transition-colors"><mat-icon class="text-sm">filter_list</mat-icon></button>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th class="px-6 py-3 font-medium">Student</th>
+                    <th class="px-6 py-3 font-medium">Attendance</th>
+                    <th class="px-6 py-3 font-medium">Last Seen</th>
+                    <th class="px-6 py-3 font-medium text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                  @for (student of students(); track student.id) {
+                    <tr 
+                      (click)="selectStudent(student)"
+                      class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+                      [class.bg-indigo-600/10]="selectedStudent()?.id === student.id"
+                    >
+                      <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                          <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-500 font-bold text-xs">
+                            {{ student.name.charAt(0) }}
+                          </div>
+                          <div>
+                            <p class="font-medium text-slate-900 dark:text-white">{{ student.name }}</p>
+                            <p class="text-[10px] text-slate-500">{{ student.email }}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="flex items-center gap-2">
+                          <div class="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden min-w-[60px]">
+                            <div class="ds-progress-fill" [style.--ds-progress]="student.attendanceRate + '%'"></div>
+                          </div>
+                          <span class="text-xs font-medium text-slate-500 dark:text-slate-500">{{ student.attendanceRate }}%</span>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4 text-slate-500 dark:text-slate-500 text-xs">{{ student.lastAttendance }}</td>
+                      <td class="px-6 py-4 text-right">
+                        <button class="p-1 text-slate-500 hover:text-indigo-600 transition-colors"><mat-icon class="text-sm">more_vert</mat-icon></button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar: Settings & Info -->
+        <div class="space-y-6">
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+            <div>
+              <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Group Settings</h3>
+              <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <mat-icon class="text-slate-500 text-sm">lock_open</mat-icon>
+                    <span class="text-sm text-slate-700 dark:text-slate-300">Self Enrollment</span>
+                  </div>
+                  <span class="text-[10px] font-bold text-rose-500 uppercase">Disabled</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <mat-icon class="text-slate-500 text-sm">verified_user</mat-icon>
+                    <span class="text-sm text-slate-700 dark:text-slate-300">Teacher Approval</span>
+                  </div>
+                  <span class="text-[10px] font-bold text-emerald-500 uppercase">Required</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <mat-icon class="text-slate-500 text-sm">receipt_long</mat-icon>
+                    <span class="text-sm text-slate-700 dark:text-slate-300">Auto Invoicing</span>
+                  </div>
+                  <span class="text-[10px] font-bold text-emerald-500 uppercase">Enabled</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-6 border-t border-slate-200 dark:border-slate-800">
+              <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Schedule Details</h3>
+              <div class="space-y-3">
+                <div class="flex items-center gap-3">
+                  <mat-icon class="text-slate-500 text-sm">event</mat-icon>
+                  <span class="text-sm text-slate-700 dark:text-slate-300">{{ group()?.schedule }}</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <mat-icon class="text-slate-500 text-sm">meeting_room</mat-icon>
+                  <span class="text-sm text-slate-700 dark:text-slate-300">{{ group()?.room }}</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <mat-icon class="text-slate-500 text-sm">payments</mat-icon>
+                  <span class="text-sm text-slate-700 dark:text-slate-300">{{ group()?.fees }} EGP / Month</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="bg-indigo-600 rounded-xl p-6 text-white space-y-4">
+            <h3 class="font-bold">Quick Actions</h3>
+            <div class="grid grid-cols-2 gap-2">
+              <a [routerLink]="['/tenant/groups', group()?.id, 'attendance']" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+                <mat-icon>how_to_reg</mat-icon>
+                <span class="text-[10px] font-bold uppercase">Attendance</span>
+              </a>
+              <a [routerLink]="['/tenant/groups', group()?.id, 'exam']" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+                <mat-icon>assignment</mat-icon>
+                <span class="text-[10px] font-bold uppercase">Exam</span>
+              </a>
+              <a [routerLink]="['/tenant/groups', group()?.id, 'broadcast']" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+                <mat-icon>mail</mat-icon>
+                <span class="text-[10px] font-bold uppercase">Broadcast</span>
+              </a>
+              <button class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+                <mat-icon>analytics</mat-icon>
+                <span class="text-[10px] font-bold uppercase">Report</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Details Overlay Panel -->
+      @if (selectedStudent(); as student) {
+        <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[150] flex justify-end animate-in fade-in duration-300">
+          <div class="w-full max-w-md bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+            <!-- Panel Header -->
+            <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-950/50">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center text-lg font-bold">
+                  {{ student.name.charAt(0) }}
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-900 dark:text-white">{{ student.name }}</h3>
+                  <p class="text-xs text-slate-500">Student Profile</p>
+                </div>
+              </div>
+              <button (click)="selectedStudent.set(null)" class="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <!-- Panel Content -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-8">
+              <!-- Payment Status -->
+              <section class="space-y-3">
+                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                  <mat-icon class="text-sm">payments</mat-icon>
+                  Financial Status
+                </h4>
+                <div class="p-4 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 rounded-xl">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm text-rose-700 dark:text-rose-400 font-medium">Outstanding Dues</span>
+                    <span class="text-lg font-bold text-rose-700 dark:text-rose-400">1,250 EGP</span>
+                  </div>
+                  <p class="text-[10px] text-rose-600/80">Last payment: 500 EGP on Feb 10, 2026</p>
+                  <button class="w-full mt-3 py-2 bg-rose-600 text-white rounded-lg text-xs font-bold hover:bg-rose-700 transition-colors">
+                    Generate Payment Link
+                  </button>
+                </div>
+              </section>
+
+              <!-- Attendance Stats -->
+              <section class="space-y-3">
+                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                  <mat-icon class="text-sm">event_available</mat-icon>
+                  Attendance & Absence
+                </h4>
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase">Present</p>
+                    <p class="text-xl font-bold text-emerald-600">18 Sessions</p>
+                  </div>
+                  <div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase">Absent</p>
+                    <p class="text-xl font-bold text-rose-600">2 Sessions</p>
+                  </div>
+                </div>
+                <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                  <p class="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">Recent Absences</p>
+                  <ul class="space-y-2">
+                    <li class="flex items-center justify-between text-[10px]">
+                      <span class="text-slate-500">Feb 15, 2026</span>
+                      <span class="px-2 py-0.5 bg-rose-100 text-rose-700 rounded-full font-bold">UNEXCUSED</span>
+                    </li>
+                    <li class="flex items-center justify-between text-[10px]">
+                      <span class="text-slate-500">Feb 08, 2026</span>
+                      <span class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-bold">EXCUSED</span>
+                    </li>
+                  </ul>
+                </div>
+              </section>
+
+              <!-- Parent Contact -->
+              <section class="space-y-3">
+                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                  <mat-icon class="text-sm">family_restroom</mat-icon>
+                  Parent Contact
+                </h4>
+                <div class="p-4 bg-indigo-600/10 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/20 rounded-xl space-y-3">
+                  <div>
+                    <p class="text-[10px] text-indigo-400 font-bold uppercase">Parent Name</p>
+                    <p class="text-sm font-bold text-slate-900 dark:text-white">Mr. Mohamed Ali</p>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-[10px] text-indigo-400 font-bold uppercase">Phone</p>
+                      <p class="text-sm font-medium text-slate-700 dark:text-slate-300">+20 123 456 7890</p>
+                    </div>
+                    <div class="flex gap-2">
+                      <button class="p-2 bg-white dark:bg-slate-800 rounded-lg text-indigo-600 shadow-sm hover:bg-indigo-600/10 transition-colors">
+                        <mat-icon class="text-sm">phone</mat-icon>
+                      </button>
+                      <button class="p-2 bg-white dark:bg-slate-800 rounded-lg text-emerald-600 shadow-sm hover:bg-emerald-50 transition-colors">
+                        <mat-icon class="text-sm">chat</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                  <button class="w-full py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2">
+                    <mat-icon class="text-sm">notifications_active</mat-icon>
+                    Send Absence Notification
+                  </button>
+                </div>
+              </section>
+
+              <!-- Administrative Actions -->
+              <section class="space-y-3">
+                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                  <mat-icon class="text-sm">admin_panel_settings</mat-icon>
+                  Administrative Actions
+                </h4>
+                <div class="grid grid-cols-1 gap-2">
+                  <button class="flex items-center justify-between p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-colors group">
+                    <div class="flex items-center gap-3">
+                      <mat-icon class="text-slate-500 group-hover:text-rose-500">block</mat-icon>
+                      <div class="text-left">
+                        <p class="text-sm font-bold text-slate-700 dark:text-slate-300 group-hover:text-rose-600">Forbid Attendance</p>
+                        <p class="text-[10px] text-slate-500">Temporary block from sessions</p>
+                      </div>
+                    </div>
+                    <mat-icon class="text-slate-300">chevron_right</mat-icon>
+                  </button>
+                  <button class="flex items-center justify-between p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-colors group">
+                    <div class="flex items-center gap-3">
+                      <mat-icon class="text-slate-500 group-hover:text-amber-500">pause_circle</mat-icon>
+                      <div class="text-left">
+                        <p class="text-sm font-bold text-slate-700 dark:text-slate-300 group-hover:text-amber-600">Set Inactive</p>
+                        <p class="text-[10px] text-slate-500">Suspend student enrollment</p>
+                      </div>
+                    </div>
+                    <mat-icon class="text-slate-300">chevron_right</mat-icon>
+                  </button>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  

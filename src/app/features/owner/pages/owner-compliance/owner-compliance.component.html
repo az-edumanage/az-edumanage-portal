@@ -1,0 +1,429 @@
+
+    <div class="owner-compliance-page space-y-6">
+      <!-- Header -->
+      <div class="owner-compliance-header flex items-center justify-between">
+        <div>
+          <h2 class="owner-compliance-title text-2xl font-bold text-slate-900 dark:text-white">Compliance & Data Governance</h2>
+          <p class="owner-compliance-subtitle text-slate-500 dark:text-slate-500 text-sm">Manage data retention, privacy requests, and security policies across the platform.</p>
+        </div>
+        <div class="flex gap-3">
+          <button class="owner-compliance-header-btn gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
+            <mat-icon class="text-sm">download</mat-icon>
+            Export Report
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabs Navigation -->
+      <div class="border-b border-slate-200 dark:border-slate-800">
+        <nav class="owner-compliance-tabs flex">
+          @for (tab of tabs; track tab.id) {
+            <button 
+              (click)="activeTab.set(tab.id)"
+              class="owner-compliance-tab-btn pb-4 text-sm font-medium"
+              [class.text-indigo-600]="activeTab() === tab.id"
+              [class.text-slate-500]="activeTab() !== tab.id"
+            >
+              {{ tab.label }}
+              @if (activeTab() === tab.id) {
+                <div class="owner-compliance-tab-indicator"></div>
+              }
+            </button>
+          }
+        </nav>
+      </div>
+
+      <!-- Tab Content -->
+      <div class="mt-6">
+        <!-- 1. Data Retention Policy -->
+        @if (activeTab() === 'retention') {
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="owner-compliance-card p-6 space-y-6">
+              <h3 class="owner-compliance-card-title text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <mat-icon class="owner-compliance-card-icon text-indigo-600">timer</mat-icon>
+                Retention Periods
+              </h3>
+              
+              <div class="space-y-4">
+                <div>
+                  <label for="student-retention" class="owner-compliance-field-label">Student Data Retention</label>
+                  <div class="flex items-center gap-3">
+                    <input id="student-retention" type="number" class="owner-compliance-input owner-compliance-select-size px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-700" value="5">
+                    <span class="text-sm text-slate-500">Years after graduation</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="financial-retention" class="owner-compliance-field-label">Financial Records Retention</label>
+                  <div class="flex items-center gap-3">
+                    <input id="financial-retention" type="number" class="owner-compliance-input owner-compliance-select-size px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-700" value="7">
+                    <span class="text-sm text-slate-500">Years (Legal Requirement)</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="system-logs-retention" class="owner-compliance-field-label">System Logs Retention</label>
+                  <div class="flex items-center gap-3">
+                    <input id="system-logs-retention" type="number" class="owner-compliance-input owner-compliance-select-size px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-700" value="90">
+                    <span class="text-sm text-slate-500">Days</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="owner-compliance-card p-6 space-y-6">
+              <h3 class="owner-compliance-card-title text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <mat-icon class="owner-compliance-card-icon text-indigo-600">auto_delete</mat-icon>
+                Automated Actions
+              </h3>
+              
+              <div class="space-y-6">
+                <div class="owner-compliance-toggle-row flex justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-slate-900 dark:text-white">Auto Delete Expired Data</p>
+                    <p class="text-xs text-slate-500">Permanently remove data once retention period ends.</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input appToggleInput type="checkbox" checked>
+                    <div appToggleTrack></div>
+                  </label>
+                </div>
+
+                <div class="owner-compliance-toggle-row flex justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-slate-900 dark:text-white">Archive Instead of Delete</p>
+                    <p class="text-xs text-slate-500">Move data to cold storage for 2 additional years before deletion.</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input appToggleInput type="checkbox">
+                    <div appToggleTrack></div>
+                  </label>
+                </div>
+
+                <div class="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                  <div class="flex gap-3">
+                    <mat-icon class="text-amber-600">warning</mat-icon>
+                    <p class="text-xs text-amber-800 dark:text-amber-400">
+                      Changes to retention policies will trigger a system-wide re-evaluation of data. This process can take several hours.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- 2. Tenant Data Management -->
+        @if (activeTab() === 'tenant') {
+          <div class="space-y-6">
+            <div class="owner-compliance-card p-6">
+              <h3 class="owner-compliance-card-title text-lg font-semibold text-slate-900 dark:text-white mb-6">Data Portability & Deletion</h3>
+              
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <button class="owner-compliance-action-tile flex flex-col items-center justify-center p-6 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 group">
+                  <mat-icon class="owner-compliance-action-icon text-3xl mb-2 text-indigo-600">cloud_download</mat-icon>
+                  <span class="text-sm font-medium">Export Full Tenant Data</span>
+                  <span class="text-xs text-slate-500 mt-1">JSON/CSV Format</span>
+                </button>
+                <button class="owner-compliance-action-tile flex flex-col items-center justify-center p-6 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 group">
+                  <mat-icon class="owner-compliance-action-icon text-3xl mb-2 text-emerald-500">account_balance</mat-icon>
+                  <span class="text-sm font-medium">Export Financial Data</span>
+                  <span class="text-xs text-slate-500 mt-1">Audit-ready PDF/Excel</span>
+                </button>
+                <button 
+                  (click)="showDeleteDialog = true"
+                  class="owner-compliance-action-tile flex flex-col items-center justify-center p-6 border border-red-100 dark:border-red-900/30 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 group"
+                >
+                  <mat-icon class="owner-compliance-action-icon text-3xl mb-2 text-red-500">delete_forever</mat-icon>
+                  <span class="text-sm font-medium text-red-600">Delete Tenant Data</span>
+                  <span class="text-xs text-red-400 mt-1">Irreversible Action</span>
+                </button>
+              </div>
+
+              <div class="owner-compliance-info-panel p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex gap-3">
+                <mat-icon class="text-indigo-600">info</mat-icon>
+                <div class="text-sm text-blue-800 dark:text-blue-400">
+                  <p class="font-medium">GDPR Compliance Note</p>
+                  <p class="mt-1">All data exports are encrypted and logged. Deletion requests must be fulfilled within 30 days of the request date.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- 3. Privacy Requests -->
+        @if (activeTab() === 'privacy') {
+          <div class="owner-compliance-card owner-compliance-table-shell">
+            <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+              <h3 class="owner-compliance-table-title text-lg font-semibold text-slate-900 dark:text-white">Active Privacy Requests</h3>
+              <div class="flex gap-2">
+                <span class="px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold rounded-full">4 Pending</span>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm">
+                <thead class="owner-compliance-table-head bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500">
+                  <tr>
+                    <th class="px-6 py-3 font-medium">Request ID</th>
+                    <th class="px-6 py-3 font-medium">Tenant</th>
+                    <th class="px-6 py-3 font-medium">Type</th>
+                    <th class="px-6 py-3 font-medium">Status</th>
+                    <th class="px-6 py-3 font-medium">Request Date</th>
+                    <th class="px-6 py-3 font-medium">Time Remaining</th>
+                    <th class="px-6 py-3 font-medium text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                  @for (req of privacyRequests; track req.id) {
+                    <tr class="owner-compliance-table-row hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                      <td class="px-6 py-4 font-mono text-xs text-slate-500">{{ req.id }}</td>
+                      <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">{{ req.tenant }}</td>
+                      <td class="px-6 py-4">
+                        <span class="owner-compliance-badge px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                          [class.bg-blue-100]="req.type === 'Access'"
+                          [class.text-blue-700]="req.type === 'Access'"
+                          [class.bg-purple-100]="req.type === 'Deletion'"
+                          [class.text-purple-700]="req.type === 'Deletion'"
+                        >
+                          {{ req.type }}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4">
+                        <span class="owner-compliance-status flex items-center gap-1.5">
+                          <span class="w-1.5 h-1.5 rounded-full"
+                            [class.bg-amber-500]="req.status === 'Pending'"
+                            [class.bg-blue-500]="req.status === 'In Progress'"
+                            [class.bg-green-500]="req.status === 'Completed'"
+                          ></span>
+                          {{ req.status }}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 text-slate-500">{{ req.requestDate }}</td>
+                      <td class="px-6 py-4">
+                          <div class="owner-compliance-progress-row flex items-center">
+                            <div class="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden w-24">
+                            <div class="ds-progress-fill" [style.--ds-progress]="((req.daysLeft / 30) * 100) + '%'"></div>
+                          </div>
+                          <span class="text-xs font-medium" [class.text-red-500]="req.daysLeft < 5">
+                            {{ req.daysLeft }}d left
+                          </span>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4 text-right">
+                        <button class="text-indigo-600 hover:text-indigo-800 font-medium">Process</button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        <!-- 4. Security Policies -->
+        @if (activeTab() === 'security') {
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="owner-compliance-card p-6 space-y-6">
+              <h3 class="owner-compliance-card-title text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <mat-icon class="owner-compliance-card-icon text-indigo-600">password</mat-icon>
+                Password & Authentication
+              </h3>
+              
+              <div class="space-y-4">
+                <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <div>
+                    <p class="text-sm font-medium">Enforce Multi-Factor Authentication (MFA)</p>
+                    <p class="text-xs text-slate-500">Required for all administrative accounts.</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input appToggleInput type="checkbox" checked>
+                    <div appToggleTrack></div>
+                  </label>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label for="min-password-length" class="block text-xs font-bold text-slate-500 uppercase mb-1">Min Password Length</label>
+                    <select appSelect id="min-password-length" class="w-full px-3 py-2 text-sm">
+                      <option>8 Characters</option>
+                      <option selected>12 Characters</option>
+                      <option>16 Characters</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="session-timeout" class="block text-xs font-bold text-slate-500 uppercase mb-1">Session Timeout</label>
+                    <select appSelect id="session-timeout" class="w-full px-3 py-2 text-sm">
+                      <option>15 Minutes</option>
+                      <option selected>30 Minutes</option>
+                      <option>1 Hour</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="space-y-2">
+                  <label class="flex items-center gap-2 text-sm">
+                    <input appCheckbox type="checkbox" checked>
+                    Require Special Characters
+                  </label>
+                  <label class="flex items-center gap-2 text-sm">
+                    <input appCheckbox type="checkbox" checked>
+                    Require Numbers
+                  </label>
+                  <label class="flex items-center gap-2 text-sm">
+                    <input appCheckbox type="checkbox">
+                    Prevent Password Reuse (Last 5)
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="owner-compliance-card p-6 space-y-6">
+              <h3 class="owner-compliance-card-title text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <mat-icon class="owner-compliance-card-icon text-indigo-600">lan</mat-icon>
+                Network Restrictions
+              </h3>
+              
+              <div class="space-y-4">
+                <div>
+                  <label for="ip-whitelist" class="owner-compliance-field-label">Allowed IP Ranges (Whitelist)</label>
+                  <textarea 
+                    id="ip-whitelist"
+                    rows="4"
+                    placeholder="e.g. 192.168.1.1/24, 10.0.0.0/8"
+                    class="owner-compliance-textarea w-full px-3 py-2 text-sm font-mono dark:bg-slate-800 dark:border-slate-700"
+                  ></textarea>
+                  <p class="text-xs text-slate-500 mt-2">Leave empty to allow access from any IP address.</p>
+                </div>
+
+                <div class="p-4 border border-indigo-100 dark:border-indigo-900/30 bg-indigo-600/10/30 dark:bg-indigo-900/10 rounded-lg">
+                  <h4 class="text-sm font-semibold text-indigo-900 dark:text-indigo-300 mb-2">Security Recommendation</h4>
+                  <p class="text-xs text-indigo-800/70 dark:text-indigo-400/70 leading-relaxed">
+                    We recommend enabling IP restrictions for the Owner Dashboard to ensure only authorized corporate networks can access platform-wide settings.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- 5. Compliance Logs -->
+        @if (activeTab() === 'logs') {
+          <div class="owner-compliance-card owner-compliance-table-shell">
+            <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+              <h3 class="owner-compliance-table-title text-lg font-semibold text-slate-900 dark:text-white">Compliance Audit Trail</h3>
+              <div class="flex gap-2">
+                <button class="owner-compliance-header-btn p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+                  <mat-icon>filter_list</mat-icon>
+                </button>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm">
+                <thead class="owner-compliance-table-head bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500">
+                  <tr>
+                    <th class="px-6 py-3 font-medium">Operation</th>
+                    <th class="px-6 py-3 font-medium">Actor</th>
+                    <th class="px-6 py-3 font-medium">Date & Time</th>
+                    <th class="px-6 py-3 font-medium">Changes</th>
+                    <th class="px-6 py-3 font-medium text-right">Evidence</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                  @for (log of complianceLogs; track log.id) {
+                    <tr class="owner-compliance-table-row hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                      <td class="px-6 py-4">
+                        <div class="flex items-center gap-2">
+                          <mat-icon class="text-slate-500 text-sm">history</mat-icon>
+                          <span class="font-medium text-slate-900 dark:text-white">{{ log.action }}</span>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ log.user }}</td>
+                      <td class="px-6 py-4 text-slate-500">{{ log.date }}</td>
+                      <td class="px-6 py-4">
+                        <span class="text-xs font-mono bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded truncate max-w-[200px] block">
+                          {{ log.details }}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 text-right">
+                        <button class="text-slate-500 hover:text-indigo-600">
+                          <mat-icon>visibility</mat-icon>
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Delete Confirmation Dialog -->
+      @if (showDeleteDialog) {
+        <div class="owner-compliance-modal bg-slate-900/60 backdrop-blur-sm">
+          <div class="owner-compliance-modal-card bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800">
+            <div class="p-6">
+              <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
+                <mat-icon class="text-red-600">warning</mat-icon>
+              </div>
+              <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Confirm Tenant Deletion</h3>
+              <p class="text-slate-500 dark:text-slate-500 text-sm mb-6">
+                This action will permanently remove all data associated with the tenant. This cannot be undone.
+              </p>
+
+              <div class="space-y-4">
+                <div>
+                  <div class="owner-compliance-field-label owner-compliance-field-label--xs text-slate-500">Deletion Type</div>
+                  <div class="flex gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input appRadio type="radio" name="delType" value="soft" [(ngModel)]="deleteType">
+                      <span class="text-sm">Soft Delete (30d recovery)</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input appRadio type="radio" name="delType" value="hard" [(ngModel)]="deleteType" class="ds-radio--danger">
+                      <span class="text-sm text-red-600 font-medium">Hard Delete</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="delete-reason" class="owner-compliance-field-label owner-compliance-field-label--xs text-slate-500">Reason for Deletion <span class="text-red-500">*</span></label>
+                  <textarea 
+                    id="delete-reason"
+                    [(ngModel)]="deleteReason"
+                    rows="3"
+                    placeholder="Provide a mandatory reason for this action..."
+                    class="owner-compliance-textarea w-full px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-700"
+                  ></textarea>
+                </div>
+
+                <div class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                  <label class="flex items-start gap-3 cursor-pointer">
+                    <input appCheckbox type="checkbox" [(ngModel)]="confirmIrreversible" class="mt-1 ds-checkbox--danger">
+                    <span class="text-xs text-red-800 dark:text-red-400">
+                      I understand that this action is irreversible and complies with the platform's data governance policies.
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="owner-compliance-modal-actions p-4 bg-slate-50 dark:bg-slate-800/50 flex">
+              <button 
+                (click)="showDeleteDialog = false"
+                class="owner-compliance-modal-btn px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button 
+                [disabled]="!deleteReason || !confirmIrreversible"
+                class="owner-compliance-modal-btn owner-compliance-modal-btn--danger px-4 py-2 bg-red-600 hover:bg-red-700 text-white shadow-sm shadow-red-500/20"
+              >
+                Confirm Deletion
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  
