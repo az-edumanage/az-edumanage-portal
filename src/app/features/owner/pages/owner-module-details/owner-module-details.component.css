@@ -46,3 +46,18 @@
   line-height: 1.25rem;
   color: #64748b;
 }
+
+.owner-module-details-meta-value {
+  margin-top: 0.25rem;
+  color: #0f172a;
+}
+
+:host-context(.dark) .owner-module-details-meta-value {
+  color: #fff;
+}
+
+.owner-module-details-muted-copy {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #64748b;
+}

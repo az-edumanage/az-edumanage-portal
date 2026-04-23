@@ -108,6 +108,7 @@ Status legend:
 - [x] `Done` Execute Owner Closeout 02 safe extraction on `owner-module-details` with focused owner-modules parity validation (`docs/ds-feature-adoption-owner-closeout-02.md`).
 - [x] `Done` Execute Owner Closeout 03 parity-safe micro extraction on `owner-settings` (icon utility replacement) with focused owner-settings parity validation (`docs/ds-feature-adoption-owner-closeout-03.md`).
 - [x] `Done` Execute Owner Closeout 04 parity-safe micro extraction on `owner-settings` (non-layout text utility bundles) with focused owner-settings parity validation (`docs/ds-feature-adoption-owner-closeout-04.md`).
+- [x] `Done` Execute Owner Closeout 05 parity-safe extraction on `owner-module-details` (muted-copy/meta-value utility bundles) with focused owner-modules parity validation (`docs/ds-feature-adoption-owner-closeout-05.md`).
 - [x] `Done` Audit and inventory inline styles (`style=\"...\"`, `[style.*]`, `[ngStyle]`) by feature (`docs/ds-inline-style-inventory.md`).
 - [x] `Done` Execute first P0 inline-style conversion to DS CSS-variable pattern (`owner-overview` regional progress bars) (`docs/ds-token-adoption-slice-01.md`).
 - [x] `Done` Execute second P0 inline-style conversion to DS CSS-variable pattern (`owner-billing` revenue bars) (`docs/ds-token-adoption-slice-01.md`).

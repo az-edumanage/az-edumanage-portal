@@ -39,3 +39,4 @@ Complete the remaining Owner migration umbrella task by eliminating high-volume 
 - Safe closeout continuation executed on `owner-module-details` in a separate record (`docs/ds-feature-adoption-owner-closeout-02.md`).
 - Parity-safe retry resumed on `owner-settings` with a micro extraction (icon utilities) and focused visual pass (`docs/ds-feature-adoption-owner-closeout-03.md`).
 - Additional parity-safe `owner-settings` text utility extraction completed with focused visual pass (`docs/ds-feature-adoption-owner-closeout-04.md`).
+- Additional parity-safe `owner-module-details` utility extraction completed with focused owner-modules visual pass (`docs/ds-feature-adoption-owner-closeout-05.md`).

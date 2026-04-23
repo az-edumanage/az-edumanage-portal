@@ -15,6 +15,7 @@ Complete Owner migration closure to semantic/component token classes by targetin
 - [ ] Execute `owner-tenant-details` extraction pass (blocked by focused parity drift; rollback applied).
 - [x] Execute safe closeout extraction pass on `owner-module-details` (`docs/ds-feature-adoption-owner-closeout-02.md`).
 - [x] Execute `owner-module-details` follow-up extraction pass (titles/meta labels) with no owner-modules visual drift.
+- [x] Execute `owner-module-details` follow-up extraction pass (muted copy/meta values) with no owner-modules visual drift (`docs/ds-feature-adoption-owner-closeout-05.md`).
 - [x] Validate build/lint and refresh focused visual parity baseline for `owner-settings` route.
 - [x] Validate focused visual parity for `owner-modules` and `owner-tenant-details` after rollback/adjustments.
 

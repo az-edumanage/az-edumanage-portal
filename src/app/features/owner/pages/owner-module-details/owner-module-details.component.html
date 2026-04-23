@@ -173,7 +173,7 @@
             <div class="space-y-4">
               <div>
                 <h3 class="owner-module-details-section-title">Feature Catalog</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-500">Select which features are available when this module is activated.</p>
+                <p class="owner-module-details-muted-copy">Select which features are available when this module is activated.</p>
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 @for (feature of features(); track feature.id) {
@@ -197,7 +197,7 @@
             <div class="space-y-4 pt-6 border-t border-slate-200 dark:border-slate-800">
               <div>
                 <h3 class="owner-module-details-section-title">Limits / Rules</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-500">Define system constraints and business rules for this module.</p>
+                <p class="owner-module-details-muted-copy">Define system constraints and business rules for this module.</p>
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 @for (limit of limits(); track limit.id) {
@@ -244,16 +244,16 @@
                 <div class="space-y-4">
                   <div>
                     <div class="owner-module-details-meta-label">Description</div>
-                    <div class="text-slate-900 dark:text-white mt-1">{{ module().description }}</div>
+                    <div class="owner-module-details-meta-value">{{ module().description }}</div>
                   </div>
                   <div class="grid grid-cols-2 gap-4">
                     <div>
                       <div class="owner-module-details-meta-label">Created At</div>
-                      <div class="text-slate-900 dark:text-white mt-1">Jan 12, 2023</div>
+                      <div class="owner-module-details-meta-value">Jan 12, 2023</div>
                     </div>
                     <div>
                       <div class="owner-module-details-meta-label">Last Updated</div>
-                      <div class="text-slate-900 dark:text-white mt-1">{{ module().lastUpdated }}</div>
+                      <div class="owner-module-details-meta-value">{{ module().lastUpdated }}</div>
                     </div>
                   </div>
                 </div>

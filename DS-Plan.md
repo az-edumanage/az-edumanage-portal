@@ -93,5 +93,6 @@ Build an enterprise-grade Design System on top of the current Angular + Tailwind
 - Feature Adoption Closeout 02 is completed for `owner-module-details` (`docs/ds-feature-adoption-owner-closeout-02.md`).
 - Feature Adoption Closeout 03 is completed for `owner-settings` icon utility extraction (`docs/ds-feature-adoption-owner-closeout-03.md`).
 - Feature Adoption Closeout 04 is completed for `owner-settings` non-layout text utility extraction (`docs/ds-feature-adoption-owner-closeout-04.md`).
+- Feature Adoption Closeout 05 is completed for `owner-module-details` muted-copy/meta-value utility extraction (`docs/ds-feature-adoption-owner-closeout-05.md`).
 - `owner-tenant-details` closeout extraction remains rollback-protected pending parity-safe strategy.
-- Next active slice is Owner Closeout 01 / Slice 5 (continue parity-safe micro extractions in `owner-settings`; keep `owner-tenant-details` rollback-protected until parity-safe pattern is identified).
+- Next active slice is Owner Closeout 01 / Slice 6 (continue parity-safe micro extractions in `owner-settings`; keep `owner-tenant-details` rollback-protected until parity-safe pattern is identified).
