@@ -4,6 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../../../../core/services/dashboard.service';
+import { I18nService } from '../../../../core/services/i18n.service';
 import { UiPagerButtonComponent } from '../../../../shared/ui';
 import { OwnerTenantsListFacade } from '../../state/owner-tenants-list.facade';
 import { Tenant } from '../../models/owner-tenants.models';
@@ -17,7 +18,8 @@ import { Tenant } from '../../models/owner-tenants.models';
 })
 export class OwnerTenantsListComponent {
   private router = inject(Router);
-  private dashboardService = inject(DashboardService);
+  private readonly dashboardService = inject(DashboardService);
+  private readonly i18nService = inject(I18nService);
   private readonly tenantsFacade = inject(OwnerTenantsListFacade);
 
   readonly searchQuery = this.tenantsFacade.searchQuery;
@@ -27,6 +29,9 @@ export class OwnerTenantsListComponent {
   readonly activePlanDropdown = this.tenantsFacade.activePlanDropdown;
   readonly pendingPlanChange = this.tenantsFacade.pendingPlanChange;
   readonly copyNotification = this.tenantsFacade.copyNotification;
+  t(text: string): string {
+    return this.i18nService.t(text);
+  }
 
   readonly selectedStatuses = this.tenantsFacade.selectedStatuses;
   readonly selectedPlans = this.tenantsFacade.selectedPlans;

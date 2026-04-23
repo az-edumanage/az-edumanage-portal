@@ -3,12 +3,12 @@
       <!-- Header -->
       <div class="owner-tenants-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 class="owner-tenants-title text-2xl font-bold text-slate-900 dark:text-white">Tenants Management</h2>
-          <p class="owner-tenants-subtitle text-slate-500 dark:text-slate-500 text-sm">Manage all organizations and centers on the platform.</p>
+          <h2 class="owner-tenants-title text-2xl font-bold text-slate-900 dark:text-white">{{ t('owner.tenants.title') }}</h2>
+          <p class="owner-tenants-subtitle text-slate-500 dark:text-slate-500 text-sm">{{ t('owner.tenants.subtitle') }}</p>
         </div>
         <a routerLink="/owner/tenants/create" class="owner-tenants-create-btn flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20 self-start sm:self-auto">
           <mat-icon class="text-sm">add</mat-icon>
-          Create Tenant
+          {{ t('owner.tenants.createTenant') }}
         </a>
       </div>
 
@@ -30,7 +30,7 @@
             class="owner-tenants-filter-btn flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
           >
             <mat-icon class="text-sm">filter_list</mat-icon>
-            Filters
+            {{ t('owner.tenants.filters') }}
             @if (activeFilterCount() > 0) {
               <span class="owner-tenants-filter-count bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ activeFilterCount() }}</span>
             }
@@ -45,7 +45,7 @@
             ></button>
             <div class="owner-tenants-filters-dropdown absolute right-0 top-full mt-2 z-20 w-72 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
               <div class="owner-tenants-filters-head p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                <h3 class="owner-tenants-filters-title font-semibold text-slate-900 dark:text-white">Filters</h3>
+                <h3 class="owner-tenants-filters-title font-semibold text-slate-900 dark:text-white">{{ t('owner.tenants.filters') }}</h3>
                 @if (activeFilterCount() > 0) {
                   <button (click)="clearFilters()" class="owner-tenants-clear-filters text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Clear all</button>
                 }

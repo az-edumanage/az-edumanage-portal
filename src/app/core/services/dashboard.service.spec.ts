@@ -80,12 +80,10 @@ describe('DashboardService', () => {
   });
 
   it('should persist theme and switch classes when toggled', () => {
-    const setItemSpy = spyOn(Storage.prototype, 'setItem').and.callThrough();
     service.initTheme();
 
     service.toggleTheme();
 
-    expect(setItemSpy).toHaveBeenCalledWith('theme', 'dark');
     expect(localStorage.getItem('theme')).toBe('dark');
     expect(document.documentElement.classList.contains('theme-brand')).toBe(true);
     expect(document.documentElement.classList.contains('theme-dark')).toBe(true);

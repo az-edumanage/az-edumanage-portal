@@ -16,34 +16,65 @@
         </h1>
       </div>
 
-      <!-- Right: Actions -->
-      <div class="flex items-center gap-3">
-        <!-- Role Switcher (Demo Only) -->
-        <div class="hidden md:flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1 mr-4">
-          @for (role of roles; track role) {
-            <button 
-              (click)="setRole(role)"
-              class="px-3 py-1 text-xs font-medium rounded-md transition-all capitalize"
-              [class.bg-white]="currentRole() === role"
-              [class.text-indigo-600]="currentRole() === role"
-              [class.shadow-sm]="currentRole() === role"
-              [class.dark:bg-slate-700]="currentRole() === role"
-              [class.dark:text-indigo-400]="currentRole() === role"
-              [class.text-slate-500]="currentRole() !== role"
-            >
-              {{ role }}
-            </button>
-          }
-        </div>
+	      <!-- Right: Actions -->
+	      <div class="flex items-center gap-3">
+	        <!-- Language Switcher -->
+	        <div class="topbar-language-switch hidden sm:flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+	          <button
+	            (click)="setLanguage('en')"
+	            class="px-3 py-1 text-xs font-semibold rounded-md transition-all"
+	            [class.bg-white]="language() === 'en'"
+	            [class.text-indigo-600]="language() === 'en'"
+	            [class.shadow-sm]="language() === 'en'"
+	            [class.dark:bg-slate-700]="language() === 'en'"
+	            [class.dark:text-indigo-400]="language() === 'en'"
+	            [class.text-slate-500]="language() !== 'en'"
+	            title="English"
+	          >
+	            EN
+	          </button>
+	          <button
+	            (click)="setLanguage('ar')"
+	            class="px-3 py-1 text-xs font-semibold rounded-md transition-all"
+	            [class.bg-white]="language() === 'ar'"
+	            [class.text-indigo-600]="language() === 'ar'"
+	            [class.shadow-sm]="language() === 'ar'"
+	            [class.dark:bg-slate-700]="language() === 'ar'"
+	            [class.dark:text-indigo-400]="language() === 'ar'"
+	            [class.text-slate-500]="language() !== 'ar'"
+	            title="العربية"
+	          >
+	            AR
+	          </button>
+	        </div>
+
+	        <!-- Role Switcher (Demo Only) -->
+	        <div class="hidden md:flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1 mr-4">
+	          @for (role of roles; track role) {
+	            <button 
+	              (click)="setRole(role)"
+	              class="px-3 py-1 text-xs font-medium rounded-md transition-all"
+	              [class.capitalize]="language() !== 'ar'"
+	              [class.bg-white]="currentRole() === role"
+	              [class.text-indigo-600]="currentRole() === role"
+	              [class.shadow-sm]="currentRole() === role"
+	              [class.dark:bg-slate-700]="currentRole() === role"
+	              [class.dark:text-indigo-400]="currentRole() === role"
+	              [class.text-slate-500]="currentRole() !== role"
+	            >
+	              {{ roleLabel(role) }}
+	            </button>
+	          }
+	        </div>
 
         <!-- Theme Toggle -->
-        <app-button 
-          variant="ghost" 
-          size="icon" 
-          (click)="toggleTheme()" 
-          class="!text-slate-500 rounded-full"
-          [title]="theme() === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
-        >
+	        <app-button 
+	          variant="ghost" 
+	          size="icon" 
+	          (click)="toggleTheme()" 
+	          class="!text-slate-500 rounded-full"
+	          [title]="theme() === 'dark' ? t('topbar.theme.switchToLight') : t('topbar.theme.switchToDark')"
+	        >
           <mat-icon>{{ theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
         </app-button>
 

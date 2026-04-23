@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 @import "tailwindcss";
 @import "./styles/tokens/index.css";
@@ -6,6 +6,10 @@
 html {
   transition: background-color 0.3s ease, color 0.3s ease;
   font-family: var(--font-sans);
+}
+
+html[lang='ar'] {
+  font-family: 'Cairo', var(--font-sans);
 }
 
 body {
