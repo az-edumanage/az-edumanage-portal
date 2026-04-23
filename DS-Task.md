@@ -104,6 +104,7 @@ Status legend:
 - [x] `Done` Execute Tenant Slice 04 one-off style extraction on high-usage tenant-grades route with focused visual re-baseline (`docs/ds-feature-adoption-tenant-slice-04.md`).
 - [x] `Done` Execute Teacher Slice 01 one-off style extraction on high-usage teacher-schedule route (dashboard-backed) with focused visual re-baseline (`docs/ds-feature-adoption-teacher-slice-01.md`).
 - [x] `Done` Execute Teacher Slice 02 parity adoption on high-usage teacher-messages route (dashboard-backed) with focused visual re-baseline (`docs/ds-feature-adoption-teacher-slice-02.md`).
+- [x] `Done` Execute Teacher Slice 03 one-off style extraction on high-usage teacher-media route with focused visual re-baseline (`docs/ds-feature-adoption-teacher-slice-03.md`).
 - [x] `Done` Audit and inventory inline styles (`style=\"...\"`, `[style.*]`, `[ngStyle]`) by feature (`docs/ds-inline-style-inventory.md`).
 - [x] `Done` Execute first P0 inline-style conversion to DS CSS-variable pattern (`owner-overview` regional progress bars) (`docs/ds-token-adoption-slice-01.md`).
 - [x] `Done` Execute second P0 inline-style conversion to DS CSS-variable pattern (`owner-billing` revenue bars) (`docs/ds-token-adoption-slice-01.md`).
