@@ -24,5 +24,31 @@
     --ds-brand-800: var(--brand-800);
     --ds-brand-900: var(--brand-900);
     --ds-brand-950: var(--brand-950);
+
+    /* Backward-compatible semantic aliases used by feature-level CSS. */
+    --color-action-primary: var(--ds-color-primary, var(--brand-600));
+    --color-action-primary-hover: var(--ds-color-primary-hover, var(--brand-700));
+    --color-text-on-action: var(--ds-color-primary-contrast, #ffffff);
+
+    --color-text-primary: var(--ds-color-text-primary, #0f172a);
+    --color-text-secondary: var(--ds-color-text-muted, #64748b);
+
+    --color-bg-card: var(--ds-color-surface-card, #ffffff);
+    --color-bg-input: var(--ds-color-surface-card, #ffffff);
+    --color-bg-subtle: var(--ds-color-surface-default, #f8fafc);
+    --color-border-primary: var(--ds-color-border-default, #e2e8f0);
+
+    --color-success: #059669;
+    --color-warning: #f59e0b;
+    --color-danger: #dc2626;
+  }
+
+  .dark {
+    --color-text-primary: #f8fafc;
+    --color-text-secondary: #94a3b8;
+    --color-bg-card: #0f172a;
+    --color-bg-input: #1e293b;
+    --color-bg-subtle: #111827;
+    --color-border-primary: #334155;
   }
 }

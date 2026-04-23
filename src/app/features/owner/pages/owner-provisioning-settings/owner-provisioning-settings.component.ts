@@ -10,7 +10,8 @@ import { FORM_COMPONENTS } from '../../../../shared/components/form';
   selector: 'app-owner-provisioning-settings',
   standalone: true,
   imports: [CommonModule, RouterModule, MatIconModule, FormsModule, ReactiveFormsModule, ...FORM_COMPONENTS],
-  templateUrl: './owner-provisioning-settings.component.html'})
+  templateUrl: './owner-provisioning-settings.component.html',
+  styleUrl: './owner-provisioning-settings.component.css'})
 export class OwnerProvisioningSettingsComponent implements OnInit, OnDestroy {
   private readonly facade = inject(OwnerProvisioningSettingsFacade);
 

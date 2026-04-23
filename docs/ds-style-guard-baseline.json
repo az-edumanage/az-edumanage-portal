@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-23T16:35:21.757Z",
+  "generatedAt": "2026-04-23T17:53:35.606Z",
   "findings": [
     "src/app/features/owner/pages/owner-integrations-list/owner-integrations-list.component.css:167:no-raw-hex:#cbd5e1",
     "src/app/features/owner/pages/owner-integrations-list/owner-integrations-list.component.css:263:no-raw-hex:#e2e8f0",
@@ -56,11 +56,7 @@
     "src/app/features/owner/pages/owner-provisioning-settings/owner-provisioning-settings.component.css:89:no-raw-hex:#0f172a",
     "src/app/features/owner/pages/owner-provisioning-settings/owner-provisioning-settings.component.css:95:no-raw-hex:#6366f1",
     "src/app/features/owner/pages/owner-provisioning-settings/owner-provisioning-settings.component.css:99:no-raw-hex:#334155",
-    "src/app/features/owner/pages/owner-settings/owner-settings.component.css:160:no-raw-hex:#64748b",
-    "src/app/features/owner/pages/owner-settings/owner-settings.component.css:177:no-raw-hex:#334155",
-    "src/app/features/owner/pages/owner-settings/owner-settings.component.css:64:no-raw-hex:#0f172a",
-    "src/app/features/owner/pages/owner-settings/owner-settings.component.css:68:no-raw-hex:#fff",
-    "src/app/features/owner/pages/owner-settings/owner-settings.component.css:76:no-raw-hex:#64748b",
+    "src/app/features/owner/pages/owner-settings/owner-settings.component.css:155:no-raw-hex:#334155",
     "src/app/features/teacher/pages/teacher-dashboard/teacher-dashboard.attention.css:126:no-raw-hex:#cbd5e1",
     "src/app/features/teacher/pages/teacher-dashboard/teacher-dashboard.attention.css:130:no-raw-hex:#cbd5e1",
     "src/app/features/teacher/pages/teacher-dashboard/teacher-dashboard.attention.css:89:no-raw-hex:#4f46e5",

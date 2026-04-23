@@ -7,5 +7,11 @@
   :root {
     --ds-font-family-sans: var(--font-sans);
     --ds-font-family-mono: var(--font-mono);
+
+    /* Backward-compatible text size aliases used by feature styles. */
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-md: 1rem;
+    --font-size-lg: 1.125rem;
   }
 }

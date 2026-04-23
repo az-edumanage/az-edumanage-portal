@@ -33,7 +33,7 @@
         @if (activeTab() === 'general') {
           <div class="owner-settings-card owner-settings-card--shell">
             <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="owner-settings-card-title owner-settings-section-title">General Configuration</h3>
+              <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">General Configuration</h3>
             </div>
             <div class="p-6 space-y-6">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -71,9 +71,9 @@
                     <p class="text-xs text-amber-800/70 dark:text-amber-400/70">When enabled, only platform owners can access the system. Tenants will see a maintenance page.</p>
                   </div>
                 </div>
-                <label class="relative inline-flex items-center cursor-pointer">
+                <label class="owner-settings-toggle inline-flex items-center cursor-pointer">
                   <input type="checkbox" class="sr-only peer">
-                  <div class="w-11 h-6 bg-slate-200 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:bg-amber-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                  <div class="owner-settings-toggle-track owner-settings-toggle-track--amber"></div>
                 </label>
               </div>
             </div>
@@ -90,7 +90,7 @@
             <div class="owner-settings-card owner-settings-card--shell">
               <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                 <div>
-                  <h3 class="owner-settings-card-title owner-settings-section-title">Subscription Cycles</h3>
+                  <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Subscription Cycles</h3>
                   <p class="owner-settings-muted-body">Define available billing intervals for plans and subscriptions.</p>
                 </div>
                 <button (click)="addCycle()" class="owner-settings-btn-chip gap-2 px-3 py-1.5 bg-indigo-600/10 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg text-sm font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/50">
@@ -102,23 +102,34 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   @for (cycle of subscriptionCycles(); track cycle.id) {
                     <div class="p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 group relative">
-                      <button (click)="removeCycle(cycle.id)" class="absolute top-2 right-2 p-1 text-slate-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        (click)="removeCycle(cycle.id)"
+                        class="owner-settings-icon-btn absolute top-2 right-2 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
                         <mat-icon class="owner-settings-icon-sm">delete</mat-icon>
                       </button>
                       <div class="flex items-center gap-3 mb-3">
                         <div class="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg text-indigo-600 dark:text-indigo-400">
                           <mat-icon>{{ cycle.icon }}</mat-icon>
                         </div>
-                        <input [(ngModel)]="cycle.name" class="bg-transparent border-none focus:ring-0 font-semibold text-slate-900 dark:text-white p-0 w-full" placeholder="Cycle Name">
+                        <input
+                          [(ngModel)]="cycle.name"
+                          class="owner-settings-inline-input owner-settings-inline-input--title w-full"
+                          placeholder="Cycle Name"
+                        >
                       </div>
                       <div class="space-y-2">
                         <div class="flex items-center justify-between text-xs">
                           <span class="text-slate-500">Duration (Days)</span>
-                          <input type="number" [(ngModel)]="cycle.days" class="w-16 px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-center">
+                          <input
+                            type="number"
+                            [(ngModel)]="cycle.days"
+                            class="owner-settings-inline-number w-16 text-center"
+                          >
                         </div>
                         <div class="flex items-center justify-between text-xs">
                           <span class="text-slate-500">Status</span>
-                          <select [(ngModel)]="cycle.active" class="bg-transparent border-none focus:ring-0 text-indigo-600 font-medium p-0">
+                          <select [(ngModel)]="cycle.active" class="owner-settings-inline-select">
                             <option [ngValue]="true">Active</option>
                             <option [ngValue]="false">Inactive</option>
                           </select>
@@ -134,7 +145,7 @@
             <div class="owner-settings-card owner-settings-card--shell">
               <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                 <div>
-                  <h3 class="owner-settings-card-title owner-settings-section-title">Payment Methods</h3>
+                  <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Payment Methods</h3>
                   <p class="owner-settings-muted-body">Configure available payment options for tenants.</p>
                 </div>
                 <button (click)="addPaymentMethod()" class="owner-settings-btn-chip gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-sm font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/50">
@@ -151,16 +162,27 @@
                           <mat-icon>{{ method.icon }}</mat-icon>
                         </div>
                         <div>
-                          <input [(ngModel)]="method.name" class="bg-transparent border-none focus:ring-0 font-semibold text-slate-900 dark:text-white p-0 block" placeholder="Method Name">
-                          <input [(ngModel)]="method.description" class="bg-transparent border-none focus:ring-0 text-xs text-slate-500 p-0 block w-full" placeholder="Short description">
+                          <input
+                            [(ngModel)]="method.name"
+                            class="owner-settings-inline-input owner-settings-inline-input--title block"
+                            placeholder="Method Name"
+                          >
+                          <input
+                            [(ngModel)]="method.description"
+                            class="owner-settings-inline-input owner-settings-inline-input--meta block w-full"
+                            placeholder="Short description"
+                          >
                         </div>
                       </div>
                       <div class="flex items-center gap-3">
-                        <label class="relative inline-flex items-center cursor-pointer">
+                        <label class="owner-settings-toggle inline-flex items-center cursor-pointer">
                           <input type="checkbox" [(ngModel)]="method.active" class="sr-only peer">
-                          <div class="w-9 h-5 bg-slate-200 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:bg-emerald-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+                          <div class="owner-settings-toggle-track owner-settings-toggle-track--compact owner-settings-toggle-track--emerald"></div>
                         </label>
-                        <button (click)="removePaymentMethod(method.id)" class="p-1 text-slate-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          (click)="removePaymentMethod(method.id)"
+                          class="owner-settings-icon-btn p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
                           <mat-icon class="owner-settings-icon-sm">delete</mat-icon>
                         </button>
                       </div>
@@ -182,7 +204,7 @@
         @if (activeTab() === 'security') {
           <div class="owner-settings-card owner-settings-card--shell">
             <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="owner-settings-card-title owner-settings-section-title">Security & Access Policies</h3>
+              <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Security & Access Policies</h3>
             </div>
             <div class="p-6 space-y-6">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -213,9 +235,9 @@
                   <p class="owner-settings-toggle-title">Enforce MFA Globally</p>
                   <p class="owner-settings-toggle-note">Require all users (including tenants) to use Multi-Factor Authentication.</p>
                 </div>
-                <label class="relative inline-flex items-center cursor-pointer">
+                <label class="owner-settings-toggle inline-flex items-center cursor-pointer">
                   <input type="checkbox" class="sr-only peer" checked>
-                  <div class="w-11 h-6 bg-slate-200 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:bg-indigo-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                  <div class="owner-settings-toggle-track owner-settings-toggle-track--indigo"></div>
                 </label>
               </div>
             </div>
@@ -229,7 +251,7 @@
         @if (activeTab() === 'billing') {
           <div class="owner-settings-card owner-settings-card--shell">
             <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="owner-settings-card-title owner-settings-section-title">Billing & Financial Defaults</h3>
+              <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Billing & Financial Defaults</h3>
             </div>
             <div class="p-6 space-y-6">
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -259,9 +281,9 @@
                     <p class="text-xs text-red-800/70 dark:text-red-400/70">Automatically suspend tenant access if payment is not received within the grace period.</p>
                   </div>
                 </div>
-                <label class="relative inline-flex items-center cursor-pointer">
+                <label class="owner-settings-toggle inline-flex items-center cursor-pointer">
                   <input type="checkbox" class="sr-only peer" checked>
-                  <div class="w-11 h-6 bg-slate-200 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:bg-red-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                  <div class="owner-settings-toggle-track owner-settings-toggle-track--red"></div>
                 </label>
               </div>
             </div>
@@ -275,11 +297,11 @@
         @if (activeTab() === 'communication') {
           <div class="owner-settings-card owner-settings-card--shell">
             <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="owner-settings-card-title owner-settings-section-title">Communication & Providers</h3>
+              <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Communication & Providers</h3>
             </div>
             <div class="p-6 space-y-6">
               <div class="space-y-4">
-                <h4 class="owner-settings-subsection-title">SMTP Configuration</h4>
+                <h4 class="text-sm font-bold text-slate-500 uppercase tracking-wider">SMTP Configuration</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label for="smtp-host" class="owner-settings-field-label">SMTP Host</label>
@@ -322,7 +344,7 @@
         @if (activeTab() === 'storage') {
           <div class="owner-settings-card owner-settings-card--shell">
             <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="owner-settings-card-title owner-settings-section-title">Storage & File Management</h3>
+              <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Storage & File Management</h3>
             </div>
             <div class="p-6 space-y-6">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -338,7 +360,7 @@
               <div>
                 <label for="file-types" class="owner-settings-field-label">Allowed File Types</label>
                 <input id="file-types" type="text" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value=".pdf, .doc, .docx, .xls, .xlsx, .png, .jpg, .jpeg">
-                <p class="owner-settings-field-note mt-1">Comma-separated list of file extensions.</p>
+                <p class="text-xs text-slate-500 mt-1">Comma-separated list of file extensions.</p>
               </div>
             </div>
             <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
@@ -351,7 +373,7 @@
         @if (activeTab() === 'compliance') {
           <div class="owner-settings-card owner-settings-card--shell">
             <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="owner-settings-card-title owner-settings-section-title">Audit & Compliance Policies</h3>
+              <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Audit & Compliance Policies</h3>
             </div>
             <div class="p-6 space-y-6">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -370,9 +392,9 @@
                   <p class="owner-settings-toggle-title">Allow Tenant Data Export</p>
                   <p class="owner-settings-toggle-note">Enable self-service data portability for all tenants.</p>
                 </div>
-                <label class="relative inline-flex items-center cursor-pointer">
+                <label class="owner-settings-toggle inline-flex items-center cursor-pointer">
                   <input type="checkbox" class="sr-only peer" checked>
-                  <div class="w-11 h-6 bg-slate-200 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:bg-indigo-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                  <div class="owner-settings-toggle-track owner-settings-toggle-track--indigo"></div>
                 </label>
               </div>
             </div>
