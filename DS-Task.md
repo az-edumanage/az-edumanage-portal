@@ -128,7 +128,7 @@ Status legend:
 - [x] `Done` Expand migrated-route visual coverage to include `owner-tenant-edit` in automated snapshots (`docs/ds-critical-route-matrix.md`, `tests/visual/ds-visual.spec.ts`, `docs/ds-feature-adoption-owner-slice-06.md`).
 - [x] `Done` Execute broader `brand` regression sweep for all migrated Owner/Tenant routes on desktop + mobile (`24 passed`) (`docs/ds-token-adoption-slice-06.md`).
 - [x] `Done` Execute Slice 07 visual baseline coverage closure for DS form-adopted Owner routes (`owner-plan-create`, `owner-provisioning-settings`) with full theme/viewport snapshots (`docs/ds-shared-primitive-migration-slice-07.md`, `docs/ds-critical-route-matrix.md`, `tests/visual/ds-visual.spec.ts`).
-- [ ] `Not Started` Remove duplicate one-off style patterns after replacement.
+- [x] `Done` Remove duplicate one-off style patterns after replacement (`docs/ds-feature-adoption-cleanup-01.md`).
 
 ## Epic 7: Governance & Enforcement
 - [ ] `Not Started` Add lint rule for disallowing raw hex values in feature styles.

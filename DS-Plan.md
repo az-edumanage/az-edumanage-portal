@@ -87,4 +87,5 @@ Build an enterprise-grade Design System on top of the current Angular + Tailwind
 - Epic 6 Teacher Slice 01 is completed (`/teacher/schedule`).
 - Epic 6 Teacher Slice 02 is completed (`/teacher/messages`).
 - Epic 6 Teacher Slice 03 is completed (`/teacher/media`).
-- Next active task is Feature Adoption Cleanup 01 (remove duplicate one-off style patterns after replacement).
+- Feature Adoption Cleanup 01 is completed (duplicate one-off style patterns reduced on impacted migrated routes).
+- Next active task is Safety Net Checklist 01 (add manual smoke checklist for DS-sensitive interactions).

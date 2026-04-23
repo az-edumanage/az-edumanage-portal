@@ -8,15 +8,15 @@
 
     <div class="teacher-dashboard-actions">
       <button class="teacher-dashboard-action teacher-dashboard-action--primary">
-        <mat-icon class="text-sm">fact_check</mat-icon>
+        <mat-icon class="teacher-dashboard-icon-sm">fact_check</mat-icon>
         Take Attendance
       </button>
       <button class="teacher-dashboard-action teacher-dashboard-action--secondary">
-        <mat-icon class="text-sm">post_add</mat-icon>
+        <mat-icon class="teacher-dashboard-icon-sm">post_add</mat-icon>
         Add Exam
       </button>
       <button class="teacher-dashboard-action teacher-dashboard-action--secondary">
-        <mat-icon class="text-sm">send</mat-icon>
+        <mat-icon class="teacher-dashboard-icon-sm">send</mat-icon>
         Send Message
       </button>
     </div>
@@ -25,12 +25,12 @@
   <!-- KPI Cards -->
   <div class="teacher-dashboard-kpis">
     <div class="teacher-dashboard-kpi-card">
-      <div class="teacher-dashboard-kpi-head">
-        <div class="teacher-dashboard-kpi-label">Today's Sessions</div>
-        <div class="teacher-dashboard-kpi-icon teacher-dashboard-kpi-icon--indigo">
-          <mat-icon class="text-[18px]">today</mat-icon>
+        <div class="teacher-dashboard-kpi-head">
+          <div class="teacher-dashboard-kpi-label">Today's Sessions</div>
+          <div class="teacher-dashboard-kpi-icon teacher-dashboard-kpi-icon--indigo">
+          <mat-icon class="teacher-dashboard-icon-lg">today</mat-icon>
+          </div>
         </div>
-      </div>
       <div class="teacher-dashboard-kpi-value-wrap">
         <div class="teacher-dashboard-kpi-value">5</div>
         <div class="teacher-dashboard-kpi-meta">classes</div>
@@ -38,12 +38,12 @@
     </div>
 
     <div class="teacher-dashboard-kpi-card">
-      <div class="teacher-dashboard-kpi-head">
-        <div class="teacher-dashboard-kpi-label">Weekly Sessions</div>
-        <div class="teacher-dashboard-kpi-icon teacher-dashboard-kpi-icon--blue">
-          <mat-icon class="text-[18px]">calendar_view_week</mat-icon>
+        <div class="teacher-dashboard-kpi-head">
+          <div class="teacher-dashboard-kpi-label">Weekly Sessions</div>
+          <div class="teacher-dashboard-kpi-icon teacher-dashboard-kpi-icon--blue">
+          <mat-icon class="teacher-dashboard-icon-lg">calendar_view_week</mat-icon>
+          </div>
         </div>
-      </div>
       <div class="teacher-dashboard-kpi-value-wrap">
         <div class="teacher-dashboard-kpi-value">24</div>
         <div class="teacher-dashboard-kpi-meta">this week</div>
@@ -51,12 +51,12 @@
     </div>
 
     <div class="teacher-dashboard-kpi-card">
-      <div class="teacher-dashboard-kpi-head">
-        <div class="teacher-dashboard-kpi-label">My Groups</div>
-        <div class="teacher-dashboard-kpi-icon teacher-dashboard-kpi-icon--amber">
-          <mat-icon class="text-[18px]">groups</mat-icon>
+        <div class="teacher-dashboard-kpi-head">
+          <div class="teacher-dashboard-kpi-label">My Groups</div>
+          <div class="teacher-dashboard-kpi-icon teacher-dashboard-kpi-icon--amber">
+          <mat-icon class="teacher-dashboard-icon-lg">groups</mat-icon>
+          </div>
         </div>
-      </div>
       <div class="teacher-dashboard-kpi-value-wrap">
         <div class="teacher-dashboard-kpi-value">6</div>
         <div class="teacher-dashboard-kpi-meta">active</div>
@@ -64,12 +64,12 @@
     </div>
 
     <div class="teacher-dashboard-kpi-card">
-      <div class="teacher-dashboard-kpi-head">
-        <div class="teacher-dashboard-kpi-label">Avg Attendance</div>
-        <div class="teacher-dashboard-kpi-icon teacher-dashboard-kpi-icon--emerald">
-          <mat-icon class="text-[18px]">how_to_reg</mat-icon>
+        <div class="teacher-dashboard-kpi-head">
+          <div class="teacher-dashboard-kpi-label">Avg Attendance</div>
+          <div class="teacher-dashboard-kpi-icon teacher-dashboard-kpi-icon--emerald">
+          <mat-icon class="teacher-dashboard-icon-lg">how_to_reg</mat-icon>
+          </div>
         </div>
-      </div>
       <div class="teacher-dashboard-kpi-value-wrap">
         <div class="teacher-dashboard-kpi-value teacher-dashboard-kpi-value--highlight">88%</div>
         <div class="teacher-dashboard-kpi-trend">+2% v last week</div>
@@ -110,7 +110,7 @@
                 </td>
                 <td class="teacher-dashboard-td teacher-dashboard-students">
                   <div class="teacher-dashboard-students-wrap">
-                    <mat-icon class="text-[16px]">group</mat-icon>
+                    <mat-icon class="teacher-dashboard-icon-md">group</mat-icon>
                     {{ session.students }}
                   </div>
                 </td>
@@ -132,11 +132,11 @@
                       [class.opacity-50]="session.status === 'Completed'"
                       [class.pointer-events-none]="session.status === 'Completed'"
                     >
-                      <mat-icon class="text-[14px]">checklist</mat-icon>
+                      <mat-icon class="teacher-dashboard-icon-xs">checklist</mat-icon>
                       Attendance
                     </button>
                     <button class="teacher-dashboard-note-btn" title="Add Notes">
-                      <mat-icon class="text-[18px]">edit_note</mat-icon>
+                      <mat-icon class="teacher-dashboard-icon-lg">edit_note</mat-icon>
                     </button>
                   </div>
                 </td>
@@ -179,7 +179,7 @@
               </div>
             </div>
             <button class="teacher-dashboard-chat-btn">
-              <mat-icon class="text-[18px]">chat_bubble_outline</mat-icon>
+              <mat-icon class="teacher-dashboard-icon-lg">chat_bubble_outline</mat-icon>
             </button>
           </div>
         }
