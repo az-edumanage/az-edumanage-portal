@@ -83,4 +83,7 @@ Build an enterprise-grade Design System on top of the current Angular + Tailwind
 - Epic 6 Tenant Slice 01 is completed (`/tenant/teachers`).
 - Epic 6 Tenant Slice 02 is completed (`/tenant/schedule`).
 - Epic 6 Tenant Slice 03 is completed (`/tenant/rooms/create`).
-- Next active slice is Tenant Slice 04 (`/tenant/grades`).
+- Epic 6 Tenant Slice 04 is completed (`/tenant/grades`).
+- Epic 6 Teacher Slice 01 is completed (`/teacher/schedule`).
+- Epic 6 Teacher Slice 02 is completed (`/teacher/messages`).
+- Next active slice is Teacher Slice 03 (`/teacher/media`).

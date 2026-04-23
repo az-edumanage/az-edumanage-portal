@@ -51,6 +51,7 @@ Purpose: define the minimum visual-regression baseline coverage for zero-regress
 | `/owner/settings` | owner | Settings toggles and form controls. |
 | `/tenant/overview` | tenant | Tenant dashboard baseline. |
 | `/tenant/teachers` | tenant | Teacher directory with grid/list mode, advanced filters, and action menus. |
+| `/tenant/grades` | tenant | Grade catalog list with grid/list modes and advanced student-count filters. |
 | `/tenant/students` | tenant | Standard list/table rendering. |
 | `/tenant/students/create` | tenant | Create form coverage. |
 | `/tenant/groups` | tenant | Group list and action buttons. |
@@ -61,6 +62,8 @@ Purpose: define the minimum visual-regression baseline coverage for zero-regress
 | `/tenant/schedule` | tenant | Calendar/schedule view with dense timetable grid and session cards. |
 | `/tenant/rooms` | tenant | List + card/table hybrid layout. |
 | `/teacher/overview` | teacher | Teacher main dashboard baseline. |
+| `/teacher/schedule` | teacher | Teacher schedule surface (dashboard-backed) with sessions table and attention list. |
+| `/teacher/messages` | teacher | Teacher messages surface (dashboard-backed) parity coverage while route is mapped to shared dashboard container. |
 | `/teacher/media` | teacher | Teacher feature page with cards/actions. |
 | `/design-system` | all | DS showcase must remain stable as reference surface. |
 
@@ -69,9 +72,7 @@ Purpose: define the minimum visual-regression baseline coverage for zero-regress
 | Route | Role | Note |
 |---|---|---|
 | `/owner/compliance` | owner | Compliance request progress bars and policy controls. |
-| `/tenant/grades` | tenant | Grades list/table patterns. |
 | `/tenant/grades/grade-001` | tenant | Grade details with static performance progress bars. |
-| `/teacher/schedule` | teacher | Shared dashboard variant route. |
 
 ## Fixture ID Policy
 - Use deterministic IDs only (examples: `plan-001`, `group-001`, `tenant-001`).

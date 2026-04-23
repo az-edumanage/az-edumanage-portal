@@ -6,7 +6,12 @@ import { MatIconModule } from '@angular/material/icon';
   selector: 'app-teacher-dashboard',
   standalone: true,
   imports: [CommonModule, MatIconModule],
-  templateUrl: './teacher-dashboard.component.html'})
+  templateUrl: './teacher-dashboard.component.html',
+  styleUrls: [
+    './teacher-dashboard.component.css',
+    './teacher-dashboard.attention.css'
+  ]
+})
 export class TeacherDashboardComponent {
   sessions = [
     { id: 1, time: '09:00 AM', group: 'Physics G10-A', room: 'Room 101', students: 24, status: 'Completed' },
@@ -23,4 +28,3 @@ export class TeacherDashboardComponent {
     { name: 'Omar Khaled', group: 'Revision G12', issue: 'Skipped Exam', severity: 'high' },
   ];
 }
-

@@ -36,6 +36,7 @@ const P0_ROUTES: Array<{ key: string; path: string; role: UserRole }> = [
   { key: 'owner-settings', path: '/owner/settings', role: 'owner' },
   { key: 'tenant-overview', path: '/tenant/overview', role: 'tenant' },
   { key: 'tenant-teachers', path: '/tenant/teachers', role: 'tenant' },
+  { key: 'tenant-grades', path: '/tenant/grades', role: 'tenant' },
   { key: 'tenant-students', path: '/tenant/students', role: 'tenant' },
   { key: 'tenant-students-create', path: '/tenant/students/create', role: 'tenant' },
   { key: 'tenant-groups', path: '/tenant/groups', role: 'tenant' },
@@ -47,6 +48,8 @@ const P0_ROUTES: Array<{ key: string; path: string; role: UserRole }> = [
   { key: 'tenant-rooms', path: '/tenant/rooms', role: 'tenant' },
   { key: 'tenant-grade-details', path: '/tenant/grades/grade-001', role: 'tenant' },
   { key: 'teacher-overview', path: '/teacher/overview', role: 'teacher' },
+  { key: 'teacher-schedule', path: '/teacher/schedule', role: 'teacher' },
+  { key: 'teacher-messages', path: '/teacher/messages', role: 'teacher' },
   { key: 'teacher-media', path: '/teacher/media', role: 'teacher' },
   { key: 'design-system', path: '/design-system', role: 'tenant' },
 ];

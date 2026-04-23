@@ -24,6 +24,9 @@ Status legend:
 - [x] `Done` Expand P0 route matrix to include tenant teachers route for focused Tenant Slice 01 parity coverage (`docs/ds-critical-route-matrix.md`, `tests/visual/ds-visual.spec.ts`).
 - [x] `Done` Expand P0 route matrix to include tenant schedule route for focused Tenant Slice 02 parity coverage (`docs/ds-critical-route-matrix.md`, `tests/visual/ds-visual.spec.ts`).
 - [x] `Done` Expand P0 route matrix to include tenant rooms-create route for focused Tenant Slice 03 parity coverage (`docs/ds-critical-route-matrix.md`, `tests/visual/ds-visual.spec.ts`).
+- [x] `Done` Expand P0 route matrix to include tenant grades route for focused Tenant Slice 04 parity coverage (`docs/ds-critical-route-matrix.md`, `tests/visual/ds-visual.spec.ts`).
+- [x] `Done` Expand P0 route matrix to include teacher schedule route for focused Teacher Slice 01 parity coverage (`docs/ds-critical-route-matrix.md`, `tests/visual/ds-visual.spec.ts`).
+- [x] `Done` Expand P0 route matrix to include teacher messages route for focused Teacher Slice 02 parity coverage (`docs/ds-critical-route-matrix.md`, `tests/visual/ds-visual.spec.ts`).
 
 ## Epic 2: Token Foundation
 - [x] `Done` Create `src/styles/tokens` directory structure.
@@ -98,6 +101,9 @@ Status legend:
 - [x] `Done` Execute Tenant Slice 01 one-off style extraction on high-usage tenant-teachers route with focused visual re-baseline (`docs/ds-feature-adoption-tenant-slice-01.md`).
 - [x] `Done` Execute Tenant Slice 02 one-off style extraction on high-usage tenant-schedule route with focused visual re-baseline (`docs/ds-feature-adoption-tenant-slice-02.md`).
 - [x] `Done` Execute Tenant Slice 03 one-off style extraction on high-usage tenant-rooms-create route with focused visual re-baseline (`docs/ds-feature-adoption-tenant-slice-03.md`).
+- [x] `Done` Execute Tenant Slice 04 one-off style extraction on high-usage tenant-grades route with focused visual re-baseline (`docs/ds-feature-adoption-tenant-slice-04.md`).
+- [x] `Done` Execute Teacher Slice 01 one-off style extraction on high-usage teacher-schedule route (dashboard-backed) with focused visual re-baseline (`docs/ds-feature-adoption-teacher-slice-01.md`).
+- [x] `Done` Execute Teacher Slice 02 parity adoption on high-usage teacher-messages route (dashboard-backed) with focused visual re-baseline (`docs/ds-feature-adoption-teacher-slice-02.md`).
 - [x] `Done` Audit and inventory inline styles (`style=\"...\"`, `[style.*]`, `[ngStyle]`) by feature (`docs/ds-inline-style-inventory.md`).
 - [x] `Done` Execute first P0 inline-style conversion to DS CSS-variable pattern (`owner-overview` regional progress bars) (`docs/ds-token-adoption-slice-01.md`).
 - [x] `Done` Execute second P0 inline-style conversion to DS CSS-variable pattern (`owner-billing` revenue bars) (`docs/ds-token-adoption-slice-01.md`).
