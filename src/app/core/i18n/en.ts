@@ -38,6 +38,7 @@ export const EN_TRANSLATIONS = {
   'sidebar.item.compliance': 'Compliance',
   'sidebar.item.notifications': 'Notifications',
   'sidebar.item.settings': 'Settings',
+  'sidebar.item.test': 'Test',
   'sidebar.item.overview': 'Overview',
   'sidebar.item.students': 'Students',
   'sidebar.item.teachers': 'Teachers',
@@ -61,6 +62,50 @@ export const EN_TRANSLATIONS = {
   'owner.tenants.subtitle': 'Manage all organizations and centers on the platform.',
   'owner.tenants.createTenant': 'Create Tenant',
   'owner.tenants.filters': 'Filters',
+  'owner.tenants.filter.status': 'Status',
+  'owner.tenants.filter.plan': 'Plan',
+  'owner.tenants.filter.health': 'Health',
+  'owner.tenants.filter.search': 'Search options...',
+  'owner.tenants.filter.clearAll': 'Clear all',
+
+  // Owner Tenants List Table
+  'owner.tenants.tableColumnName': 'Name',
+    'owner.tenants.tableColumnStatus': 'Status',
+  'owner.tenants.tableColumnPlan': 'Plan',
+  'owner.tenants.tableColumnOwnerMail':'Owner E-Mail',
+  'owner.tenants.tableColumnPhoneNo': 'Phone No',
+  'owner.tenants.tableColumnCreatedAt': 'Created At',
+  'owner.tenants.tableColumnHealth': 'App Health',
+  'owner.tenants.tableColumnAction': 'Action ',
+  'owner.tenants.fullNameLabel': 'Full Name',
+
+    // Owner Tenant Search Placeholder
+    'owner.tenants.searchPlaceholder':'Search by tenant or subscription ID...',
+
+    // Table Pagination  Btn's
+    'owner.tenants.tablePaginationPreviousBtn':'Previous',
+    'owner.tenants.tablePaginationNextBtn':'Next',
+    'owner.tenants.tablePaginationShown':'Showing {from}-{to} of {total} entries',
+
+    'owner.test.title': 'Question Bank Template',
+    'owner.test.subtitle': 'Sandbox blueprint for question authoring, review, and publishing flows.',
+    'owner.test.createQuestion': 'Create Question',
+    'owner.test.importQuestions': 'Import Questions',
+    'owner.test.searchPlaceholder': 'Search by title, tag, or question ID...',
+    'owner.test.filterSubject': 'Subject',
+    'owner.test.filterDifficulty': 'Difficulty',
+    'owner.test.filterStatus': 'Status',
+    'owner.test.colQuestion': 'Question',
+    'owner.test.colSubject': 'Subject',
+    'owner.test.colDifficulty': 'Difficulty',
+    'owner.test.colStatus': 'Status',
+    'owner.test.colUpdated': 'Updated',
+    'owner.test.colActions': 'Actions',
+    'owner.test.logicNotesTitle': 'Suggested Production Logic',
+    'owner.test.logicNote1': 'Store draft and published versions with version history and reviewer notes.',
+    'owner.test.logicNote2': 'Support taxonomy filters: subject, grade, lesson, outcome, and Bloom level.',
+    'owner.test.logicNote3': 'Add validation pipeline: duplicate detection, answer consistency, media quality checks.',
+    'owner.test.logicNote4': 'Enable blueprint-based test assembly with difficulty quotas and topic coverage.',
 } as const;
 
 export type I18nKey = keyof typeof EN_TRANSLATIONS;

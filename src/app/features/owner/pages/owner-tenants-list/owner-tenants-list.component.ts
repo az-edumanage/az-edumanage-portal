@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -29,6 +29,7 @@ export class OwnerTenantsListComponent {
   readonly activePlanDropdown = this.tenantsFacade.activePlanDropdown;
   readonly pendingPlanChange = this.tenantsFacade.pendingPlanChange;
   readonly copyNotification = this.tenantsFacade.copyNotification;
+  readonly isRtl = this.i18nService.isRtl;
   t(text: string): string {
     return this.i18nService.t(text);
   }
@@ -42,6 +43,10 @@ export class OwnerTenantsListComponent {
   readonly healths = this.tenantsFacade.healths;
   readonly activeFilterCount = this.tenantsFacade.activeFilterCount;
   readonly filteredTenants = this.tenantsFacade.filteredTenants;
+  readonly filtersSearchQuery = signal('');
+  readonly filteredStatuses = computed(() => this.filterPanelOptions(this.statuses));
+  readonly filteredPlans = computed(() => this.filterPanelOptions(this.plans));
+  readonly filteredHealths = computed(() => this.filterPanelOptions(this.healths));
 
   toggleFilter(type: 'status' | 'plan' | 'health', value: string): void {
     this.tenantsFacade.toggleFilter(type, value);
@@ -49,6 +54,19 @@ export class OwnerTenantsListComponent {
 
   clearFilters(): void {
     this.tenantsFacade.clearFilters();
+  }
+
+  toggleFiltersDropdown(): void {
+    const next = !this.showFiltersDropdown();
+    this.showFiltersDropdown.set(next);
+    if (!next) {
+      this.filtersSearchQuery.set('');
+    }
+  }
+
+  closeFiltersDropdown(): void {
+    this.showFiltersDropdown.set(false);
+    this.filtersSearchQuery.set('');
   }
 
   impersonate(tenant: Tenant) {
@@ -99,5 +117,14 @@ export class OwnerTenantsListComponent {
         }
       }, 2000);
     });
+  }
+
+  private filterPanelOptions(options: readonly string[]): string[] {
+    const query = this.filtersSearchQuery().trim().toLowerCase();
+    if (!query) {
+      return [...options];
+    }
+
+    return options.filter((option) => option.toLowerCase().includes(query));
   }
 }

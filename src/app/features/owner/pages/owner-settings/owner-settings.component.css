@@ -23,6 +23,47 @@
   overflow-x: auto;
 }
 
+.owner-settings-layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.owner-settings-content {
+  min-width: 0;
+}
+
+.owner-settings-side-nav {
+  position: sticky;
+  top: var(--space-6);
+  height: fit-content;
+}
+
+.owner-settings-side-nav-header {
+  background: var(--color-bg-subtle);
+}
+
+.owner-settings-side-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.owner-settings-side-nav-btn {
+  color: var(--color-text-secondary);
+  background: transparent;
+}
+
+.owner-settings-side-nav-btn:hover {
+  background: color-mix(in srgb, var(--color-action-primary) 8%, transparent);
+  color: var(--color-text-primary);
+}
+
+.owner-settings-side-nav-btn--active {
+  background: color-mix(in srgb, var(--color-action-primary) 14%, transparent);
+  color: var(--color-action-primary);
+}
+
 .owner-settings-tabs {
   gap: var(--space-8);
   min-width: max-content;
@@ -271,6 +312,53 @@
   color: var(--color-text-secondary);
 }
 
+.owner-settings-structure-node {
+  position: relative;
+  margin-inline-start: 0;
+  --subject-connector-color: #5b21ff;
+}
+
+.owner-settings-structure-node-row {
+  display: grid;
+  gap: 0.75rem;
+  align-items: center;
+  grid-template-columns: 3rem minmax(0, 1fr) auto;
+}
+
+.owner-settings-structure-node-names {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.owner-settings-structure-node-actions {
+  display: flex;
+}
+
+.owner-settings-structure-node--nested::before {
+  content: none;
+}
+
+.owner-settings-structure-children {
+  margin-left: 0;
+  padding-left: 0.9rem;
+  border-left: 0;
+}
+
+@media (max-width: 767px) {
+  .owner-settings-structure-node-row {
+    grid-template-columns: 1fr;
+  }
+
+  .owner-settings-structure-node-names {
+    grid-template-columns: 1fr;
+  }
+
+  .owner-settings-structure-node-actions {
+    justify-content: end;
+  }
+}
+
 .owner-settings-custom-scrollbar::-webkit-scrollbar {
   height: 4px;
 }
@@ -286,4 +374,13 @@
 
 .dark .owner-settings-custom-scrollbar::-webkit-scrollbar-thumb {
   background: var(--color-border-primary);
+}
+
+@media (min-width: 1024px) {
+  .owner-settings-layout {
+    display: grid;
+    grid-template-columns: minmax(15rem, 17.5rem) 1fr;
+    gap: var(--space-6);
+    align-items: start;
+  }
 }

@@ -110,6 +110,7 @@ export class SidebarComponent {
             items: [
               { labelKey: 'sidebar.item.notifications', icon: 'notifications', route: '/owner/notifications' },
               { labelKey: 'sidebar.item.settings', icon: 'settings', route: '/owner/settings' },
+              { labelKey: 'sidebar.item.test', icon: 'quiz', route: '/owner/test' },
             ]
           }
         ];

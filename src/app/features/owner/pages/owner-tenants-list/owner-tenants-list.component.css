@@ -46,12 +46,25 @@
   text-align: center;
 }
 
-.owner-tenants-filters-dropdown,
 .owner-tenants-status-dropdown,
 .owner-tenants-plan-dropdown {
   box-shadow:
     0 10px 15px -3px rgb(0 0 0 / 0.1),
     0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.owner-tenants-filters-dropdown {
+  inset-inline-end: 0;
+  width: min(20rem, calc(100vw - 2rem));
+  max-width: calc(100vw - 2rem);
+}
+
+.owner-tenants-filter-search-icon {
+  pointer-events: none;
+}
+
+.owner-tenants-filter-search-input {
+  height: 2.5rem;
 }
 
 .owner-tenants-filters-title {
@@ -60,6 +73,10 @@
 
 .owner-tenants-clear-filters {
   font-weight: 500;
+}
+
+.owner-tenants-clear-filters-btn {
+  white-space: nowrap;
 }
 
 .owner-tenants-table {

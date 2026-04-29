@@ -20,110 +20,125 @@
             type="text" 
             [ngModel]="searchQuery()"
             (ngModelChange)="searchQuery.set($event)"
-            placeholder="Search by tenant or subscription ID..." 
+            placeholder="{{t('owner.tenants.searchPlaceholder')}}"
             class="ds-owner-tenant-search-input pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"
           >
         </div>
-        <div class="owner-tenants-filter-actions flex flex-wrap gap-3 pb-2 md:pb-0 relative">
-          <button 
-            (click)="showFiltersDropdown.set(!showFiltersDropdown())"
-            class="owner-tenants-filter-btn flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-          >
-            <mat-icon class="text-sm">filter_list</mat-icon>
-            {{ t('owner.tenants.filters') }}
-            @if (activeFilterCount() > 0) {
-              <span class="owner-tenants-filter-count bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ activeFilterCount() }}</span>
-            }
-          </button>
+	        <div class="owner-tenants-filter-actions flex flex-wrap gap-3 pb-2 md:pb-0 relative">
+            <button
+              (click)="toggleFiltersDropdown()"
+              class="owner-tenants-filter-btn flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            >
+              <mat-icon class="text-sm">filter_list</mat-icon>
+              {{ t('owner.tenants.filters') }}
+              @if (activeFilterCount() > 0) {
+                <span class="owner-tenants-filter-count bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ activeFilterCount() }}</span>
+              }
+            </button>
 
-          @if (showFiltersDropdown()) {
-            <button 
-              type="button"
-              class="fixed inset-0 z-10 w-full h-full cursor-default" 
-              (click)="showFiltersDropdown.set(false)"
-              aria-label="Close filters"
-            ></button>
-            <div class="owner-tenants-filters-dropdown absolute right-0 top-full mt-2 z-20 w-72 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-              <div class="owner-tenants-filters-head p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                <h3 class="owner-tenants-filters-title font-semibold text-slate-900 dark:text-white">{{ t('owner.tenants.filters') }}</h3>
+            @if (showFiltersDropdown()) {
+              <button
+                type="button"
+                class="fixed inset-0 z-10 w-full h-full cursor-default"
+                (click)="closeFiltersDropdown()"
+                aria-label="Close filters"
+              ></button>
+              <div class="owner-tenants-filters-dropdown absolute top-full mt-2 z-20 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-visible animate-in fade-in slide-in-from-top-2 duration-200 p-3">
+                <div class="max-h-96 overflow-y-auto p-1 space-y-5">
+                  <div class="owner-tenants-filter-search relative">
+                    <mat-icon class="owner-tenants-filter-search-icon absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">search</mat-icon>
+                    <input
+                      type="text"
+                      [ngModel]="filtersSearchQuery()"
+                      (ngModelChange)="filtersSearchQuery.set($event)"
+                      [placeholder]="t('owner.tenants.filter.search')"
+                      class="owner-tenants-filter-search-input w-full pl-10 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                  </div>
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">{{ t('owner.tenants.filter.status') }}</h4>
+                    <div class="space-y-2">
+                      @for (status of filteredStatuses(); track status) {
+                        <label class="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            [checked]="selectedStatuses().has(status)"
+                            (change)="toggleFilter('status', status)"
+                            class="rounded border-slate-200 text-indigo-600 focus:ring-indigo-500"
+                          >
+                          <span class="text-sm text-slate-700 dark:text-slate-300">{{ status }}</span>
+                        </label>
+                      }
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">{{ t('owner.tenants.filter.plan') }}</h4>
+                    <div class="space-y-2">
+                      @for (plan of filteredPlans(); track plan) {
+                        <label class="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            [checked]="selectedPlans().has(plan)"
+                            (change)="toggleFilter('plan', plan)"
+                            class="rounded border-slate-200 text-indigo-600 focus:ring-indigo-500"
+                          >
+                          <span class="text-sm text-slate-700 dark:text-slate-300">{{ plan }}</span>
+                        </label>
+                      }
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">{{ t('owner.tenants.filter.health') }}</h4>
+                    <div class="space-y-2">
+                      @for (health of filteredHealths(); track health) {
+                        <label class="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            [checked]="selectedHealths().has(health)"
+                            (change)="toggleFilter('health', health)"
+                            class="rounded border-slate-200 text-indigo-600 focus:ring-indigo-500"
+                          >
+                          <span class="text-sm text-slate-700 dark:text-slate-300">{{ health }}</span>
+                        </label>
+                      }
+                    </div>
+                  </div>
+                </div>
                 @if (activeFilterCount() > 0) {
-                  <button (click)="clearFilters()" class="owner-tenants-clear-filters text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Clear all</button>
+                  <div class="pt-3 mt-3 border-t border-slate-200 dark:border-slate-700">
+                    <button
+                      (click)="clearFilters()"
+                      class="owner-tenants-clear-filters-btn px-1 py-1 text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
+                    >
+                      {{ t('owner.tenants.filter.clearAll') }} ({{ activeFilterCount() }})
+                    </button>
+                  </div>
                 }
               </div>
-              
-              <div class="max-h-96 overflow-y-auto p-4 space-y-6">
-                <!-- Status -->
-                <div>
-                  <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Status</h4>
-                  <div class="space-y-2">
-                    @for (status of statuses; track status) {
-                      <label class="flex items-center gap-2 cursor-pointer">
-                        <input 
-                          type="checkbox" 
-                          [checked]="selectedStatuses().has(status)"
-                          (change)="toggleFilter('status', status)"
-                          class="rounded border-slate-200 text-indigo-600 focus:ring-indigo-500"
-                        >
-                        <span class="text-sm text-slate-700 dark:text-slate-300">{{ status }}</span>
-                      </label>
-                    }
-                  </div>
-                </div>
-
-                <!-- Plan -->
-                <div>
-                  <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Plan</h4>
-                  <div class="space-y-2">
-                    @for (plan of plans; track plan) {
-                      <label class="flex items-center gap-2 cursor-pointer">
-                        <input 
-                          type="checkbox" 
-                          [checked]="selectedPlans().has(plan)"
-                          (change)="toggleFilter('plan', plan)"
-                          class="rounded border-slate-200 text-indigo-600 focus:ring-indigo-500"
-                        >
-                        <span class="text-sm text-slate-700 dark:text-slate-300">{{ plan }}</span>
-                      </label>
-                    }
-                  </div>
-                </div>
-
-                <!-- Health -->
-                <div>
-                  <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Health</h4>
-                  <div class="space-y-2">
-                    @for (health of healths; track health) {
-                      <label class="flex items-center gap-2 cursor-pointer">
-                        <input 
-                          type="checkbox" 
-                          [checked]="selectedHealths().has(health)"
-                          (change)="toggleFilter('health', health)"
-                          class="rounded border-slate-200 text-indigo-600 focus:ring-indigo-500"
-                        >
-                        <span class="text-sm text-slate-700 dark:text-slate-300">{{ health }}</span>
-                      </label>
-                    }
-                  </div>
-                </div>
-              </div>
-            </div>
-          }
-        </div>
-      </div>
+            }
+	        </div>
+	      </div>
 
       <!-- Tenants Table -->
       <div class="owner-tenants-table-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
         <div class="owner-tenants-table-wrap overflow-x-auto">
-          <table class="owner-tenants-table w-full text-left text-sm">
+	          <table
+              class="owner-tenants-table w-full text-sm"
+              [class.text-left]="!isRtl()"
+              [class.text-right]="isRtl()"
+            >
             <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
               <tr>
-                <th class="px-6 py-4 font-medium">Name</th>
-                <th class="px-6 py-4 font-medium">Status</th>
-                <th class="px-6 py-4 font-medium">Plan</th>
-                <th class="px-6 py-4 font-medium">Owner</th>
-                <th class="px-6 py-4 font-medium">Created</th>
-                <th class="px-6 py-4 font-medium">Health</th>
-                <th class="px-6 py-4 font-medium text-right">Actions</th>
+                <th class="px-6 py-4 font-medium">{{t('owner.tenants.tableColumnName')}}</th>
+                <th class="px-6 py-4 font-medium">{{ t('owner.tenants.tableColumnStatus') }}</th>
+                <th class="px-6 py-4 font-medium">{{t('owner.tenants.tableColumnPlan')}}</th>
+                <th class="px-6 py-4 font-medium">{{t('owner.tenants.tableColumnOwnerMail')}}</th>
+                <th class="px-6 py-4 font-medium">{{t('owner.tenants.tableColumnPhoneNo')}}</th>
+                <th class="px-6 py-4 font-medium">{{t('owner.tenants.tableColumnCreatedAt')}}</th>
+                <th class="px-6 py-4 font-medium">{{t('owner.tenants.tableColumnHealth')}}</th>
+                <th class="px-6 py-4 font-medium text-right">{{t('owner.tenants.tableColumnAction')}}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
@@ -146,6 +161,9 @@
                       ID: {{ tenant.id }}
                       <mat-icon class="text-[12px] opacity-0 group-hover/id:opacity-100 text-slate-500 transition-opacity">content_copy</mat-icon>
                     </button>
+                    <div class="text-xs text-slate-500 mt-1">
+                      {{ t('owner.tenants.fullNameLabel') }}: {{ tenant.fullName }}
+                    </div>
                   </td>
                   <td class="px-6 py-4">
                     <span class="px-2 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1"
@@ -192,6 +210,16 @@
                       </div>
                       <span class="truncate max-w-[150px]" [title]="tenant.ownerEmail">{{ tenant.ownerEmail }}</span>
                       <mat-icon class="text-[14px] opacity-0 group-hover/email:opacity-100 text-slate-500 transition-opacity">content_copy</mat-icon>
+                    </button>
+                  </td>
+                  <td class="px-6 py-4 text-slate-500 dark:text-slate-500">
+                    <button
+                      class="owner-tenants-id-btn text-xs flex items-center gap-1 hover:text-indigo-600 transition-colors group/phone focus:outline-none"
+                      (click)="copyToClipboard(tenant.phoneNumber)"
+                      title="Click to copy phone number"
+                    >
+                      {{ tenant.phoneNumber }}
+                      <mat-icon class="text-[12px] opacity-0 group-hover/phone:opacity-100 text-slate-500 transition-opacity">content_copy</mat-icon>
                     </button>
                   </td>
                   <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ tenant.createdDate }}</td>
@@ -349,10 +377,10 @@
         
         <!-- Pagination -->
         <div class="owner-tenants-pagination p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-sm text-slate-500 dark:text-slate-500">
-          <span>Showing 1-5 of 124 tenants</span>
+          <span>{{ t('owner.tenants.tablePaginationShown')}}</span>
           <div class="flex gap-2">
-            <app-pager-button [disabled]="true">Previous</app-pager-button>
-            <app-pager-button>Next</app-pager-button>
+            <app-pager-button [disabled]="true">{{t('owner.tenants.tablePaginationPreviousBtn')}}</app-pager-button>
+            <app-pager-button>{{t('owner.tenants.tablePaginationNextBtn')}}</app-pager-button>
           </div>
         </div>
       </div>

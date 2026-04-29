@@ -10,6 +10,7 @@ export class OwnerSettingsFacade {
   readonly tabs = this.store.tabs;
   readonly subscriptionCycles = this.store.subscriptionCycles;
   readonly paymentMethods = this.store.paymentMethods;
+  readonly subjectStructure = this.store.subjectStructure;
 
   setActiveTab(tabId: OwnerSettingsTabId): void {
     this.store.setActiveTab(tabId);
@@ -33,5 +34,21 @@ export class OwnerSettingsFacade {
 
   savePresets(): void {
     this.store.savePresets();
+  }
+
+  addSubjectRootField(nameEn: string, nameAr: string): void {
+    this.store.addSubjectRootField(nameEn, nameAr);
+  }
+
+  updateSubjectNodeNames(nodeId: number, nameEn: string, nameAr: string): void {
+    this.store.updateSubjectNodeNames(nodeId, nameEn, nameAr);
+  }
+
+  addSubjectChildNode(parentId: number, type: 'field' | 'sequence'): void {
+    this.store.addSubjectChildNode(parentId, type);
+  }
+
+  removeSubjectNode(nodeId: number): void {
+    this.store.removeSubjectNode(nodeId);
   }
 }

@@ -12,6 +12,7 @@ export class OwnerSettingsDataService {
 
   readonly tabs: OwnerSettingsTab[] = [
     { id: 'general', label: 'General' },
+    { id: 'subject', label: 'Subject' },
     { id: 'presets', label: 'Presets & Methods' },
     { id: 'security', label: 'Security' },
     { id: 'billing', label: 'Billing' },

@@ -8,27 +8,47 @@
         </div>
       </div>
 
-      <!-- Tabs Navigation -->
-      <div class="owner-settings-tabs-wrap owner-settings-custom-scrollbar border-b border-slate-200 dark:border-slate-800">
-        <nav class="owner-settings-tabs flex">
-          @for (tab of tabs; track tab.id) {
-            <button 
-              (click)="activeTab.set(tab.id)"
-              class="owner-settings-tab-btn pb-4 text-sm font-medium"
-              [class.text-indigo-600]="activeTab() === tab.id"
-              [class.text-slate-500]="activeTab() !== tab.id"
-            >
-              {{ tab.label }}
-              @if (activeTab() === tab.id) {
-                <div class="owner-settings-tab-indicator"></div>
-              }
-            </button>
-          }
-        </nav>
-      </div>
+      <div class="owner-settings-layout">
+        <aside class="owner-settings-side-nav owner-settings-card owner-settings-card--shell hidden lg:block">
+          <div class="owner-settings-side-nav-header px-4 py-4 border-b border-slate-200 dark:border-slate-800">
+            <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Settings Sections</h3>
+          </div>
+          <nav class="owner-settings-side-nav-list p-2">
+            @for (tab of tabs; track tab.id) {
+              <button
+                (click)="setActiveTab(tab.id)"
+                class="owner-settings-side-nav-btn w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                [class.owner-settings-side-nav-btn--active]="activeTab() === tab.id"
+                [class.text-slate-500]="activeTab() !== tab.id"
+              >
+                {{ tab.label }}
+              </button>
+            }
+          </nav>
+        </aside>
 
-      <!-- Tab Content -->
-      <div class="mt-6">
+        <div class="owner-settings-content">
+          <!-- Tabs Navigation -->
+          <div class="owner-settings-tabs-wrap owner-settings-custom-scrollbar border-b border-slate-200 dark:border-slate-800 lg:hidden">
+            <nav class="owner-settings-tabs flex">
+              @for (tab of tabs; track tab.id) {
+                <button
+                  (click)="setActiveTab(tab.id)"
+                  class="owner-settings-tab-btn pb-4 text-sm font-medium"
+                  [class.text-indigo-600]="activeTab() === tab.id"
+                  [class.text-slate-500]="activeTab() !== tab.id"
+                >
+                  {{ tab.label }}
+                  @if (activeTab() === tab.id) {
+                    <div class="owner-settings-tab-indicator"></div>
+                  }
+                </button>
+              }
+            </nav>
+          </div>
+
+          <!-- Tab Content -->
+          <div class="mt-6 lg:mt-0">
         <!-- 1. General Settings -->
         @if (activeTab() === 'general') {
           <div class="owner-settings-card owner-settings-card--shell">
@@ -79,6 +99,202 @@
             </div>
             <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
               <button class="owner-settings-btn-primary px-4 py-2 shadow-sm">Save Changes</button>
+            </div>
+          </div>
+        }
+
+        <!-- Subject Structure Settings -->
+        @if (activeTab() === 'subject') {
+          <div class="owner-settings-card owner-settings-card--shell">
+            <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+              <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Subject Structure Configuration</h3>
+              <p class="owner-settings-muted-body mt-1">
+                Build a custom field tree for course structure only. This page does not create courses.
+              </p>
+            </div>
+            <div class="p-6 space-y-6">
+              <div class="owner-settings-banner p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <p class="text-sm text-blue-800 dark:text-blue-300">
+                  Example: create field "Item", then add children like "Title" and "Index", and add nested fields or sequence under any node.
+                </p>
+              </div>
+
+              <div class="owner-settings-structure-add owner-settings-structure-node-row p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                <div class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 dark:text-slate-300" aria-hidden="true">
+                  <mat-icon class="owner-settings-icon-sm">folder</mat-icon>
+                </div>
+                <div class="owner-settings-structure-node-names">
+                  <input
+                    [ngModel]="newSubjectRootNameEn()"
+                    (ngModelChange)="newSubjectRootNameEn.set($event)"
+                    (keydown.enter)="addSubjectRootField()"
+                    class="owner-settings-input owner-settings-structure-node-input"
+                    placeholder="EN"
+                  >
+                  <input
+                    [ngModel]="newSubjectRootNameAr()"
+                    (ngModelChange)="newSubjectRootNameAr.set($event)"
+                    (keydown.enter)="addSubjectRootField()"
+                    class="owner-settings-input owner-settings-structure-node-input"
+                    placeholder="AR"
+                  >
+                </div>
+                <button
+                  type="button"
+                  (click)="addSubjectRootField()"
+                  [disabled]="newSubjectRootNameEn().trim().length === 0 && newSubjectRootNameAr().trim().length === 0"
+                  class="owner-settings-btn-primary px-4 py-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  insert
+                </button>
+              </div>
+
+              @if (subjectStructure().length === 0) {
+                <div class="owner-settings-structure-empty p-5 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40">
+                  <p class="text-sm text-slate-500">No structure fields yet. Start by adding your first root field.</p>
+                </div>
+              } @else {
+                <div class="space-y-5">
+                  @for (node of subjectStructure(); track node.id; let i = $index) {
+                    <div
+                      class="owner-settings-structure-group rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 overflow-hidden"
+                      [style.--subject-connector-color]="getSubjectConnectorColor(i)"
+                    >
+                      <button
+                        type="button"
+                        (click)="toggleSubjectNodeCollapse(node.id)"
+                        class="w-full flex items-center justify-between gap-3 px-4 py-3 text-left bg-slate-100/80 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700"
+                      >
+                        <div class="flex items-center gap-2 min-w-0">
+                          <mat-icon class="owner-settings-icon-sm text-slate-700 dark:text-slate-300">
+                            {{ isSubjectNodeCollapsed(node.id) ? 'folder' : 'folder_open' }}
+                          </mat-icon>
+                          <div class="min-w-0">
+                            @if (language() === 'ar') {
+                              <div class="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 truncate">
+                                <span class="font-semibold">إسم الماده</span>
+                                <span>/</span>
+                                <span class="text-slate-800 dark:text-slate-100">{{ node.nameAr || node.nameEn || '—' }}</span>
+                                <span>/</span>
+                                <span class="text-slate-700 dark:text-slate-200">{{ '{next} >' }}</span>
+                              </div>
+                            } @else {
+                              <div class="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 truncate">
+                                <span class="font-semibold">Subject name</span>
+                                <span>/</span>
+                                <span class="text-slate-800 dark:text-slate-100">{{ node.nameEn || node.nameAr || '—' }}</span>
+                                <span>/</span>
+                                <span class="text-slate-700 dark:text-slate-200">{{ '{next} >' }}</span>
+                              </div>
+                            }
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <button
+                            type="button"
+                            (click)="addSubjectChildField(node.id); $event.stopPropagation()"
+                            class="owner-settings-btn-chip px-3 py-2 rounded-md text-xs bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300"
+                          >
+                            add
+                          </button>
+                          <button
+                            type="button"
+                            (click)="removeSubjectNode(node.id); $event.stopPropagation()"
+                            class="owner-settings-icon-btn p-1.5 w-9 h-9"
+                            aria-label="Delete root group"
+                          >
+                            <mat-icon class="owner-settings-icon-sm">delete</mat-icon>
+                          </button>
+                        </div>
+                      </button>
+
+                      @if (!isSubjectNodeCollapsed(node.id)) {
+                        <div class="p-4">
+                          @if (node.children.length === 0) {
+                            <div class="p-4 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 text-sm text-slate-500">
+                              No cards yet. Click add to create the first card.
+                            </div>
+                          } @else {
+                            <div class="space-y-5">
+                              @for (child of node.children; track child.id) {
+                                <div class="p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/70">
+                                  @if (isCardInEditMode(child.id)) {
+                                    <div class="owner-settings-structure-node-names">
+                                      <input
+                                        [(ngModel)]="child.nameEn"
+                                        class="owner-settings-input owner-settings-structure-node-input"
+                                        placeholder="EN"
+                                      >
+                                      <input
+                                        [(ngModel)]="child.nameAr"
+                                        class="owner-settings-input owner-settings-structure-node-input"
+                                        placeholder="AR"
+                                      >
+                                    </div>
+                                    <div class="mt-3 flex items-center gap-2 justify-end">
+                                      <button
+                                        type="button"
+                                        (click)="submitCard(node.id, child.id, child.nameEn, child.nameAr)"
+                                        class="owner-settings-btn-chip px-3 py-2 rounded-md text-xs bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300"
+                                      >
+                                        Enter
+                                      </button>
+                                      <button
+                                        type="button"
+                                        (click)="submitCard(node.id, child.id, child.nameEn, child.nameAr)"
+                                        class="owner-settings-btn-primary px-3 py-2 shadow-sm text-xs"
+                                      >
+                                        Add
+                                      </button>
+                                      <button
+                                        type="button"
+                                        (click)="removeSubjectNode(child.id)"
+                                        class="owner-settings-icon-btn p-1.5 w-9 h-9"
+                                        aria-label="Delete card"
+                                      >
+                                        <mat-icon class="owner-settings-icon-sm">delete</mat-icon>
+                                      </button>
+                                    </div>
+                                  } @else {
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                      <div class="rounded-md bg-slate-100 dark:bg-slate-900/50 px-3 py-2 text-sm text-slate-700 dark:text-slate-200">
+                                        {{ child.nameEn || '—' }}
+                                      </div>
+                                      <div class="rounded-md bg-slate-100 dark:bg-slate-900/50 px-3 py-2 text-sm text-slate-700 dark:text-slate-200">
+                                        {{ child.nameAr || '—' }}
+                                      </div>
+                                    </div>
+                                    <div class="mt-3 flex items-center gap-2 justify-end">
+                                      <button
+                                        type="button"
+                                        (click)="editCard(child.id)"
+                                        class="owner-settings-btn-chip px-3 py-2 rounded-md text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300"
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        type="button"
+                                        (click)="removeSubjectNode(child.id)"
+                                        class="owner-settings-icon-btn p-1.5 w-9 h-9"
+                                        aria-label="Delete card"
+                                      >
+                                        <mat-icon class="owner-settings-icon-sm">delete</mat-icon>
+                                      </button>
+                                    </div>
+                                  }
+                                </div>
+                              }
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+            <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
+              <button class="owner-settings-btn-primary px-4 py-2 shadow-sm">Save Subject Structure</button>
             </div>
           </div>
         }
@@ -403,6 +619,8 @@
             </div>
           </div>
         }
+          </div>
+        </div>
       </div>
     </div>
   

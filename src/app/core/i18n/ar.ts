@@ -1,6 +1,26 @@
 import type { I18nKey } from './en';
 
 export const AR_TRANSLATIONS: Record<I18nKey, string> = {
+    // Owner Tenants List Table
+    "owner.tenants.tableColumnAction": "الإجراءات",
+    "owner.tenants.tableColumnCreatedAt": "تاريخ الإنشاء",
+    "owner.tenants.tableColumnHealth": "حالة التطبيق",
+    "owner.tenants.tableColumnOwnerMail": "بريد المسؤول",
+    "owner.tenants.tableColumnPhoneNo": "رقم الهاتف",
+    "owner.tenants.tableColumnPlan": "خطة الإشتراك",
+    "owner.tenants.tableColumnStatus": "حالة الإشتراك",
+  "owner.tenants.tableColumnName": "إسم العميل",
+  "owner.tenants.fullNameLabel": "الإسم الكامل",
+
+    // Owner Tenant Search Placeholder
+    'owner.tenants.searchPlaceholder':'البحث بإسم العميل , حالة التطبيق , خطة الإشراك ....',
+
+    // Table Pagination  Btn's
+    'owner.tenants.tablePaginationPreviousBtn':'السابق',
+    'owner.tenants.tablePaginationNextBtn':'التالي',
+    'owner.tenants.tablePaginationShown':'عرض {from}-{to} من {total} عميل',
+
+
   'topbar.pageTitle.owner': 'نظرة عامة على المنصة',
   'topbar.pageTitle.tenant': 'لوحة تحكم المركز',
   'topbar.pageTitle.teacher': 'بوابة المعلم',
@@ -40,6 +60,7 @@ export const AR_TRANSLATIONS: Record<I18nKey, string> = {
   'sidebar.item.compliance': 'الامتثال',
   'sidebar.item.notifications': 'الإشعارات',
   'sidebar.item.settings': 'الإعدادات',
+  'sidebar.item.test': 'اختبار',
   'sidebar.item.overview': 'نظرة عامة',
   'sidebar.item.students': 'الطلاب',
   'sidebar.item.teachers': 'المعلمون',
@@ -63,4 +84,29 @@ export const AR_TRANSLATIONS: Record<I18nKey, string> = {
   'owner.tenants.subtitle': 'إدارة جميع العملاء و المراكز التعليمية بالمنصة.',
   'owner.tenants.createTenant': 'إضافة عميل',
   'owner.tenants.filters': 'تصفية البحث',
+  'owner.tenants.filter.status': 'الحالة',
+  'owner.tenants.filter.plan': 'الخطة',
+  'owner.tenants.filter.health': 'الصحة',
+  'owner.tenants.filter.search': 'ابحث داخل الخيارات...',
+  'owner.tenants.filter.clearAll': 'مسح الكل',
+
+  'owner.test.title': 'قالب بنك الأسئلة',
+  'owner.test.subtitle': 'نموذج تجريبي لتصميم تدفقات إنشاء ومراجعة ونشر الأسئلة.',
+  'owner.test.createQuestion': 'إضافة سؤال',
+  'owner.test.importQuestions': 'استيراد أسئلة',
+  'owner.test.searchPlaceholder': 'ابحث بعنوان السؤال أو الوسم أو رقم السؤال...',
+  'owner.test.filterSubject': 'المادة',
+  'owner.test.filterDifficulty': 'الصعوبة',
+  'owner.test.filterStatus': 'الحالة',
+  'owner.test.colQuestion': 'السؤال',
+  'owner.test.colSubject': 'المادة',
+  'owner.test.colDifficulty': 'الصعوبة',
+  'owner.test.colStatus': 'الحالة',
+  'owner.test.colUpdated': 'آخر تحديث',
+  'owner.test.colActions': 'الإجراءات',
+  'owner.test.logicNotesTitle': 'منطق مقترح للإنتاج',
+  'owner.test.logicNote1': 'حفظ نسخ المسودات والمنشور مع سجل إصدارات وملاحظات المراجعين.',
+  'owner.test.logicNote2': 'دعم تصنيفات التصفية: مادة، صف، درس، ناتج تعلم، ومستوى بلوم.',
+  'owner.test.logicNote3': 'إضافة خط تحقق: كشف التكرار، اتساق الإجابات، وفحص جودة الوسائط.',
+  'owner.test.logicNote4': 'تمكين تجميع الاختبارات عبر مخطط توزيع صعوبات وتغطية موضوعات.',
 };

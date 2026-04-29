@@ -7,6 +7,8 @@ export class OwnerTenantsDataService {
     {
       id: 'tnt_001',
       name: 'Bright Future Academy',
+      fullName: 'Mohamed Hassan',
+      phoneNumber: '+20 100 123 4567',
       status: 'Active',
       plan: 'Enterprise',
       createdDate: 'Jan 15, 2024',
@@ -17,6 +19,8 @@ export class OwnerTenantsDataService {
     {
       id: 'tnt_002',
       name: 'Cairo Math Center',
+      fullName: 'Nour El Din',
+      phoneNumber: '+20 111 223 3445',
       status: 'Trial',
       plan: 'Professional',
       createdDate: 'Feb 02, 2024',
@@ -27,6 +31,8 @@ export class OwnerTenantsDataService {
     {
       id: 'tnt_003',
       name: 'Elite Tutors',
+      fullName: 'Sarah Mostafa',
+      phoneNumber: '+20 122 345 6789',
       status: 'Active',
       plan: 'Starter',
       createdDate: 'Dec 10, 2023',
@@ -37,6 +43,8 @@ export class OwnerTenantsDataService {
     {
       id: 'tnt_004',
       name: 'Physics Pro',
+      fullName: 'Ahmed Nabil',
+      phoneNumber: '+20 127 222 1100',
       status: 'Active',
       plan: 'Professional',
       createdDate: 'Jan 20, 2024',
@@ -47,6 +55,8 @@ export class OwnerTenantsDataService {
     {
       id: 'tnt_005',
       name: 'Language Hub',
+      fullName: 'Mona Khaled',
+      phoneNumber: '+20 109 900 4455',
       status: 'Suspended',
       plan: 'Starter',
       createdDate: 'Nov 05, 2023',

@@ -35,6 +35,7 @@ import { OwnerNotificationsListComponent } from './pages/owner-notifications-lis
 import { OwnerNotificationFormComponent } from './pages/owner-notification-form/owner-notification-form.component';
 import { OwnerNotificationDetailsComponent } from './pages/owner-notification-details/owner-notification-details.component';
 import { OwnerSettingsComponent } from './pages/owner-settings/owner-settings.component';
+import { OwnerTestQuestionBankComponent } from './pages/owner-test-question-bank/owner-test-question-bank.component';
 
 export const OWNER_ROUTES: Routes = [
   { path: 'overview', component: OwnerOverviewComponent },
@@ -94,4 +95,5 @@ export const OWNER_ROUTES: Routes = [
   { path: 'notifications/create', component: OwnerNotificationFormComponent },
   { path: 'notifications/:id', component: OwnerNotificationDetailsComponent },
   { path: 'settings', component: OwnerSettingsComponent },
+  { path: 'test', component: OwnerTestQuestionBankComponent },
 ];

@@ -1,5 +1,6 @@
 export type OwnerSettingsTabId =
   | 'general'
+  | 'subject'
   | 'presets'
   | 'security'
   | 'billing'
@@ -26,4 +27,14 @@ export interface OwnerSettingsPaymentMethod {
   description: string;
   icon: string;
   active: boolean;
+}
+
+export type SubjectStructureNodeType = 'field' | 'sequence';
+
+export interface SubjectStructureNode {
+  id: number;
+  type: SubjectStructureNodeType;
+  nameEn: string;
+  nameAr: string;
+  children: SubjectStructureNode[];
 }

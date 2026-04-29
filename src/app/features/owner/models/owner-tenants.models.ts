@@ -5,6 +5,8 @@ export type TenantType = 'Educational Center' | 'Individual Teacher';
 export interface Tenant {
   id: string;
   name: string;
+  fullName: string;
+  phoneNumber: string;
   status: TenantStatus;
   plan: string;
   createdDate: string;

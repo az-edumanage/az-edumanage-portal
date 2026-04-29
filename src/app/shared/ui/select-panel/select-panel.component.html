@@ -1,0 +1,74 @@
+<div class="ui-select-panel relative">
+  <button
+    type="button"
+    class="ui-select-panel-trigger flex items-center gap-2 px-4 py-2"
+    (click)="togglePanel()"
+  >
+    <span class="text-sm font-medium">{{ label }}</span>
+    @if (selectedCount() > 0) {
+      <span class="ui-select-panel-count text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ selectedCount() }}</span>
+    }
+    <mat-icon class="text-sm">expand_more</mat-icon>
+  </button>
+
+  @if (open()) {
+    <button
+      type="button"
+      class="fixed inset-0 z-10 w-full h-full cursor-default"
+      (click)="closePanel()"
+      aria-label="Close options panel"
+    ></button>
+    <div class="ui-select-panel-menu absolute top-full mt-2 z-20 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+      <div class="ui-select-panel-head p-3 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-2">
+        <span class="text-sm font-semibold text-slate-900 dark:text-white">{{ label }}</span>
+        @if (selectedCount() > 0) {
+          <button
+            type="button"
+            class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+            (click)="clearSelection($event)"
+          >
+            Clear
+          </button>
+        }
+      </div>
+
+      @if (showSearch) {
+        <div class="p-3 border-b border-slate-200 dark:border-slate-700">
+          <div class="relative">
+            <mat-icon class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 text-base">search</mat-icon>
+            <input
+              type="text"
+              class="ui-select-panel-search w-full pl-8 pr-2 py-1.5"
+              [ngModel]="query()"
+              (ngModelChange)="onQueryChange($event)"
+              [placeholder]="searchPlaceholder"
+            >
+          </div>
+        </div>
+      }
+
+      <div class="max-h-64 overflow-y-auto p-2 space-y-1">
+        @for (option of filteredOptions(); track option.value) {
+          <button
+            type="button"
+            class="ui-select-panel-option w-full flex items-center gap-2 px-2 py-2 rounded-md text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            [class.ui-select-panel-option-active]="isSelected(option.value)"
+            (click)="onOptionClick(option.value)"
+          >
+            @if (multi) {
+              <input
+                type="checkbox"
+                class="rounded border-slate-200 text-indigo-600 focus:ring-indigo-500"
+                [checked]="isSelected(option.value)"
+                tabindex="-1"
+              >
+            }
+            <span>{{ option.label }}</span>
+          </button>
+        } @empty {
+          <div class="px-2 py-6 text-center text-sm text-slate-500">{{ emptyLabel }}</div>
+        }
+      </div>
+    </div>
+  }
+</div>

@@ -36,6 +36,8 @@ export class OwnerTenantsListStore {
       const matchesSearch =
         !search ||
         tenant.name.toLowerCase().includes(search) ||
+        tenant.fullName.toLowerCase().includes(search) ||
+        tenant.phoneNumber.toLowerCase().includes(search) ||
         tenant.id.toLowerCase().includes(search) ||
         tenant.ownerEmail.toLowerCase().includes(search);
       const matchesStatus = statuses.size === 0 || statuses.has(tenant.status);
