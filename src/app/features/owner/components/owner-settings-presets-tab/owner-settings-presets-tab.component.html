@@ -1,0 +1,89 @@
+<div class="space-y-6">
+  <div class="owner-settings-card owner-settings-card--shell">
+    <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+      <div>
+        <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">{{ translate()('owner.settings.presets.cyclesTitle') }}</h3>
+        <p class="owner-settings-muted-body">{{ translate()('owner.settings.presets.cyclesSubtitle') }}</p>
+      </div>
+      <button (click)="addCycle.emit()" class="owner-settings-btn-chip gap-2 px-3 py-1.5 bg-indigo-600/10 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg text-sm font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/50">
+        <span class="material-icons owner-settings-icon-sm">add</span>
+        {{ translate()('owner.settings.presets.addCycle') }}
+      </button>
+    </div>
+    <div class="p-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (cycle of subscriptionCycles(); track cycle.id) {
+          <div class="p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 group relative">
+            <button (click)="removeCycle.emit(cycle.id)" class="owner-settings-icon-btn absolute top-2 right-2 p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <span class="material-icons owner-settings-icon-sm">delete</span>
+            </button>
+            <div class="flex items-center gap-3 mb-3">
+              <div class="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg text-indigo-600 dark:text-indigo-400">
+                <span class="material-icons">{{ cycle.icon }}</span>
+              </div>
+              <input [(ngModel)]="cycle.name" class="owner-settings-inline-input owner-settings-inline-input--title w-full" [placeholder]="translate()('owner.settings.presets.cycleNamePlaceholder')">
+            </div>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-slate-500">{{ translate()('owner.settings.presets.durationDays') }}</span>
+                <input type="number" [(ngModel)]="cycle.days" class="owner-settings-inline-number w-16 text-center">
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-slate-500">{{ translate()('owner.settings.presets.status') }}</span>
+                <select [(ngModel)]="cycle.active" class="owner-settings-inline-select">
+                  <option [ngValue]="true">{{ translate()('owner.settings.presets.active') }}</option>
+                  <option [ngValue]="false">{{ translate()('owner.settings.presets.inactive') }}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="owner-settings-card owner-settings-card--shell">
+    <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+      <div>
+        <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">{{ translate()('owner.settings.presets.methodsTitle') }}</h3>
+        <p class="owner-settings-muted-body">{{ translate()('owner.settings.presets.methodsSubtitle') }}</p>
+      </div>
+      <button (click)="addPaymentMethod.emit()" class="owner-settings-btn-chip gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-sm font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/50">
+        <span class="material-icons owner-settings-icon-sm">add_card</span>
+        {{ translate()('owner.settings.presets.addMethod') }}
+      </button>
+    </div>
+    <div class="p-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        @for (method of paymentMethods(); track method.id) {
+          <div class="p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between group">
+            <div class="flex items-center gap-4">
+              <div class="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-500 dark:text-slate-500">
+                <span class="material-icons">{{ method.icon }}</span>
+              </div>
+              <div>
+                <input [(ngModel)]="method.name" class="owner-settings-inline-input owner-settings-inline-input--title block" [placeholder]="translate()('owner.settings.presets.methodNamePlaceholder')">
+                <input [(ngModel)]="method.description" class="owner-settings-inline-input owner-settings-inline-input--meta block w-full" [placeholder]="translate()('owner.settings.presets.methodDescPlaceholder')">
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <label class="owner-settings-toggle inline-flex items-center cursor-pointer">
+                <input type="checkbox" [(ngModel)]="method.active" class="sr-only peer">
+                <div class="owner-settings-toggle-track owner-settings-toggle-track--compact owner-settings-toggle-track--emerald"></div>
+              </label>
+              <button (click)="removePaymentMethod.emit(method.id)" class="owner-settings-icon-btn p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span class="material-icons owner-settings-icon-sm">delete</span>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="flex justify-end gap-3">
+    <button (click)="savePresets.emit()" class="owner-settings-btn-primary px-6 py-2 shadow-sm shadow-indigo-500/20">
+      {{ translate()('owner.settings.presets.save') }}
+    </button>
+  </div>
+</div>

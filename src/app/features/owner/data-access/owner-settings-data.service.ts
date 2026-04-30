@@ -11,14 +11,14 @@ export class OwnerSettingsDataService {
   private readonly presetService = inject(SubscriptionPresetService);
 
   readonly tabs: OwnerSettingsTab[] = [
-    { id: 'general', label: 'General' },
-    { id: 'subject', label: 'Subject' },
-    { id: 'presets', label: 'Presets & Methods' },
-    { id: 'security', label: 'Security' },
-    { id: 'billing', label: 'Billing' },
-    { id: 'communication', label: 'Communication' },
-    { id: 'storage', label: 'Storage' },
-    { id: 'compliance', label: 'Audit & Compliance' },
+    { id: 'general', label: 'owner.settings.tab.general' },
+    { id: 'subject', label: 'owner.settings.tab.subjectTemplate' },
+    { id: 'presets', label: 'owner.settings.tab.presetsMethods' },
+    { id: 'security', label: 'owner.settings.tab.security' },
+    { id: 'billing', label: 'owner.settings.tab.billing' },
+    { id: 'communication', label: 'owner.settings.tab.communication' },
+    { id: 'storage', label: 'owner.settings.tab.storage' },
+    { id: 'compliance', label: 'owner.settings.tab.auditCompliance' },
   ];
 
   getSubscriptionCycles(): OwnerSettingsSubscriptionCycle[] {

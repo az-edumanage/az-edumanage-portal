@@ -1,0 +1,124 @@
+<div class="owner-settings-subject-template-page space-y-6">
+  <div class="owner-settings-subject-template-header flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <h3 class="owner-settings-card-title text-2xl font-semibold text-slate-900 dark:text-white">{{ translate()('owner.settings.subject.title') }}</h3>
+      <p class="owner-settings-muted-body mt-1">{{ translate()('owner.settings.subject.subtitle') }}</p>
+    </div>
+    @if (!isFormOpen()) {
+      <button type="button" (click)="openForm.emit()" class="owner-settings-subject-template-create-btn inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold">
+        <span class="material-icons owner-settings-icon-sm">add</span>
+        {{ translate()('owner.settings.subject.create') }}
+      </button>
+    }
+  </div>
+
+  @if (isFormOpen()) {
+    <div class="owner-settings-card owner-settings-card--shell p-6 space-y-6">
+      <div class="flex items-center justify-between gap-3">
+        <h4 class="text-2xl font-semibold text-slate-900 dark:text-white">
+          {{ editingTemplateId() === null ? translate()('owner.settings.subject.newTitle') : translate()('owner.settings.subject.editTitle') }}
+        </h4>
+        <button type="button" (click)="closeForm.emit()" class="owner-settings-icon-btn p-1.5 w-9 h-9" [attr.aria-label]="translate()('owner.settings.subject.closeFormAria')">
+          <span class="material-icons owner-settings-icon-sm">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-2">
+        <label class="owner-settings-field-label">{{ translate()('owner.settings.subject.templateName') }}</label>
+        <input [ngModel]="newTemplateName()" (ngModelChange)="updateTemplateName.emit($event)" class="owner-settings-input" [placeholder]="translate()('owner.settings.subject.templateNamePlaceholder')">
+      </div>
+
+      <div class="space-y-3">
+        <div class="flex items-center justify-between gap-3">
+          <label class="owner-settings-field-label">{{ translate()('owner.settings.subject.levelsLabel') }}</label>
+          <button type="button" (click)="addTemplateLevel.emit()" class="inline-flex items-center gap-2 text-sm font-semibold text-violet-700 dark:text-violet-300">
+            <span class="material-icons owner-settings-icon-sm">add_circle</span>
+            {{ translate()('owner.settings.subject.addLevel') }}
+          </button>
+        </div>
+
+        @for (level of newTemplateLevels(); track $index; let levelIndex = $index) {
+          <div class="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 p-3">
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-xs font-semibold">{{ levelIndex + 1 }}</span>
+            <input [ngModel]="level" (ngModelChange)="updateTemplateLevel.emit({ index: levelIndex, value: $event })" class="owner-settings-input" [placeholder]="translate()('owner.settings.subject.levelNamePlaceholder')">
+            <button type="button" (click)="removeTemplateLevel.emit(levelIndex)" class="owner-settings-icon-btn p-1.5 w-9 h-9" [attr.aria-label]="translate()('owner.settings.subject.removeLevelAria')">
+              <span class="material-icons owner-settings-icon-sm">delete</span>
+            </button>
+          </div>
+        }
+
+        <p class="text-xs text-slate-400 dark:text-slate-500">{{ translate()('owner.settings.subject.orderHint') }}</p>
+      </div>
+
+      <label class="inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+        <input type="checkbox" [ngModel]="newTemplateIsDefault()" (ngModelChange)="updateTemplateDefault.emit($event)" class="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500">
+        {{ translate()('owner.settings.subject.setDefault') }}
+      </label>
+
+      <div class="pt-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">
+        <button type="button" (click)="closeForm.emit()" class="px-5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm font-medium">
+          {{ translate()('owner.settings.common.cancel') }}
+        </button>
+        <button type="button" (click)="saveSubjectTemplate.emit()" [disabled]="!canSaveNewTemplate()" class="owner-settings-subject-template-create-btn px-5 py-2 rounded-xl text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
+          {{ editingTemplateId() === null ? translate()('owner.settings.subject.saveTemplate') : translate()('owner.settings.subject.updateTemplate') }}
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (!isFormOpen()) {
+    <div class="owner-settings-subject-template-grid grid grid-cols-1 xl:grid-cols-2 gap-4">
+      @for (template of subjectTemplates(); track template.id) {
+        <article class="owner-settings-subject-template-card owner-settings-card owner-settings-card--shell overflow-hidden">
+          <div class="p-5">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <h4 class="text-xl font-semibold text-slate-900 dark:text-white">{{ template.name }}</h4>
+                <p class="mt-1 text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ template.createdAt }}</p>
+              </div>
+              @if (template.isDefault) {
+                <span class="owner-settings-subject-default-pill">DEFAULT</span>
+              }
+            </div>
+
+            <div class="owner-settings-subject-levels mt-6 flex flex-wrap items-center gap-3">
+              @for (level of template.levels; track level; let isLast = $last) {
+                <span class="owner-settings-subject-level-pill">{{ level }}</span>
+                @if (!isLast) {
+                  <span class="material-icons owner-settings-subject-level-separator">chevron_right</span>
+                }
+              }
+            </div>
+          </div>
+
+          <div class="owner-settings-subject-template-footer px-5 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <button type="button" (click)="editSubjectTemplate.emit(template.id)" class="owner-settings-icon-btn p-1.5 w-9 h-9" aria-label="Edit template">
+                <span class="material-icons owner-settings-icon-sm">edit</span>
+              </button>
+              <button type="button" (click)="deleteSubjectTemplate.emit(template.id)" class="owner-settings-icon-btn p-1.5 w-9 h-9" aria-label="Delete template">
+                <span class="material-icons owner-settings-icon-sm">delete</span>
+              </button>
+            </div>
+
+            @if (!template.isDefault) {
+              <button type="button" (click)="setDefaultSubjectTemplate.emit(template.id)" class="text-sm font-semibold text-violet-600 hover:text-violet-700 dark:text-violet-300 dark:hover:text-violet-200">
+                {{ translate()('owner.settings.subject.setDefaultAction') }}
+              </button>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  <div class="owner-settings-subject-info owner-settings-card owner-settings-card--shell p-5 flex items-start gap-4">
+    <div class="owner-settings-subject-info-icon flex items-center justify-center rounded-full">
+      <span class="material-icons owner-settings-icon-sm">info</span>
+    </div>
+    <div class="space-y-1">
+      <h4 class="text-xl font-semibold text-slate-900 dark:text-white">{{ translate()('owner.settings.subject.howItWorksTitle') }}</h4>
+      <p class="owner-settings-muted-body">{{ translate()('owner.settings.subject.howItWorksBody') }}</p>
+    </div>
+  </div>
+</div>

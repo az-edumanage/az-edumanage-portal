@@ -29,6 +29,20 @@ export interface OwnerSettingsPaymentMethod {
   active: boolean;
 }
 
+export interface SubjectTemplate {
+  id: number;
+  name: string;
+  levels: string[];
+  createdAt: string;
+  isDefault: boolean;
+}
+
+export interface SubjectTemplateCreateInput {
+  name: string;
+  levels: string[];
+  isDefault: boolean;
+}
+
 export type SubjectStructureNodeType = 'field' | 'sequence';
 
 export interface SubjectStructureNode {

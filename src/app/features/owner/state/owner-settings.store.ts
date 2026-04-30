@@ -4,6 +4,8 @@ import {
   OwnerSettingsPaymentMethod,
   OwnerSettingsSubscriptionCycle,
   OwnerSettingsTabId,
+  SubjectTemplateCreateInput,
+  SubjectTemplate,
   SubjectStructureNode,
   SubjectStructureNodeType,
 } from '../models/owner-settings.models';
@@ -17,6 +19,22 @@ export class OwnerSettingsStore {
 
   readonly subscriptionCycles = signal<OwnerSettingsSubscriptionCycle[]>(this.data.getSubscriptionCycles());
   readonly paymentMethods = signal<OwnerSettingsPaymentMethod[]>(this.data.getPaymentMethods());
+  readonly subjectTemplates = signal<SubjectTemplate[]>([
+    {
+      id: 1,
+      name: 'Standard Academic Structure',
+      levels: ['Unit', 'Chapter', 'Lesson'],
+      createdAt: 'CREATED 4/30/26',
+      isDefault: true,
+    },
+    {
+      id: 2,
+      name: 'Concise Structure',
+      levels: ['Part', 'Topic'],
+      createdAt: 'CREATED 4/30/26',
+      isDefault: false,
+    },
+  ]);
   readonly subjectStructure = signal<SubjectStructureNode[]>([]);
   private readonly subjectNodeIdCounter = signal(1);
 
@@ -62,6 +80,87 @@ export class OwnerSettingsStore {
 
   savePresets(): void {
     this.data.savePresets(this.subscriptionCycles(), this.paymentMethods());
+  }
+
+  createSubjectTemplate(input: SubjectTemplateCreateInput): void {
+    const current = this.subjectTemplates();
+    const cleanedName = input.name.trim();
+    const cleanedLevels = input.levels.map((level) => level.trim()).filter((level) => level.length > 0);
+    if (!cleanedName || cleanedLevels.length === 0) {
+      return;
+    }
+
+    const newId = this.getNextId(current.map((template) => template.id));
+    const now = new Date();
+    const createdAt = `CREATED ${now.getMonth() + 1}/${now.getDate()}/${String(now.getFullYear()).slice(-2)}`;
+    const nextTemplate: SubjectTemplate = {
+      id: newId,
+      name: cleanedName,
+      levels: cleanedLevels,
+      createdAt,
+      isDefault: input.isDefault,
+    };
+
+    this.subjectTemplates.set(
+      input.isDefault
+        ? [...current.map((template) => ({ ...template, isDefault: false })), nextTemplate]
+        : [...current, nextTemplate],
+    );
+  }
+
+  updateSubjectTemplate(id: number, input: SubjectTemplateCreateInput): void {
+    const cleanedName = input.name.trim();
+    const cleanedLevels = input.levels.map((level) => level.trim()).filter((level) => level.length > 0);
+    if (!cleanedName || cleanedLevels.length === 0) {
+      return;
+    }
+
+    this.subjectTemplates.update((current) =>
+      current.map((template) =>
+        template.id === id
+          ? {
+              ...template,
+              name: cleanedName,
+              levels: cleanedLevels,
+              isDefault: input.isDefault,
+            }
+          : {
+              ...template,
+              isDefault: input.isDefault ? false : template.isDefault,
+            },
+      ),
+    );
+  }
+
+  editSubjectTemplate(id: number): void {
+    this.subjectTemplates.update((current) =>
+      current.map((template) =>
+        template.id === id
+          ? { ...template, name: template.name.endsWith(' (Edited)') ? template.name : `${template.name} (Edited)` }
+          : template,
+      ),
+    );
+  }
+
+  deleteSubjectTemplate(id: number): void {
+    const nextTemplates = this.subjectTemplates().filter((template) => template.id !== id);
+    if (nextTemplates.length === 0) {
+      this.subjectTemplates.set([]);
+      return;
+    }
+
+    const hasDefault = nextTemplates.some((template) => template.isDefault);
+    this.subjectTemplates.set(
+      hasDefault
+        ? nextTemplates
+        : nextTemplates.map((template, index) => ({ ...template, isDefault: index === 0 })),
+    );
+  }
+
+  setDefaultSubjectTemplate(id: number): void {
+    this.subjectTemplates.update((current) =>
+      current.map((template) => ({ ...template, isDefault: template.id === id })),
+    );
   }
 
   addSubjectRootField(nameEn: string, nameAr: string): void {

@@ -1,32 +1,62 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
+import { ViewEncapsulation } from '@angular/core';
 import { I18nService } from '../../../../core/services/i18n.service';
+import { OwnerSettingsGeneralTabComponent } from '../../components/owner-settings-general-tab/owner-settings-general-tab.component';
+import { OwnerSettingsSubjectTabComponent } from '../../components/owner-settings-subject-tab/owner-settings-subject-tab.component';
+import { OwnerSettingsPresetsTabComponent } from '../../components/owner-settings-presets-tab/owner-settings-presets-tab.component';
+import { OwnerSettingsSecurityTabComponent } from '../../components/owner-settings-security-tab/owner-settings-security-tab.component';
+import { OwnerSettingsBillingTabComponent } from '../../components/owner-settings-billing-tab/owner-settings-billing-tab.component';
+import { OwnerSettingsCommunicationTabComponent } from '../../components/owner-settings-communication-tab/owner-settings-communication-tab.component';
+import { OwnerSettingsStorageTabComponent } from '../../components/owner-settings-storage-tab/owner-settings-storage-tab.component';
+import { OwnerSettingsComplianceTabComponent } from '../../components/owner-settings-compliance-tab/owner-settings-compliance-tab.component';
 import { OwnerSettingsTabId } from '../../models/owner-settings.models';
 import { OwnerSettingsFacade } from '../../state/owner-settings.facade';
 
 @Component({
   selector: 'app-owner-settings',
   standalone: true,
-  imports: [CommonModule, MatIconModule, FormsModule],
+  imports: [
+    CommonModule,
+    MatIconModule,
+    FormsModule,
+    OwnerSettingsGeneralTabComponent,
+    OwnerSettingsSubjectTabComponent,
+    OwnerSettingsPresetsTabComponent,
+    OwnerSettingsSecurityTabComponent,
+    OwnerSettingsBillingTabComponent,
+    OwnerSettingsCommunicationTabComponent,
+    OwnerSettingsStorageTabComponent,
+    OwnerSettingsComplianceTabComponent,
+  ],
   templateUrl: './owner-settings.component.html',
-  styleUrl: './owner-settings.component.css'})
+  styleUrl: './owner-settings.component.css',
+  encapsulation: ViewEncapsulation.None,
+})
 export class OwnerSettingsComponent {
   private readonly facade = inject(OwnerSettingsFacade);
   private readonly i18nService = inject(I18nService);
-  private readonly subjectConnectorColors = ['#5b21ff', '#0f766e', '#2563eb', '#be185d', '#b45309'];
 
   readonly activeTab = this.facade.activeTab;
   readonly subscriptionCycles = this.facade.subscriptionCycles;
   readonly paymentMethods = this.facade.paymentMethods;
   readonly tabs = this.facade.tabs;
-  readonly language = this.i18nService.language;
-  readonly subjectStructure = this.facade.subjectStructure;
-  readonly newSubjectRootNameEn = signal('');
-  readonly newSubjectRootNameAr = signal('');
-  readonly collapsedSubjectNodeIds = signal<Set<number>>(new Set<number>());
-  readonly editableCardIds = signal<Set<number>>(new Set<number>());
+  readonly subjectTemplates = this.facade.subjectTemplates;
+  readonly isRtl = this.i18nService.isRtl;
+  readonly isSubjectTemplateFormOpen = signal(false);
+  readonly editingTemplateId = signal<number | null>(null);
+  readonly newTemplateName = signal('');
+  readonly newTemplateLevels = signal<string[]>(['']);
+  readonly newTemplateIsDefault = signal(false);
+  readonly canSaveNewTemplate = computed(() => {
+    const nameValid = this.newTemplateName().trim().length > 0;
+    const hasValidLevel = this.newTemplateLevels().some((level) => level.trim().length > 0);
+    return nameValid && hasValidLevel;
+  });
+
+  readonly t = (key: string): string => this.i18nService.t(key);
 
   setActiveTab(tabId: OwnerSettingsTabId): void {
     this.facade.setActiveTab(tabId);
@@ -52,127 +82,75 @@ export class OwnerSettingsComponent {
     this.facade.savePresets();
   }
 
-  addSubjectRootField(): void {
-    const beforeRootIds = new Set(this.subjectStructure().map((node) => node.id));
-    this.facade.addSubjectRootField(this.newSubjectRootNameEn(), this.newSubjectRootNameAr());
-    this.newSubjectRootNameEn.set('');
-    this.newSubjectRootNameAr.set('');
+  openSubjectTemplateForm(): void {
+    this.editingTemplateId.set(null);
+    this.isSubjectTemplateFormOpen.set(true);
+  }
 
-    const newRoot = this.subjectStructure().find((node) => !beforeRootIds.has(node.id));
-    if (!newRoot) {
+  closeSubjectTemplateForm(): void {
+    this.isSubjectTemplateFormOpen.set(false);
+    this.editingTemplateId.set(null);
+    this.newTemplateName.set('');
+    this.newTemplateLevels.set(['']);
+    this.newTemplateIsDefault.set(false);
+  }
+
+  addTemplateLevel(): void {
+    this.newTemplateLevels.update((levels) => [...levels, '']);
+  }
+
+  updateTemplateLevel(index: number, value: string): void {
+    this.newTemplateLevels.update((levels) =>
+      levels.map((level, levelIndex) => (levelIndex === index ? value : level)),
+    );
+  }
+
+  removeTemplateLevel(index: number): void {
+    this.newTemplateLevels.update((levels) => {
+      if (levels.length <= 1) {
+        return [''];
+      }
+      return levels.filter((_, levelIndex) => levelIndex !== index);
+    });
+  }
+
+  saveSubjectTemplate(): void {
+    if (!this.canSaveNewTemplate()) {
       return;
     }
 
-    this.collapsedSubjectNodeIds.update((current) => {
-      const next = new Set(current);
-      next.delete(newRoot.id);
-      return next;
-    });
-
-    const firstCard = newRoot.children[0];
-    if (firstCard) {
-      this.editableCardIds.update((current) => {
-        const next = new Set(current);
-        next.add(firstCard.id);
-        return next;
-      });
+    const payload = {
+      name: this.newTemplateName(),
+      levels: this.newTemplateLevels(),
+      isDefault: this.newTemplateIsDefault(),
+    };
+    const editingId = this.editingTemplateId();
+    if (editingId === null) {
+      this.facade.createSubjectTemplate(payload);
+    } else {
+      this.facade.updateSubjectTemplate(editingId, payload);
     }
+    this.closeSubjectTemplateForm();
   }
 
-  updateSubjectNodeNames(nodeId: number, nameEn: string, nameAr: string): void {
-    this.facade.updateSubjectNodeNames(nodeId, nameEn, nameAr);
-  }
-
-  addSubjectChildField(parentId: number): void {
-    this.facade.addSubjectChildNode(parentId, 'field');
-    const parent = this.subjectStructure().find((node) => node.id === parentId);
-    const newCard = parent?.children[parent.children.length - 1];
-    if (newCard) {
-      this.editableCardIds.update((current) => {
-        const next = new Set(current);
-        next.add(newCard.id);
-        return next;
-      });
+  editSubjectTemplate(templateId: number): void {
+    const template = this.subjectTemplates().find((item) => item.id === templateId);
+    if (!template) {
+      return;
     }
-    this.collapsedSubjectNodeIds.update((current) => {
-      const next = new Set(current);
-      next.delete(parentId);
-      return next;
-    });
+
+    this.editingTemplateId.set(templateId);
+    this.newTemplateName.set(template.name);
+    this.newTemplateLevels.set(template.levels.length > 0 ? [...template.levels] : ['']);
+    this.newTemplateIsDefault.set(template.isDefault);
+    this.isSubjectTemplateFormOpen.set(true);
   }
 
-  addSubjectSequence(parentId: number): void {
-    this.facade.addSubjectChildNode(parentId, 'sequence');
-    this.collapsedSubjectNodeIds.update((current) => {
-      const next = new Set(current);
-      next.delete(parentId);
-      return next;
-    });
+  deleteSubjectTemplate(templateId: number): void {
+    this.facade.deleteSubjectTemplate(templateId);
   }
 
-  removeSubjectNode(nodeId: number): void {
-    this.facade.removeSubjectNode(nodeId);
-    this.collapsedSubjectNodeIds.update((current) => {
-      const next = new Set(current);
-      next.delete(nodeId);
-      return next;
-    });
-    this.editableCardIds.update((current) => {
-      const next = new Set(current);
-      next.delete(nodeId);
-      return next;
-    });
-  }
-
-  toggleSubjectNodeCollapse(nodeId: number): void {
-    this.collapsedSubjectNodeIds.update((current) => {
-      const next = new Set(current);
-      if (next.has(nodeId)) {
-        next.delete(nodeId);
-      } else {
-        next.add(nodeId);
-      }
-      return next;
-    });
-  }
-
-  isSubjectNodeCollapsed(nodeId: number): boolean {
-    return this.collapsedSubjectNodeIds().has(nodeId);
-  }
-
-  getSubjectConnectorColor(index: number): string {
-    return this.subjectConnectorColors[index % this.subjectConnectorColors.length];
-  }
-
-  isCardInEditMode(cardId: number): boolean {
-    return this.editableCardIds().has(cardId);
-  }
-
-  editCard(cardId: number): void {
-    this.editableCardIds.update((current) => {
-      const next = new Set(current);
-      next.add(cardId);
-      return next;
-    });
-  }
-
-  submitCard(rootId: number, cardId: number, nameEn: string, nameAr: string): void {
-    this.facade.updateSubjectNodeNames(cardId, nameEn, nameAr);
-    this.editableCardIds.update((current) => {
-      const next = new Set(current);
-      next.delete(cardId);
-      return next;
-    });
-
-    this.facade.addSubjectChildNode(rootId, 'field');
-    const root = this.subjectStructure().find((node) => node.id === rootId);
-    const newCard = root?.children[root.children.length - 1];
-    if (newCard) {
-      this.editableCardIds.update((current) => {
-        const next = new Set(current);
-        next.add(newCard.id);
-        return next;
-      });
-    }
+  setDefaultSubjectTemplate(templateId: number): void {
+    this.facade.setDefaultSubjectTemplate(templateId);
   }
 }

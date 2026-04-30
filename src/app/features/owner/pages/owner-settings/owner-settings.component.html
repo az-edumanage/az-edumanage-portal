@@ -1,626 +1,116 @@
+<div class="owner-settings-page space-y-6">
+  <div class="owner-settings-header flex items-center justify-between">
+    <div>
+      <h2 class="owner-settings-title text-2xl font-bold text-slate-900 dark:text-white">{{ t('owner.settings.pageTitle') }}</h2>
+      <p class="owner-settings-subtitle text-slate-500 dark:text-slate-500 text-sm">{{ t('owner.settings.pageSubtitle') }}</p>
+    </div>
+  </div>
 
-    <div class="owner-settings-page space-y-6">
-      <!-- Header -->
-      <div class="owner-settings-header flex items-center justify-between">
-        <div>
-          <h2 class="owner-settings-title text-2xl font-bold text-slate-900 dark:text-white">Global System Settings</h2>
-          <p class="owner-settings-subtitle text-slate-500 dark:text-slate-500 text-sm">Configure platform-wide defaults and policies for all tenants.</p>
-        </div>
+  <div class="owner-settings-layout">
+    <aside
+      class="owner-settings-side-nav owner-settings-card owner-settings-card--shell hidden lg:block"
+      [class.text-right]="isRtl()"
+      [attr.dir]="isRtl() ? 'rtl' : 'ltr'"
+    >
+      <div class="owner-settings-side-nav-header px-4 py-4 border-b border-slate-200 dark:border-slate-800">
+        <h3 class="text-sm font-semibold text-slate-900 dark:text-white">{{ t('owner.settings.sections') }}</h3>
+      </div>
+      <nav class="owner-settings-side-nav-list p-2">
+        @for (tab of tabs; track tab.id) {
+          <button
+            (click)="setActiveTab(tab.id)"
+            class="owner-settings-side-nav-btn w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+            [class.text-right]="isRtl()"
+            [class.owner-settings-side-nav-btn--active]="activeTab() === tab.id"
+            [class.text-slate-500]="activeTab() !== tab.id"
+          >
+            {{ t(tab.label) }}
+          </button>
+        }
+      </nav>
+    </aside>
+
+    <div class="owner-settings-content" [attr.dir]="isRtl() ? 'rtl' : 'ltr'" [class.text-right]="isRtl()">
+      <div class="owner-settings-tabs-wrap owner-settings-custom-scrollbar border-b border-slate-200 dark:border-slate-800 lg:hidden">
+        <nav class="owner-settings-tabs flex">
+          @for (tab of tabs; track tab.id) {
+            <button
+              (click)="setActiveTab(tab.id)"
+              class="owner-settings-tab-btn pb-4 text-sm font-medium"
+              [class.text-indigo-600]="activeTab() === tab.id"
+              [class.text-slate-500]="activeTab() !== tab.id"
+            >
+              {{ t(tab.label) }}
+              @if (activeTab() === tab.id) {
+                <div class="owner-settings-tab-indicator"></div>
+              }
+            </button>
+          }
+        </nav>
       </div>
 
-      <div class="owner-settings-layout">
-        <aside class="owner-settings-side-nav owner-settings-card owner-settings-card--shell hidden lg:block">
-          <div class="owner-settings-side-nav-header px-4 py-4 border-b border-slate-200 dark:border-slate-800">
-            <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Settings Sections</h3>
-          </div>
-          <nav class="owner-settings-side-nav-list p-2">
-            @for (tab of tabs; track tab.id) {
-              <button
-                (click)="setActiveTab(tab.id)"
-                class="owner-settings-side-nav-btn w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-                [class.owner-settings-side-nav-btn--active]="activeTab() === tab.id"
-                [class.text-slate-500]="activeTab() !== tab.id"
-              >
-                {{ tab.label }}
-              </button>
-            }
-          </nav>
-        </aside>
-
-        <div class="owner-settings-content">
-          <!-- Tabs Navigation -->
-          <div class="owner-settings-tabs-wrap owner-settings-custom-scrollbar border-b border-slate-200 dark:border-slate-800 lg:hidden">
-            <nav class="owner-settings-tabs flex">
-              @for (tab of tabs; track tab.id) {
-                <button
-                  (click)="setActiveTab(tab.id)"
-                  class="owner-settings-tab-btn pb-4 text-sm font-medium"
-                  [class.text-indigo-600]="activeTab() === tab.id"
-                  [class.text-slate-500]="activeTab() !== tab.id"
-                >
-                  {{ tab.label }}
-                  @if (activeTab() === tab.id) {
-                    <div class="owner-settings-tab-indicator"></div>
-                  }
-                </button>
-              }
-            </nav>
-          </div>
-
-          <!-- Tab Content -->
-          <div class="mt-6 lg:mt-0">
-        <!-- 1. General Settings -->
+      <div class="mt-6 lg:mt-0">
         @if (activeTab() === 'general') {
-          <div class="owner-settings-card owner-settings-card--shell">
-            <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">General Configuration</h3>
-            </div>
-            <div class="p-6 space-y-6">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label for="platform-name" class="owner-settings-field-label">Platform Name</label>
-                  <input id="platform-name" type="text" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="Remix Education Center">
-                </div>
-                <div>
-                  <label for="support-email" class="owner-settings-field-label">Support Email</label>
-                  <input id="support-email" type="email" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="support@remix.com">
-                </div>
-                <div>
-                  <label for="def-lang" class="owner-settings-field-label">Default Language</label>
-                  <select id="def-lang" class="owner-settings-select dark:bg-slate-800 dark:border-slate-700">
-                    <option selected>English</option>
-                    <option>Arabic</option>
-                    <option>French</option>
-                  </select>
-                </div>
-                <div>
-                  <label for="def-tz" class="owner-settings-field-label">Default Timezone</label>
-                  <select id="def-tz" class="owner-settings-select dark:bg-slate-800 dark:border-slate-700">
-                    <option selected>UTC (Coordinated Universal Time)</option>
-                    <option>GMT+2 (Cairo, Egypt)</option>
-                    <option>GMT-5 (New York, USA)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="owner-settings-banner flex justify-between p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                <div class="flex gap-3">
-                  <mat-icon class="text-amber-600">construction</mat-icon>
-                  <div>
-                    <p class="text-sm font-medium text-amber-900 dark:text-amber-300">Maintenance Mode</p>
-                    <p class="text-xs text-amber-800/70 dark:text-amber-400/70">When enabled, only platform owners can access the system. Tenants will see a maintenance page.</p>
-                  </div>
-                </div>
-                <label class="owner-settings-toggle inline-flex items-center cursor-pointer">
-                  <input type="checkbox" class="sr-only peer">
-                  <div class="owner-settings-toggle-track owner-settings-toggle-track--amber"></div>
-                </label>
-              </div>
-            </div>
-            <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
-              <button class="owner-settings-btn-primary px-4 py-2 shadow-sm">Save Changes</button>
-            </div>
-          </div>
+          <app-owner-settings-general-tab [translate]="t"></app-owner-settings-general-tab>
         }
 
-        <!-- Subject Structure Settings -->
         @if (activeTab() === 'subject') {
-          <div class="owner-settings-card owner-settings-card--shell">
-            <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Subject Structure Configuration</h3>
-              <p class="owner-settings-muted-body mt-1">
-                Build a custom field tree for course structure only. This page does not create courses.
-              </p>
-            </div>
-            <div class="p-6 space-y-6">
-              <div class="owner-settings-banner p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <p class="text-sm text-blue-800 dark:text-blue-300">
-                  Example: create field "Item", then add children like "Title" and "Index", and add nested fields or sequence under any node.
-                </p>
-              </div>
-
-              <div class="owner-settings-structure-add owner-settings-structure-node-row p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                <div class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 dark:text-slate-300" aria-hidden="true">
-                  <mat-icon class="owner-settings-icon-sm">folder</mat-icon>
-                </div>
-                <div class="owner-settings-structure-node-names">
-                  <input
-                    [ngModel]="newSubjectRootNameEn()"
-                    (ngModelChange)="newSubjectRootNameEn.set($event)"
-                    (keydown.enter)="addSubjectRootField()"
-                    class="owner-settings-input owner-settings-structure-node-input"
-                    placeholder="EN"
-                  >
-                  <input
-                    [ngModel]="newSubjectRootNameAr()"
-                    (ngModelChange)="newSubjectRootNameAr.set($event)"
-                    (keydown.enter)="addSubjectRootField()"
-                    class="owner-settings-input owner-settings-structure-node-input"
-                    placeholder="AR"
-                  >
-                </div>
-                <button
-                  type="button"
-                  (click)="addSubjectRootField()"
-                  [disabled]="newSubjectRootNameEn().trim().length === 0 && newSubjectRootNameAr().trim().length === 0"
-                  class="owner-settings-btn-primary px-4 py-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  insert
-                </button>
-              </div>
-
-              @if (subjectStructure().length === 0) {
-                <div class="owner-settings-structure-empty p-5 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40">
-                  <p class="text-sm text-slate-500">No structure fields yet. Start by adding your first root field.</p>
-                </div>
-              } @else {
-                <div class="space-y-5">
-                  @for (node of subjectStructure(); track node.id; let i = $index) {
-                    <div
-                      class="owner-settings-structure-group rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 overflow-hidden"
-                      [style.--subject-connector-color]="getSubjectConnectorColor(i)"
-                    >
-                      <button
-                        type="button"
-                        (click)="toggleSubjectNodeCollapse(node.id)"
-                        class="w-full flex items-center justify-between gap-3 px-4 py-3 text-left bg-slate-100/80 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700"
-                      >
-                        <div class="flex items-center gap-2 min-w-0">
-                          <mat-icon class="owner-settings-icon-sm text-slate-700 dark:text-slate-300">
-                            {{ isSubjectNodeCollapsed(node.id) ? 'folder' : 'folder_open' }}
-                          </mat-icon>
-                          <div class="min-w-0">
-                            @if (language() === 'ar') {
-                              <div class="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 truncate">
-                                <span class="font-semibold">إسم الماده</span>
-                                <span>/</span>
-                                <span class="text-slate-800 dark:text-slate-100">{{ node.nameAr || node.nameEn || '—' }}</span>
-                                <span>/</span>
-                                <span class="text-slate-700 dark:text-slate-200">{{ '{next} >' }}</span>
-                              </div>
-                            } @else {
-                              <div class="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 truncate">
-                                <span class="font-semibold">Subject name</span>
-                                <span>/</span>
-                                <span class="text-slate-800 dark:text-slate-100">{{ node.nameEn || node.nameAr || '—' }}</span>
-                                <span>/</span>
-                                <span class="text-slate-700 dark:text-slate-200">{{ '{next} >' }}</span>
-                              </div>
-                            }
-                          </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                          <button
-                            type="button"
-                            (click)="addSubjectChildField(node.id); $event.stopPropagation()"
-                            class="owner-settings-btn-chip px-3 py-2 rounded-md text-xs bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300"
-                          >
-                            add
-                          </button>
-                          <button
-                            type="button"
-                            (click)="removeSubjectNode(node.id); $event.stopPropagation()"
-                            class="owner-settings-icon-btn p-1.5 w-9 h-9"
-                            aria-label="Delete root group"
-                          >
-                            <mat-icon class="owner-settings-icon-sm">delete</mat-icon>
-                          </button>
-                        </div>
-                      </button>
-
-                      @if (!isSubjectNodeCollapsed(node.id)) {
-                        <div class="p-4">
-                          @if (node.children.length === 0) {
-                            <div class="p-4 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 text-sm text-slate-500">
-                              No cards yet. Click add to create the first card.
-                            </div>
-                          } @else {
-                            <div class="space-y-5">
-                              @for (child of node.children; track child.id) {
-                                <div class="p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/70">
-                                  @if (isCardInEditMode(child.id)) {
-                                    <div class="owner-settings-structure-node-names">
-                                      <input
-                                        [(ngModel)]="child.nameEn"
-                                        class="owner-settings-input owner-settings-structure-node-input"
-                                        placeholder="EN"
-                                      >
-                                      <input
-                                        [(ngModel)]="child.nameAr"
-                                        class="owner-settings-input owner-settings-structure-node-input"
-                                        placeholder="AR"
-                                      >
-                                    </div>
-                                    <div class="mt-3 flex items-center gap-2 justify-end">
-                                      <button
-                                        type="button"
-                                        (click)="submitCard(node.id, child.id, child.nameEn, child.nameAr)"
-                                        class="owner-settings-btn-chip px-3 py-2 rounded-md text-xs bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300"
-                                      >
-                                        Enter
-                                      </button>
-                                      <button
-                                        type="button"
-                                        (click)="submitCard(node.id, child.id, child.nameEn, child.nameAr)"
-                                        class="owner-settings-btn-primary px-3 py-2 shadow-sm text-xs"
-                                      >
-                                        Add
-                                      </button>
-                                      <button
-                                        type="button"
-                                        (click)="removeSubjectNode(child.id)"
-                                        class="owner-settings-icon-btn p-1.5 w-9 h-9"
-                                        aria-label="Delete card"
-                                      >
-                                        <mat-icon class="owner-settings-icon-sm">delete</mat-icon>
-                                      </button>
-                                    </div>
-                                  } @else {
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                      <div class="rounded-md bg-slate-100 dark:bg-slate-900/50 px-3 py-2 text-sm text-slate-700 dark:text-slate-200">
-                                        {{ child.nameEn || '—' }}
-                                      </div>
-                                      <div class="rounded-md bg-slate-100 dark:bg-slate-900/50 px-3 py-2 text-sm text-slate-700 dark:text-slate-200">
-                                        {{ child.nameAr || '—' }}
-                                      </div>
-                                    </div>
-                                    <div class="mt-3 flex items-center gap-2 justify-end">
-                                      <button
-                                        type="button"
-                                        (click)="editCard(child.id)"
-                                        class="owner-settings-btn-chip px-3 py-2 rounded-md text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300"
-                                      >
-                                        Edit
-                                      </button>
-                                      <button
-                                        type="button"
-                                        (click)="removeSubjectNode(child.id)"
-                                        class="owner-settings-icon-btn p-1.5 w-9 h-9"
-                                        aria-label="Delete card"
-                                      >
-                                        <mat-icon class="owner-settings-icon-sm">delete</mat-icon>
-                                      </button>
-                                    </div>
-                                  }
-                                </div>
-                              }
-                            </div>
-                          }
-                        </div>
-                      }
-                    </div>
-                  }
-                </div>
-              }
-            </div>
-            <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
-              <button class="owner-settings-btn-primary px-4 py-2 shadow-sm">Save Subject Structure</button>
-            </div>
-          </div>
+          <app-owner-settings-subject-tab
+            [translate]="t"
+            [subjectTemplates]="subjectTemplates()"
+            [isFormOpen]="isSubjectTemplateFormOpen()"
+            [editingTemplateId]="editingTemplateId()"
+            [newTemplateName]="newTemplateName()"
+            [newTemplateLevels]="newTemplateLevels()"
+            [newTemplateIsDefault]="newTemplateIsDefault()"
+            [canSaveNewTemplate]="canSaveNewTemplate()"
+            (openForm)="openSubjectTemplateForm()"
+            (closeForm)="closeSubjectTemplateForm()"
+            (addTemplateLevel)="addTemplateLevel()"
+            (updateTemplateLevel)="updateTemplateLevel($event.index, $event.value)"
+            (removeTemplateLevel)="removeTemplateLevel($event)"
+            (updateTemplateName)="newTemplateName.set($event)"
+            (updateTemplateDefault)="newTemplateIsDefault.set($event)"
+            (saveSubjectTemplate)="saveSubjectTemplate()"
+            (editSubjectTemplate)="editSubjectTemplate($event)"
+            (deleteSubjectTemplate)="deleteSubjectTemplate($event)"
+            (setDefaultSubjectTemplate)="setDefaultSubjectTemplate($event)"
+          ></app-owner-settings-subject-tab>
         }
 
-        <!-- Presets & Methods Settings -->
         @if (activeTab() === 'presets') {
-          <div class="space-y-6">
-            <!-- Subscription Cycles -->
-            <div class="owner-settings-card owner-settings-card--shell">
-              <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-                <div>
-                  <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Subscription Cycles</h3>
-                  <p class="owner-settings-muted-body">Define available billing intervals for plans and subscriptions.</p>
-                </div>
-                <button (click)="addCycle()" class="owner-settings-btn-chip gap-2 px-3 py-1.5 bg-indigo-600/10 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg text-sm font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/50">
-                  <mat-icon class="owner-settings-icon-sm">add</mat-icon>
-                  Add Cycle
-                </button>
-              </div>
-              <div class="p-6">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  @for (cycle of subscriptionCycles(); track cycle.id) {
-                    <div class="p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 group relative">
-                      <button
-                        (click)="removeCycle(cycle.id)"
-                        class="owner-settings-icon-btn absolute top-2 right-2 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <mat-icon class="owner-settings-icon-sm">delete</mat-icon>
-                      </button>
-                      <div class="flex items-center gap-3 mb-3">
-                        <div class="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg text-indigo-600 dark:text-indigo-400">
-                          <mat-icon>{{ cycle.icon }}</mat-icon>
-                        </div>
-                        <input
-                          [(ngModel)]="cycle.name"
-                          class="owner-settings-inline-input owner-settings-inline-input--title w-full"
-                          placeholder="Cycle Name"
-                        >
-                      </div>
-                      <div class="space-y-2">
-                        <div class="flex items-center justify-between text-xs">
-                          <span class="text-slate-500">Duration (Days)</span>
-                          <input
-                            type="number"
-                            [(ngModel)]="cycle.days"
-                            class="owner-settings-inline-number w-16 text-center"
-                          >
-                        </div>
-                        <div class="flex items-center justify-between text-xs">
-                          <span class="text-slate-500">Status</span>
-                          <select [(ngModel)]="cycle.active" class="owner-settings-inline-select">
-                            <option [ngValue]="true">Active</option>
-                            <option [ngValue]="false">Inactive</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  }
-                </div>
-              </div>
-            </div>
-
-            <!-- Payment Methods -->
-            <div class="owner-settings-card owner-settings-card--shell">
-              <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-                <div>
-                  <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Payment Methods</h3>
-                  <p class="owner-settings-muted-body">Configure available payment options for tenants.</p>
-                </div>
-                <button (click)="addPaymentMethod()" class="owner-settings-btn-chip gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-sm font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/50">
-                  <mat-icon class="owner-settings-icon-sm">add_card</mat-icon>
-                  Add Method
-                </button>
-              </div>
-              <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  @for (method of paymentMethods(); track method.id) {
-                    <div class="p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between group">
-                      <div class="flex items-center gap-4">
-                        <div class="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-500 dark:text-slate-500">
-                          <mat-icon>{{ method.icon }}</mat-icon>
-                        </div>
-                        <div>
-                          <input
-                            [(ngModel)]="method.name"
-                            class="owner-settings-inline-input owner-settings-inline-input--title block"
-                            placeholder="Method Name"
-                          >
-                          <input
-                            [(ngModel)]="method.description"
-                            class="owner-settings-inline-input owner-settings-inline-input--meta block w-full"
-                            placeholder="Short description"
-                          >
-                        </div>
-                      </div>
-                      <div class="flex items-center gap-3">
-                        <label class="owner-settings-toggle inline-flex items-center cursor-pointer">
-                          <input type="checkbox" [(ngModel)]="method.active" class="sr-only peer">
-                          <div class="owner-settings-toggle-track owner-settings-toggle-track--compact owner-settings-toggle-track--emerald"></div>
-                        </label>
-                        <button
-                          (click)="removePaymentMethod(method.id)"
-                          class="owner-settings-icon-btn p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <mat-icon class="owner-settings-icon-sm">delete</mat-icon>
-                        </button>
-                      </div>
-                    </div>
-                  }
-                </div>
-              </div>
-            </div>
-            
-            <div class="flex justify-end gap-3">
-              <button (click)="savePresets()" class="owner-settings-btn-primary px-6 py-2 shadow-sm shadow-indigo-500/20">
-                Save Presets Configuration
-              </button>
-            </div>
-          </div>
+          <app-owner-settings-presets-tab
+            [translate]="t"
+            [subscriptionCycles]="subscriptionCycles()"
+            [paymentMethods]="paymentMethods()"
+            (addCycle)="addCycle()"
+            (removeCycle)="removeCycle($event)"
+            (addPaymentMethod)="addPaymentMethod()"
+            (removePaymentMethod)="removePaymentMethod($event)"
+            (savePresets)="savePresets()"
+          ></app-owner-settings-presets-tab>
         }
 
-        <!-- 2. Security Settings -->
         @if (activeTab() === 'security') {
-          <div class="owner-settings-card owner-settings-card--shell">
-            <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Security & Access Policies</h3>
-            </div>
-            <div class="p-6 space-y-6">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label for="pass-policy" class="owner-settings-field-label">Password Policy</label>
-                  <select id="pass-policy" class="owner-settings-select dark:bg-slate-800 dark:border-slate-700">
-                    <option>Standard (8 chars)</option>
-                    <option selected>Strong (12 chars, mixed case, symbols)</option>
-                    <option>Enterprise (16 chars, rotate every 90 days)</option>
-                  </select>
-                </div>
-                <div>
-                  <label for="sess-timeout" class="owner-settings-field-label">Session Timeout (Minutes)</label>
-                  <input id="sess-timeout" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="30">
-                </div>
-                <div>
-                  <label for="max-login" class="owner-settings-field-label">Max Login Attempts</label>
-                  <input id="max-login" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="5">
-                </div>
-                <div>
-                  <label for="rate-limit" class="owner-settings-field-label">API Rate Limit (Req/Min)</label>
-                  <input id="rate-limit" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="1000">
-                </div>
-              </div>
-
-              <div class="owner-settings-banner flex justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                <div>
-                  <p class="owner-settings-toggle-title">Enforce MFA Globally</p>
-                  <p class="owner-settings-toggle-note">Require all users (including tenants) to use Multi-Factor Authentication.</p>
-                </div>
-                <label class="owner-settings-toggle inline-flex items-center cursor-pointer">
-                  <input type="checkbox" class="sr-only peer" checked>
-                  <div class="owner-settings-toggle-track owner-settings-toggle-track--indigo"></div>
-                </label>
-              </div>
-            </div>
-            <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
-              <button class="owner-settings-btn-primary px-4 py-2 shadow-sm">Save Security Policies</button>
-            </div>
-          </div>
+          <app-owner-settings-security-tab [translate]="t"></app-owner-settings-security-tab>
         }
 
-        <!-- 3. Billing & Financial -->
         @if (activeTab() === 'billing') {
-          <div class="owner-settings-card owner-settings-card--shell">
-            <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Billing & Financial Defaults</h3>
-            </div>
-            <div class="p-6 space-y-6">
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div>
-                  <label for="def-vat" class="owner-settings-field-label">Default VAT (%)</label>
-                  <input id="def-vat" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="14">
-                </div>
-                <div>
-                  <label for="grace-period" class="owner-settings-field-label">Grace Period (Days)</label>
-                  <input id="grace-period" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="7">
-                </div>
-                <div>
-                  <label for="trial-dur" class="owner-settings-field-label">Trial Duration (Days)</label>
-                  <input id="trial-dur" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="14">
-                </div>
-                <div>
-                  <label for="inv-prefix" class="owner-settings-field-label">Invoice Prefix</label>
-                  <input id="inv-prefix" type="text" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="REMIX-">
-                </div>
-              </div>
-
-              <div class="owner-settings-banner flex justify-between p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                <div class="flex gap-3">
-                  <mat-icon class="text-red-600">block</mat-icon>
-                  <div>
-                    <p class="text-sm font-medium text-red-900 dark:text-red-300">Auto Suspend on Non-Payment</p>
-                    <p class="text-xs text-red-800/70 dark:text-red-400/70">Automatically suspend tenant access if payment is not received within the grace period.</p>
-                  </div>
-                </div>
-                <label class="owner-settings-toggle inline-flex items-center cursor-pointer">
-                  <input type="checkbox" class="sr-only peer" checked>
-                  <div class="owner-settings-toggle-track owner-settings-toggle-track--red"></div>
-                </label>
-              </div>
-            </div>
-            <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
-              <button class="owner-settings-btn-primary px-4 py-2 shadow-sm">Save Financial Settings</button>
-            </div>
-          </div>
+          <app-owner-settings-billing-tab [translate]="t"></app-owner-settings-billing-tab>
         }
 
-        <!-- 4. Communication -->
         @if (activeTab() === 'communication') {
-          <div class="owner-settings-card owner-settings-card--shell">
-            <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Communication & Providers</h3>
-            </div>
-            <div class="p-6 space-y-6">
-              <div class="space-y-4">
-                <h4 class="text-sm font-bold text-slate-500 uppercase tracking-wider">SMTP Configuration</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label for="smtp-host" class="owner-settings-field-label">SMTP Host</label>
-                    <input id="smtp-host" type="text" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="smtp.sendgrid.net">
-                  </div>
-                  <div>
-                    <label for="smtp-port" class="owner-settings-field-label">SMTP Port</label>
-                    <input id="smtp-port" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="587">
-                  </div>
-                  <div>
-                    <label for="from-email" class="owner-settings-field-label">Default From Email</label>
-                    <input id="from-email" type="email" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="no-reply@remix.com">
-                  </div>
-                  <div>
-                    <label for="sms-prov" class="owner-settings-field-label">SMS Provider</label>
-                    <select id="sms-prov" class="owner-settings-select dark:bg-slate-800 dark:border-slate-700">
-                      <option selected>Twilio</option>
-                      <option>MessageBird</option>
-                      <option>AWS SNS</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div class="owner-settings-banner p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex justify-between">
-                <div class="flex gap-3">
-                  <mat-icon class="text-indigo-600">mail</mat-icon>
-                  <p class="text-sm text-blue-800 dark:text-blue-400">Test your SMTP configuration by sending a test email.</p>
-                </div>
-                <button class="owner-settings-btn-chip px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-medium">Send Test Email</button>
-              </div>
-            </div>
-            <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
-              <button class="owner-settings-btn-primary px-4 py-2 shadow-sm">Save Communication Config</button>
-            </div>
-          </div>
+          <app-owner-settings-communication-tab [translate]="t"></app-owner-settings-communication-tab>
         }
 
-        <!-- 5. Storage -->
         @if (activeTab() === 'storage') {
-          <div class="owner-settings-card owner-settings-card--shell">
-            <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Storage & File Management</h3>
-            </div>
-            <div class="p-6 space-y-6">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label for="def-storage" class="owner-settings-field-label">Default Storage Limit (GB)</label>
-                  <input id="def-storage" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="10">
-                </div>
-                <div>
-                  <label for="max-upload" class="owner-settings-field-label">Max Upload Size (MB)</label>
-                  <input id="max-upload" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="50">
-                </div>
-              </div>
-              <div>
-                <label for="file-types" class="owner-settings-field-label">Allowed File Types</label>
-                <input id="file-types" type="text" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value=".pdf, .doc, .docx, .xls, .xlsx, .png, .jpg, .jpeg">
-                <p class="text-xs text-slate-500 mt-1">Comma-separated list of file extensions.</p>
-              </div>
-            </div>
-            <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
-              <button class="owner-settings-btn-primary px-4 py-2 shadow-sm">Save Storage Settings</button>
-            </div>
-          </div>
+          <app-owner-settings-storage-tab [translate]="t"></app-owner-settings-storage-tab>
         }
 
-        <!-- 6. Audit & Compliance -->
         @if (activeTab() === 'compliance') {
-          <div class="owner-settings-card owner-settings-card--shell">
-            <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Audit & Compliance Policies</h3>
-            </div>
-            <div class="p-6 space-y-6">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label for="log-ret" class="owner-settings-field-label">Log Retention Period (Days)</label>
-                  <input id="log-ret" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="90">
-                </div>
-                <div>
-                  <label for="data-ret" class="owner-settings-field-label">Data Retention Policy (Years)</label>
-                  <input id="data-ret" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="5">
-                </div>
-              </div>
-
-              <div class="owner-settings-banner flex justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                <div>
-                  <p class="owner-settings-toggle-title">Allow Tenant Data Export</p>
-                  <p class="owner-settings-toggle-note">Enable self-service data portability for all tenants.</p>
-                </div>
-                <label class="owner-settings-toggle inline-flex items-center cursor-pointer">
-                  <input type="checkbox" class="sr-only peer" checked>
-                  <div class="owner-settings-toggle-track owner-settings-toggle-track--indigo"></div>
-                </label>
-              </div>
-            </div>
-            <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
-              <button class="owner-settings-btn-primary px-4 py-2 shadow-sm">Save Compliance Policies</button>
-            </div>
-          </div>
+          <app-owner-settings-compliance-tab [translate]="t"></app-owner-settings-compliance-tab>
         }
-          </div>
-        </div>
       </div>
     </div>
-  
+  </div>
+</div>

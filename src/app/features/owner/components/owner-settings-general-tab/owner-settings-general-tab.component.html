@@ -1,0 +1,50 @@
+<div class="owner-settings-card owner-settings-card--shell">
+  <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+    <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">{{ translate()('owner.settings.general.title') }}</h3>
+  </div>
+  <div class="p-6 space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <label for="platform-name" class="owner-settings-field-label">{{ translate()('owner.settings.general.platformName') }}</label>
+        <input id="platform-name" type="text" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="Remix Education Center">
+      </div>
+      <div>
+        <label for="support-email" class="owner-settings-field-label">{{ translate()('owner.settings.general.supportEmail') }}</label>
+        <input id="support-email" type="email" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="support@remix.com">
+      </div>
+      <div>
+        <label for="def-lang" class="owner-settings-field-label">{{ translate()('owner.settings.general.defaultLanguage') }}</label>
+        <select id="def-lang" class="owner-settings-select dark:bg-slate-800 dark:border-slate-700">
+          <option selected>{{ translate()('owner.settings.general.langEnglish') }}</option>
+          <option>{{ translate()('owner.settings.general.langArabic') }}</option>
+          <option>{{ translate()('owner.settings.general.langFrench') }}</option>
+        </select>
+      </div>
+      <div>
+        <label for="def-tz" class="owner-settings-field-label">{{ translate()('owner.settings.general.defaultTimezone') }}</label>
+        <select id="def-tz" class="owner-settings-select dark:bg-slate-800 dark:border-slate-700">
+          <option selected>UTC (Coordinated Universal Time)</option>
+          <option>GMT+2 (Cairo, Egypt)</option>
+          <option>GMT-5 (New York, USA)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="owner-settings-banner flex justify-between p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+      <div class="flex gap-3">
+        <span class="material-icons text-amber-600">construction</span>
+        <div>
+          <p class="text-sm font-medium text-amber-900 dark:text-amber-300">{{ translate()('owner.settings.general.maintenanceTitle') }}</p>
+          <p class="text-xs text-amber-800/70 dark:text-amber-400/70">{{ translate()('owner.settings.general.maintenanceNote') }}</p>
+        </div>
+      </div>
+      <label class="owner-settings-toggle inline-flex items-center cursor-pointer">
+        <input type="checkbox" class="sr-only peer">
+        <div class="owner-settings-toggle-track owner-settings-toggle-track--amber"></div>
+      </label>
+    </div>
+  </div>
+  <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
+    <button class="owner-settings-btn-primary px-4 py-2 shadow-sm">{{ translate()('owner.settings.general.save') }}</button>
+  </div>
+</div>
