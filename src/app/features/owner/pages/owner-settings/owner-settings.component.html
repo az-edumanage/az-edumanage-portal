@@ -57,6 +57,7 @@
         @if (activeTab() === 'subject') {
           <app-owner-settings-subject-tab
             [translate]="t"
+            [isRtl]="isRtl()"
             [subjectTemplates]="subjectTemplates()"
             [isFormOpen]="isSubjectTemplateFormOpen()"
             [editingTemplateId]="editingTemplateId()"
@@ -88,11 +89,26 @@
             (addPaymentMethod)="addPaymentMethod()"
             (removePaymentMethod)="removePaymentMethod($event)"
             (savePresets)="savePresets()"
+            [isSaving]="isSavingPresets()"
+            [saveStatus]="presetsSaveStatus()"
+            (closeSaveStatus)="closePresetsSaveStatus()"
           ></app-owner-settings-presets-tab>
         }
 
         @if (activeTab() === 'security') {
           <app-owner-settings-security-tab [translate]="t"></app-owner-settings-security-tab>
+        }
+
+        @if (activeTab() === 'roles') {
+          <app-owner-settings-roles-tab [translate]="t"></app-owner-settings-roles-tab>
+        }
+
+        @if (activeTab() === 'status') {
+          <app-owner-settings-status-tab></app-owner-settings-status-tab>
+        }
+
+        @if (activeTab() === 'modules-features') {
+          <app-owner-settings-modules-features-tab></app-owner-settings-modules-features-tab>
         }
 
         @if (activeTab() === 'billing') {

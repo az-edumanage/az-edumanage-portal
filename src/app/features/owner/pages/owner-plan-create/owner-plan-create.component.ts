@@ -35,10 +35,13 @@ export class OwnerPlanCreateComponent implements OnInit, OnDestroy {
   readonly filteredCurrencies = this.facade.filteredCurrencies;
 
   readonly existingPlans = this.facade.existingPlans;
+  readonly moduleOptions = this.facade.moduleOptions;
   readonly planForm = this.facade.planForm;
+  readonly isSubmitting = this.facade.isSubmitting;
+  readonly actionStatus = this.facade.actionStatus;
 
   ngOnInit(): void {
-    this.facade.initialize(this.route.snapshot.params['id'] ?? null);
+    void this.facade.initialize(this.route.snapshot.params['id'] ?? null);
   }
 
   ngOnDestroy(): void {
@@ -63,5 +66,17 @@ export class OwnerPlanCreateComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     this.facade.onSubmit();
+  }
+
+  isModuleSelected(moduleId: string): boolean {
+    return this.facade.isModuleSelected(moduleId);
+  }
+
+  toggleModule(moduleId: string): void {
+    this.facade.toggleModule(moduleId);
+  }
+
+  closeActionStatus(): void {
+    this.facade.closeActionStatus();
   }
 }

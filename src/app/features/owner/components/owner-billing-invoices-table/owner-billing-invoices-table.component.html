@@ -40,15 +40,14 @@
             }
           </td>
           <td appTableCell>
-            @if (inv.status === 'Paid') {
-              <app-badge variant="success">{{ inv.status }}</app-badge>
-            } @else if (inv.status === 'Unpaid' || inv.status === 'Overdue') {
-              <app-badge variant="warning">{{ inv.status }}</app-badge>
-            } @else if (inv.status === 'Cancelled') {
-              <app-badge variant="default">{{ inv.status }}</app-badge>
-            } @else if (inv.status === 'Refunded') {
-              <app-badge variant="info">{{ inv.status }}</app-badge>
-            }
+            <span
+              class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
+              [style.color]="statusColorResolver()(inv.status)"
+              [style.backgroundColor]="statusColorResolver()(inv.status) + '1f'"
+            >
+              <span class="w-1.5 h-1.5 rounded-full" [style.backgroundColor]="statusColorResolver()(inv.status)"></span>
+              {{ inv.status }}
+            </span>
           </td>
           <td appTableCell class="text-right">
             <div class="flex items-center justify-end gap-1">

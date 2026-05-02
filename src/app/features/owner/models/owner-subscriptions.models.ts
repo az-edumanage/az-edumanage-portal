@@ -5,7 +5,7 @@ export interface Subscription {
   startDate: string;
   endDate: string;
   billingCycle: 'Monthly' | 'Yearly';
-  status: 'Active' | 'Trial' | 'Suspended' | 'Cancelled' | 'Past Due';
+  status: string;
   autoRenew: boolean;
   amount: number;
 }

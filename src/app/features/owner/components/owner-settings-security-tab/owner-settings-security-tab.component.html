@@ -5,37 +5,38 @@
   <div class="p-6 space-y-6">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
-        <label for="pass-policy" class="owner-settings-field-label">Password Policy</label>
+        <label for="pass-policy" class="owner-settings-field-label">{{ translate()('owner.settings.security.passwordPolicy') }}</label>
         <select id="pass-policy" class="owner-settings-select dark:bg-slate-800 dark:border-slate-700">
-          <option>Standard (8 chars)</option>
-          <option selected>Strong (12 chars, mixed case, symbols)</option>
-          <option>Enterprise (16 chars, rotate every 90 days)</option>
+          <option>{{ translate()('owner.settings.security.passwordPolicyStandard') }}</option>
+          <option selected>{{ translate()('owner.settings.security.passwordPolicyStrong') }}</option>
+          <option>{{ translate()('owner.settings.security.passwordPolicyEnterprise') }}</option>
         </select>
       </div>
       <div>
-        <label for="sess-timeout" class="owner-settings-field-label">Session Timeout (Minutes)</label>
+        <label for="sess-timeout" class="owner-settings-field-label">{{ translate()('owner.settings.security.sessionTimeout') }}</label>
         <input id="sess-timeout" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="30">
       </div>
       <div>
-        <label for="max-login" class="owner-settings-field-label">Max Login Attempts</label>
+        <label for="max-login" class="owner-settings-field-label">{{ translate()('owner.settings.security.maxLoginAttempts') }}</label>
         <input id="max-login" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="5">
       </div>
       <div>
-        <label for="rate-limit" class="owner-settings-field-label">API Rate Limit (Req/Min)</label>
+        <label for="rate-limit" class="owner-settings-field-label">{{ translate()('owner.settings.security.rateLimit') }}</label>
         <input id="rate-limit" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="1000">
       </div>
     </div>
 
     <div class="owner-settings-banner flex justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
       <div>
-        <p class="owner-settings-toggle-title">Enforce MFA Globally</p>
-        <p class="owner-settings-toggle-note">Require all users (including tenants) to use Multi-Factor Authentication.</p>
+        <p class="owner-settings-toggle-title">{{ translate()('owner.settings.security.enforceMFA') }}</p>
+        <p class="owner-settings-toggle-note">{{ translate()('owner.settings.security.enforceMFADescription') }}</p>
       </div>
       <label class="owner-settings-toggle inline-flex items-center cursor-pointer">
         <input type="checkbox" class="sr-only peer" checked>
-        <div class="owner-settings-toggle-track owner-settings-toggle-track--indigo"></div>
+        <div class="owner-settings-toggle-track owner-settings-toggle-track--green"></div>
       </label>
     </div>
+
   </div>
   <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
     <button class="owner-settings-btn-primary px-4 py-2 shadow-sm">{{ translate()('owner.settings.security.save') }}</button>

@@ -1,10 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { Plan } from '../../models/owner-plans.models';
 import { OwnerPlansListFacade } from '../../state/owner-plans-list.facade';
+import { TaskService } from '../../../../core/services/task.service';
 
 @Component({
   selector: 'app-owner-plans-list',
@@ -15,14 +16,25 @@ import { OwnerPlansListFacade } from '../../state/owner-plans-list.facade';
 })
 export class OwnerPlansListComponent {
   private readonly facade = inject(OwnerPlansListFacade);
+  private readonly router = inject(Router);
+  private readonly taskService = inject(TaskService);
 
   readonly plans = this.facade.plans;
+
+  ngOnInit(): void {
+    void this.facade.refreshPlans();
+  }
 
   calculateSavings(plan: Plan): number {
     return this.facade.calculateSavings(plan);
   }
 
   togglePlanStatus(plan: Plan): void {
-    this.facade.togglePlanStatus(plan);
+    void this.facade.togglePlanStatus(plan);
+  }
+
+  startCreatePlan(): void {
+    this.taskService.removeTask('create-plan-task');
+    void this.router.navigate(['/owner/plans/create']);
   }
 }

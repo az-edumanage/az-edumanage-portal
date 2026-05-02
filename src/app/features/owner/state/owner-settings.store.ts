@@ -17,7 +17,7 @@ export class OwnerSettingsStore {
   readonly activeTab = signal<OwnerSettingsTabId>('general');
   readonly tabs = this.data.tabs;
 
-  readonly subscriptionCycles = signal<OwnerSettingsSubscriptionCycle[]>(this.data.getSubscriptionCycles());
+  readonly subscriptionCycles = signal<OwnerSettingsSubscriptionCycle[]>([]);
   readonly paymentMethods = signal<OwnerSettingsPaymentMethod[]>(this.data.getPaymentMethods());
   readonly subjectTemplates = signal<SubjectTemplate[]>([
     {
@@ -42,9 +42,18 @@ export class OwnerSettingsStore {
     this.activeTab.set(tabId);
   }
 
+  async initializePresets(): Promise<void> {
+    try {
+      const cycles = await this.data.fetchSubscriptionCycles();
+      this.subscriptionCycles.set(cycles);
+    } catch {
+      this.subscriptionCycles.set(this.data.getSubscriptionCycles());
+    }
+  }
+
   addCycle(): void {
     this.subscriptionCycles.update((current) => {
-      const newId = this.getNextId(current.map((cycle) => cycle.id));
+      const newId = this.getNextTemporaryCycleId(current.map((cycle) => cycle.id));
 
       return [
         ...current,
@@ -78,7 +87,9 @@ export class OwnerSettingsStore {
     this.paymentMethods.update((current) => current.filter((method) => method.id !== id));
   }
 
-  savePresets(): void {
+  async savePresets(): Promise<void> {
+    const savedCycles = await this.data.saveSubscriptionCycles(this.subscriptionCycles());
+    this.subscriptionCycles.set(savedCycles);
     this.data.savePresets(this.subscriptionCycles(), this.paymentMethods());
   }
 
@@ -217,6 +228,11 @@ export class OwnerSettingsStore {
 
   private getNextId(ids: number[]): number {
     return ids.length > 0 ? Math.max(...ids) + 1 : 1;
+  }
+
+  private getNextTemporaryCycleId(ids: number[]): number {
+    const temporaryIds = ids.filter((id) => id < 0);
+    return temporaryIds.length > 0 ? Math.min(...temporaryIds) - 1 : -1;
   }
 
   private nextSubjectNodeId(): number {

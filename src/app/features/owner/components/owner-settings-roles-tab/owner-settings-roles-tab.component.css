@@ -1,0 +1,27 @@
+:host {
+  display: block;
+}
+
+.owner-settings-role-tab-link {
+  text-decoration: none;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.owner-settings-role-tab-link-secondary {
+  border-color: var(--color-border-primary);
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+}
+
+.owner-settings-role-tab-link-secondary:hover {
+  background: var(--color-bg-subtle);
+}
+
+.owner-settings-role-tab-link-primary {
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action, #fff);
+}
+
+.owner-settings-role-tab-link-primary:hover {
+  background: var(--color-action-primary-hover, var(--color-action-primary));
+}

@@ -96,32 +96,6 @@
             Overview
           </button>
           <button 
-            (click)="activeTab.set('settings')"
-            class="owner-module-details-tab-button"
-            [class.border-indigo-500]="activeTab() === 'settings'"
-            [class.text-indigo-600]="activeTab() === 'settings'"
-            [class.dark:text-indigo-400]="activeTab() === 'settings'"
-            [class.border-transparent]="activeTab() !== 'settings'"
-            [class.text-slate-500]="activeTab() !== 'settings'"
-            [class.hover:text-slate-700]="activeTab() !== 'settings'"
-            [class.dark:hover:text-slate-300]="activeTab() !== 'settings'"
-          >
-            Settings
-          </button>
-          <button 
-            (click)="activeTab.set('plans')"
-            class="owner-module-details-tab-button"
-            [class.border-indigo-500]="activeTab() === 'plans'"
-            [class.text-indigo-600]="activeTab() === 'plans'"
-            [class.dark:text-indigo-400]="activeTab() === 'plans'"
-            [class.border-transparent]="activeTab() !== 'plans'"
-            [class.text-slate-500]="activeTab() !== 'plans'"
-            [class.hover:text-slate-700]="activeTab() !== 'plans'"
-            [class.dark:hover:text-slate-300]="activeTab() !== 'plans'"
-          >
-            Plan Assignment
-          </button>
-          <button 
             (click)="activeTab.set('overrides')"
             class="owner-module-details-tab-button"
             [class.border-indigo-500]="activeTab() === 'overrides'"
@@ -133,19 +107,6 @@
             [class.dark:hover:text-slate-300]="activeTab() !== 'overrides'"
           >
             Tenant Overrides
-          </button>
-          <button 
-            (click)="activeTab.set('dependencies')"
-            class="owner-module-details-tab-button"
-            [class.border-indigo-500]="activeTab() === 'dependencies'"
-            [class.text-indigo-600]="activeTab() === 'dependencies'"
-            [class.dark:text-indigo-400]="activeTab() === 'dependencies'"
-            [class.border-transparent]="activeTab() !== 'dependencies'"
-            [class.text-slate-500]="activeTab() !== 'dependencies'"
-            [class.hover:text-slate-700]="activeTab() !== 'dependencies'"
-            [class.dark:hover:text-slate-300]="activeTab() !== 'dependencies'"
-          >
-            Dependencies
           </button>
           <button 
             (click)="activeTab.set('changelog')"
@@ -165,78 +126,14 @@
 
       <!-- Content -->
       <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm min-h-[400px]">
-        
-        <!-- Settings Tab -->
-        @if (activeTab() === 'settings') {
-          <div class="p-6 space-y-8">
-            <!-- Features Section -->
-            <div class="space-y-4">
-              <div>
-                <h3 class="owner-module-details-section-title">Feature Catalog</h3>
-                <p class="owner-module-details-muted-copy">Select which features are available when this module is activated.</p>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                @for (feature of features(); track feature.id) {
-                  <label class="flex items-center gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all cursor-pointer group">
-                    <div class="relative flex items-center">
-                      <input 
-                        type="checkbox" 
-                        [(ngModel)]="feature.enabled"
-                        class="w-5 h-5 rounded border-slate-200 text-indigo-600 focus:ring-indigo-500 transition-all"
-                      >
-                    </div>
-                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                      {{ feature.label }}
-                    </span>
-                  </label>
-                }
-              </div>
-            </div>
-
-            <!-- Limits Section -->
-            <div class="space-y-4 pt-6 border-t border-slate-200 dark:border-slate-800">
-              <div>
-                <h3 class="owner-module-details-section-title">Limits / Rules</h3>
-                <p class="owner-module-details-muted-copy">Define system constraints and business rules for this module.</p>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                @for (limit of limits(); track limit.id) {
-                  @if (limit.type === 'boolean') {
-                    <div class="flex items-center h-full pt-4">
-                      <label class="flex items-center gap-3 p-4 w-full rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all cursor-pointer group">
-                        <input 
-                          type="checkbox" 
-                          [(ngModel)]="limit.value"
-                          class="w-5 h-5 rounded border-slate-200 text-indigo-600 focus:ring-indigo-500 transition-all"
-                        >
-                        <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                          {{ limit.label }}
-                        </span>
-                      </label>
-                    </div>
-                  } @else {
-                    <div class="space-y-2">
-                      <label [for]="limit.id" class="block text-xs font-bold text-slate-500 uppercase tracking-wider">
-                        {{ limit.label }}
-                      </label>
-                      <div class="relative">
-                        <input 
-                          [id]="limit.id"
-                          type="number" 
-                          [(ngModel)]="limit.value"
-                          class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                        >
-                      </div>
-                    </div>
-                  }
-                }
-              </div>
-            </div>
-          </div>
+        @if (loading()) {
+          <div class="p-6 text-sm text-slate-500">Loading module details...</div>
+        } @else if (loadError()) {
+          <div class="p-6 text-sm text-red-600">{{ loadError() }}</div>
         }
-
+        
         <!-- Overview Tab -->
-        @if (activeTab() === 'overview') {
+        @if (!loading() && !loadError() && activeTab() === 'overview') {
           <div class="p-6 space-y-8">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
@@ -246,14 +143,18 @@
                     <div class="owner-module-details-meta-label">Description</div>
                     <div class="owner-module-details-meta-value">{{ module().description }}</div>
                   </div>
+                  <div>
+                    <div class="owner-module-details-meta-label">Price</div>
+                    <div class="owner-module-details-meta-value">{{ module().price | number:'1.0-2' }}</div>
+                  </div>
                   <div class="grid grid-cols-2 gap-4">
                     <div>
                       <div class="owner-module-details-meta-label">Created At</div>
-                      <div class="owner-module-details-meta-value">Jan 12, 2023</div>
+                      <div class="owner-module-details-meta-value">{{ module().createdAt ? (module().createdAt | date:'medium') : '-' }}</div>
                     </div>
                     <div>
                       <div class="owner-module-details-meta-label">Last Updated</div>
-                      <div class="owner-module-details-meta-value">{{ module().lastUpdated }}</div>
+                      <div class="owner-module-details-meta-value">{{ module().updatedAt ? (module().updatedAt | date:'medium') : module().lastUpdated }}</div>
                     </div>
                   </div>
                 </div>
@@ -304,42 +205,27 @@
                 </div>
               </div>
             </div>
-          </div>
-        }
 
-        <!-- Plan Assignment Tab -->
-        @if (activeTab() === 'plans') {
-          <div class="p-6">
-            <div class="flex justify-between items-center mb-6">
-              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Availability by Plan</h3>
-              <p class="text-sm text-slate-500">Control which plans include this module by default.</p>
-            </div>
-
-            <div class="space-y-4">
-              @for (plan of availablePlans; track plan.name) {
-                <div class="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                  <div class="flex items-center gap-4">
-                    <input type="checkbox" 
-                      [checked]="module().includedInPlans.includes(plan.name)"
-                      [disabled]="module().category !== 'Advanced'"
-                      class="w-5 h-5 rounded border-slate-200 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
-                    >
-                    <div>
-                      <div class="font-medium text-slate-900 dark:text-white">{{ plan.name }}</div>
-                      <div class="text-xs text-slate-500">{{ plan.tenantCount }} active tenants</div>
+            <div class="pt-6 border-t border-slate-200 dark:border-slate-800">
+              <h3 class="owner-module-details-panel-title">Feature Catalog</h3>
+              @if (features().length > 0) {
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  @for (feature of features(); track feature.id) {
+                    <div class="flex items-center gap-2 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                      <mat-icon class="text-[16px] w-[16px] h-[16px] text-green-600 dark:text-green-400">check_circle</mat-icon>
+                      <span class="text-sm text-slate-700 dark:text-slate-300">{{ feature.label }}</span>
                     </div>
-                  </div>
-                  <div class="text-sm text-slate-500">
-                    {{ module().category !== 'Advanced' ? 'Mandatory for all plans' : (module().includedInPlans.includes(plan.name) ? 'Included' : 'Not Included') }}
-                  </div>
+                  }
                 </div>
+              } @else {
+                <div class="text-sm text-slate-500">No features assigned to this module.</div>
               }
             </div>
           </div>
         }
 
         <!-- Tenant Overrides Tab -->
-        @if (activeTab() === 'overrides') {
+        @if (!loading() && !loadError() && activeTab() === 'overrides') {
           <div class="p-6">
             <div class="flex justify-between items-center mb-6">
               <div>
@@ -396,75 +282,12 @@
           </div>
         }
 
-        <!-- Dependencies Tab -->
-        @if (activeTab() === 'dependencies') {
-          <div class="p-6">
-            <h3 class="owner-module-details-panel-title">Module Dependencies</h3>
-            
-            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6 flex gap-3">
-              <mat-icon class="text-indigo-600 dark:text-blue-400">info</mat-icon>
-              <div class="text-sm text-blue-800 dark:text-blue-200">
-                <p class="font-bold">Dependency Rules</p>
-                <p>Disabling this module may affect other modules that depend on it. Ensure all dependent modules are handled before disabling.</p>
-              </div>
-            </div>
-
-            <div class="space-y-6">
-              <div>
-                <h4 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-3">Depends On</h4>
-                @if (dependencies.dependsOn.length > 0) {
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    @for (dep of dependencies.dependsOn; track dep) {
-                      <div class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
-                        <mat-icon class="text-slate-500">extension</mat-icon>
-                        <span class="text-slate-700 dark:text-slate-300 font-medium">{{ dep }}</span>
-                      </div>
-                    }
-                  </div>
-                } @else {
-                  <p class="text-slate-500 italic">No dependencies.</p>
-                }
-              </div>
-
-              <div>
-                <h4 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-3">Required By</h4>
-                @if (dependencies.requiredBy.length > 0) {
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    @for (req of dependencies.requiredBy; track req) {
-                      <div class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
-                        <mat-icon class="text-slate-500">extension</mat-icon>
-                        <span class="text-slate-700 dark:text-slate-300 font-medium">{{ req }}</span>
-                      </div>
-                    }
-                  </div>
-                } @else {
-                  <p class="text-slate-500 italic">No other modules require this module.</p>
-                }
-              </div>
-            </div>
-          </div>
-        }
-
         <!-- Change Log Tab -->
-        @if (activeTab() === 'changelog') {
+        @if (!loading() && !loadError() && activeTab() === 'changelog') {
           <div class="p-6">
             <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-6">Audit Log</h3>
-            
-            <div class="relative border-l border-slate-200 dark:border-slate-700 ml-3 space-y-8">
-              @for (log of changeLogs; track log.date) {
-                <div class="relative pl-8">
-                  <div class="absolute -left-1.5 top-1.5 w-3 h-3 rounded-full bg-slate-200 dark:bg-slate-700 border-2 border-white dark:border-slate-900"></div>
-                  <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 mb-1">
-                    <span class="text-sm font-bold text-slate-900 dark:text-white">{{ log.action }}</span>
-                    <span class="text-xs text-slate-500">{{ log.date }}</span>
-                  </div>
-                  <p class="text-sm text-slate-500 dark:text-slate-500 mb-1">{{ log.details }}</p>
-                  <div class="flex items-center gap-2 text-xs text-slate-500">
-                    <mat-icon class="text-[14px] w-[14px] h-[14px]">person</mat-icon>
-                    {{ log.user }}
-                  </div>
-                </div>
-              }
+            <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+              Change Log backend integration is queued as a follow-up task and not implemented yet.
             </div>
           </div>
         }

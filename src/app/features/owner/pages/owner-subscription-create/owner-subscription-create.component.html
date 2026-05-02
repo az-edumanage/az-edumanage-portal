@@ -2,7 +2,7 @@
     <div class="owner-subscription-create-page space-y-6">
       <!-- Header -->
       <div class="owner-subscription-create-header flex gap-4">
-        <button routerLink="/owner/subscriptions" class="owner-subscription-create-back p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-500">
+        <button [routerLink]="backRoute" class="owner-subscription-create-back p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-500">
           <mat-icon>arrow_back</mat-icon>
         </button>
         <div>
@@ -32,7 +32,7 @@
         </div>
 
         <!-- Duration Selection -->
-        <div class="owner-subscription-create-card">
+        <fieldset class="owner-subscription-create-card" [disabled]="!isDurationEnabled" [class.opacity-50]="!isDurationEnabled">
           <h3 class="owner-subscription-create-card-title text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <mat-icon class="owner-subscription-create-card-icon text-indigo-600">schedule</mat-icon>
             Subscription Duration
@@ -60,22 +60,18 @@
               <input id="customDays" type="number" formControlName="customDuration" class="owner-subscription-create-input owner-subscription-create-input--custom">
             </div>
           }
-        </div>
+        </fieldset>
 
         <!-- Plan Selection (Multi-select) -->
-        <div class="owner-subscription-create-card">
+        <fieldset class="owner-subscription-create-card" [disabled]="!isPlansEnabled" [class.opacity-50]="!isPlansEnabled">
           <div class="flex items-center justify-between mb-4">
             <h3 class="owner-subscription-create-card-title text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
               <mat-icon class="owner-subscription-create-card-icon text-indigo-600">layers</mat-icon>
               Compatible Plans
             </h3>
-            <label class="owner-subscription-create-select-all flex items-center gap-2 cursor-pointer text-sm text-slate-500">
-              <input type="checkbox" [checked]="isAllPlansSelected()" (change)="toggleAllPlans()" class="w-4 h-4 text-indigo-600 border-slate-200 rounded focus:ring-indigo-500">
-              Select All
-            </label>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            @for (plan of availablePlans; track plan.id) {
+            @for (plan of availablePlans(); track plan.id) {
               <label 
                 class="flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all"
                 [class.border-indigo-600]="isPlanSelected(plan.id)"
@@ -84,7 +80,7 @@
                 [class.border-slate-200]="!isPlanSelected(plan.id)"
                 [class.dark:border-slate-800]="!isPlanSelected(plan.id)"
               >
-                <input type="checkbox" [checked]="isPlanSelected(plan.id)" (change)="togglePlan(plan.id)" class="w-4 h-4 text-indigo-600 border-slate-200 rounded focus:ring-indigo-500">
+                <input type="radio" [checked]="isPlanSelected(plan.id)" (change)="togglePlan(plan.id)" class="w-4 h-4 text-indigo-600 border-slate-200 focus:ring-indigo-500">
                 <div>
                   <div class="font-semibold text-slate-900 dark:text-white text-sm">{{ plan.name }}</div>
                   <div class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Plan Template</div>
@@ -92,10 +88,10 @@
               </label>
             }
           </div>
-        </div>
+        </fieldset>
 
         <!-- Payment Methods (Multi-select) -->
-        <div class="owner-subscription-create-card">
+        <fieldset class="owner-subscription-create-card" [disabled]="!isRemainingSectionsEnabled" [class.opacity-50]="!isRemainingSectionsEnabled">
           <div class="flex items-center justify-between mb-4">
             <h3 class="owner-subscription-create-card-title text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
               <mat-icon class="owner-subscription-create-card-icon text-indigo-600">payments</mat-icon>
@@ -127,15 +123,27 @@
               </label>
             }
           </div>
-        </div>
+        </fieldset>
 
         <!-- Discounts & Financials -->
-        <div class="owner-subscription-create-card">
+        <fieldset class="owner-subscription-create-card" [disabled]="!isRemainingSectionsEnabled" [class.opacity-50]="!isRemainingSectionsEnabled">
           <h3 class="owner-subscription-create-card-title text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <mat-icon class="owner-subscription-create-card-icon text-indigo-600">sell</mat-icon>
             Pricing Adjustments
           </h3>
           <p class="text-sm text-slate-500 mb-6">Define discounts or fixed adjustments that will be applied to the plan price during tenant assignment.</p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <label for="basePrice" class="owner-subscription-create-field-label">Base Price (From Plan Modules)</label>
+              <input id="basePrice" type="number" [value]="basePrice()" class="owner-subscription-create-input" readonly>
+              <p class="owner-subscription-create-help">Calculated after selecting subscription duration: (plan modules total / 30) × duration days.</p>
+            </div>
+            <div>
+              <label for="finalPrice" class="owner-subscription-create-field-label">Final Price (Before Discount)</label>
+              <input id="finalPrice" type="number" formControlName="finalPrice" class="owner-subscription-create-input" min="0" step="0.01">
+            </div>
+          </div>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -162,10 +170,22 @@
               </div>
             }
           </div>
-        </div>
+
+          <div class="mt-6 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40">
+            <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Total Price</div>
+            <div class="text-2xl font-bold text-slate-900 dark:text-white">{{ totalPrice | number:'1.2-2' }}</div>
+            <p class="text-xs text-slate-500 mt-1">
+              @if (subForm.get('discountType')?.value === 'none') {
+                Final price is used directly.
+              } @else {
+                Discount applied automatically on final price.
+              }
+            </p>
+          </div>
+        </fieldset>
 
         <!-- Advanced Policy Settings -->
-        <div class="owner-subscription-create-card space-y-8">
+        <fieldset class="owner-subscription-create-card space-y-8" [disabled]="!isRemainingSectionsEnabled" [class.opacity-50]="!isRemainingSectionsEnabled">
           <h3 class="owner-subscription-create-card-title text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
             <mat-icon class="owner-subscription-create-card-icon text-indigo-600">gavel</mat-icon>
             Advanced Policy & Access Control
@@ -296,7 +316,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </fieldset>
 
         <!-- Actions -->
         <div class="owner-subscription-create-action-row flex gap-3">
@@ -305,12 +325,36 @@
           </button>
           <button 
             type="submit" 
-            [disabled]="subForm.invalid"
-            class="owner-subscription-create-btn owner-subscription-create-btn--primary px-8 py-2"
+            [disabled]="subForm.invalid || isSubmitting()"
+            class="owner-subscription-create-btn owner-subscription-create-btn--primary px-8 py-2 inline-flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
+            @if (isSubmitting()) {
+              <span class="material-icons animate-spin text-sm">autorenew</span>
+            }
             Save Template Configuration
           </button>
         </div>
       </form>
+
+      @if (saveStatus(); as status) {
+        <div class="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+          <div class="w-full max-w-md rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
+              <span class="material-icons text-sm" [class.text-emerald-600]="status.type === 'success'" [class.text-red-600]="status.type === 'error'">
+                {{ status.type === 'success' ? 'check_circle' : 'error' }}
+              </span>
+              <h4 class="text-base font-semibold text-slate-900 dark:text-white">{{ status.title }}</h4>
+            </div>
+            <div class="px-5 py-4">
+              <p class="text-sm text-slate-600 dark:text-slate-300">{{ status.message }}</p>
+            </div>
+            <div class="px-5 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end">
+              <button type="button" (click)="closeSaveStatus()" class="owner-subscription-create-btn owner-subscription-create-btn--primary px-4 py-2">
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   

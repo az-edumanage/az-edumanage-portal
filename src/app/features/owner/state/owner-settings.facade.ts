@@ -13,6 +13,10 @@ export class OwnerSettingsFacade {
   readonly subjectTemplates = this.store.subjectTemplates;
   readonly subjectStructure = this.store.subjectStructure;
 
+  async initializePresets(): Promise<void> {
+    await this.store.initializePresets();
+  }
+
   setActiveTab(tabId: OwnerSettingsTabId): void {
     this.store.setActiveTab(tabId);
   }
@@ -33,8 +37,8 @@ export class OwnerSettingsFacade {
     this.store.removePaymentMethod(id);
   }
 
-  savePresets(): void {
-    this.store.savePresets();
+  async savePresets(): Promise<void> {
+    await this.store.savePresets();
   }
 
   createSubjectTemplate(input: SubjectTemplateCreateInput): void {

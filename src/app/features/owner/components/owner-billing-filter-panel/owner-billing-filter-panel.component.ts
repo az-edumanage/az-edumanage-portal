@@ -18,6 +18,7 @@ export class OwnerBillingFilterPanelComponent {
   searchQuery = input('');
   showAdvancedFilters = input(false);
   filterStatus = input('All');
+  statusOptions = input<string[]>([]);
   filterMinAmount = input<number | null>(null);
   filterMaxAmount = input<number | null>(null);
 

@@ -5,18 +5,18 @@
   <div class="p-6 space-y-6">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
-        <label for="def-storage" class="owner-settings-field-label">Default Storage Limit (GB)</label>
+        <label for="def-storage" class="owner-settings-field-label">{{ translate()('owner.settings.storage.defaultLimit') }}</label>
         <input id="def-storage" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="10">
       </div>
       <div>
-        <label for="max-upload" class="owner-settings-field-label">Max Upload Size (MB)</label>
+        <label for="max-upload" class="owner-settings-field-label">{{ translate()('owner.settings.storage.maxUpload') }}</label>
         <input id="max-upload" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="50">
       </div>
     </div>
     <div>
-      <label for="file-types" class="owner-settings-field-label">Allowed File Types</label>
+      <label for="file-types" class="owner-settings-field-label">{{ translate()('owner.settings.storage.fileTypes') }}</label>
       <input id="file-types" type="text" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value=".pdf, .doc, .docx, .xls, .xlsx, .png, .jpg, .jpeg">
-      <p class="text-xs text-slate-500 mt-1">Comma-separated list of file extensions.</p>
+      <p class="text-xs text-slate-500 mt-1">{{ translate()('owner.settings.storage.fileTypesDescription') }}</p>
     </div>
   </div>
   <div class="owner-settings-footer p-4 dark:bg-slate-800/50">

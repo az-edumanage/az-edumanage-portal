@@ -3,6 +3,9 @@ export type OwnerSettingsTabId =
   | 'subject'
   | 'presets'
   | 'security'
+  | 'roles'
+  | 'status'
+  | 'modules-features'
   | 'billing'
   | 'communication'
   | 'storage'
@@ -27,6 +30,12 @@ export interface OwnerSettingsPaymentMethod {
   description: string;
   icon: string;
   active: boolean;
+}
+
+export interface OwnerSettingsPresetsSaveStatus {
+  type: 'success' | 'error';
+  title: string;
+  message: string;
 }
 
 export interface SubjectTemplate {

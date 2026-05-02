@@ -1,0 +1,80 @@
+<div class="owner-role-create-page max-w-5xl mx-auto space-y-6 pb-12">
+  <div class="owner-role-create-header flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <button routerLink="/owner/settings" class="owner-role-create-back-btn p-2 rounded-lg">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div>
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ isEditMode() ? 'Edit Role' : 'Create Role' }}</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-500">Group multiple authorizations into one reusable role.</p>
+      </div>
+    </div>
+    <div class="owner-role-create-selected px-3 py-1 rounded-full text-xs font-medium">
+      {{ selectedCount() }} permissions selected
+    </div>
+  </div>
+
+  <form [formGroup]="roleForm" (ngSubmit)="onSubmit()" class="space-y-6">
+    <section class="owner-role-create-card rounded-xl border p-6 space-y-4">
+      <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Role Information</h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="roleName" class="owner-role-create-label">Role Name</label>
+          <input id="roleName" formControlName="name" type="text" class="owner-role-create-input" placeholder="e.g. Operations Supervisor">
+        </div>
+        <div>
+          <label for="roleDescription" class="owner-role-create-label">Description</label>
+          <input id="roleDescription" formControlName="description" type="text" class="owner-role-create-input" placeholder="Optional short description">
+        </div>
+      </div>
+    </section>
+
+    <section class="owner-role-create-card rounded-xl border p-6 space-y-5">
+      <div class="flex items-center justify-between gap-3">
+        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Role Permissions</h3>
+
+        <label class="owner-role-create-checkline">
+          <input type="checkbox" [checked]="allSelected()" (change)="toggleAll($any($event.target).checked)">
+          <span>Select All</span>
+        </label>
+      </div>
+
+      <div formGroupName="permissions" class="space-y-4">
+        @for (group of groups; track group.key) {
+          <div class="owner-role-create-group rounded-xl border p-4" [formGroupName]="group.key">
+            <div class="owner-role-create-group-head flex items-center justify-between mb-3">
+              <h4 class="font-semibold text-slate-900 dark:text-white">{{ group.label }}</h4>
+              <label class="owner-role-create-checkline text-sm">
+                <input
+                  type="checkbox"
+                  [checked]="isGroupFullySelected(group)"
+                  [indeterminate]="isGroupPartiallySelected(group)"
+                  (change)="toggleGroup(group, $any($event.target).checked)"
+                >
+                <span>All {{ group.label }}</span>
+              </label>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              @for (permission of group.permissions; track permission.key) {
+                <label class="owner-role-create-permission-item">
+                  <input type="checkbox" [formControlName]="permission.key">
+                  <span>{{ permission.label }}</span>
+                </label>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <div class="flex justify-end gap-3">
+      <button type="button" (click)="onCancel()" class="owner-role-create-btn owner-role-create-btn-secondary">Cancel</button>
+      <button type="submit" class="owner-role-create-btn owner-role-create-btn-primary flex items-center gap-2">
+        <mat-icon class="text-sm">save</mat-icon>
+        {{ isEditMode() ? 'Update Role' : 'Save Role' }}
+      </button>
+    </div>
+  </form>
+</div>

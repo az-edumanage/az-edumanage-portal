@@ -71,13 +71,10 @@
             <td class="owner-subscription-orders-cell px-6 py-4">
               <span
                 class="owner-subscription-orders-status px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
-                [class.bg-amber-100]="order.status === 'Pending'"
-                [class.text-amber-700]="order.status === 'Pending'"
-                [class.bg-green-100]="order.status === 'Paid' || order.status === 'Approved'"
-                [class.text-green-700]="order.status === 'Paid' || order.status === 'Approved'"
-                [class.bg-red-100]="order.status === 'Rejected'"
-                [class.text-red-700]="order.status === 'Rejected'"
+                [style.color]="getStatusColor(order.status)"
+                [style.backgroundColor]="getStatusColor(order.status) + '1f'"
               >
+                <span class="w-1.5 h-1.5 rounded-full inline-block mr-1" [style.backgroundColor]="getStatusColor(order.status)"></span>
                 {{ order.status }}
               </span>
             </td>

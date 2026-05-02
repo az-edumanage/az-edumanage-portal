@@ -41,7 +41,7 @@ export class OwnerTenantCreateFacade {
   readonly countrySearchQuery = this.store.countrySearchQuery;
   readonly showCustomizationMenu = this.store.showCustomizationMenu;
 
-  readonly plans = this.data.plans;
+  readonly subscriptionTemplates = this.data.subscriptionTemplates;
   readonly tenantTypes = this.data.tenantTypes;
   readonly industries = this.data.industries;
   readonly domains = this.data.domains;
@@ -60,7 +60,7 @@ export class OwnerTenantCreateFacade {
 
   readonly filteredPlans = computed(() => {
     const query = this.planSearchQuery().toLowerCase();
-    return this.plans.filter((plan) => plan.name.toLowerCase().includes(query));
+    return this.subscriptionTemplates().filter((template) => template.name.toLowerCase().includes(query));
   });
 
   readonly filteredCities = computed(() => {
@@ -75,8 +75,8 @@ export class OwnerTenantCreateFacade {
 
   readonly selectedPlanName = computed(() => {
     const planId = this.tenantForm.get('planId')?.value;
-    const plan = this.plans.find((item) => item.id === planId);
-    return plan?.name ?? '';
+    const template = this.subscriptionTemplates().find((item) => item.id === planId);
+    return template?.name ?? '';
   });
 
   readonly tenantForm = this.fb.group({
@@ -115,7 +115,12 @@ export class OwnerTenantCreateFacade {
     sendOnboardingEmail: [false],
   });
 
-  initialize(): void {
+  async initialize(): Promise<void> {
+    try {
+      await this.data.loadBootstrapData();
+    } catch {
+      // Keep page usable even if bootstrap data fails to load.
+    }
     const savedTask = this.taskService.getTask(this.taskId);
     if (savedTask && savedTask.data) {
       const value = savedTask.data as Partial<TenantCreatePayload>;

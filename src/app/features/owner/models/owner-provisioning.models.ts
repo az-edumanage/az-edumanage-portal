@@ -1,4 +1,4 @@
-export type ProvisioningStatus = 'Pending' | 'In Progress' | 'Completed' | 'Failed';
+export type ProvisioningStatus = string;
 
 export interface ProvisioningJob {
   id: string;

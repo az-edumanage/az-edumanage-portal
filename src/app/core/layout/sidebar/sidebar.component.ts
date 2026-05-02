@@ -1,9 +1,12 @@
 import { Component, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { DashboardService } from '../../services/dashboard.service';
 import { I18nService } from '../../services/i18n.service';
+import { AuthTokenService } from '../../auth/auth-token.service';
+import { AuthIdentityService } from '../../auth/auth-identity.service';
+import { AuthApiService } from '../../auth/auth-api.service';
 
 interface MenuItem {
   labelKey: string;
@@ -27,12 +30,17 @@ interface MenuSection {
 export class SidebarComponent {
   private readonly dashboardService = inject(DashboardService);
   private readonly i18nService = inject(I18nService);
+  private readonly authTokenService = inject(AuthTokenService);
+  private readonly authIdentityService = inject(AuthIdentityService);
+  private readonly authApi = inject(AuthApiService);
+  private readonly router = inject(Router);
   
   collapsed = this.dashboardService.sidebarCollapsed;
   currentRole = this.dashboardService.currentRole;
   language = this.i18nService.language;
 
   openAccordions = signal<Record<string, boolean>>({});
+  isUserPanelOpen = signal(false);
 
   toggleAccordion(labelKey: string) {
     this.openAccordions.update((prev: Record<string, boolean>) => ({
@@ -46,13 +54,43 @@ export class SidebarComponent {
   }
 
   userInitials = computed(() => {
+    const username = this.authIdentityService.username()?.trim();
+    if (username) {
+      return username.slice(0, 2).toUpperCase();
+    }
     return this.currentRole().substring(0, 2).toUpperCase();
+  });
+
+  username = computed(() => this.authIdentityService.username() ?? 'Unknown');
+  roleLabel = computed(() => {
+    const role = this.authIdentityService.primaryRole() ?? 'OWNER';
+    const roleLabels: Record<string, string> = {
+      SUPER_ADMIN: 'Superuser',
+      OWNER: 'Owner',
+      TENANT_ADMIN: 'Tenant Admin',
+      TEACHER: 'Teacher',
+    };
+    return roleLabels[role] ?? role.replaceAll('_', ' ').toLowerCase().replace(/\b\w/g, (m) => m.toUpperCase());
   });
 
   isRtl = computed(() => this.language() === 'ar');
 
   t(text: string): string {
     return this.i18nService.t(text);
+  }
+
+  async logout(): Promise<void> {
+    const role = this.currentRole();
+    this.isUserPanelOpen.set(false);
+    await this.authApi.logout();
+    this.authTokenService.clearToken();
+    this.authIdentityService.clearIdentity();
+    this.dashboardService.returnUrl.set(null);
+    this.router.navigate([`/${role}/login`]);
+  }
+
+  toggleUserPanel(): void {
+    this.isUserPanelOpen.update((open) => !open);
   }
 
   menuSections = computed<MenuSection[]>(() => {
@@ -109,8 +147,9 @@ export class SidebarComponent {
             titleKey: 'sidebar.section.system',
             items: [
               { labelKey: 'sidebar.item.notifications', icon: 'notifications', route: '/owner/notifications' },
-              { labelKey: 'sidebar.item.settings', icon: 'settings', route: '/owner/settings' },
-              { labelKey: 'sidebar.item.test', icon: 'quiz', route: '/owner/test' },
+              { labelKey: 'sidebar.item.platformSettings', icon: 'settings', route: '/owner/settings' },
+              { labelKey: 'sidebar.item.webSettings', icon: 'public', route: '/owner/web-settings' },
+              { labelKey: 'sidebar.item.questionBank', icon: 'quiz', route: '/owner/test' },
             ]
           }
         ];

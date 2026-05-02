@@ -166,35 +166,12 @@
                     </div>
                   </td>
                   <td class="px-6 py-4">
-                    <span class="px-2 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1"
-                      [class.bg-green-100]="tenant.status === 'Active'"
-                      [class.text-green-700]="tenant.status === 'Active'"
-                      [class.dark:bg-green-900/30]="tenant.status === 'Active'"
-                      [class.dark:text-green-400]="tenant.status === 'Active'"
-                      [class.bg-amber-100]="tenant.status === 'Trial'"
-                      [class.text-amber-700]="tenant.status === 'Trial'"
-                      [class.dark:bg-amber-900/30]="tenant.status === 'Trial'"
-                      [class.dark:text-amber-400]="tenant.status === 'Trial'"
-                      [class.bg-red-100]="tenant.status === 'Suspended'"
-                      [class.text-red-700]="tenant.status === 'Suspended'"
-                      [class.dark:bg-red-900/30]="tenant.status === 'Suspended'"
-                      [class.dark:text-red-400]="tenant.status === 'Suspended'"
-                      [class.bg-orange-100]="tenant.status === 'Past Due'"
-                      [class.text-orange-700]="tenant.status === 'Past Due'"
-                      [class.dark:bg-orange-900/30]="tenant.status === 'Past Due'"
-                      [class.dark:text-orange-400]="tenant.status === 'Past Due'"
-                      [class.bg-slate-100]="tenant.status === 'Cancelled'"
-                      [class.text-slate-700]="tenant.status === 'Cancelled'"
-                      [class.dark:bg-slate-900/30]="tenant.status === 'Cancelled'"
-                      [class.dark:text-slate-500]="tenant.status === 'Cancelled'"
+                    <span
+                      class="px-2 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1"
+                      [style.color]="getStatusColor(tenant.status)"
+                      [style.backgroundColor]="getStatusColor(tenant.status) + '1f'"
                     >
-                      <span class="w-1.5 h-1.5 rounded-full" 
-                        [class.bg-green-500]="tenant.status === 'Active'"
-                        [class.bg-amber-500]="tenant.status === 'Trial'"
-                        [class.bg-red-500]="tenant.status === 'Suspended'"
-                        [class.bg-orange-500]="tenant.status === 'Past Due'"
-                        [class.bg-slate-500]="tenant.status === 'Cancelled'"
-                      ></span>
+                      <span class="w-1.5 h-1.5 rounded-full" [style.backgroundColor]="getStatusColor(tenant.status)"></span>
                       {{ tenant.status }}
                     </span>
                   </td>
@@ -281,7 +258,7 @@
                             [class.slide-in-from-bottom-2]="i >= 3"
                           >
                             <div class="p-2 space-y-1">
-                              @for (status of statuses; track status) {
+                              @for (status of statuses(); track status) {
                                 <button 
                                   (click)="requestStatusChange(tenant, status); activeStatusDropdown.set(null)"
                                   class="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md transition-colors"
@@ -293,13 +270,7 @@
                                   [class.hover:bg-slate-50]="tenant.status !== status"
                                   [class.dark:hover:bg-slate-700]="tenant.status !== status"
                                 >
-                                  <span class="w-2 h-2 rounded-full"
-                                    [class.bg-green-500]="status === 'Active'"
-                                    [class.bg-amber-500]="status === 'Trial'"
-                                    [class.bg-red-500]="status === 'Suspended'"
-                                    [class.bg-orange-500]="status === 'Past Due'"
-                                    [class.bg-slate-500]="status === 'Cancelled'"
-                                  ></span>
+                                  <span class="w-2 h-2 rounded-full" [style.backgroundColor]="getStatusColor(status)"></span>
                                   {{ status }}
                                 </button>
                               }

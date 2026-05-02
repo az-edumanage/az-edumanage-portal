@@ -1,4 +1,4 @@
-export type TenantStatus = 'Active' | 'Suspended' | 'Trial' | 'Past Due' | 'Cancelled';
+export type TenantStatus = string;
 export type TenantHealthStatus = 'Healthy' | 'Degraded' | 'Down';
 export type TenantType = 'Educational Center' | 'Individual Teacher';
 

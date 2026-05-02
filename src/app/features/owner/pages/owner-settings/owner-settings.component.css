@@ -288,6 +288,14 @@
   border-color: color-mix(in srgb, var(--color-success, #059669) 48%, var(--color-border-primary));
 }
 
+.owner-settings-toggle-track--green {
+  background: #6b7280;
+}
+
+.peer:checked + .owner-settings-toggle-track--green {
+  background: #22c55e;
+}
+
 .owner-settings-icon-sm {
   font-size: 0.875rem;
   line-height: 1.25rem;
@@ -313,7 +321,6 @@
 }
 
 .owner-settings-subject-template-create-btn {
-  border: 1px solid color-mix(in srgb, #6d28d9 60%, transparent);
   color: #ffffff;
   background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
 }

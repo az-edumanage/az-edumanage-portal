@@ -31,5 +31,4 @@ export class OwnerSubscriptionOrdersStore {
   readonly exportDateTo = signal('');
   readonly exportMode = signal<SubscriptionOrderExportMode>('all');
 
-  readonly statuses: string[] = ['Pending', 'Approved', 'Paid', 'Rejected'];
 }

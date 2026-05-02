@@ -135,10 +135,9 @@
                 class="w-full px-3 py-2 text-sm"
               >
                 <option value="All">All Statuses</option>
-                <option value="Paid">Paid</option>
-                <option value="Unpaid">Unpaid</option>
-                <option value="Overdue">Overdue</option>
-                <option value="Cancelled">Cancelled</option>
+                @for (status of statusOptions(); track status) {
+                  <option [value]="status">{{ status }}</option>
+                }
               </select>
             </div>
 

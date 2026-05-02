@@ -12,6 +12,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ButtonComponent, CardComponent } from '../../../../shared/ui';
 import { TABLE_COMPONENTS } from '../../../../shared/directives';
 import { OwnerBillingFacade } from '../../state/owner-billing.facade';
+import { OwnerBillingStatusesDataService } from '../../data-access/owner-billing-statuses-data.service';
 import { OwnerBillingFilterPanelComponent } from '../../components/owner-billing-filter-panel/owner-billing-filter-panel.component';
 import { OwnerBillingInvoicesTableComponent } from '../../components/owner-billing-invoices-table/owner-billing-invoices-table.component';
 import { OwnerBillingPaymentsTableComponent } from '../../components/owner-billing-payments-table/owner-billing-payments-table.component';
@@ -36,6 +37,7 @@ import { OwnerBillingPaymentsTableComponent } from '../../components/owner-billi
 })
 export class OwnerBillingPageComponent {
   private readonly facade = inject(OwnerBillingFacade);
+  private readonly billingStatusesData = inject(OwnerBillingStatusesDataService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -59,6 +61,7 @@ export class OwnerBillingPageComponent {
   readonly filteredPayments = this.facade.filteredPayments;
   readonly filteredFailedPayments = this.facade.filteredFailedPayments;
   readonly filteredRefunds = this.facade.filteredRefunds;
+  readonly billingStatusOptions = this.billingStatusesData.statusNames;
 
   constructor() {
     this.route.queryParams
@@ -136,5 +139,9 @@ export class OwnerBillingPageComponent {
 
   closeProofModal(): void {
     this.facade.closeProof();
+  }
+
+  getInvoiceStatusColor(status: string): string {
+    return this.billingStatusesData.findByName(status)?.color ?? '#64748b';
   }
 }

@@ -8,6 +8,7 @@ import { I18nService } from '../../../../core/services/i18n.service';
 import { UiPagerButtonComponent } from '../../../../shared/ui';
 import { OwnerTenantsListFacade } from '../../state/owner-tenants-list.facade';
 import { Tenant } from '../../models/owner-tenants.models';
+import { OwnerTenantStatusesDataService } from '../../data-access/owner-tenant-statuses-data.service';
 
 @Component({
   selector: 'app-owner-tenants-list',
@@ -21,6 +22,7 @@ export class OwnerTenantsListComponent {
   private readonly dashboardService = inject(DashboardService);
   private readonly i18nService = inject(I18nService);
   private readonly tenantsFacade = inject(OwnerTenantsListFacade);
+  private readonly statusesData = inject(OwnerTenantStatusesDataService);
 
   readonly searchQuery = this.tenantsFacade.searchQuery;
   readonly showFiltersDropdown = this.tenantsFacade.showFiltersDropdown;
@@ -44,9 +46,13 @@ export class OwnerTenantsListComponent {
   readonly activeFilterCount = this.tenantsFacade.activeFilterCount;
   readonly filteredTenants = this.tenantsFacade.filteredTenants;
   readonly filtersSearchQuery = signal('');
-  readonly filteredStatuses = computed(() => this.filterPanelOptions(this.statuses));
+  readonly filteredStatuses = computed(() => this.filterPanelOptions(this.statuses()));
   readonly filteredPlans = computed(() => this.filterPanelOptions(this.plans));
   readonly filteredHealths = computed(() => this.filterPanelOptions(this.healths));
+
+  getStatusColor(status: string): string {
+    return this.statusesData.findByName(status)?.color ?? '#64748b';
+  }
 
   toggleFilter(type: 'status' | 'plan' | 'health', value: string): void {
     this.tenantsFacade.toggleFilter(type, value);

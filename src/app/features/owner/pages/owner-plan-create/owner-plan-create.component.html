@@ -61,11 +61,18 @@
                 (click)="showStatusDropdown.set(!showStatusDropdown())"
                 (keydown.enter)="showStatusDropdown.set(!showStatusDropdown())"
                 tabindex="0"
-                class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white cursor-pointer flex items-center justify-between"
+                class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border rounded-lg focus:outline-none focus:ring-2 dark:text-white cursor-pointer flex items-center justify-between"
+                [ngClass]="{
+                  'border-red-500 dark:border-red-500 focus:ring-red-500': planForm.get('status')?.invalid && (planForm.get('status')?.touched || planForm.get('status')?.dirty),
+                  'border-slate-200 dark:border-slate-700 focus:ring-indigo-500': !(planForm.get('status')?.touched || planForm.get('status')?.dirty)
+                }"
               >
-                <span>{{ planForm.get('status')?.value }}</span>
+                <span>{{ planForm.get('status')?.value || 'Select status' }}</span>
                 <mat-icon class="text-slate-500">arrow_drop_down</mat-icon>
               </div>
+              @if (planForm.get('status')?.hasError('required') && (planForm.get('status')?.touched || planForm.get('status')?.dirty)) {
+                <p class="mt-1 text-xs text-red-500">Status is required</p>
+              }
 
               @if (showStatusDropdown()) {
                 <div class="fixed inset-0 z-10" (click)="showStatusDropdown.set(false)" (keydown.enter)="showStatusDropdown.set(false)" tabindex="0"></div>
@@ -110,11 +117,18 @@
                 (click)="showVisibilityDropdown.set(!showVisibilityDropdown())"
                 (keydown.enter)="showVisibilityDropdown.set(!showVisibilityDropdown())"
                 tabindex="0"
-                class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white cursor-pointer flex items-center justify-between"
+                class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border rounded-lg focus:outline-none focus:ring-2 dark:text-white cursor-pointer flex items-center justify-between"
+                [ngClass]="{
+                  'border-red-500 dark:border-red-500 focus:ring-red-500': planForm.get('visibility')?.invalid && (planForm.get('visibility')?.touched || planForm.get('visibility')?.dirty),
+                  'border-slate-200 dark:border-slate-700 focus:ring-indigo-500': !(planForm.get('visibility')?.touched || planForm.get('visibility')?.dirty)
+                }"
               >
-                <span>{{ planForm.get('visibility')?.value === 'Public' ? 'Public (Visible on Pricing Page)' : 'Private (Sales Only)' }}</span>
+                <span>{{ planForm.get('visibility')?.value ? (planForm.get('visibility')?.value === 'Public' ? 'Public (Visible on Pricing Page)' : 'Private (Sales Only)') : 'Select visibility' }}</span>
                 <mat-icon class="text-slate-500">arrow_drop_down</mat-icon>
               </div>
+              @if (planForm.get('visibility')?.hasError('required') && (planForm.get('visibility')?.touched || planForm.get('visibility')?.dirty)) {
+                <p class="mt-1 text-xs text-red-500">Visibility is required</p>
+              }
 
               @if (showVisibilityDropdown()) {
                 <div class="fixed inset-0 z-10" (click)="showVisibilityDropdown.set(false)" (keydown.enter)="showVisibilityDropdown.set(false)" tabindex="0"></div>
@@ -169,11 +183,18 @@
                 (click)="showCurrencyDropdown.set(!showCurrencyDropdown())"
                 (keydown.enter)="showCurrencyDropdown.set(!showCurrencyDropdown())"
                 tabindex="0"
-                class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white cursor-pointer flex items-center justify-between"
+                class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border rounded-lg focus:outline-none focus:ring-2 dark:text-white cursor-pointer flex items-center justify-between"
+                [ngClass]="{
+                  'border-red-500 dark:border-red-500 focus:ring-red-500': planForm.get('currency')?.invalid && (planForm.get('currency')?.touched || planForm.get('currency')?.dirty),
+                  'border-slate-200 dark:border-slate-700 focus:ring-indigo-500': !(planForm.get('currency')?.touched || planForm.get('currency')?.dirty)
+                }"
               >
-                <span>{{ planForm.get('currency')?.value === 'USD' ? 'USD ($)' : planForm.get('currency')?.value === 'EUR' ? 'EUR (€)' : 'EGP (LE)' }}</span>
+                <span>{{ planForm.get('currency')?.value ? (planForm.get('currency')?.value === 'USD' ? 'USD ($)' : planForm.get('currency')?.value === 'EUR' ? 'EUR (€)' : 'EGP (LE)') : 'Select currency' }}</span>
                 <mat-icon class="text-slate-500">arrow_drop_down</mat-icon>
               </div>
+              @if (planForm.get('currency')?.hasError('required') && (planForm.get('currency')?.touched || planForm.get('currency')?.dirty)) {
+                <p class="mt-1 text-xs text-red-500">Currency is required</p>
+              }
 
               @if (showCurrencyDropdown()) {
                 <div class="fixed inset-0 z-10" (click)="showCurrencyDropdown.set(false)" (keydown.enter)="showCurrencyDropdown.set(false)" tabindex="0"></div>
@@ -216,33 +237,23 @@
               <div class="owner-plan-label">Monthly Price</div>
               <div class="relative">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
-                <input appInput type="number" formControlName="monthlyPrice" class="w-full pl-8 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                <input appInput type="number" formControlName="monthlyPrice" class="w-full pl-8 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border rounded-lg focus:outline-none focus:ring-2 dark:text-white"
+                  [ngClass]="{
+                    'border-red-500 dark:border-red-500 focus:ring-red-500': planForm.get('monthlyPrice')?.invalid && (planForm.get('monthlyPrice')?.touched || planForm.get('monthlyPrice')?.dirty),
+                    'border-slate-200 dark:border-slate-700 focus:ring-indigo-500': !(planForm.get('monthlyPrice')?.touched || planForm.get('monthlyPrice')?.dirty)
+                  }">
               </div>
             </div>
             <div>
               <div class="owner-plan-label">Yearly Price</div>
               <div class="relative">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
-                <input appInput type="number" formControlName="yearlyPrice" class="w-full pl-8 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                <input appInput type="number" formControlName="yearlyPrice" class="w-full pl-8 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border rounded-lg focus:outline-none focus:ring-2 dark:text-white"
+                  [ngClass]="{
+                    'border-red-500 dark:border-red-500 focus:ring-red-500': planForm.get('yearlyPrice')?.invalid && (planForm.get('yearlyPrice')?.touched || planForm.get('yearlyPrice')?.dirty),
+                    'border-slate-200 dark:border-slate-700 focus:ring-indigo-500': !(planForm.get('yearlyPrice')?.touched || planForm.get('yearlyPrice')?.dirty)
+                  }">
               </div>
-            </div>
-            <div>
-              <div class="flex items-center justify-between mb-2">
-                <div class="block text-sm font-medium text-slate-700 dark:text-slate-300">Free Trial</div>
-                <label class="relative inline-flex items-center cursor-pointer">
-                  <input appToggleInput type="checkbox" formControlName="hasTrial" class="sr-only peer">
-                  <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
-                </label>
-              </div>
-              
-              @if (planForm.get('hasTrial')?.value) {
-                <div class="relative">
-                  <input appInput type="number" formControlName="trialDays" class="owner-plan-control">
-                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">Days</span>
-                </div>
-              } @else {
-                <div class="text-xs text-slate-500 py-2.5">No free trial for this plan.</div>
-              }
             </div>
           </div>
         </div>
@@ -280,56 +291,26 @@
             <span class="owner-plan-step-pill">4</span>
             Included Modules
           </h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" formGroupName="modules">
-            <label class="owner-plan-module-item">
-              <input appCheckbox type="checkbox" formControlName="academicStructure" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="owner-plan-module-text">Academic Structure</span>
-            </label>
-            <label class="owner-plan-module-item">
-              <input appCheckbox type="checkbox" formControlName="studentsManagement" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="owner-plan-module-text">Students Management</span>
-            </label>
-            <label class="owner-plan-module-item">
-              <input appCheckbox type="checkbox" formControlName="scheduling" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="owner-plan-module-text">Scheduling & Timetable</span>
-            </label>
-            <label class="owner-plan-module-item">
-              <input appCheckbox type="checkbox" formControlName="usersManagement" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="owner-plan-module-text">Users Management</span>
-            </label>
-            <label class="owner-plan-module-item">
-              <input appCheckbox type="checkbox" formControlName="auditLogs" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="owner-plan-module-text">Audit Logs</span>
-            </label>
-            <label class="owner-plan-module-item">
-              <input appCheckbox type="checkbox" formControlName="examsAndGrades" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="owner-plan-module-text">Exams & Grades</span>
-            </label>
-            <label class="owner-plan-module-item">
-              <input appCheckbox type="checkbox" formControlName="finance" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="owner-plan-module-text">Finance</span>
-            </label>
-            <label class="owner-plan-module-item">
-              <input appCheckbox type="checkbox" formControlName="smsIntegration" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="owner-plan-module-text">SMS Integration</span>
-            </label>
-            <label class="owner-plan-module-item">
-              <input appCheckbox type="checkbox" formControlName="advancedAnalytics" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="owner-plan-module-text">Advanced Analytics</span>
-            </label>
-            <label class="owner-plan-module-item">
-              <input appCheckbox type="checkbox" formControlName="parentPortal" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="owner-plan-module-text">Parent Portal</span>
-            </label>
-            <label class="owner-plan-module-item">
-              <input appCheckbox type="checkbox" formControlName="lms" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="owner-plan-module-text">LMS</span>
-            </label>
-            <label class="owner-plan-module-item">
-              <input appCheckbox type="checkbox" formControlName="questionBank" class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500">
-              <span class="owner-plan-module-text">Question Bank</span>
-            </label>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @for (module of moduleOptions(); track module.id) {
+              <label class="owner-plan-module-item">
+                <input
+                  appCheckbox
+                  type="checkbox"
+                  [checked]="isModuleSelected(module.id)"
+                  (change)="toggleModule(module.id)"
+                  class="w-4 h-4 text-indigo-600 rounded border-slate-200 focus:ring-indigo-500"
+                >
+                <span class="owner-plan-module-text">{{ module.name }}</span>
+              </label>
+            }
           </div>
+          @if (moduleOptions().length === 0) {
+            <p class="owner-plan-help mt-3">No modules available. Create modules first in Modules Management.</p>
+          }
+          @if (planForm.get('moduleIds')?.invalid && (planForm.get('moduleIds')?.touched || planForm.get('moduleIds')?.dirty)) {
+            <p class="mt-3 text-xs text-red-500">Select at least one module.</p>
+          }
         </div>
 
         <!-- 5. Billing Rules -->
@@ -367,10 +348,49 @@
           <button type="button" (click)="onCancel()" class="owner-plan-btn-cancel">
             Cancel
           </button>
-          <button type="submit" [disabled]="planForm.invalid" class="owner-plan-btn-submit disabled:opacity-50 disabled:cursor-not-allowed">
-            {{ isEditMode() ? 'Update Plan' : 'Create Plan' }}
+          <button type="submit" [disabled]="isSubmitting()" class="owner-plan-btn-submit disabled:opacity-50 disabled:cursor-not-allowed">
+            @if (isSubmitting()) {
+              <span class="inline-flex items-center gap-2">
+                <mat-icon class="animate-spin">refresh</mat-icon>
+                Saving...
+              </span>
+            } @else {
+              {{ isEditMode() ? 'Update Plan' : 'Create Plan' }}
+            }
           </button>
         </div>
       </form>
     </div>
+
+    @if (isSubmitting() || actionStatus()) {
+      <div class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
+          <div class="p-6 text-center">
+            @if (isSubmitting()) {
+              <div class="w-14 h-14 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-4">
+                <mat-icon class="animate-spin">refresh</mat-icon>
+              </div>
+              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Saving Plan</h3>
+              <p class="text-sm text-slate-500 mt-2">Please wait while we save your changes.</p>
+            } @else if (actionStatus()) {
+              <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
+                [ngClass]="actionStatus()!.success ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'">
+                <mat-icon>{{ actionStatus()!.success ? 'check' : 'error' }}</mat-icon>
+              </div>
+              <h3 class="text-lg font-semibold text-slate-900 dark:text-white">
+                {{ actionStatus()!.success ? 'Success' : 'Save Failed' }}
+              </h3>
+              <p class="text-sm text-slate-500 mt-2">{{ actionStatus()!.message }}</p>
+            }
+          </div>
+          @if (!isSubmitting() && actionStatus()) {
+            <div class="p-4 bg-slate-50 dark:bg-slate-800/50">
+              <button type="button" (click)="closeActionStatus()" class="w-full px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-colors">
+                OK
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
   

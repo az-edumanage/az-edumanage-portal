@@ -6,4 +6,8 @@ export class OwnerSubscriptionTemplatesListStore {
   private readonly data = inject(OwnerSubscriptionTemplatesDataService);
 
   readonly templates = this.data.templates;
+
+  constructor() {
+    void this.data.refreshTemplates();
+  }
 }

@@ -204,6 +204,98 @@
   color: var(--color-action-primary-hover, #4338ca);
 }
 
+.owner-modules-actions {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.owner-modules-action-btn {
+  border-radius: var(--radius-md);
+  padding: 0.35rem 0.7rem;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.owner-modules-action-btn--neutral {
+  border: 1px solid var(--color-border-primary, #e2e8f0);
+  color: var(--color-text-secondary, #475569);
+}
+
+.owner-modules-action-btn--primary {
+  color: var(--color-text-on-action, #fff);
+  background: var(--color-action-primary, #4f46e5);
+}
+
+.owner-modules-action-btn--danger {
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  background: #fff1f2;
+}
+
+.owner-modules-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(15 23 42 / 0.5);
+}
+
+.owner-modules-modal-card {
+  width: min(34rem, 100%);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-primary, #e2e8f0);
+  background: var(--color-bg-card, #ffffff);
+  box-shadow: var(--shadow-lg, 0 20px 25px -5px rgb(15 23 42 / 0.2));
+}
+
+.owner-modules-modal-header,
+.owner-modules-modal-footer {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--color-border-primary, #e2e8f0);
+}
+
+.owner-modules-modal-footer {
+  border-bottom: 0;
+  border-top: 1px solid var(--color-border-primary, #e2e8f0);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.owner-modules-modal-body {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+}
+
+.owner-modules-modal-body label {
+  display: grid;
+  gap: 0.3rem;
+  color: var(--color-text-secondary, #475569);
+  font-size: var(--font-size-sm);
+}
+
+.owner-modules-modal-body input,
+.owner-modules-modal-body textarea,
+.owner-modules-modal-body select {
+  width: 100%;
+  border: 1px solid var(--color-border-primary, #e2e8f0);
+  border-radius: var(--radius-md);
+  padding: 0.55rem 0.7rem;
+  color: var(--color-text-primary, #0f172a);
+  background: var(--color-bg-input, #fff);
+}
+
+.owner-modules-modal-error {
+  margin: 0;
+  color: #b91c1c;
+  font-size: var(--font-size-sm);
+}
+
 .dark .owner-modules-filters,
 .dark .owner-modules-card,
 .dark .owner-modules-footer,

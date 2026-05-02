@@ -75,6 +75,7 @@
         [searchQuery]="searchQuery()"
         [showAdvancedFilters]="showAdvancedFilters()"
         [filterStatus]="filterStatus()"
+        [statusOptions]="billingStatusOptions()"
         [filterMinAmount]="filterMinAmount()"
         [filterMaxAmount]="filterMaxAmount()"
         (activeTabChange)="setActiveTab($event)"
@@ -106,6 +107,7 @@
         @if (activeTab() === 'invoices') {
           <app-owner-billing-invoices-table
             [invoices]="filteredInvoices()"
+            [statusColorResolver]="getInvoiceStatusColor.bind(this)"
             (copyValue)="copyToClipboard($event)"
             (viewProof)="viewProof($event)"
             (initiateRefund)="initiateRefund($event)"

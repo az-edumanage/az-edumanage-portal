@@ -16,8 +16,13 @@ export class OwnerProvisioningListComponent {
 
   readonly filter = this.facade.filter;
   readonly filteredJobs = this.facade.filteredJobs;
+  readonly statusOptions = this.facade.statusOptions;
 
   setFilter(value: 'All' | ProvisioningStatus): void {
     this.facade.setFilter(value);
+  }
+
+  getStatusColor(status: string): string {
+    return this.facade.getStatusColor(status);
   }
 }

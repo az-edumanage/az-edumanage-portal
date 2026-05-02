@@ -1,0 +1,98 @@
+:host {
+  display: block;
+}
+
+.owner-roles-page {
+  align-content: start;
+}
+
+.owner-roles-title {
+  letter-spacing: -0.01em;
+}
+
+.owner-roles-back-btn {
+  color: var(--color-text-secondary);
+}
+
+.owner-roles-back-btn:hover {
+  color: var(--color-action-primary);
+}
+
+.owner-roles-header-actions {
+  flex-wrap: wrap;
+}
+
+.owner-roles-search-input {
+  width: 16rem;
+  min-height: 2.5rem;
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border-primary);
+  color: var(--color-text-primary);
+}
+
+.owner-roles-search-input:focus {
+  outline: 0;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-action-primary) 25%, transparent);
+}
+
+.owner-roles-add-btn {
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action, #fff);
+}
+
+.owner-roles-add-btn:hover {
+  background: var(--color-action-primary-hover, var(--color-action-primary));
+}
+
+.owner-roles-table-card {
+  background: var(--color-bg-card);
+  border-color: var(--color-border-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.owner-roles-row {
+  transition: background-color 150ms ease;
+}
+
+.owner-roles-system-badge {
+  background: color-mix(in srgb, var(--color-action-primary) 12%, transparent);
+  color: var(--color-action-primary);
+}
+
+.owner-roles-perms-count {
+  color: var(--color-text-secondary);
+}
+
+.owner-roles-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  padding: 0.375rem;
+  border-radius: var(--radius-md);
+}
+
+.owner-roles-icon-btn:hover {
+  background: color-mix(in srgb, var(--color-action-primary) 10%, transparent);
+  color: var(--color-action-primary);
+}
+
+.owner-roles-icon-btn-danger:hover {
+  background: color-mix(in srgb, var(--color-danger, #dc2626) 10%, transparent);
+  color: var(--color-danger, #dc2626);
+}
+
+.owner-roles-icon-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .owner-roles-search-input {
+    width: 100%;
+  }
+
+  .owner-roles-search-wrap {
+    width: 100%;
+  }
+}

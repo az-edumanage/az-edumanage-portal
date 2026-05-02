@@ -17,19 +17,9 @@ export interface OwnerPlanCurrencyOption {
   label: string;
 }
 
-export interface OwnerPlanModules {
-  academicStructure: boolean;
-  studentsManagement: boolean;
-  scheduling: boolean;
-  usersManagement: boolean;
-  auditLogs: boolean;
-  examsAndGrades: boolean;
-  finance: boolean;
-  smsIntegration: boolean;
-  advancedAnalytics: boolean;
-  parentPortal: boolean;
-  lms: boolean;
-  questionBank: boolean;
+export interface OwnerPlanModuleOption {
+  id: string;
+  name: string;
 }
 
 export interface OwnerPlanCreatePayload {
@@ -40,13 +30,11 @@ export interface OwnerPlanCreatePayload {
   currency: OwnerPlanCurrency;
   monthlyPrice: number;
   yearlyPrice: number;
-  hasTrial: boolean;
-  trialDays: number;
   maxStudents: number;
   maxTeachers: number;
   maxStorage: number;
   maxBranches: number;
-  modules: OwnerPlanModules;
+  moduleIds: string[];
   autoRenew: boolean;
   allowDowngrade: boolean;
 }

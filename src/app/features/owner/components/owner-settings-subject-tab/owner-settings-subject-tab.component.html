@@ -85,7 +85,7 @@
               @for (level of template.levels; track level; let isLast = $last) {
                 <span class="owner-settings-subject-level-pill">{{ level }}</span>
                 @if (!isLast) {
-                  <span class="material-icons owner-settings-subject-level-separator">chevron_right</span>
+                  <span class="material-icons owner-settings-subject-level-separator">{{ isRtl() ? 'chevron_left' : 'chevron_right' }}</span>
                 }
               }
             </div>

@@ -1,0 +1,80 @@
+<div class="owner-roles-page space-y-6">
+  <div class="owner-roles-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <button routerLink="/owner/settings" class="owner-roles-back-btn inline-flex items-center gap-2 text-sm font-medium mb-2">
+        <mat-icon class="text-sm">arrow_back</mat-icon>
+        Back to Settings
+      </button>
+      <h2 class="owner-roles-title text-2xl font-bold text-slate-900 dark:text-white">Roles & Permissions</h2>
+      <p class="owner-roles-subtitle text-slate-500 dark:text-slate-500 text-sm">Display all roles, and manage edit/delete actions.</p>
+    </div>
+    <div class="owner-roles-header-actions flex items-center gap-3">
+      <div class="relative owner-roles-search-wrap">
+        <input
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+          type="text"
+          placeholder="Search roles..."
+          class="owner-roles-search-input pl-10 pr-4 py-2 rounded-lg"
+        >
+        <mat-icon class="owner-roles-search-icon absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</mat-icon>
+      </div>
+      <button routerLink="/owner/users/roles/create" class="owner-roles-add-btn flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium">
+        <mat-icon class="text-sm">add</mat-icon>
+        New Role
+      </button>
+    </div>
+  </div>
+
+  <div class="owner-roles-table-card rounded-xl border overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm owner-roles-table">
+        <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
+          <tr>
+            <th class="px-6 py-3 font-medium">Role</th>
+            <th class="px-6 py-3 font-medium">Permissions</th>
+            <th class="px-6 py-3 font-medium">Assigned Users</th>
+            <th class="px-6 py-3 font-medium">Updated</th>
+            <th class="px-6 py-3 font-medium text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+          @for (role of filteredRoles(); track role.id) {
+            <tr class="owner-roles-row hover:bg-slate-50 dark:hover:bg-slate-800/50">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium text-slate-900 dark:text-white">{{ role.name }}</span>
+                  @if (role.isSystem) {
+                    <span class="owner-roles-system-badge px-2 py-0.5 rounded-full text-[10px] font-semibold">System</span>
+                  }
+                </div>
+                <p class="text-xs text-slate-500 mt-1">{{ role.description }}</p>
+              </td>
+              <td class="px-6 py-4">
+                <span class="owner-roles-perms-count">{{ role.permissions.length }} permissions</span>
+              </td>
+              <td class="px-6 py-4 text-slate-700 dark:text-slate-300">{{ role.usersCount }}</td>
+              <td class="px-6 py-4 text-slate-500">{{ role.updatedAt }}</td>
+              <td class="px-6 py-4">
+                <div class="flex items-center justify-end gap-2">
+                  <button [routerLink]="['/owner/users/roles', role.id, 'edit']" class="owner-roles-icon-btn" title="Edit role">
+                    <mat-icon class="text-sm">edit</mat-icon>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="onDelete(role.id, role.isSystem)"
+                    [disabled]="role.isSystem"
+                    class="owner-roles-icon-btn owner-roles-icon-btn-danger"
+                    title="Delete role"
+                  >
+                    <mat-icon class="text-sm">delete</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

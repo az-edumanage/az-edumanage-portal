@@ -1,7 +1,7 @@
 export interface Plan {
   id: string;
   name: string;
-  status: 'Active' | 'Archived';
+  status: 'Active' | 'Archived' | 'Draft';
   monthlyPrice: number;
   yearlyPrice: number;
   currency: string;

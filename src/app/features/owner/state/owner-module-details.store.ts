@@ -1,27 +1,50 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { OwnerModuleDetailsDataService } from '../data-access/owner-module-details-data.service';
-import { Feature, Limit } from '../models/owner-module-details.models';
+import { AvailablePlan, ChangeLog, Feature, Limit, TenantOverride } from '../models/owner-module-details.models';
+import { OwnerModule } from '../models/owner-modules.models';
 
 @Injectable({ providedIn: 'root' })
 export class OwnerModuleDetailsStore {
   private readonly data = inject(OwnerModuleDetailsDataService);
 
-  readonly activeTab = signal<'overview' | 'settings' | 'plans' | 'overrides' | 'dependencies' | 'changelog'>('overview');
+  readonly activeTab = signal<'overview' | 'settings' | 'overrides' | 'changelog'>('overview');
+  readonly loading = signal(false);
+  readonly loadError = signal<string | null>(null);
 
-  private readonly initial = this.data.getPreset('mod-students');
-  readonly module = signal(this.initial.module);
-  readonly features = signal<Feature[]>([...this.initial.features]);
-  readonly limits = signal<Limit[]>([...this.initial.limits]);
+  readonly module = signal<OwnerModule>({
+    id: '',
+    name: '',
+    code: '',
+    description: '',
+    category: 'Core Business',
+    status: 'Enabled',
+    price: 0,
+    activeTenantsCount: 0,
+    lastUpdated: 'Just now',
+    includedInPlans: [],
+    featureIds: [],
+    icon: 'extension',
+  });
+  readonly features = signal<Feature[]>([]);
+  readonly limits = signal<Limit[]>([]);
 
-  readonly availablePlans = this.data.availablePlans;
-  readonly overrides = this.data.overrides;
-  readonly dependencies = this.data.dependencies;
-  readonly changeLogs = this.data.changeLogs;
+  readonly availablePlans: AvailablePlan[] = [];
+  readonly overrides: TenantOverride[] = [];
+  readonly changeLogs: ChangeLog[] = [];
 
-  loadModuleData(id: string): void {
-    const preset = this.data.getPreset(id);
-    this.module.set(preset.module);
-    this.features.set([...preset.features]);
-    this.limits.set([...preset.limits]);
+  async loadModuleData(id: string): Promise<void> {
+    this.loading.set(true);
+    this.loadError.set(null);
+    try {
+      const result = await this.data.loadModuleDetails(id);
+      this.module.set(result.module);
+      this.features.set(result.features);
+      this.limits.set([]);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to load module details';
+      this.loadError.set(message);
+    } finally {
+      this.loading.set(false);
+    }
   }
 }

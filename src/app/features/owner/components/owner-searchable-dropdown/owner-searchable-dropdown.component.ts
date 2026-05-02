@@ -25,6 +25,8 @@ export class OwnerSearchableDropdownComponent {
   readonly isOpen = input(false);
   readonly emptyStateText = input('No options found');
   readonly dropdownId = input('owner-dropdown-listbox');
+  readonly panelPosition = input<'bottom' | 'top'>('bottom');
+  readonly disabled = input(false);
 
   readonly toggled = output<void>();
   readonly closed = output<void>();
@@ -43,6 +45,9 @@ export class OwnerSearchableDropdownComponent {
   });
 
   onToggle(): void {
+    if (this.disabled()) {
+      return;
+    }
     this.toggled.emit();
   }
 
@@ -51,11 +56,17 @@ export class OwnerSearchableDropdownComponent {
   }
 
   onSearchInput(event: Event): void {
+    if (this.disabled()) {
+      return;
+    }
     const value = (event.target as HTMLInputElement).value;
     this.searchQueryChange.emit(value);
   }
 
   onSelect(option: string): void {
+    if (this.disabled()) {
+      return;
+    }
     this.optionSelected.emit(option);
   }
 }

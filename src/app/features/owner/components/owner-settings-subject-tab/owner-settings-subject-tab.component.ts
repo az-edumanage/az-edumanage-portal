@@ -11,6 +11,7 @@ import { SubjectTemplate } from '../../models/owner-settings.models';
 })
 export class OwnerSettingsSubjectTabComponent {
   readonly translate = input.required<(key: string) => string>();
+  readonly isRtl = input.required<boolean>();
   readonly subjectTemplates = input.required<SubjectTemplate[]>();
   readonly isFormOpen = input.required<boolean>();
   readonly editingTemplateId = input<number | null>(null);

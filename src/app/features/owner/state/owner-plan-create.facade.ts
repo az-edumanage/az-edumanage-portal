@@ -1,4 +1,5 @@
 import { Injectable, computed, inject } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import {
   AbstractControl,
   FormBuilder,
@@ -27,6 +28,7 @@ export class OwnerPlanCreateFacade {
   private readonly store = inject(OwnerPlanCreateStore);
 
   private isSuccess = false;
+  private subscriptionsInitialized = false;
 
   readonly isEditMode = this.store.isEditMode;
   readonly planId = this.store.planId;
@@ -41,7 +43,6 @@ export class OwnerPlanCreateFacade {
   readonly statuses = this.data.statuses.map((item) => item.name);
   readonly visibilities = this.data.visibilities;
   readonly currencies = this.data.currencies;
-  readonly existingPlans = this.data.existingPlans;
 
   readonly filteredStatuses = computed(() => {
     const query = this.statusSearchQuery().toLowerCase();
@@ -58,43 +59,56 @@ export class OwnerPlanCreateFacade {
     return this.currencies.filter((currency) => currency.label.toLowerCase().includes(query));
   });
 
+  readonly moduleOptions = this.store.moduleOptions;
+  readonly existingPlans = this.store.existingPlans;
+  readonly isSubmitting = this.store.isSubmitting;
+  readonly actionStatus = this.store.actionStatus;
+
   readonly planForm = this.fb.group({
     name: ['', [Validators.required, this.checkExistingPlanName()]],
     description: [''],
-    status: ['Active', Validators.required],
-    visibility: ['Public', Validators.required],
-    currency: ['USD', Validators.required],
-    monthlyPrice: [0, [Validators.required, Validators.min(0)]],
-    yearlyPrice: [0, [Validators.required, Validators.min(0)]],
-    hasTrial: [true],
-    trialDays: [14, [Validators.required, Validators.min(0)]],
-    maxStudents: [100, [Validators.required]],
-    maxTeachers: [10, [Validators.required]],
-    maxStorage: [5, [Validators.required]],
-    maxBranches: [1, [Validators.required]],
-    modules: this.fb.group({
-      academicStructure: [true],
-      studentsManagement: [true],
-      scheduling: [true],
-      usersManagement: [true],
-      auditLogs: [true],
-      examsAndGrades: [false],
-      finance: [false],
-      smsIntegration: [false],
-      advancedAnalytics: [false],
-      parentPortal: [false],
-      lms: [false],
-      questionBank: [false],
-    }),
-    autoRenew: [true],
+    status: ['', Validators.required],
+    visibility: ['', Validators.required],
+    currency: ['', Validators.required],
+    monthlyPrice: [null as number | null, [Validators.required, Validators.min(0)]],
+    yearlyPrice: [null as number | null, [Validators.required, Validators.min(0)]],
+    maxStudents: [null as number | null, [Validators.required, Validators.min(0)]],
+    maxTeachers: [null as number | null, [Validators.required, Validators.min(0)]],
+    maxStorage: [null as number | null, [Validators.required, Validators.min(0)]],
+    maxBranches: [null as number | null, [Validators.required, Validators.min(0)]],
+    moduleIds: this.fb.nonNullable.control<string[]>([], [Validators.required]),
+    autoRenew: [false],
     allowDowngrade: [false],
   });
 
-  initialize(planId: string | null): void {
+  async initialize(planId: string | null): Promise<void> {
     this.store.setPlanId(planId);
+    this.store.setActionStatus(null);
+    this.store.setSubmitting(false);
+    this.planForm.reset({
+      name: '',
+      description: '',
+      status: '',
+      visibility: '',
+      currency: '',
+      monthlyPrice: null,
+      yearlyPrice: null,
+      maxStudents: null,
+      maxTeachers: null,
+      maxStorage: null,
+      maxBranches: null,
+      moduleIds: [],
+      autoRenew: false,
+      allowDowngrade: false,
+    });
+    this.planForm.markAsPristine();
+    this.planForm.markAsUntouched();
+
+    this.store.existingPlans.set(await this.data.listPlans());
+    this.store.moduleOptions.set(await this.data.listModuleOptions());
 
     if (planId) {
-      const plan = this.data.getPlanById(planId);
+      const plan = await this.data.getPlanById(planId);
       if (plan) {
         this.planForm.patchValue(plan);
       }
@@ -105,13 +119,26 @@ export class OwnerPlanCreateFacade {
       this.planForm.patchValue(savedTask.data as Partial<OwnerPlanCreatePayload>);
       this.taskService.removeTask(this.store.effectiveTaskId());
     }
+
+    if (!this.subscriptionsInitialized) {
+      this.subscriptionsInitialized = true;
+
+      this.planForm.get('monthlyPrice')?.valueChanges.subscribe((monthlyPrice) => {
+        const yearlyControl = this.planForm.get('yearlyPrice');
+        if (!yearlyControl) return;
+        if (monthlyPrice === null || monthlyPrice === undefined) {
+          yearlyControl.setValue(null, { emitEvent: false });
+          return;
+        }
+        const monthly = Number(monthlyPrice);
+        yearlyControl.setValue(Number.isFinite(monthly) ? monthly * 12 : null, { emitEvent: false });
+      });
+    }
   }
 
   onDestroy(): void {
-    const value = this.planForm.getRawValue();
-    const hasData = value.name !== '' || value.description !== '';
-
-    if (hasData && !this.isSuccess) {
+    if (this.planForm.dirty && !this.isSuccess && !this.isSubmitting()) {
+      const value = this.planForm.getRawValue();
       this.taskService.addTask({
         id: this.store.effectiveTaskId(),
         type: 'form',
@@ -152,15 +179,66 @@ export class OwnerPlanCreateFacade {
       return;
     }
 
-    const payload = this.planForm.getRawValue() as OwnerPlanCreatePayload;
+    this.store.setSubmitting(true);
+    this.store.setActionStatus(null);
+
+    const value = this.planForm.getRawValue();
+    const payload: OwnerPlanCreatePayload = {
+      name: value.name ?? '',
+      description: value.description ?? '',
+      status: (value.status || 'Draft') as OwnerPlanStatus,
+      visibility: (value.visibility || 'Private') as OwnerPlanVisibility,
+      currency: (value.currency || 'USD') as OwnerPlanCurrency,
+      monthlyPrice: value.monthlyPrice ?? 0,
+      yearlyPrice: value.yearlyPrice ?? 0,
+      maxStudents: value.maxStudents ?? 0,
+      maxTeachers: value.maxTeachers ?? 0,
+      maxStorage: value.maxStorage ?? 0,
+      maxBranches: value.maxBranches ?? 0,
+      moduleIds: value.moduleIds ?? [],
+      autoRenew: value.autoRenew ?? false,
+      allowDowngrade: value.allowDowngrade ?? false,
+    };
     this.data
-      .createOrUpdatePlan(payload)
-      .pipe(finalize(() => void 0))
-      .subscribe(() => {
-        this.isSuccess = true;
-        this.taskService.removeTask(this.store.effectiveTaskId());
-        this.router.navigate(['/owner/plans']);
+      .createOrUpdatePlan(payload, this.planId())
+      .pipe(finalize(() => this.store.setSubmitting(false)))
+      .subscribe({
+        next: () => {
+          this.isSuccess = true;
+          this.taskService.removeTask(this.store.effectiveTaskId());
+          this.store.setActionStatus({
+            success: true,
+            message: this.isEditMode() ? 'Plan updated successfully.' : 'Plan created successfully.',
+          });
+        },
+        error: (error: unknown) => {
+          this.store.setActionStatus({
+            success: false,
+            message: this.extractErrorMessage(error),
+          });
+        },
       });
+  }
+
+  closeActionStatus(): void {
+    const status = this.actionStatus();
+    this.store.setActionStatus(null);
+    if (status?.success) {
+      this.router.navigate(['/owner/plans']);
+    }
+  }
+
+  isModuleSelected(moduleId: string): boolean {
+    return this.planForm.controls.moduleIds.value.includes(moduleId);
+  }
+
+  toggleModule(moduleId: string): void {
+    const current = this.planForm.controls.moduleIds.value;
+    if (current.includes(moduleId)) {
+      this.planForm.controls.moduleIds.setValue(current.filter((id) => id !== moduleId));
+      return;
+    }
+    this.planForm.controls.moduleIds.setValue([...current, moduleId]);
   }
 
   private checkExistingPlanName(): ValidatorFn {
@@ -169,12 +247,31 @@ export class OwnerPlanCreateFacade {
         return null;
       }
 
-      const duplicate = this.data.isPlanNameTaken(control.value, this.planId());
+      const duplicate = this.data.isPlanNameTaken(control.value, this.planId(), this.existingPlans());
       if (!duplicate) {
         return null;
       }
 
       return { alreadyExists: duplicate };
     };
+  }
+
+  private extractErrorMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      const body = error.error as { message?: string; details?: unknown };
+      if (body?.message) {
+        if (Array.isArray(body.details) && body.details.length > 0) {
+          return `${body.message}: ${body.details.join(', ')}`;
+        }
+        return body.message;
+      }
+      return `Request failed with status ${error.status}.`;
+    }
+
+    if (error instanceof Error) {
+      return error.message;
+    }
+
+    return 'Unexpected error while saving plan.';
   }
 }

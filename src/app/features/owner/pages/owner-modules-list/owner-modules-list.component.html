@@ -5,7 +5,7 @@
           <h2 class="owner-modules-title">Modules Management</h2>
           <p class="owner-modules-subtitle">Manage system modules and control availability across plans and tenants.</p>
         </div>
-        <button class="owner-modules-create">
+        <button routerLink="/owner/modules/create" class="owner-modules-create">
           <mat-icon class="text-sm">add</mat-icon>
           Create Module
         </button>
@@ -142,23 +142,69 @@
                 <span class="owner-modules-value owner-modules-value--primary">{{ module.activeTenantsCount }}</span>
               </div>
 
-              <div class="owner-modules-plans">
-                @for (plan of module.includedInPlans; track plan) {
-                  <span class="owner-modules-plan-chip">
-                    {{ plan }}
-                  </span>
-                }
+              <div class="owner-modules-stat-row">
+                <span class="owner-modules-label">Price</span>
+                <span class="owner-modules-value owner-modules-value--primary">{{ module.price | number:'1.0-2' }}</span>
               </div>
             </div>
 
             <div class="owner-modules-footer">
               <span class="owner-modules-updated">Updated {{ module.lastUpdated }}</span>
-              <button [routerLink]="['/owner/modules', module.id]" class="owner-modules-view-link">
-                View Details
-              </button>
+              <div class="owner-modules-actions">
+                <button type="button" class="owner-modules-action-btn owner-modules-action-btn--neutral" (click)="openEdit(module)">
+                  Edit
+                </button>
+                <button type="button" class="owner-modules-action-btn owner-modules-action-btn--danger" (click)="openDeleteConfirm(module)">
+                  Delete
+                </button>
+                <button [routerLink]="['/owner/modules', module.id]" class="owner-modules-view-link">
+                  View Details
+                </button>
+              </div>
             </div>
           </div>
         }
       </div>
 </div>
-  
+
+@if (pendingDeleteModule) {
+  <div class="owner-modules-modal-backdrop">
+    <div class="owner-modules-modal-card">
+      <div class="owner-modules-modal-header">
+        <h3>Confirm Delete</h3>
+      </div>
+      <div class="owner-modules-modal-body">
+        <p>Are you sure you want to delete <strong>{{ pendingDeleteModule.name }}</strong>?</p>
+        @if (deleting) {
+          <p>Deleting module, please wait...</p>
+        }
+      </div>
+      <div class="owner-modules-modal-footer">
+        <button type="button" class="owner-modules-action-btn owner-modules-action-btn--neutral" (click)="closeDeleteConfirm()" [disabled]="deleting">
+          Cancel
+        </button>
+        <button type="button" class="owner-modules-action-btn owner-modules-action-btn--danger" (click)="confirmDelete()" [disabled]="deleting">
+          {{ deleting ? 'Deleting...' : 'Confirm Delete' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (actionStatus) {
+  <div class="owner-modules-modal-backdrop">
+    <div class="owner-modules-modal-card">
+      <div class="owner-modules-modal-header">
+        <h3>{{ actionStatus.success ? 'Success' : 'Delete Failed' }}</h3>
+      </div>
+      <div class="owner-modules-modal-body">
+        <p>{{ actionStatus.message }}</p>
+      </div>
+      <div class="owner-modules-modal-footer">
+        <button type="button" class="owner-modules-action-btn owner-modules-action-btn--primary" (click)="closeActionStatus()">
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+}

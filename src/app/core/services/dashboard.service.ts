@@ -55,13 +55,17 @@ export class DashboardService {
     this.sidebarCollapsed.update(v => !v);
   }
 
-  setRole(role: UserRole) {
+  setRole(role: UserRole, navigate = true) {
     this.currentRole.set(role);
     if (role === 'tenant') {
       this.syncTenantThemeFromStorage();
     }
     this.applyTheme();
-    
+
+    if (!navigate) {
+      return;
+    }
+
     if (role === 'owner') {
       const backUrl = this.returnUrl();
       if (backUrl) {

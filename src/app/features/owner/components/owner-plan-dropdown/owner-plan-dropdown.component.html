@@ -9,7 +9,7 @@
   (keydown.enter)="onToggle()"
 >
   <span [class.text-slate-500]="!selectedPlanId()">
-    {{ selectedPlanName() || 'Select plan' }}
+    {{ selectedPlanName() || 'Select subscription template' }}
   </span>
   <mat-icon class="text-slate-500">arrow_drop_down</mat-icon>
 </div>
@@ -31,7 +31,7 @@
         <input
           type="text"
           [value]="searchQuery()"
-          placeholder="Search plans..."
+          placeholder="Search subscription templates..."
           class="w-full pl-8 pr-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
           (input)="onSearchInput($event)"
           (click)="$event.stopPropagation()"
