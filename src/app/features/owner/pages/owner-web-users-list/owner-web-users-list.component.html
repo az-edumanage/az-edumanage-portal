@@ -133,6 +133,15 @@
                   <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ user.lastLogin }}</td>
                   <td class="px-6 py-4 text-right">
                     <div class="owner-users-actions relative flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
+                      @if (!user.tenantId) {
+                        <button
+                          type="button"
+                          class="owner-users-icon-btn p-1.5 text-slate-500 hover:text-emerald-600 hover:bg-emerald-600/10 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
+                          title="Assign To"
+                        >
+                          <mat-icon class="text-sm">assignment_ind</mat-icon>
+                        </button>
+                      }
                       <button
                         type="button"
                         class="owner-users-icon-btn p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
