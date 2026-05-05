@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { OwnerUsersListFacade } from '../../state/owner-users-list.facade';
@@ -19,6 +19,8 @@ export class OwnerWebUsersListComponent implements OnInit {
   private readonly facade = inject(OwnerUsersListFacade);
   private readonly tenantsData = inject(OwnerTenantsDataService);
   private readonly usersData = inject(OwnerUsersDataService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly filter = this.facade.filter;
   readonly webUsers = computed(() =>
@@ -49,6 +51,11 @@ export class OwnerWebUsersListComponent implements OnInit {
   });
 
   async ngOnInit(): Promise<void> {
+    const searchFromQuery = (this.route.snapshot.queryParamMap.get('search') ?? '').trim();
+    if (searchFromQuery) {
+      this.searchTerm.set(searchFromQuery);
+    }
+
     this.loading.set(true);
     this.loadError.set(null);
     try {
@@ -108,6 +115,17 @@ export class OwnerWebUsersListComponent implements OnInit {
   setUserStatus(user: PlatformUser, status: UserStatus): void {
     this.usersData.updateUserStatus(user.id, status);
     this.closeStatusMenu();
+  }
+
+  assignToTenant(user: PlatformUser): void {
+    void this.router.navigate(['/owner/tenants/create'], {
+      queryParams: {
+        contactName: user.fullName || '',
+        contactEmail: user.email || '',
+        source: 'web-users',
+        returnSearch: this.searchTerm().trim(),
+      },
+    });
   }
 
   private matchesSearch(user: PlatformUser, query: string): boolean {
