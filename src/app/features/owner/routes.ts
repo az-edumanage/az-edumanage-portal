@@ -28,6 +28,7 @@ import { OwnerIntegrationsListComponent } from './pages/owner-integrations-list/
 import { OwnerIntegrationDetailsComponent } from './pages/owner-integration-details/owner-integration-details.component';
 import { OwnerMonitoringComponent } from './pages/owner-monitoring/owner-monitoring.component';
 import { OwnerUsersListComponent } from './pages/owner-users-list/owner-users-list.component';
+import { OwnerWebUsersListComponent } from './pages/owner-web-users-list/owner-web-users-list.component';
 import { OwnerUserFormComponent } from './pages/owner-user-form/owner-user-form.component';
 import { OwnerSecurityComponent } from './pages/owner-security/owner-security.component';
 import { OwnerAuditLogsComponent } from './pages/owner-audit-logs/owner-audit-logs.component';
@@ -91,6 +92,7 @@ export const OWNER_ROUTES: Routes = [
   { path: 'integrations', component: OwnerIntegrationsListComponent },
   { path: 'integrations/:id', component: OwnerIntegrationDetailsComponent },
   { path: 'monitoring', component: OwnerMonitoringComponent },
+  { path: 'web-users', component: OwnerWebUsersListComponent },
   { path: 'users', component: OwnerUsersListComponent },
   { path: 'users/create', component: OwnerUserFormComponent },
   { path: 'users/roles', component: OwnerRolesListComponent },

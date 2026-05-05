@@ -21,6 +21,8 @@ export const EN_TRANSLATIONS = {
   'sidebar.section.development': 'Development',
   'sidebar.item.dashboard': 'Dashboard',
   'sidebar.item.tenants': 'Tenants',
+  'sidebar.item.webUsers': 'Web User',
+  'sidebar.item.platformTenant': 'Platform Tenant',
   'sidebar.item.plans': 'Plans',
   'sidebar.item.subscriptions': 'Subscriptions',
   'sidebar.item.viewSubscriptions': 'View Subscriptions',

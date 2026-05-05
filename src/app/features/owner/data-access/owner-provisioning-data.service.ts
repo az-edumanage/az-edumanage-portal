@@ -50,4 +50,31 @@ export class OwnerProvisioningDataService {
       duration: '3m 12s',
     },
   ]);
+
+  addProvisioningJob(payload: {
+    tenantName: string;
+    plan: string;
+    triggeredBy?: 'System' | 'Admin';
+    status?: ProvisioningJob['status'];
+    duration?: string;
+  }): ProvisioningJob {
+    const job: ProvisioningJob = {
+      id: `job-${Date.now()}`,
+      tenantName: payload.tenantName.trim(),
+      plan: payload.plan.trim(),
+      triggeredBy: payload.triggeredBy ?? 'System',
+      createdDate: new Date().toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      status: payload.status ?? 'Completed',
+      duration: payload.duration ?? '2m 00s',
+    };
+
+    this.jobs.update((allJobs) => [job, ...allJobs]);
+    return job;
+  }
 }

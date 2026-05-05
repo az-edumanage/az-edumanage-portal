@@ -24,4 +24,17 @@ export class OwnerPlansListFacade {
     const nextStatus: 'Active' | 'Archived' = plan.status === 'Active' ? 'Archived' : 'Active';
     await this.data.setPlanStatus(plan.id, nextStatus);
   }
+
+  async toggleWebsiteAvailability(plan: Plan): Promise<void> {
+    const nextVisibility: 'Public' | 'Private' = plan.visibility === 'Public' ? 'Private' : 'Public';
+    await this.data.setPlanVisibility(plan.id, nextVisibility);
+  }
+
+  async toggleRecommended(plan: Plan): Promise<void> {
+    await this.data.setPlanRecommended(plan.id, !plan.isRecommended);
+  }
+
+  async toggleShowAnnualPrice(plan: Plan): Promise<void> {
+    await this.data.setPlanShowAnnualPrice(plan.id, !plan.showAnnualPrice);
+  }
 }

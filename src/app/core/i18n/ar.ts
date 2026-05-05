@@ -43,6 +43,8 @@ export const AR_TRANSLATIONS: Record<I18nKey, string> = {
   'sidebar.section.development': 'التطوير',
   'sidebar.item.dashboard': 'لوحة التحكم',
   'sidebar.item.tenants': 'المراكز',
+  'sidebar.item.webUsers': 'مستخدمو الويب',
+  'sidebar.item.platformTenant': 'مركز المنصة',
   'sidebar.item.plans': 'الخطط',
   'sidebar.item.subscriptions': 'الاشتراكات',
   'sidebar.item.viewSubscriptions': 'عرض الاشتراكات',

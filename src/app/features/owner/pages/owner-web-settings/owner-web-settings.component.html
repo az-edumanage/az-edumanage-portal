@@ -24,6 +24,7 @@
         <span class="owner-web-meta-sep">•</span>
         <span>{{ healthMessage() }}</span>
       </p>
+      <p class="owner-web-meta-status">Tip: double-click any input field to open rich editor.</p>
     </div>
 
     <div class="flex gap-2 flex-wrap justify-end">
@@ -63,6 +64,12 @@
     <div class="owner-web-card p-8 text-sm text-slate-500">Loading website settings...</div>
   } @else {
     <form [formGroup]="form" class="space-y-6" (ngSubmit)="$event.preventDefault()">
+      <datalist id="owner-integration-icon-options">
+        @for (iconName of integrationIconOptions; track iconName) {
+          <option [value]="iconName"></option>
+        }
+      </datalist>
+
       <div class="owner-web-tabs">
         @for (section of sections; track section.key) {
           <button
@@ -107,6 +114,14 @@
           <label class="owner-web-field"><span>Badge</span><input formControlName="badgeText" class="owner-web-input" /></label>
           <label class="owner-web-field"><span>Title *</span><input formControlName="titleText" class="owner-web-input" /></label>
           <label class="owner-web-field md:col-span-2"><span>Description</span><textarea formControlName="descriptionText" class="owner-web-textarea"></textarea></label>
+          <label class="owner-web-field md:col-span-2">
+            <span>Hero Background Image URL</span>
+            <input formControlName="backgroundImageUrl" class="owner-web-input" placeholder="https://... or data:image/..." />
+          </label>
+          <label class="owner-web-field md:col-span-2">
+            <span>Upload Hero Background (local file)</span>
+            <input type="file" accept="image/*" class="owner-web-input" (change)="onHeroBackgroundFileSelected($event)" />
+          </label>
           <label class="owner-web-field"><span>Primary CTA Label</span><input formControlName="primaryCtaLabel" class="owner-web-input" /></label>
           <label class="owner-web-field"><span>Primary CTA Link</span><input formControlName="primaryCtaLink" class="owner-web-input" /></label>
           <label class="owner-web-field"><span>Secondary CTA Label</span><input formControlName="secondaryCtaLabel" class="owner-web-input" /></label>
@@ -136,6 +151,7 @@
               <input formControlName="label" class="owner-web-input" placeholder="Label" />
               <input formControlName="routePath" class="owner-web-input" placeholder="Path" />
               <input formControlName="linkType" class="owner-web-input" placeholder="Type" />
+              <input type="number" min="1" step="1" formControlName="displayOrder" class="owner-web-input" placeholder="Display order" />
               <label class="owner-web-check"><input type="checkbox" formControlName="visible" /> Visible</label>
               <button type="button" (click)="removeNavLink($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button>
             </div>
@@ -149,10 +165,21 @@
           @for (row of features.controls; track $index) {
             <div [formGroupName]="$index" class="owner-web-feature-block">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <input formControlName="iconKey" class="owner-web-input" placeholder="Icon" />
-                <input formControlName="titleText" class="owner-web-input" placeholder="Title" />
+                <div class="owner-web-icon-picker">
+                  <mat-icon>{{ featureIconControlAt($index).value || 'help' }}</mat-icon>
+                  <input
+                    [formControl]="featureIconControlAt($index)"
+                    class="owner-web-input"
+                    list="owner-integration-icon-options"
+                    placeholder="Search icon name (mail, hub, security...)"
+                  />
+                </div>
+                <input formControlName="titleText" class="owner-web-input" placeholder="Title" data-feature-title="true" [attr.data-feature-index]="$index" />
+                <input type="number" min="1" max="96" step="1" formControlName="titleFontSize" class="owner-web-input" placeholder="Title font size (px)" />
                 <textarea formControlName="descriptionText" class="owner-web-textarea md:col-span-2" placeholder="Description"></textarea>
+                <input type="number" min="1" max="96" step="1" formControlName="descriptionFontSize" class="owner-web-input" placeholder="Description font size (px)" />
                 <input formControlName="ctaLabel" class="owner-web-input" placeholder="CTA label" />
+                <input type="number" min="1" max="96" step="1" formControlName="ctaFontSize" class="owner-web-input" placeholder="Learn more font size (px)" />
                 <input formControlName="ctaLink" class="owner-web-input" placeholder="CTA link" />
               </div>
               <div class="flex justify-end"><button type="button" (click)="removeFeature($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button></div>
@@ -243,15 +270,15 @@
                 <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommand('bold')"><b>B</b></button>
                 <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommand('italic')"><i>I</i></button>
                 <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommand('underline')"><u>U</u></button>
-                <select class="owner-web-input owner-web-font-size" (mousedown)="$event.preventDefault()" (change)="onPromoFontSizePick($event)">
+                <select class="owner-web-input owner-web-font-size" (change)="onPromoFontSizePick($event)">
                   <option value="">Font size</option>
-                  <option value="1">XS</option>
-                  <option value="2">S</option>
-                  <option value="3">M</option>
-                  <option value="4">L</option>
-                  <option value="5">XL</option>
-                  <option value="6">2XL</option>
-                  <option value="7">3XL</option>
+                  <option value="12px">XS</option>
+                  <option value="14px">S</option>
+                  <option value="16px">M</option>
+                  <option value="18px">L</option>
+                  <option value="22px">XL</option>
+                  <option value="28px">2XL</option>
+                  <option value="34px">3XL</option>
                 </select>
                 <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoBlockquote()">Quote</button>
                 <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoParagraph()">Paragraph</button>
@@ -266,6 +293,8 @@
                 class="owner-web-rich-editor"
                 contenteditable="true"
                 [innerHTML]="promoEditorHtml()"
+                (mouseup)="capturePromoSelection()"
+                (keyup)="capturePromoSelection()"
                 (input)="onPromoEditorInput($event)">
               </div>
               <textarea formControlName="text" class="owner-web-hidden-textarea" aria-hidden="true"></textarea>
@@ -296,11 +325,6 @@
 
         <div formGroupName="integrations" class="space-y-3">
           <h4 class="owner-web-section-title">Integrations</h4>
-          <datalist id="owner-integration-icon-options">
-            @for (iconName of integrationIconOptions; track iconName) {
-              <option [value]="iconName"></option>
-            }
-          </datalist>
           <div class="grid grid-cols-1 gap-3">
             <input formControlName="title" class="owner-web-input" placeholder="Section title" />
             <textarea formControlName="description" class="owner-web-textarea" placeholder="Section description"></textarea>
@@ -351,6 +375,24 @@
             <textarea formControlName="description" class="owner-web-textarea md:col-span-2" placeholder="Contact description"></textarea>
             <input formControlName="hqLabel" class="owner-web-input" placeholder="HQ label" />
             <input formControlName="hqValue" class="owner-web-input" placeholder="HQ value" />
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <h4 class="owner-web-section-title">Feature View Video</h4>
+          <div class="grid grid-cols-1 gap-3">
+            <input
+              formControlName="docsVideoUrl"
+              class="owner-web-input"
+              placeholder="Video URL (YouTube embed or direct mp4 URL)"
+            />
+            <div class="flex items-center gap-3">
+              <label class="owner-web-mini-btn cursor-pointer">
+                Upload from device
+                <input type="file" accept="video/*" class="hidden" (change)="onDocsVideoFileSelected($event)" />
+              </label>
+              <span class="text-xs text-slate-500">Local upload stores a data URL in this field.</span>
+            </div>
           </div>
         </div>
       </div>
@@ -461,15 +503,15 @@
             <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyFocusedFieldCommand('bold')"><b>B</b></button>
             <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyFocusedFieldCommand('italic')"><i>I</i></button>
             <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyFocusedFieldCommand('underline')"><u>U</u></button>
-            <select class="owner-web-input owner-web-font-size" (mousedown)="$event.preventDefault()" (change)="onFocusedFieldFontSizePick($event)">
+            <select class="owner-web-input owner-web-font-size" [value]="focusedFieldFontSize()" (change)="onFocusedFieldFontSizePick($event)">
               <option value="">Font size</option>
-              <option value="1">XS</option>
-              <option value="2">S</option>
-              <option value="3">M</option>
-              <option value="4">L</option>
-              <option value="5">XL</option>
-              <option value="6">2XL</option>
-              <option value="7">3XL</option>
+              <option value="12px">XS</option>
+              <option value="14px">S</option>
+              <option value="16px">M</option>
+              <option value="18px">L</option>
+              <option value="22px">XL</option>
+              <option value="28px">2XL</option>
+              <option value="34px">3XL</option>
             </select>
             <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyFocusedFieldCommand('formatBlock', 'blockquote')">Quote</button>
             <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyFocusedFieldCommand('formatBlock', 'p')">Paragraph</button>
@@ -484,6 +526,8 @@
             class="owner-web-rich-editor"
             contenteditable="true"
             [innerHTML]="focusedFieldRichHtml()"
+            (mouseup)="captureFocusedEditorSelection()"
+            (keyup)="captureFocusedEditorSelection()"
             (input)="onFocusedFieldEditorInput($event)">
           </div>
         </div>

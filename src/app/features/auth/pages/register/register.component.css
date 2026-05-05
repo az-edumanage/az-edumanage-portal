@@ -1,0 +1,54 @@
+:host {
+  display: block;
+}
+
+.auth-input {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(203 213 225);
+  background: white;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: rgb(15 23 42);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-input:focus {
+  border-color: rgb(6 182 212);
+  box-shadow: 0 0 0 3px rgb(165 243 252);
+}
+
+.auth-primary-btn {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  background: rgb(15 23 42);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+}
+
+.auth-primary-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.auth-secondary-btn {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(203 213 225);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgb(51 65 85);
+}
+

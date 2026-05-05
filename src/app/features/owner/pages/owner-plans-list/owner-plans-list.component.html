@@ -51,6 +51,9 @@
 
               <div class="owner-plans-card-title-wrap relative z-10 pointer-events-none">
                 <h3 class="owner-plans-card-title text-xl font-bold text-slate-900 dark:text-white mb-1 group-hover:text-indigo-600 transition-colors">{{ plan.name }}</h3>
+                @if (plan.isRecommended) {
+                  <span class="inline-flex mt-1 mb-2 px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">Recommended</span>
+                }
                 <div class="owner-plans-price flex items-baseline gap-1">
                   <span class="text-2xl font-bold text-slate-900 dark:text-white">{{ plan.currency }}{{ plan.monthlyPrice }}</span>
                   <span class="text-sm text-slate-500">/mo</span>
@@ -86,6 +89,57 @@
                   <mat-icon class="text-slate-500 text-sm">visibility</mat-icon> Visibility
                 </span>
                 <span class="font-medium text-slate-900 dark:text-white">{{ plan.visibility }}</span>
+              </div>
+              <div class="owner-plans-limit-row flex items-center justify-between text-sm">
+                <span class="owner-plans-limit-label text-slate-500 dark:text-slate-500 flex items-center gap-2">
+                  <mat-icon class="text-slate-500 text-sm">public</mat-icon> Available on Website
+                </span>
+                <label
+                  class="owner-plans-toggle relative inline-flex items-center cursor-pointer z-20"
+                  [title]="plan.visibility === 'Public' ? 'Hide from website pricing' : 'Show on website pricing'"
+                  (click)="$event.stopPropagation()">
+                  <input
+                    type="checkbox"
+                    [checked]="plan.visibility === 'Public'"
+                    (click)="$event.stopPropagation()"
+                    (change)="toggleWebsiteAvailability(plan)"
+                    class="sr-only peer">
+                  <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-indigo-500"></div>
+                </label>
+              </div>
+              <div class="owner-plans-limit-row flex items-center justify-between text-sm">
+                <span class="owner-plans-limit-label text-slate-500 dark:text-slate-500 flex items-center gap-2">
+                  <mat-icon class="text-slate-500 text-sm">workspace_premium</mat-icon> Recommended Plan
+                </span>
+                <label
+                  class="owner-plans-toggle relative inline-flex items-center cursor-pointer z-20"
+                  title="Mark as recommended on public pricing"
+                  (click)="$event.stopPropagation()">
+                  <input
+                    type="checkbox"
+                    [checked]="plan.isRecommended"
+                    (click)="$event.stopPropagation()"
+                    (change)="toggleRecommended(plan)"
+                    class="sr-only peer">
+                  <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-500"></div>
+                </label>
+              </div>
+              <div class="owner-plans-limit-row flex items-center justify-between text-sm">
+                <span class="owner-plans-limit-label text-slate-500 dark:text-slate-500 flex items-center gap-2">
+                  <mat-icon class="text-slate-500 text-sm">calendar_month</mat-icon> Show Annual Price
+                </span>
+                <label
+                  class="owner-plans-toggle relative inline-flex items-center cursor-pointer z-20"
+                  title="Allow this plan to show annual billing on website"
+                  (click)="$event.stopPropagation()">
+                  <input
+                    type="checkbox"
+                    [checked]="plan.showAnnualPrice"
+                    (click)="$event.stopPropagation()"
+                    (change)="toggleShowAnnualPrice(plan)"
+                    class="sr-only peer">
+                  <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500"></div>
+                </label>
               </div>
             </a>
 

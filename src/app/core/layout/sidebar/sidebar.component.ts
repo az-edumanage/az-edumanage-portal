@@ -104,7 +104,14 @@ export class SidebarComponent {
             titleKey: 'sidebar.section.businessCore',
             items: [
               { labelKey: 'sidebar.item.dashboard', icon: 'dashboard', route: '/owner/overview' },
-              { labelKey: 'sidebar.item.tenants', icon: 'business', route: '/owner/tenants' },
+              {
+                labelKey: 'sidebar.item.tenants',
+                icon: 'business',
+                children: [
+                  { labelKey: 'sidebar.item.webUsers', icon: '', route: '/owner/web-users' },
+                  { labelKey: 'sidebar.item.platformTenant', icon: '', route: '/owner/tenants' },
+                ],
+              },
               { labelKey: 'sidebar.item.plans', icon: 'layers', route: '/owner/plans' },
               { 
                 labelKey: 'sidebar.item.subscriptions', 

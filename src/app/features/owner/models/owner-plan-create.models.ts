@@ -30,6 +30,8 @@ export interface OwnerPlanCreatePayload {
   currency: OwnerPlanCurrency;
   monthlyPrice: number;
   yearlyPrice: number;
+  hasTrial: boolean;
+  trialDays: number;
   maxStudents: number;
   maxTeachers: number;
   maxStorage: number;
@@ -37,6 +39,8 @@ export interface OwnerPlanCreatePayload {
   moduleIds: string[];
   autoRenew: boolean;
   allowDowngrade: boolean;
+  isRecommended: boolean;
+  showAnnualPrice: boolean;
 }
 
 export interface OwnerPlanEditSeed extends OwnerPlanCreatePayload {

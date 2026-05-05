@@ -77,4 +77,28 @@ export class OwnerTenantsDataService {
       all.map((tenant) => (tenant.id === tenantId ? { ...tenant, plan } : tenant)),
     );
   }
+
+  addTrialTenant(payload: {
+    name: string;
+    fullName: string;
+    phoneNumber: string;
+    ownerEmail: string;
+    plan?: string;
+  }): Tenant {
+    const tenant: Tenant = {
+      id: `tnt_${Date.now()}`,
+      name: payload.name.trim(),
+      fullName: payload.fullName.trim(),
+      phoneNumber: payload.phoneNumber.trim(),
+      status: 'Trial',
+      plan: payload.plan?.trim() || 'Trial Plan',
+      createdDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      ownerEmail: payload.ownerEmail.trim().toLowerCase(),
+      healthStatus: 'Healthy',
+      tenantType: 'Educational Center',
+    };
+
+    this.tenants.update((all) => [tenant, ...all]);
+    return tenant;
+  }
 }

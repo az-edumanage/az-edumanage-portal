@@ -26,6 +26,18 @@
         </div>
 
         <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5" novalidate>
+          @if (oauthProcessing()) {
+            <p class="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm text-cyan-700 dark:border-cyan-900/50 dark:bg-cyan-950/30 dark:text-cyan-300">
+              Completing social login...
+            </p>
+          }
+
+          @if (infoMessage()) {
+            <p class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300">
+              {{ infoMessage() }}
+            </p>
+          }
+
           <div class="space-y-2">
             <label for="username" class="text-sm font-medium text-slate-700 dark:text-slate-300">Username</label>
             <input
@@ -67,7 +79,7 @@
           <button
             type="submit"
             class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400"
-            [disabled]="submitting()"
+            [disabled]="submitting() || oauthProcessing()"
           >
             <mat-icon class="text-[20px]">{{ submitting() ? 'hourglass_top' : 'login' }}</mat-icon>
             {{ submitting() ? 'Signing in...' : 'Sign in' }}
@@ -81,6 +93,42 @@
         >
           Continue with demo data
         </button>
+
+        <div class="mt-4 grid gap-3">
+          <button
+            type="button"
+            (click)="signInWithGoogle()"
+            class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            [disabled]="oauthProcessing()"
+          >
+            <mat-icon class="text-[20px]">public</mat-icon>
+            Continue with Google
+          </button>
+          <button
+            type="button"
+            (click)="signInWithMicrosoft()"
+            class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            [disabled]="oauthProcessing()"
+          >
+            <mat-icon class="text-[20px]">business</mat-icon>
+            Continue with Microsoft
+          </button>
+        </div>
+
+        <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <a
+            routerLink="/register"
+            class="inline-flex items-center justify-center rounded-xl border border-cyan-400/40 px-4 py-3 text-sm font-semibold text-cyan-700 transition hover:bg-cyan-50 dark:text-cyan-300 dark:hover:bg-cyan-950/30"
+          >
+            Register
+          </a>
+          <a
+            routerLink="/free-trial"
+            class="inline-flex items-center justify-center rounded-xl bg-cyan-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-cyan-500"
+          >
+            Free Trial
+          </a>
+        </div>
       </div>
     </section>
   </div>

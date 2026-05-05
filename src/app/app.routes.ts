@@ -21,6 +21,16 @@ export const routes: Routes = [
       import('./features/auth/pages/login/login.component').then((m) => m.LoginComponent),
   },
   {
+    path: 'register',
+    loadComponent: () =>
+      import('./features/auth/pages/register/register.component').then((m) => m.RegisterComponent),
+  },
+  {
+    path: 'free-trial',
+    loadComponent: () =>
+      import('./features/auth/pages/register/register.component').then((m) => m.RegisterComponent),
+  },
+  {
     path: '',
     component: MainLayoutComponent,
     children: [

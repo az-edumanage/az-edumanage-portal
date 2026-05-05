@@ -32,6 +32,8 @@ interface PlanResponse {
   moduleIds: string[];
   autoRenew: boolean;
   allowDowngrade: boolean;
+  isRecommended?: boolean;
+  showAnnualPrice?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -82,6 +84,8 @@ export class OwnerPlanCreateDataService {
         currency: plan.currency,
         monthlyPrice: plan.monthlyPrice,
         yearlyPrice: plan.yearlyPrice,
+        hasTrial: !!plan.hasTrial,
+        trialDays: plan.hasTrial ? (plan.trialDays ?? 14) : 0,
         maxStudents: plan.maxStudents,
         maxTeachers: plan.maxTeachers,
         maxStorage: plan.maxStorage,
@@ -89,6 +93,8 @@ export class OwnerPlanCreateDataService {
         moduleIds: plan.moduleIds,
         autoRenew: plan.autoRenew,
         allowDowngrade: plan.allowDowngrade,
+        isRecommended: !!plan.isRecommended,
+        showAnnualPrice: !!plan.showAnnualPrice,
       };
     } catch {
       return null;

@@ -27,6 +27,8 @@ type PlanResponse = {
   moduleIds?: string[];
   autoRenew?: boolean;
   allowDowngrade?: boolean;
+  isRecommended?: boolean;
+  showAnnualPrice?: boolean;
 };
 
 @Injectable({ providedIn: 'root' })
@@ -55,6 +57,8 @@ export class OwnerPlansDataService {
       maxStorage: plan.maxStorage,
       trialDays: plan.trialDays,
       visibility: plan.visibility,
+      isRecommended: !!plan.isRecommended,
+      showAnnualPrice: !!plan.showAnnualPrice,
     })));
   }
 
@@ -82,6 +86,104 @@ export class OwnerPlansDataService {
         moduleIds: existing.moduleIds ?? [],
         autoRenew: existing.autoRenew ?? false,
         allowDowngrade: existing.allowDowngrade ?? false,
+        isRecommended: existing.isRecommended ?? false,
+        showAnnualPrice: existing.showAnnualPrice ?? false,
+      })
+    );
+
+    await this.refreshPlans();
+  }
+
+  async setPlanVisibility(planId: string, visibility: PlanVisibility): Promise<void> {
+    await this.authApi.ensureLoggedIn();
+    const existing = await firstValueFrom(
+      this.http.get<PlanResponse>(`${environment.apiBaseUrl}/plan-catalog/plans/${planId}`)
+    );
+
+    await firstValueFrom(
+      this.http.put(`${environment.apiBaseUrl}/plan-catalog/plans/${planId}`, {
+        name: existing.name,
+        description: existing.description ?? '',
+        status: existing.status,
+        visibility,
+        currency: existing.currency,
+        monthlyPrice: existing.monthlyPrice,
+        yearlyPrice: existing.yearlyPrice,
+        hasTrial: existing.hasTrial ?? false,
+        trialDays: existing.trialDays,
+        maxStudents: existing.maxStudents,
+        maxTeachers: existing.maxTeachers ?? 0,
+        maxStorage: existing.maxStorage,
+        maxBranches: existing.maxBranches ?? 0,
+        moduleIds: existing.moduleIds ?? [],
+        autoRenew: existing.autoRenew ?? false,
+        allowDowngrade: existing.allowDowngrade ?? false,
+        isRecommended: existing.isRecommended ?? false,
+        showAnnualPrice: existing.showAnnualPrice ?? false,
+      })
+    );
+
+    await this.refreshPlans();
+  }
+
+  async setPlanRecommended(planId: string, isRecommended: boolean): Promise<void> {
+    await this.authApi.ensureLoggedIn();
+    const existing = await firstValueFrom(
+      this.http.get<PlanResponse>(`${environment.apiBaseUrl}/plan-catalog/plans/${planId}`)
+    );
+
+    await firstValueFrom(
+      this.http.put(`${environment.apiBaseUrl}/plan-catalog/plans/${planId}`, {
+        name: existing.name,
+        description: existing.description ?? '',
+        status: existing.status,
+        visibility: existing.visibility,
+        currency: existing.currency,
+        monthlyPrice: existing.monthlyPrice,
+        yearlyPrice: existing.yearlyPrice,
+        hasTrial: existing.hasTrial ?? false,
+        trialDays: existing.trialDays,
+        maxStudents: existing.maxStudents,
+        maxTeachers: existing.maxTeachers ?? 0,
+        maxStorage: existing.maxStorage,
+        maxBranches: existing.maxBranches ?? 0,
+        moduleIds: existing.moduleIds ?? [],
+        autoRenew: existing.autoRenew ?? false,
+        allowDowngrade: existing.allowDowngrade ?? false,
+        isRecommended,
+        showAnnualPrice: existing.showAnnualPrice ?? false,
+      })
+    );
+
+    await this.refreshPlans();
+  }
+
+  async setPlanShowAnnualPrice(planId: string, showAnnualPrice: boolean): Promise<void> {
+    await this.authApi.ensureLoggedIn();
+    const existing = await firstValueFrom(
+      this.http.get<PlanResponse>(`${environment.apiBaseUrl}/plan-catalog/plans/${planId}`)
+    );
+
+    await firstValueFrom(
+      this.http.put(`${environment.apiBaseUrl}/plan-catalog/plans/${planId}`, {
+        name: existing.name,
+        description: existing.description ?? '',
+        status: existing.status,
+        visibility: existing.visibility,
+        currency: existing.currency,
+        monthlyPrice: existing.monthlyPrice,
+        yearlyPrice: existing.yearlyPrice,
+        hasTrial: existing.hasTrial ?? false,
+        trialDays: existing.trialDays,
+        maxStudents: existing.maxStudents,
+        maxTeachers: existing.maxTeachers ?? 0,
+        maxStorage: existing.maxStorage,
+        maxBranches: existing.maxBranches ?? 0,
+        moduleIds: existing.moduleIds ?? [],
+        autoRenew: existing.autoRenew ?? false,
+        allowDowngrade: existing.allowDowngrade ?? false,
+        isRecommended: existing.isRecommended ?? false,
+        showAnnualPrice,
       })
     );
 

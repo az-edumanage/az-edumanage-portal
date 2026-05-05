@@ -72,6 +72,8 @@ export class OwnerPlanCreateFacade {
     currency: ['', Validators.required],
     monthlyPrice: [null as number | null, [Validators.required, Validators.min(0)]],
     yearlyPrice: [null as number | null, [Validators.required, Validators.min(0)]],
+    hasTrial: [false],
+    trialDays: [{ value: null as number | null, disabled: true }],
     maxStudents: [null as number | null, [Validators.required, Validators.min(0)]],
     maxTeachers: [null as number | null, [Validators.required, Validators.min(0)]],
     maxStorage: [null as number | null, [Validators.required, Validators.min(0)]],
@@ -79,6 +81,8 @@ export class OwnerPlanCreateFacade {
     moduleIds: this.fb.nonNullable.control<string[]>([], [Validators.required]),
     autoRenew: [false],
     allowDowngrade: [false],
+    isRecommended: [false],
+    showAnnualPrice: [false],
   });
 
   async initialize(planId: string | null): Promise<void> {
@@ -93,6 +97,8 @@ export class OwnerPlanCreateFacade {
       currency: '',
       monthlyPrice: null,
       yearlyPrice: null,
+      hasTrial: false,
+      trialDays: null,
       maxStudents: null,
       maxTeachers: null,
       maxStorage: null,
@@ -100,6 +106,8 @@ export class OwnerPlanCreateFacade {
       moduleIds: [],
       autoRenew: false,
       allowDowngrade: false,
+      isRecommended: false,
+      showAnnualPrice: false,
     });
     this.planForm.markAsPristine();
     this.planForm.markAsUntouched();
@@ -133,6 +141,40 @@ export class OwnerPlanCreateFacade {
         const monthly = Number(monthlyPrice);
         yearlyControl.setValue(Number.isFinite(monthly) ? monthly * 12 : null, { emitEvent: false });
       });
+
+      this.planForm.get('hasTrial')?.valueChanges.subscribe((enabled) => {
+        const trialDaysControl = this.planForm.get('trialDays');
+        if (!trialDaysControl) return;
+        if (enabled) {
+          trialDaysControl.enable({ emitEvent: false });
+          trialDaysControl.setValidators([Validators.required, Validators.min(1)]);
+          if (trialDaysControl.value == null) {
+            trialDaysControl.setValue(14, { emitEvent: false });
+          }
+        } else {
+          trialDaysControl.setValidators([]);
+          trialDaysControl.setValue(0, { emitEvent: false });
+          trialDaysControl.disable({ emitEvent: false });
+        }
+        trialDaysControl.updateValueAndValidity({ emitEvent: false });
+      });
+    }
+
+    const hasTrial = !!this.planForm.get('hasTrial')?.value;
+    const trialDaysControl = this.planForm.get('trialDays');
+    if (trialDaysControl) {
+      if (hasTrial) {
+        trialDaysControl.enable({ emitEvent: false });
+        trialDaysControl.setValidators([Validators.required, Validators.min(1)]);
+        if (trialDaysControl.value == null || trialDaysControl.value === 0) {
+          trialDaysControl.setValue(14, { emitEvent: false });
+        }
+      } else {
+        trialDaysControl.setValidators([]);
+        trialDaysControl.setValue(0, { emitEvent: false });
+        trialDaysControl.disable({ emitEvent: false });
+      }
+      trialDaysControl.updateValueAndValidity({ emitEvent: false });
     }
   }
 
@@ -191,6 +233,8 @@ export class OwnerPlanCreateFacade {
       currency: (value.currency || 'USD') as OwnerPlanCurrency,
       monthlyPrice: value.monthlyPrice ?? 0,
       yearlyPrice: value.yearlyPrice ?? 0,
+      hasTrial: value.hasTrial ?? false,
+      trialDays: value.hasTrial ? (value.trialDays ?? 14) : 0,
       maxStudents: value.maxStudents ?? 0,
       maxTeachers: value.maxTeachers ?? 0,
       maxStorage: value.maxStorage ?? 0,
@@ -198,6 +242,8 @@ export class OwnerPlanCreateFacade {
       moduleIds: value.moduleIds ?? [],
       autoRenew: value.autoRenew ?? false,
       allowDowngrade: value.allowDowngrade ?? false,
+      isRecommended: value.isRecommended ?? false,
+      showAnnualPrice: value.showAnnualPrice ?? false,
     };
     this.data
       .createOrUpdatePlan(payload, this.planId())

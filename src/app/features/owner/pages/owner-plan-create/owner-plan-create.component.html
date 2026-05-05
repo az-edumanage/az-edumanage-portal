@@ -167,6 +167,26 @@
                 </div>
               }
             </div>
+            <div class="md:col-span-2 flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3">
+              <div>
+                <p class="text-sm font-medium text-slate-900 dark:text-white">Recommended on Website</p>
+                <p class="text-xs text-slate-500">Highlights this plan with a "Recommended" badge in public pricing.</p>
+              </div>
+              <label class="owner-plans-toggle relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" formControlName="isRecommended" class="sr-only peer">
+                <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
+            </div>
+            <div class="md:col-span-2 flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3">
+              <div>
+                <p class="text-sm font-medium text-slate-900 dark:text-white">Allow Annual Billing View</p>
+                <p class="text-xs text-slate-500">When enabled, this plan can show yearly price when website switch is set to Annual.</p>
+              </div>
+              <label class="owner-plans-toggle relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" formControlName="showAnnualPrice" class="sr-only peer">
+                <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -258,10 +278,47 @@
           </div>
         </div>
 
-        <!-- 3. Limits -->
+        <!-- 3. Free Trial -->
         <div class="owner-plan-card">
           <h3 class="owner-plan-section-title mb-6 flex items-center gap-2">
             <span class="owner-plan-step-pill">3</span>
+            Free Trial
+          </h3>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3">
+              <div>
+                <p class="text-sm font-medium text-slate-900 dark:text-white">Enable Free Trial</p>
+                <p class="text-xs text-slate-500">Allow this plan to be used for free trial registrations.</p>
+              </div>
+              <label class="owner-plans-toggle relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" formControlName="hasTrial" class="sr-only peer">
+                <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
+            </div>
+
+            <div class="max-w-sm">
+              <div class="owner-plan-label">Trial Days</div>
+              <input
+                appInput
+                type="number"
+                formControlName="trialDays"
+                min="1"
+                class="owner-plan-control disabled:opacity-60 disabled:cursor-not-allowed"
+                [attr.placeholder]="planForm.get('hasTrial')?.value ? 'e.g. 14' : 'Enable free trial first'">
+              @if (planForm.get('trialDays')?.hasError('required') && (planForm.get('trialDays')?.touched || planForm.get('trialDays')?.dirty)) {
+                <p class="mt-1 text-xs text-red-500">Trial days is required when free trial is enabled.</p>
+              }
+              @if (planForm.get('trialDays')?.hasError('min') && (planForm.get('trialDays')?.touched || planForm.get('trialDays')?.dirty)) {
+                <p class="mt-1 text-xs text-red-500">Trial days must be at least 1 day.</p>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Limits -->
+        <div class="owner-plan-card">
+          <h3 class="owner-plan-section-title mb-6 flex items-center gap-2">
+            <span class="owner-plan-step-pill">4</span>
             Usage Limits
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -285,10 +342,10 @@
           </div>
         </div>
 
-        <!-- 4. Included Modules -->
+        <!-- 5. Included Modules -->
         <div class="owner-plan-card">
           <h3 class="owner-plan-section-title mb-6 flex items-center gap-2">
-            <span class="owner-plan-step-pill">4</span>
+            <span class="owner-plan-step-pill">5</span>
             Included Modules
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -313,10 +370,10 @@
           }
         </div>
 
-        <!-- 5. Billing Rules -->
+        <!-- 6. Billing Rules -->
         <div class="owner-plan-card">
           <h3 class="owner-plan-section-title mb-6 flex items-center gap-2">
-            <span class="owner-plan-step-pill">5</span>
+            <span class="owner-plan-step-pill">6</span>
             Billing Rules
           </h3>
           <div class="space-y-4">

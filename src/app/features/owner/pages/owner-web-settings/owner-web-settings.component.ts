@@ -65,8 +65,11 @@ export class OwnerWebSettingsComponent implements OnInit {
   readonly promoEditorHtml = signal('');
   readonly focusedFieldLabel = signal<string | null>(null);
   readonly focusedFieldRichHtml = signal('');
+  readonly focusedFieldFontSize = signal('16px');
   readonly focusedFieldEditorOpen = signal(false);
   private focusedFieldElement: HTMLInputElement | HTMLTextAreaElement | null = null;
+  private promoEditorSelectionRange: Range | null = null;
+  private focusedEditorSelectionRange: Range | null = null;
   readonly activeSection = signal<WebSettingsSection>('site');
   readonly sections: readonly { key: WebSettingsSection; label: string }[] = [
     { key: 'site', label: 'Site Config' },
@@ -95,6 +98,7 @@ export class OwnerWebSettingsComponent implements OnInit {
       badgeText: [''],
       titleText: ['', [Validators.required]],
       descriptionText: [''],
+      backgroundImageUrl: [''],
       primaryCtaLabel: [''],
       primaryCtaLink: [''],
       secondaryCtaLabel: [''],
@@ -130,6 +134,7 @@ export class OwnerWebSettingsComponent implements OnInit {
         hqLabel: ['Global HQ', [Validators.required]],
         hqValue: ['', [Validators.required]],
       }),
+      docsVideoUrl: [''],
     }),
     onboarding: this.fb.group({
       stepOneTitle: ['', [Validators.required]],
@@ -173,6 +178,9 @@ export class OwnerWebSettingsComponent implements OnInit {
   }
   marketingIntegrationItemIconControlAt(index: number): FormControl<string> {
     return this.marketingIntegrationItemIcons.at(index).get('value') as FormControl<string>;
+  }
+  featureIconControlAt(index: number): FormControl<string> {
+    return this.features.at(index).get('iconKey') as FormControl<string>;
   }
   get marketingIntegrationBullets(): FormArray<FormGroup> {
     return this.form.get(['marketing', 'integrations', 'bullets']) as FormArray<FormGroup>;
@@ -276,7 +284,7 @@ export class OwnerWebSettingsComponent implements OnInit {
   }
 
   addFeature(): void {
-    this.features.push(this.buildFeatureGroup({ iconKey: 'star', titleText: '', descriptionText: '', ctaLabel: 'Learn More', ctaLink: '/features', visible: true, displayOrder: this.features.length + 1 }));
+    this.features.push(this.buildFeatureGroup({ iconKey: 'star', titleText: '', titleFontSize: 32, descriptionText: '', descriptionFontSize: 18, ctaLabel: 'Learn More', ctaFontSize: 18, ctaLink: '/features', visible: true, displayOrder: this.features.length + 1 }));
   }
 
   removeFeature(index: number): void {
@@ -345,7 +353,12 @@ export class OwnerWebSettingsComponent implements OnInit {
     this.promoTextControl.markAsTouched();
   }
 
+  capturePromoSelection(): void {
+    this.promoEditorSelectionRange = this.captureSelectionRange('promo-rich-editor');
+  }
+
   applyPromoCommand(command: string, value?: string): void {
+    this.restoreSelectionRange(this.promoEditorSelectionRange, 'promo-rich-editor');
     document.execCommand(command, false, value);
     const editor = document.getElementById('promo-rich-editor');
     if (editor) {
@@ -363,7 +376,87 @@ export class OwnerWebSettingsComponent implements OnInit {
   onPromoFontSizePick(event: Event): void {
     const size = (event.target as HTMLSelectElement).value;
     if (size) {
-      this.applyPromoCommand('fontSize', size);
+      this.restoreSelectionRange(this.promoEditorSelectionRange, 'promo-rich-editor');
+      this.applyFontSizeToSelection(size, 'promo-rich-editor');
+      const editor = document.getElementById('promo-rich-editor');
+      if (editor) {
+        this.onPromoEditorInput({ target: editor } as unknown as Event);
+      }
+    }
+  }
+
+  async onDocsVideoFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement | null;
+    const file = input?.files?.[0];
+    if (!file) {
+      return;
+    }
+    if (!file.type.startsWith('video/')) {
+      this.saveStatus.set({
+        type: 'error',
+        title: 'Invalid File',
+        message: 'Please choose a video file.',
+      });
+      return;
+    }
+
+    try {
+      const dataUrl = await this.readFileAsDataUrl(file);
+      const control = this.form.get(['marketing', 'docsVideoUrl']) as FormControl<string>;
+      control.setValue(dataUrl);
+      control.markAsDirty();
+      this.saveStatus.set({
+        type: 'success',
+        title: 'Video Loaded',
+        message: 'Video selected from local device. Save draft and publish to apply.',
+      });
+    } catch {
+      this.saveStatus.set({
+        type: 'error',
+        title: 'Upload Failed',
+        message: 'Could not read the selected video file.',
+      });
+    } finally {
+      if (input) {
+        input.value = '';
+      }
+    }
+  }
+
+  async onHeroBackgroundFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement | null;
+    const file = input?.files?.[0];
+    if (!file) {
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      this.saveStatus.set({
+        type: 'error',
+        title: 'Invalid File',
+        message: 'Please choose an image file.',
+      });
+      return;
+    }
+    try {
+      const dataUrl = await this.readFileAsDataUrl(file);
+      const control = this.form.get(['hero', 'backgroundImageUrl']) as FormControl<string>;
+      control.setValue(dataUrl);
+      control.markAsDirty();
+      this.saveStatus.set({
+        type: 'success',
+        title: 'Image Loaded',
+        message: 'Hero background selected. Save draft and publish to apply.',
+      });
+    } catch {
+      this.saveStatus.set({
+        type: 'error',
+        title: 'Upload Failed',
+        message: 'Could not read the selected image file.',
+      });
+    } finally {
+      if (input) {
+        input.value = '';
+      }
     }
   }
 
@@ -388,6 +481,20 @@ export class OwnerWebSettingsComponent implements OnInit {
     this.focusedFieldLabel.set(target.getAttribute('placeholder') || target.getAttribute('formcontrolname') || 'Selected field');
   }
 
+  @HostListener('dblclick', ['$event'])
+  onFieldDoubleClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) {
+      return;
+    }
+    if (!target.classList.contains('owner-web-input') && !target.classList.contains('owner-web-textarea')) {
+      return;
+    }
+    this.focusedFieldElement = target;
+    this.focusedFieldLabel.set(target.getAttribute('placeholder') || target.getAttribute('formcontrolname') || 'Selected field');
+    this.openFocusedFieldEditor();
+  }
+
   openFocusedFieldEditor(): void {
     if (!this.focusedFieldElement) {
       this.saveStatus.set({
@@ -398,6 +505,7 @@ export class OwnerWebSettingsComponent implements OnInit {
       return;
     }
     this.focusedFieldRichHtml.set(this.focusedFieldElement.value || '');
+    this.focusedFieldFontSize.set(this.detectFontSize(this.focusedFieldElement.value || '') || '16px');
     this.focusedFieldEditorOpen.set(true);
   }
 
@@ -406,7 +514,12 @@ export class OwnerWebSettingsComponent implements OnInit {
     this.focusedFieldRichHtml.set(html);
   }
 
+  captureFocusedEditorSelection(): void {
+    this.focusedEditorSelectionRange = this.captureSelectionRange('focused-field-rich-editor');
+  }
+
   applyFocusedFieldCommand(command: string, value?: string): void {
+    this.restoreSelectionRange(this.focusedEditorSelectionRange, 'focused-field-rich-editor');
     document.execCommand(command, false, value);
     const editor = document.getElementById('focused-field-rich-editor');
     if (editor) {
@@ -424,19 +537,102 @@ export class OwnerWebSettingsComponent implements OnInit {
   onFocusedFieldFontSizePick(event: Event): void {
     const size = (event.target as HTMLSelectElement).value;
     if (size) {
-      this.applyFocusedFieldCommand('fontSize', size);
+      this.focusedFieldFontSize.set(size);
+      this.applyFontSizeToEditor(size, 'focused-field-rich-editor');
+      this.syncFeatureTitleFontSizeFromFocusedField(size);
+      const editor = document.getElementById('focused-field-rich-editor');
+      if (editor) {
+        this.onFocusedFieldEditorInput({ target: editor } as unknown as Event);
+        this.syncFocusedFieldValueFromEditor();
+      }
     }
   }
 
+  private applyFontSizeToSelection(size: string, editorId: string): void {
+    const editor = document.getElementById(editorId);
+    if (!editor) {
+      return;
+    }
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      editor.innerHTML = `<span style="font-size: ${size};">${editor.innerHTML}</span>`;
+      return;
+    }
+    const range = selection.getRangeAt(0);
+    if (range.collapsed) {
+      editor.innerHTML = `<span style="font-size: ${size};">${editor.innerHTML}</span>`;
+      return;
+    }
+    if (!editor.contains(range.commonAncestorContainer)) {
+      editor.innerHTML = `<span style="font-size: ${size};">${editor.innerHTML}</span>`;
+      return;
+    }
+
+    const span = document.createElement('span');
+    span.style.fontSize = size;
+    try {
+      range.surroundContents(span);
+    } catch {
+      const fragment = range.extractContents();
+      span.appendChild(fragment);
+      range.insertNode(span);
+    }
+
+    selection.removeAllRanges();
+    const newRange = document.createRange();
+    newRange.selectNodeContents(span);
+    selection.addRange(newRange);
+  }
+
+  private applyFontSizeToEditor(size: string, editorId: string): void {
+    const editor = document.getElementById(editorId);
+    if (!editor) {
+      return;
+    }
+    const current = editor.innerHTML || '';
+    const normalized = current.replace(/^<span style="font-size:\s*[^"]+;">([\s\S]*)<\/span>$/i, '$1');
+    editor.innerHTML = `<span style="font-size: ${size};">${normalized}</span>`;
+  }
+
+  private captureSelectionRange(editorId: string): Range | null {
+    const editor = document.getElementById(editorId);
+    const selection = window.getSelection();
+    if (!editor || !selection || selection.rangeCount === 0) {
+      return null;
+    }
+    const range = selection.getRangeAt(0);
+    if (!editor.contains(range.commonAncestorContainer)) {
+      return null;
+    }
+    return range.cloneRange();
+  }
+
+  private restoreSelectionRange(range: Range | null, editorId: string): void {
+    if (!range) {
+      return;
+    }
+    const editor = document.getElementById(editorId);
+    const selection = window.getSelection();
+    if (!editor || !selection) {
+      return;
+    }
+    editor.focus();
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+
   applyFocusedFieldEditor(): void {
+    this.syncFocusedFieldValueFromEditor();
+    this.focusedFieldEditorOpen.set(false);
+  }
+
+  private syncFocusedFieldValueFromEditor(): void {
     if (!this.focusedFieldElement) {
-      this.focusedFieldEditorOpen.set(false);
       return;
     }
     this.focusedFieldElement.value = this.focusedFieldRichHtml();
     this.focusedFieldElement.dispatchEvent(new Event('input', { bubbles: true }));
     this.focusedFieldElement.dispatchEvent(new Event('change', { bubbles: true }));
-    this.focusedFieldEditorOpen.set(false);
   }
 
   closeFocusedFieldEditor(): void {
@@ -465,10 +661,12 @@ export class OwnerWebSettingsComponent implements OnInit {
     const invalidSection = this.sections.find((section) => this.isSectionInvalid(section.key));
     if (invalidSection) {
       this.activeSection.set(invalidSection.key);
+      const invalidDetails = this.collectInvalidControlPaths(this.sectionControl(invalidSection.key));
+      const detailsText = invalidDetails.length ? ` Invalid fields: ${invalidDetails.join(', ')}` : '';
       this.saveStatus.set({
         type: 'error',
         title: 'Validation Required',
-        message: `Please complete required fields in "${invalidSection.label}" before ${actionLabel}.`,
+        message: `Please complete required fields in "${invalidSection.label}" before ${actionLabel}.${detailsText}`,
       });
     }
   }
@@ -517,6 +715,7 @@ export class OwnerWebSettingsComponent implements OnInit {
         badgeText: data.hero.badgeText ?? '',
         titleText: data.hero.titleText ?? '',
         descriptionText: data.hero.descriptionText ?? '',
+        backgroundImageUrl: data.hero.backgroundImageUrl ?? '',
         primaryCtaLabel: data.hero.primaryCtaLabel ?? '',
         primaryCtaLink: data.hero.primaryCtaLink ?? '',
         secondaryCtaLabel: data.hero.secondaryCtaLabel ?? '',
@@ -555,6 +754,7 @@ export class OwnerWebSettingsComponent implements OnInit {
           hqLabel: data.marketing?.contact?.hqLabel ?? 'Global HQ',
           hqValue: data.marketing?.contact?.hqValue ?? '',
         },
+        docsVideoUrl: data.marketing?.docsVideoUrl ?? '',
       },
       trialDashboard: {
         headerTitle: data.trialDashboard?.headerTitle ?? '',
@@ -655,8 +855,11 @@ export class OwnerWebSettingsComponent implements OnInit {
     return this.fb.group({
       iconKey: [row.iconKey, Validators.required],
       titleText: [row.titleText, Validators.required],
+      titleFontSize: [row.titleFontSize ?? this.detectFontSize(row.titleText) ?? 32],
       descriptionText: [row.descriptionText ?? ''],
+      descriptionFontSize: [row.descriptionFontSize ?? this.detectFontSize(row.descriptionText ?? '') ?? 18],
       ctaLabel: [row.ctaLabel ?? ''],
+      ctaFontSize: [row.ctaFontSize ?? 18],
       ctaLink: [row.ctaLink ?? ''],
       visible: [row.visible],
       displayOrder: [row.displayOrder],
@@ -720,12 +923,49 @@ export class OwnerWebSettingsComponent implements OnInit {
 
   private buildPayload(): SaveWebsiteSettingsRequest {
     const raw = this.form.getRawValue();
+    const normalizedFeatures = this.features.controls.map((group, index) => {
+      const fallback = (raw.features?.[index] ?? {}) as Partial<SaveWebsiteSettingsRequest['features'][number]>;
+      const titleTextRaw = String(group.get('titleText')?.value ?? fallback.titleText ?? '');
+      const fontSizeControl = group.get('titleFontSize')?.value as number | string | null | undefined;
+      const detected = this.detectFontSize(titleTextRaw);
+      const detectedNum = detected ? Number.parseInt(detected.replace('px', ''), 10) : null;
+      return {
+        iconKey: String(group.get('iconKey')?.value ?? fallback.iconKey ?? '').trim(),
+        titleText: this.stripHtmlToText(titleTextRaw),
+        titleFontSize: this.normalizeFontSize(fontSizeControl ?? detectedNum),
+        descriptionText: this.normalizeRichHtml(String(group.get('descriptionText')?.value ?? fallback.descriptionText ?? '')),
+        descriptionFontSize: this.normalizeFontSize(
+          (group.get('descriptionFontSize')?.value as number | string | null | undefined)
+            ?? this.detectFontSize(String(group.get('descriptionText')?.value ?? fallback.descriptionText ?? ''))?.replace('px', '')
+            ?? (fallback as { descriptionFontSize?: number | null }).descriptionFontSize
+            ?? 18,
+        ),
+        ctaLabel: String(group.get('ctaLabel')?.value ?? fallback.ctaLabel ?? '').trim(),
+        ctaFontSize: this.normalizeFontSize(
+          (group.get('ctaFontSize')?.value as number | string | null | undefined)
+            ?? (fallback as { ctaFontSize?: number | null }).ctaFontSize
+            ?? 18,
+        ),
+        ctaLink: String(group.get('ctaLink')?.value ?? fallback.ctaLink ?? '').trim(),
+        visible: Boolean(group.get('visible')?.value ?? fallback.visible ?? true),
+        displayOrder: Number(group.get('displayOrder')?.value ?? fallback.displayOrder ?? index + 1),
+      };
+    });
     return {
       siteConfig: raw.siteConfig as SaveWebsiteSettingsRequest['siteConfig'],
       hero: raw.hero as SaveWebsiteSettingsRequest['hero'],
       pages: (raw.pages ?? []) as SaveWebsiteSettingsRequest['pages'],
-      navigation: (raw.navigation ?? []) as SaveWebsiteSettingsRequest['navigation'],
-      features: (raw.features ?? []) as SaveWebsiteSettingsRequest['features'],
+      navigation: this.navigation.controls.map((group, index) => {
+        const fallback = (raw.navigation?.[index] ?? {}) as Partial<SaveWebsiteSettingsRequest['navigation'][number]>;
+        return {
+          label: String(group.get('label')?.value ?? fallback.label ?? '').trim(),
+          routePath: String(group.get('routePath')?.value ?? fallback.routePath ?? '').trim(),
+          linkType: String(group.get('linkType')?.value ?? fallback.linkType ?? 'internal').trim() || 'internal',
+          visible: Boolean(group.get('visible')?.value ?? fallback.visible ?? true),
+          displayOrder: Number(group.get('displayOrder')?.value ?? fallback.displayOrder ?? index + 1),
+        };
+      }),
+      features: normalizedFeatures,
       testimonials: (raw.testimonials ?? []) as SaveWebsiteSettingsRequest['testimonials'],
       pricingPlans: (raw.pricingPlans ?? []) as SaveWebsiteSettingsRequest['pricingPlans'],
       ctas: (raw.ctas ?? []) as SaveWebsiteSettingsRequest['ctas'],
@@ -762,6 +1002,7 @@ export class OwnerWebSettingsComponent implements OnInit {
           hqLabel: String(raw.marketing?.contact?.hqLabel ?? '').trim(),
           hqValue: String(raw.marketing?.contact?.hqValue ?? '').trim(),
         },
+        docsVideoUrl: String(raw.marketing?.docsVideoUrl ?? '').trim(),
       },
       onboarding: {
         stepOneTitle: raw.onboarding?.stepOneTitle ?? '',
@@ -817,5 +1058,90 @@ export class OwnerWebSettingsComponent implements OnInit {
     }
 
     return 'Unexpected error while processing request.';
+  }
+
+  private normalizeRichHtml(value: string): string {
+    const raw = String(value ?? '').trim();
+    if (!raw) {
+      return '';
+    }
+    const holder = document.createElement('div');
+    holder.innerHTML = raw;
+    return holder.innerHTML.trim();
+  }
+
+  private detectFontSize(value: string): string | null {
+    const html = String(value ?? '');
+    const match = html.match(/font-size:\s*([0-9]+px)/i);
+    return match ? match[1] : null;
+  }
+
+  private stripHtmlToText(value: string): string {
+    const raw = String(value ?? '').trim();
+    if (!raw) {
+      return '';
+    }
+    const holder = document.createElement('div');
+    holder.innerHTML = raw;
+    return (holder.textContent ?? '').trim();
+  }
+
+  private normalizeFontSize(value: number | string | null | undefined): number | null {
+    if (value == null) {
+      return null;
+    }
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) {
+      return null;
+    }
+    return Math.min(96, Math.max(1, Math.round(numeric)));
+  }
+
+  private collectInvalidControlPaths(control: AbstractControl | null, prefix = ''): string[] {
+    if (!control) {
+      return [];
+    }
+    if (control instanceof FormControl) {
+      return control.invalid ? [prefix || 'field'] : [];
+    }
+    if (control instanceof FormGroup) {
+      return Object.entries(control.controls).flatMap(([key, child]) =>
+        this.collectInvalidControlPaths(child, prefix ? `${prefix}.${key}` : key),
+      );
+    }
+    if (control instanceof FormArray) {
+      return control.controls.flatMap((child, index) =>
+        this.collectInvalidControlPaths(child, `${prefix}[${index}]`),
+      );
+    }
+    return [];
+  }
+
+  private syncFeatureTitleFontSizeFromFocusedField(size: string): void {
+    const element = this.focusedFieldElement;
+    if (!element || element.dataset['featureTitle'] !== 'true') {
+      return;
+    }
+    const idxRaw = element.dataset['featureIndex'];
+    const index = Number(idxRaw);
+    if (!Number.isInteger(index) || index < 0 || index >= this.features.length) {
+      return;
+    }
+    const px = Number.parseInt(size.replace('px', ''), 10);
+    if (!Number.isFinite(px)) {
+      return;
+    }
+    const control = this.features.at(index).get('titleFontSize') as FormControl<number | null>;
+    control.setValue(px);
+    control.markAsDirty();
+  }
+
+  private readFileAsDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result ?? ''));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
   }
 }

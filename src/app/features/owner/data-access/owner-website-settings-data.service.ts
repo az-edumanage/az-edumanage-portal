@@ -33,6 +33,7 @@ export interface HomeHero {
   badgeText: string | null;
   titleText: string;
   descriptionText: string | null;
+  backgroundImageUrl: string | null;
   primaryCtaLabel: string | null;
   primaryCtaLink: string | null;
   secondaryCtaLabel: string | null;
@@ -59,8 +60,11 @@ export interface NavLink {
 export interface FeatureItem {
   iconKey: string;
   titleText: string;
+  titleFontSize?: number | null;
   descriptionText: string | null;
+  descriptionFontSize?: number | null;
   ctaLabel: string | null;
+  ctaFontSize?: number | null;
   ctaLink: string | null;
   visible: boolean;
   displayOrder: number;
@@ -145,6 +149,7 @@ export interface MarketingConfig {
   steps: MarketingStepConfig[];
   integrations: MarketingIntegrationsConfig;
   contact: MarketingContactConfig;
+  docsVideoUrl?: string | null;
 }
 
 export interface OnboardingConfig {

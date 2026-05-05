@@ -33,6 +33,18 @@ export class OwnerPlansListComponent {
     void this.facade.togglePlanStatus(plan);
   }
 
+  toggleWebsiteAvailability(plan: Plan): void {
+    void this.facade.toggleWebsiteAvailability(plan);
+  }
+
+  toggleRecommended(plan: Plan): void {
+    void this.facade.toggleRecommended(plan);
+  }
+
+  toggleShowAnnualPrice(plan: Plan): void {
+    void this.facade.toggleShowAnnualPrice(plan);
+  }
+
   startCreatePlan(): void {
     this.taskService.removeTask('create-plan-task');
     void this.router.navigate(['/owner/plans/create']);

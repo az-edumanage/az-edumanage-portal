@@ -1,0 +1,85 @@
+:host {
+  display: block;
+}
+
+.owner-users-page {
+  align-content: start;
+}
+
+.owner-users-title {
+  letter-spacing: -0.01em;
+}
+
+.owner-users-subtitle {
+  line-height: 1.25rem;
+}
+
+.owner-users-header-actions {
+  flex-wrap: wrap;
+}
+
+.owner-users-search-input {
+  min-height: 2.5rem;
+}
+
+.owner-users-search-icon {
+  pointer-events: none;
+}
+
+.owner-users-add-btn {
+  white-space: nowrap;
+}
+
+.owner-users-filter-btn {
+  white-space: nowrap;
+}
+
+.owner-users-table-card {
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.owner-users-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.owner-users-row {
+  vertical-align: middle;
+}
+
+.owner-users-avatar {
+  flex-shrink: 0;
+}
+
+.owner-users-role-badge,
+.owner-users-status-badge {
+  white-space: nowrap;
+}
+
+.owner-users-mfa {
+  white-space: nowrap;
+}
+
+.owner-users-actions {
+  min-width: max-content;
+}
+
+.owner-users-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .owner-users-header-actions {
+    width: 100%;
+  }
+
+  .owner-users-search-wrap {
+    width: 100%;
+  }
+
+  .owner-users-search-input {
+    width: 100%;
+  }
+}
