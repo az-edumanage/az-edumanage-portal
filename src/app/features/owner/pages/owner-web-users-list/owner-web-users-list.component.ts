@@ -59,7 +59,10 @@ export class OwnerWebUsersListComponent implements OnInit {
     this.loading.set(true);
     this.loadError.set(null);
     try {
-      await this.usersData.loadWebUsersFromBackend();
+      await Promise.all([
+        this.tenantsData.loadFromBackend(),
+        this.usersData.loadWebUsersFromBackend(),
+      ]);
     } catch {
       this.loadError.set('Failed to load web users from backend.');
     } finally {

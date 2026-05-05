@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,6 +9,7 @@ import { UiPagerButtonComponent } from '../../../../shared/ui';
 import { OwnerTenantsListFacade } from '../../state/owner-tenants-list.facade';
 import { Tenant } from '../../models/owner-tenants.models';
 import { OwnerTenantStatusesDataService } from '../../data-access/owner-tenant-statuses-data.service';
+import { OwnerTenantsDataService } from '../../data-access/owner-tenants-data.service';
 
 @Component({
   selector: 'app-owner-tenants-list',
@@ -17,12 +18,13 @@ import { OwnerTenantStatusesDataService } from '../../data-access/owner-tenant-s
   templateUrl: './owner-tenants-list.component.html',
   styleUrl: './owner-tenants-list.component.css'
 })
-export class OwnerTenantsListComponent {
+export class OwnerTenantsListComponent implements OnInit {
   private router = inject(Router);
   private readonly dashboardService = inject(DashboardService);
   private readonly i18nService = inject(I18nService);
   private readonly tenantsFacade = inject(OwnerTenantsListFacade);
   private readonly statusesData = inject(OwnerTenantStatusesDataService);
+  private readonly tenantsData = inject(OwnerTenantsDataService);
 
   readonly searchQuery = this.tenantsFacade.searchQuery;
   readonly showFiltersDropdown = this.tenantsFacade.showFiltersDropdown;
@@ -45,10 +47,37 @@ export class OwnerTenantsListComponent {
   readonly healths = this.tenantsFacade.healths;
   readonly activeFilterCount = this.tenantsFacade.activeFilterCount;
   readonly filteredTenants = this.tenantsFacade.filteredTenants;
+  readonly currentPage = signal(1);
+  readonly pageSize = signal(10);
+  readonly pageSizeOptions = [10, 25, 50, 100];
+  readonly totalItems = computed(() => this.filteredTenants().length);
+  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.totalItems() / this.pageSize())));
+  readonly currentPageDisplay = computed(() => Math.min(this.currentPage(), this.totalPages()));
+  readonly pagedTenants = computed(() => {
+    const page = this.currentPageDisplay();
+    const start = (page - 1) * this.pageSize();
+    return this.filteredTenants().slice(start, start + this.pageSize());
+  });
+  readonly shownStart = computed(() => (this.totalItems() === 0 ? 0 : ((this.currentPageDisplay() - 1) * this.pageSize()) + 1));
+  readonly shownEnd = computed(() => Math.min(this.currentPageDisplay() * this.pageSize(), this.totalItems()));
   readonly filtersSearchQuery = signal('');
   readonly filteredStatuses = computed(() => this.filterPanelOptions(this.statuses()));
   readonly filteredPlans = computed(() => this.filterPanelOptions(this.plans));
   readonly filteredHealths = computed(() => this.filterPanelOptions(this.healths));
+
+  constructor() {
+    effect(() => {
+      this.searchQuery();
+      this.selectedStatuses();
+      this.selectedPlans();
+      this.selectedHealths();
+      this.currentPage.set(1);
+    });
+  }
+
+  ngOnInit(): void {
+    void this.tenantsData.loadFromBackend().catch(() => {});
+  }
 
   getStatusColor(status: string): string {
     return this.statusesData.findByName(status)?.color ?? '#64748b';
@@ -60,6 +89,27 @@ export class OwnerTenantsListComponent {
 
   clearFilters(): void {
     this.tenantsFacade.clearFilters();
+  }
+
+  prevPage(): void {
+    if (this.currentPage() > 1) {
+      this.currentPage.update((value) => value - 1);
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.update((value) => value + 1);
+    }
+  }
+
+  onPageSizeChange(value: number | string): void {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      return;
+    }
+    this.pageSize.set(parsed);
+    this.currentPage.set(1);
   }
 
   toggleFiltersDropdown(): void {

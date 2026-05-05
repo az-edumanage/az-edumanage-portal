@@ -58,7 +58,6 @@ export class WebsiteRegistrationService {
       plan: tenant.plan,
       triggeredBy: 'System',
       status: 'Completed',
-      duration: '1m 40s',
     });
 
     const user = this.usersData.addWebUser({
@@ -94,4 +93,3 @@ export class WebsiteRegistrationService {
     return `${first} Trial Center`;
   }
 }
-

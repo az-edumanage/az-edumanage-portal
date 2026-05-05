@@ -22,6 +22,10 @@ export class OwnerProvisioningListComponent {
     this.facade.setFilter(value);
   }
 
+  refresh(): void {
+    void this.facade.refresh();
+  }
+
   getStatusColor(status: string): string {
     return this.facade.getStatusColor(status);
   }

@@ -142,7 +142,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
-              @for (tenant of filteredTenants(); track tenant.id; let i = $index) {
+              @for (tenant of pagedTenants(); track tenant.id; let i = $index) {
                 <tr class="owner-tenants-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
                   <td class="px-6 py-4">
                     <button 
@@ -348,10 +348,23 @@
         
         <!-- Pagination -->
         <div class="owner-tenants-pagination p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-sm text-slate-500 dark:text-slate-500">
-          <span>{{ t('owner.tenants.tablePaginationShown')}}</span>
+          <div class="flex items-center gap-3">
+            <span>Showing {{ shownStart() }}-{{ shownEnd() }} of {{ totalItems() }}</span>
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-slate-500">Rows</label>
+              <select
+                class="px-2 py-1 rounded-md border border-slate-300 bg-white text-slate-700 text-xs"
+                [ngModel]="pageSize()"
+                (ngModelChange)="onPageSizeChange($event)">
+                @for (option of pageSizeOptions; track option) {
+                  <option [ngValue]="option">{{ option }}</option>
+                }
+              </select>
+            </div>
+          </div>
           <div class="flex gap-2">
-            <app-pager-button [disabled]="true">{{t('owner.tenants.tablePaginationPreviousBtn')}}</app-pager-button>
-            <app-pager-button>{{t('owner.tenants.tablePaginationNextBtn')}}</app-pager-button>
+            <app-pager-button [disabled]="currentPageDisplay() <= 1" (click)="prevPage()">{{t('owner.tenants.tablePaginationPreviousBtn')}}</app-pager-button>
+            <app-pager-button [disabled]="currentPageDisplay() >= totalPages()" (click)="nextPage()">{{t('owner.tenants.tablePaginationNextBtn')}}</app-pager-button>
           </div>
         </div>
       </div>
