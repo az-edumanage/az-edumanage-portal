@@ -92,6 +92,12 @@
               </div>
               <div class="owner-plans-limit-row flex items-center justify-between text-sm">
                 <span class="owner-plans-limit-label text-slate-500 dark:text-slate-500 flex items-center gap-2">
+                  <mat-icon class="text-slate-500 text-sm">groups</mat-icon> Audience Type
+                </span>
+                <span class="font-medium text-slate-900 dark:text-white">{{ plan.audienceType === 'teacher' ? 'Teacher' : 'Center' }}</span>
+              </div>
+              <div class="owner-plans-limit-row flex items-center justify-between text-sm">
+                <span class="owner-plans-limit-label text-slate-500 dark:text-slate-500 flex items-center gap-2">
                   <mat-icon class="text-slate-500 text-sm">public</mat-icon> Available on Website
                 </span>
                 <label

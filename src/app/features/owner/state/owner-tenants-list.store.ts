@@ -38,6 +38,7 @@ export class OwnerTenantsListStore {
       const matchesSearch =
         !search ||
         tenant.name.toLowerCase().includes(search) ||
+        tenant.tenantType.toLowerCase().includes(search) ||
         tenant.fullName.toLowerCase().includes(search) ||
         tenant.phoneNumber.toLowerCase().includes(search) ||
         tenant.id.toLowerCase().includes(search) ||

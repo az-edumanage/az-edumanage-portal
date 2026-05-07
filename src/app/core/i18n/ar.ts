@@ -8,6 +8,7 @@ export const AR_TRANSLATIONS: Record<I18nKey, string> = {
     "owner.tenants.tableColumnOwnerMail": "بريد المسؤول",
     "owner.tenants.tableColumnPhoneNo": "رقم الهاتف",
     "owner.tenants.tableColumnPlan": "خطة الإشتراك",
+    "owner.tenants.tableColumnType": "النوع",
     "owner.tenants.tableColumnStatus": "حالة الإشتراك",
   "owner.tenants.tableColumnName": "إسم العميل",
   "owner.tenants.fullNameLabel": "الإسم الكامل",

@@ -130,7 +130,7 @@ export class OwnerTenantsListComponent implements OnInit {
     this.dashboardService.returnUrl.set(this.router.url);
 
     // Navigate based on tenant type and update sidebar role
-    if (tenant.tenantType === 'Individual Teacher') {
+    if (tenant.tenantType === 'teacher') {
       this.dashboardService.setRole('teacher');
       this.router.navigate(['/teacher/overview']);
     } else {

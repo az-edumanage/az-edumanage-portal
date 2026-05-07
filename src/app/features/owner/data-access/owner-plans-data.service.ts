@@ -16,6 +16,7 @@ type PlanResponse = {
   status: PlanStatus;
   visibility: PlanVisibility;
   currency: PlanCurrency;
+  audienceType?: 'center' | 'teacher';
   monthlyPrice: number;
   yearlyPrice: number;
   hasTrial?: boolean;
@@ -49,6 +50,7 @@ export class OwnerPlansDataService {
     this.plans.set(response.map((plan) => ({
       id: plan.id,
       name: plan.name,
+      audienceType: plan.audienceType ?? 'center',
       status: plan.status,
       monthlyPrice: plan.monthlyPrice,
       yearlyPrice: plan.yearlyPrice,
@@ -75,6 +77,7 @@ export class OwnerPlansDataService {
         status,
         visibility: existing.visibility,
         currency: existing.currency,
+        audienceType: existing.audienceType ?? 'center',
         monthlyPrice: existing.monthlyPrice,
         yearlyPrice: existing.yearlyPrice,
         hasTrial: existing.hasTrial ?? false,
@@ -107,6 +110,7 @@ export class OwnerPlansDataService {
         status: existing.status,
         visibility,
         currency: existing.currency,
+        audienceType: existing.audienceType ?? 'center',
         monthlyPrice: existing.monthlyPrice,
         yearlyPrice: existing.yearlyPrice,
         hasTrial: existing.hasTrial ?? false,
@@ -139,6 +143,7 @@ export class OwnerPlansDataService {
         status: existing.status,
         visibility: existing.visibility,
         currency: existing.currency,
+        audienceType: existing.audienceType ?? 'center',
         monthlyPrice: existing.monthlyPrice,
         yearlyPrice: existing.yearlyPrice,
         hasTrial: existing.hasTrial ?? false,
@@ -171,6 +176,7 @@ export class OwnerPlansDataService {
         status: existing.status,
         visibility: existing.visibility,
         currency: existing.currency,
+        audienceType: existing.audienceType ?? 'center',
         monthlyPrice: existing.monthlyPrice,
         yearlyPrice: existing.yearlyPrice,
         hasTrial: existing.hasTrial ?? false,

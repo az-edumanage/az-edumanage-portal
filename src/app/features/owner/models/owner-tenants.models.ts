@@ -1,6 +1,6 @@
 export type TenantStatus = string;
 export type TenantHealthStatus = 'Healthy' | 'Degraded' | 'Down';
-export type TenantType = 'Educational Center' | 'Individual Teacher';
+export type TenantType = 'center' | 'teacher';
 
 export interface Tenant {
   id: string;

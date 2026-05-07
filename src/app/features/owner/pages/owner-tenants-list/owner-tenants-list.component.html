@@ -132,6 +132,7 @@
             <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
               <tr>
                 <th class="px-6 py-4 font-medium">{{t('owner.tenants.tableColumnName')}}</th>
+                <th class="px-6 py-4 font-medium">{{t('owner.tenants.tableColumnType')}}</th>
                 <th class="px-6 py-4 font-medium">{{ t('owner.tenants.tableColumnStatus') }}</th>
                 <th class="px-6 py-4 font-medium">{{t('owner.tenants.tableColumnPlan')}}</th>
                 <th class="px-6 py-4 font-medium">{{t('owner.tenants.tableColumnOwnerMail')}}</th>
@@ -164,6 +165,9 @@
                     <div class="text-xs text-slate-500 mt-1">
                       {{ t('owner.tenants.fullNameLabel') }}: {{ tenant.fullName }}
                     </div>
+                  </td>
+                  <td class="px-6 py-4 text-slate-500 dark:text-slate-500 uppercase">
+                    {{ tenant.tenantType }}
                   </td>
                   <td class="px-6 py-4">
                     <span

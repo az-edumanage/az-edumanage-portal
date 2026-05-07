@@ -1,4 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { HttpEvent } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { AuthIdentityService } from '../../../core/auth/auth-identity.service';
 import {
   OwnerWebsiteSettingsDataService,
@@ -22,8 +24,13 @@ export class OwnerWebSettingsFacade {
   readonly settings = computed(() => this.settingsState());
 
   resolveTenantId(): string {
-    const tenantId = this.identity.identity()?.tenantId;
-    if (tenantId && tenantId.trim()) {
+    const current = this.identity.identity();
+    const isOwnerWorkspace = current?.primaryRole === 'SUPER_ADMIN' || current?.primaryRole === 'OWNER';
+    if (isOwnerWorkspace) {
+      return 'platform-owner';
+    }
+    const tenantId = current?.tenantId;
+    if (tenantId?.trim()) {
       return tenantId;
     }
     return 'platform-owner';
@@ -60,5 +67,20 @@ export class OwnerWebSettingsFacade {
     } finally {
       this.publishingState.set(false);
     }
+  }
+
+  uploadWebsiteAssetWithProgress(
+    section: string,
+    file: File,
+  ): Observable<HttpEvent<{ url: string; fileName: string; section: string; tenantId: string }>> {
+    return this.data.uploadWebsiteAssetWithProgress(this.resolveTenantId(), section, file);
+  }
+
+  async uploadWebsiteAsset(section: string, file: File): Promise<{ url: string; fileName: string; section: string; tenantId: string }> {
+    return this.data.uploadWebsiteAsset(this.resolveTenantId(), section, file);
+  }
+
+  async deleteWebsiteAsset(section: string, fileName: string): Promise<{ deleted: boolean }> {
+    return this.data.deleteWebsiteAsset(this.resolveTenantId(), section, fileName);
   }
 }

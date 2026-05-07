@@ -12,6 +12,7 @@ import { finalize } from 'rxjs';
 import { TaskService } from '../../../core/services/task.service';
 import { OwnerPlanCreateDataService } from '../data-access/owner-plan-create-data.service';
 import {
+  OwnerPlanAudienceType,
   OwnerPlanCreatePayload,
   OwnerPlanCurrency,
   OwnerPlanStatus,
@@ -39,10 +40,14 @@ export class OwnerPlanCreateFacade {
   readonly visibilitySearchQuery = this.store.visibilitySearchQuery;
   readonly showCurrencyDropdown = this.store.showCurrencyDropdown;
   readonly currencySearchQuery = this.store.currencySearchQuery;
+  readonly showAudienceTypeDropdown = this.store.showAudienceTypeDropdown;
+  readonly audienceTypeSearchQuery = this.store.audienceTypeSearchQuery;
+  readonly selectedAudienceType = this.store.selectedAudienceType;
 
   readonly statuses = this.data.statuses.map((item) => item.name);
   readonly visibilities = this.data.visibilities;
   readonly currencies = this.data.currencies;
+  readonly audienceTypes: OwnerPlanAudienceType[] = ['center', 'teacher'];
 
   readonly filteredStatuses = computed(() => {
     const query = this.statusSearchQuery().toLowerCase();
@@ -59,6 +64,12 @@ export class OwnerPlanCreateFacade {
     return this.currencies.filter((currency) => currency.label.toLowerCase().includes(query));
   });
 
+  readonly filteredAudienceTypes = computed(() => {
+    const query = this.audienceTypeSearchQuery().toLowerCase();
+    return this.audienceTypes.filter((audienceType) => audienceType.toLowerCase().includes(query));
+  });
+  readonly isTeacherAudience = computed(() => this.selectedAudienceType() === 'teacher');
+
   readonly moduleOptions = this.store.moduleOptions;
   readonly existingPlans = this.store.existingPlans;
   readonly isSubmitting = this.store.isSubmitting;
@@ -67,6 +78,7 @@ export class OwnerPlanCreateFacade {
   readonly planForm = this.fb.group({
     name: ['', [Validators.required, this.checkExistingPlanName()]],
     description: [''],
+    audienceType: ['', Validators.required],
     status: ['', Validators.required],
     visibility: ['', Validators.required],
     currency: ['', Validators.required],
@@ -92,6 +104,7 @@ export class OwnerPlanCreateFacade {
     this.planForm.reset({
       name: '',
       description: '',
+      audienceType: '',
       status: '',
       visibility: '',
       currency: '',
@@ -111,6 +124,7 @@ export class OwnerPlanCreateFacade {
     });
     this.planForm.markAsPristine();
     this.planForm.markAsUntouched();
+    this.selectedAudienceType.set('');
 
     this.store.existingPlans.set(await this.data.listPlans());
     this.store.moduleOptions.set(await this.data.listModuleOptions());
@@ -119,12 +133,15 @@ export class OwnerPlanCreateFacade {
       const plan = await this.data.getPlanById(planId);
       if (plan) {
         this.planForm.patchValue(plan);
+        this.selectedAudienceType.set(plan.audienceType ?? '');
       }
     }
 
     const savedTask = this.taskService.getTask(this.store.effectiveTaskId());
     if (savedTask?.data) {
-      this.planForm.patchValue(savedTask.data as Partial<OwnerPlanCreatePayload>);
+      const taskData = savedTask.data as Partial<OwnerPlanCreatePayload>;
+      this.planForm.patchValue(taskData);
+      this.selectedAudienceType.set(taskData.audienceType ?? this.planForm.get('audienceType')?.value ?? '');
       this.taskService.removeTask(this.store.effectiveTaskId());
     }
 
@@ -158,6 +175,11 @@ export class OwnerPlanCreateFacade {
         }
         trialDaysControl.updateValueAndValidity({ emitEvent: false });
       });
+
+      this.planForm.get('audienceType')?.valueChanges.subscribe((audienceType) => {
+        this.selectedAudienceType.set((audienceType as string) ?? '');
+        this.configureAudienceTypeDependentLimits(audienceType === 'teacher');
+      });
     }
 
     const hasTrial = !!this.planForm.get('hasTrial')?.value;
@@ -176,6 +198,8 @@ export class OwnerPlanCreateFacade {
       }
       trialDaysControl.updateValueAndValidity({ emitEvent: false });
     }
+
+    this.configureAudienceTypeDependentLimits(this.planForm.get('audienceType')?.value === 'teacher');
   }
 
   onDestroy(): void {
@@ -215,6 +239,13 @@ export class OwnerPlanCreateFacade {
     this.currencySearchQuery.set('');
   }
 
+  selectAudienceType(audienceType: string): void {
+    this.planForm.patchValue({ audienceType: audienceType as OwnerPlanAudienceType });
+    this.selectedAudienceType.set(audienceType);
+    this.showAudienceTypeDropdown.set(false);
+    this.audienceTypeSearchQuery.set('');
+  }
+
   onSubmit(): void {
     if (this.planForm.invalid) {
       this.planForm.markAllAsTouched();
@@ -231,14 +262,15 @@ export class OwnerPlanCreateFacade {
       status: (value.status || 'Draft') as OwnerPlanStatus,
       visibility: (value.visibility || 'Private') as OwnerPlanVisibility,
       currency: (value.currency || 'USD') as OwnerPlanCurrency,
+      audienceType: (value.audienceType || 'center') as OwnerPlanAudienceType,
       monthlyPrice: value.monthlyPrice ?? 0,
       yearlyPrice: value.yearlyPrice ?? 0,
       hasTrial: value.hasTrial ?? false,
       trialDays: value.hasTrial ? (value.trialDays ?? 14) : 0,
       maxStudents: value.maxStudents ?? 0,
-      maxTeachers: value.maxTeachers ?? 0,
+      maxTeachers: value.audienceType === 'teacher' ? 0 : (value.maxTeachers ?? 0),
       maxStorage: value.maxStorage ?? 0,
-      maxBranches: value.maxBranches ?? 0,
+      maxBranches: value.audienceType === 'teacher' ? 0 : (value.maxBranches ?? 0),
       moduleIds: value.moduleIds ?? [],
       autoRenew: value.autoRenew ?? false,
       allowDowngrade: value.allowDowngrade ?? false,
@@ -319,5 +351,38 @@ export class OwnerPlanCreateFacade {
     }
 
     return 'Unexpected error while saving plan.';
+  }
+
+  private configureAudienceTypeDependentLimits(isTeacher: boolean): void {
+    const maxTeachersControl = this.planForm.get('maxTeachers');
+    const maxBranchesControl = this.planForm.get('maxBranches');
+    if (!maxTeachersControl || !maxBranchesControl) {
+      return;
+    }
+
+    if (isTeacher) {
+      maxTeachersControl.setValidators([]);
+      maxTeachersControl.setValue(0, { emitEvent: false });
+      maxTeachersControl.disable({ emitEvent: false });
+
+      maxBranchesControl.setValidators([]);
+      maxBranchesControl.setValue(0, { emitEvent: false });
+      maxBranchesControl.disable({ emitEvent: false });
+    } else {
+      maxTeachersControl.enable({ emitEvent: false });
+      maxTeachersControl.setValidators([Validators.required, Validators.min(0)]);
+      if (maxTeachersControl.value == null) {
+        maxTeachersControl.setValue(0, { emitEvent: false });
+      }
+
+      maxBranchesControl.enable({ emitEvent: false });
+      maxBranchesControl.setValidators([Validators.required, Validators.min(0)]);
+      if (maxBranchesControl.value == null) {
+        maxBranchesControl.setValue(0, { emitEvent: false });
+      }
+    }
+
+    maxTeachersControl.updateValueAndValidity({ emitEvent: false });
+    maxBranchesControl.updateValueAndValidity({ emitEvent: false });
   }
 }

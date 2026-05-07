@@ -1,6 +1,7 @@
 export type OwnerPlanStatus = 'Active' | 'Archived' | 'Draft';
 export type OwnerPlanVisibility = 'Public' | 'Private';
 export type OwnerPlanCurrency = 'USD' | 'EUR' | 'EGP';
+export type OwnerPlanAudienceType = 'center' | 'teacher';
 
 export interface OwnerPlanOption {
   id: string;
@@ -28,6 +29,7 @@ export interface OwnerPlanCreatePayload {
   status: OwnerPlanStatus;
   visibility: OwnerPlanVisibility;
   currency: OwnerPlanCurrency;
+  audienceType: OwnerPlanAudienceType;
   monthlyPrice: number;
   yearlyPrice: number;
   hasTrial: boolean;

@@ -19,13 +19,8 @@ export class OwnerTenantCreateDataService {
   readonly subscriptionTemplates = signal<TenantPlanOption[]>([]);
 
   readonly tenantTypes = [
-    'School',
-    'Educational Center',
-    'Individual Tutor',
-    'Corporate Training',
-    'University',
-    'Bootcamp',
-    'Online Academy',
+    'Center',
+    'Teacher'
   ];
 
   readonly industries = [

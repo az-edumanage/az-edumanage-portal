@@ -14,6 +14,10 @@ export class OwnerPlanCreateStore {
 
   readonly showCurrencyDropdown = signal(false);
   readonly currencySearchQuery = signal('');
+
+  readonly showAudienceTypeDropdown = signal(false);
+  readonly audienceTypeSearchQuery = signal('');
+  readonly selectedAudienceType = signal<string>('');
   readonly existingPlans = signal<{ id: string; name: string }[]>([]);
   readonly moduleOptions = signal<OwnerPlanModuleOption[]>([]);
 

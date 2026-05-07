@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { HttpClient, HttpEvent, HttpParams, HttpRequest } from '@angular/common/http';
+import { firstValueFrom, Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
 export interface WebsiteSettingsView {
@@ -66,6 +66,11 @@ export interface FeatureItem {
   ctaLabel: string | null;
   ctaFontSize?: number | null;
   ctaLink: string | null;
+  imageUrl?: string | null;
+  detailTitle?: string | null;
+  detailSummary?: string | null;
+  detailContent?: string | null;
+  detailImageUrl?: string | null;
   visible: boolean;
   displayOrder: number;
 }
@@ -150,6 +155,7 @@ export interface MarketingConfig {
   integrations: MarketingIntegrationsConfig;
   contact: MarketingContactConfig;
   docsVideoUrl?: string | null;
+  docsVideos?: { title?: string | null; url: string }[];
 }
 
 export interface OnboardingConfig {
@@ -211,6 +217,50 @@ export class OwnerWebsiteSettingsDataService {
   async publish(tenantId: string): Promise<WebsiteSettingsView> {
     return firstValueFrom(
       this.http.post<WebsiteSettingsView>(`${environment.apiBaseUrl}/owner/website-settings/${tenantId}/publish`, {}),
+    );
+  }
+
+  uploadWebsiteAssetWithProgress(
+    tenantId: string,
+    section: string,
+    file: File,
+  ): Observable<HttpEvent<{ url: string; fileName: string; section: string; tenantId: string }>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const request = new HttpRequest(
+      'POST',
+      `${environment.apiBaseUrl}/owner/website-settings/${tenantId}/assets/upload`,
+      formData,
+      { params: new HttpParams().set('section', section), reportProgress: true },
+    );
+    return this.http.request<{ url: string; fileName: string; section: string; tenantId: string }>(request);
+  }
+
+  async uploadWebsiteAsset(
+    tenantId: string,
+    section: string,
+    file: File,
+  ): Promise<{ url: string; fileName: string; section: string; tenantId: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return firstValueFrom(
+      this.http.post<{ url: string; fileName: string; section: string; tenantId: string }>(
+        `${environment.apiBaseUrl}/owner/website-settings/${tenantId}/assets/upload`,
+        formData,
+        { params: new HttpParams().set('section', section) },
+      ),
+    );
+  }
+
+  async deleteWebsiteAsset(
+    tenantId: string,
+    section: string,
+    fileName: string,
+  ): Promise<{ deleted: boolean }> {
+    return firstValueFrom(
+      this.http.delete<{ deleted: boolean }>(
+        `${environment.apiBaseUrl}/owner/website-settings/${tenantId}/assets/${section}/${encodeURIComponent(fileName)}`,
+      ),
     );
   }
 }

@@ -262,7 +262,8 @@ export const EN_TRANSLATIONS = {
 
   // Owner Tenants List Table
   'owner.tenants.tableColumnName': 'Name',
-    'owner.tenants.tableColumnStatus': 'Status',
+  'owner.tenants.tableColumnType': 'Type',
+  'owner.tenants.tableColumnStatus': 'Status',
   'owner.tenants.tableColumnPlan': 'Plan',
   'owner.tenants.tableColumnOwnerMail':'Owner E-Mail',
   'owner.tenants.tableColumnPhoneNo': 'Phone No',

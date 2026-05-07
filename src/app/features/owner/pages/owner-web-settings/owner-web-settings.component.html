@@ -160,28 +160,130 @@
       </div>
 
       <div class="owner-web-card p-5 space-y-4" [class.owner-web-hidden]="activeSection() !== 'features'">
-        <div class="flex items-center justify-between"><h3 class="owner-web-section-title">Features</h3><button type="button" (click)="addFeature()" class="owner-web-mini-btn">Add Feature</button></div>
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="owner-web-section-title">Features</h3>
+            <p class="owner-web-feature-subtitle">Manage and organize your platform feature modules.</p>
+          </div>
+          <button type="button" (click)="addFeature()" class="owner-web-btn owner-web-btn-primary">Add Feature</button>
+        </div>
         <div formArrayName="features" class="space-y-3">
           @for (row of features.controls; track $index) {
-            <div [formGroupName]="$index" class="owner-web-feature-block">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div class="owner-web-icon-picker">
-                  <mat-icon>{{ featureIconControlAt($index).value || 'help' }}</mat-icon>
-                  <input
-                    [formControl]="featureIconControlAt($index)"
-                    class="owner-web-input"
-                    list="owner-integration-icon-options"
-                    placeholder="Search icon name (mail, hub, security...)"
-                  />
+            <div [formGroupName]="$index" class="owner-web-feature-accordion">
+              <button type="button" class="owner-web-feature-accordion-head" (click)="toggleFeatureAccordion($index)">
+                <div class="owner-web-feature-accordion-head-left">
+                  <span class="owner-web-feature-chip">Feature {{ $index + 1 }}</span>
+                  <span class="owner-web-feature-divider">•</span>
+                  <span class="owner-web-feature-title">{{ featureAccordionTitle($index) }}</span>
                 </div>
-                <input formControlName="titleText" class="owner-web-input" placeholder="Title" data-feature-title="true" [attr.data-feature-index]="$index" />
-                <input type="number" min="1" max="96" step="1" formControlName="titleFontSize" class="owner-web-input" placeholder="Title font size (px)" />
-                <textarea formControlName="descriptionText" class="owner-web-textarea md:col-span-2" placeholder="Description"></textarea>
-                <input type="number" min="1" max="96" step="1" formControlName="descriptionFontSize" class="owner-web-input" placeholder="Description font size (px)" />
-                <input formControlName="ctaLabel" class="owner-web-input" placeholder="CTA label" />
-                <input type="number" min="1" max="96" step="1" formControlName="ctaFontSize" class="owner-web-input" placeholder="Learn more font size (px)" />
-                <input formControlName="ctaLink" class="owner-web-input" placeholder="CTA link" />
+                <mat-icon class="owner-web-feature-accordion-arrow" [class.owner-web-feature-accordion-arrow-open]="isFeatureAccordionOpen($index)">expand_more</mat-icon>
+              </button>
+
+              @if (isFeatureAccordionOpen($index)) {
+              <div class="owner-web-feature-accordion-body owner-web-feature-accordion-body-open">
+                <section class="owner-web-feature-panel">
+                  <h4 class="owner-web-feature-panel-title">General Information</h4>
+                  <p class="owner-web-feature-panel-subtitle">Core identifying details for this feature module.</p>
+                  <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                    <div class="md:col-span-5">
+                      <label class="owner-web-field"><span>Domain / Icon Type</span></label>
+                      <div class="owner-web-icon-picker">
+                        <mat-icon>{{ featureIconControlAt($index).value || 'help' }}</mat-icon>
+                        <input [formControl]="featureIconControlAt($index)" class="owner-web-input" list="owner-integration-icon-options" placeholder="domain" />
+                      </div>
+                    </div>
+                    <div class="md:col-span-4">
+                      <label class="owner-web-field"><span>Feature Title</span></label>
+                      <input formControlName="titleText" class="owner-web-input" placeholder="Feature title" data-feature-title="true" [attr.data-feature-index]="$index" />
+                    </div>
+                    <div class="md:col-span-3">
+                      <label class="owner-web-field"><span>Order ID</span></label>
+                      <input type="number" min="1" step="1" formControlName="displayOrder" class="owner-web-input" placeholder="Order ID" />
+                    </div>
+                    <div class="md:col-span-12">
+                      <label class="owner-web-field"><span>Feature Summary</span></label>
+                      <textarea formControlName="descriptionText" class="owner-web-textarea" placeholder="Feature summary"></textarea>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="owner-web-feature-panel">
+                  <h4 class="owner-web-feature-panel-title">Navigation & Metadata</h4>
+                  <p class="owner-web-feature-panel-subtitle">Configure how this feature appears in menus and links.</p>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label class="owner-web-field"><span>CTA Label / HTML Snippet</span></label>
+                      <input formControlName="ctaLabel" class="owner-web-input" placeholder="CTA Label" />
+                    </div>
+                    <div>
+                      <label class="owner-web-field"><span>URL Slug / Path</span></label>
+                      <input formControlName="ctaLink" class="owner-web-input" placeholder="/features" />
+                    </div>
+                    <div>
+                      <label class="owner-web-field"><span>Title Font Size (px)</span></label>
+                      <input type="number" min="1" max="96" step="1" formControlName="titleFontSize" class="owner-web-input" />
+                    </div>
+                    <div>
+                      <label class="owner-web-field"><span>Description Font Size (px)</span></label>
+                      <input type="number" min="1" max="96" step="1" formControlName="descriptionFontSize" class="owner-web-input" />
+                    </div>
+                    <div>
+                      <label class="owner-web-field"><span>Learn More Font Size (px)</span></label>
+                      <input type="number" min="1" max="96" step="1" formControlName="ctaFontSize" class="owner-web-input" />
+                    </div>
+                    <div>
+                      <label class="owner-web-field"><span>Visible</span></label>
+                      <label class="owner-web-check"><input type="checkbox" formControlName="visible" /> Show on website</label>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="owner-web-feature-panel">
+                  <h4 class="owner-web-feature-panel-title">Media Assets</h4>
+                  <p class="owner-web-feature-panel-subtitle">Primary visual representing this feature across the site.</p>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
+                    <div class="space-y-2">
+                      <label class="owner-web-field"><span>Feature Image URL</span></label>
+                      <input formControlName="imageUrl" class="owner-web-input" placeholder="https://... or /api/..." />
+                      <label
+                        class="owner-web-upload-dropzone cursor-pointer"
+                        [class.owner-web-upload-dropzone-active]="featureImageDragActive($index)"
+                        (dragover)="onFeatureImageDragOver($event, $index)"
+                        (dragleave)="onFeatureImageDragLeave($event, $index)"
+                        (drop)="onFeatureImageDrop($event, $index)">
+                        <input type="file" accept="image/*" class="hidden" (change)="onFeatureImageFileSelected($event, $index)" />
+                        <span class="owner-web-upload-dropzone-icon-wrap">
+                          <mat-icon class="owner-web-upload-dropzone-icon">image</mat-icon>
+                        </span>
+                        <p class="owner-web-upload-dropzone-title">
+                          <span class="owner-web-upload-dropzone-link">Upload a file</span>
+                          <span class="text-slate-500"> or drag and drop</span>
+                        </p>
+                        <p class="owner-web-upload-dropzone-hint">PNG, JPG, GIF up to 10MB</p>
+                      </label>
+                      @if (featureImageUploading($index)) {
+                        <p class="text-xs text-slate-500">Uploading... {{ featureImageUploadProgress($index) }}%</p>
+                      }
+                      <div class="w-full h-2 bg-slate-100 rounded overflow-hidden border border-slate-200">
+                        <div class="h-full bg-indigo-600 transition-all duration-200" [style.width.%]="featureImageUploadProgress($index)"></div>
+                      </div>
+                    </div>
+                    @if (row.get('imageUrl')?.value) {
+                      <div class="rounded-lg border border-slate-200 bg-slate-50 p-2">
+                        <img [src]="featurePreviewUrl($index)" alt="Feature preview" class="w-full h-44 object-cover rounded" />
+                      </div>
+                    }
+                  </div>
+
+                  <div class="grid grid-cols-1 gap-3 mt-3">
+                    <input formControlName="detailTitle" class="owner-web-input" placeholder="Detail page title" />
+                    <textarea formControlName="detailSummary" class="owner-web-textarea" placeholder="Detail page summary"></textarea>
+                    <textarea formControlName="detailContent" class="owner-web-textarea" placeholder="Detail page content (supports basic HTML)"></textarea>
+                    <input formControlName="detailImageUrl" class="owner-web-input" placeholder="Detail page hero image URL (optional)" />
+                  </div>
+                </section>
               </div>
+              }
               <div class="flex justify-end"><button type="button" (click)="removeFeature($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button></div>
             </div>
           }
@@ -380,19 +482,59 @@
 
         <div class="space-y-3">
           <h4 class="owner-web-section-title">Feature View Video</h4>
-          <div class="grid grid-cols-1 gap-3">
-            <input
-              formControlName="docsVideoUrl"
-              class="owner-web-input"
-              placeholder="Video URL (YouTube embed or direct mp4 URL)"
-            />
-            <div class="flex items-center gap-3">
-              <label class="owner-web-mini-btn cursor-pointer">
-                Upload from device
-                <input type="file" accept="video/*" class="hidden" (change)="onDocsVideoFileSelected($event)" />
-              </label>
-              <span class="text-xs text-slate-500">Local upload stores a data URL in this field.</span>
-            </div>
+          <div class="flex items-center justify-between">
+            <p class="text-xs text-slate-500">Add multiple videos. Website will display slider controls.</p>
+            <button type="button" (click)="addMarketingDocsVideo()" class="owner-web-mini-btn">Add Video Row</button>
+          </div>
+          <div formArrayName="docsVideos" class="space-y-2">
+            @for (row of marketingDocsVideos.controls; track $index) {
+              <div [formGroupName]="$index" class="owner-web-feature-block">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <input formControlName="title" class="owner-web-input" placeholder="Video title" />
+                  <div class="flex items-center gap-2">
+                    <button
+                      type="button"
+                      class="owner-web-mini-btn"
+                      [class.owner-web-btn-primary]="docsVideoMode($index) === 'url'"
+                      (click)="setDocsVideoMode($index, 'url')">URL</button>
+                    <button
+                      type="button"
+                      class="owner-web-mini-btn"
+                      [class.owner-web-btn-primary]="docsVideoMode($index) === 'upload'"
+                      (click)="setDocsVideoMode($index, 'upload')">Upload</button>
+                  </div>
+                </div>
+                <div class="mt-2 space-y-2">
+                  @if (docsVideoMode($index) === 'url') {
+                    <input formControlName="url" class="owner-web-input" placeholder="Video URL" />
+                  } @else {
+                    <div class="flex items-center gap-2">
+                      <label class="owner-web-mini-btn cursor-pointer">
+                        Upload Video
+                        <input type="file" accept="video/*" class="hidden" (change)="onDocsVideoFileSelected($event, $index)" />
+                      </label>
+                      @if (docsVideoUploading($index)) {
+                        <span class="text-xs text-slate-500">Uploading... {{ docsVideoUploadProgress($index) }}%</span>
+                      }
+                    </div>
+                    <div class="w-full h-2 bg-slate-100 rounded overflow-hidden border border-slate-200">
+                      <div class="h-full bg-indigo-600 transition-all duration-200" [style.width.%]="docsVideoUploadProgress($index)"></div>
+                    </div>
+                  }
+
+                  @if (row.get('url')?.value) {
+                    <div class="rounded-lg border border-slate-200 bg-slate-50 p-2">
+                      <video class="w-full max-h-56 rounded bg-black" [src]="row.get('url')?.value" controls preload="metadata"></video>
+                    </div>
+                  }
+
+                  <div class="flex items-center gap-2">
+                    <button type="button" (click)="deleteDocsVideoAsset($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Delete Video</button>
+                    <button type="button" (click)="removeMarketingDocsVideo($index)" class="owner-web-mini-btn">Remove Row</button>
+                  </div>
+                </div>
+              </div>
+            }
           </div>
         </div>
       </div>

@@ -66,7 +66,7 @@ export class OwnerTenantsDataService {
       createdDate: this.toDateLabel(new Date().toISOString()),
       ownerEmail: payload.ownerEmail.trim().toLowerCase(),
       healthStatus: 'Healthy',
-      tenantType: 'Educational Center',
+      tenantType: 'center',
     };
     this.tenants.update((all) => [tenant, ...all]);
     return tenant;
@@ -74,7 +74,7 @@ export class OwnerTenantsDataService {
 
   private mapTenant(row: BackendTenantResponse): Tenant {
     const normalizedType = (row.tenantType || '').toLowerCase();
-    const tenantType = normalizedType.includes('teacher') ? 'Individual Teacher' : 'Educational Center';
+    const tenantType = normalizedType.includes('teacher') ? 'teacher' : 'center';
     return {
       id: row.id,
       name: row.centerName || 'N/A',

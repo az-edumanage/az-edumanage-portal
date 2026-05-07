@@ -33,6 +33,10 @@ export class OwnerPlanCreateComponent implements OnInit, OnDestroy {
   readonly currencySearchQuery = this.facade.currencySearchQuery;
   readonly currencies = this.facade.currencies;
   readonly filteredCurrencies = this.facade.filteredCurrencies;
+  readonly showAudienceTypeDropdown = this.facade.showAudienceTypeDropdown;
+  readonly audienceTypeSearchQuery = this.facade.audienceTypeSearchQuery;
+  readonly filteredAudienceTypes = this.facade.filteredAudienceTypes;
+  readonly isTeacherAudience = this.facade.isTeacherAudience;
 
   readonly existingPlans = this.facade.existingPlans;
   readonly moduleOptions = this.facade.moduleOptions;
@@ -62,6 +66,10 @@ export class OwnerPlanCreateComponent implements OnInit, OnDestroy {
 
   selectCurrency(currency: string): void {
     this.facade.selectCurrency(currency);
+  }
+
+  selectAudienceType(audienceType: string): void {
+    this.facade.selectAudienceType(audienceType);
   }
 
   onSubmit(): void {

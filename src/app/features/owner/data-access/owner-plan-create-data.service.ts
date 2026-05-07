@@ -4,6 +4,7 @@ import { from, Observable } from 'rxjs';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import {
+  OwnerPlanAudienceType,
   OwnerPlanCreatePayload,
   OwnerPlanCurrencyOption,
   OwnerPlanEditSeed,
@@ -21,6 +22,7 @@ interface PlanResponse {
   status: 'Active' | 'Archived' | 'Draft';
   visibility: 'Public' | 'Private';
   currency: 'USD' | 'EUR' | 'EGP';
+  audienceType?: OwnerPlanAudienceType;
   monthlyPrice: number;
   yearlyPrice: number;
   hasTrial?: boolean;
@@ -82,6 +84,7 @@ export class OwnerPlanCreateDataService {
         status: plan.status,
         visibility: plan.visibility,
         currency: plan.currency,
+        audienceType: plan.audienceType ?? 'center',
         monthlyPrice: plan.monthlyPrice,
         yearlyPrice: plan.yearlyPrice,
         hasTrial: !!plan.hasTrial,

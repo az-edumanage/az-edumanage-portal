@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpEventType } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { OwnerWebSettingsFacade } from '../../state/owner-web-settings.facade';
 import { environment } from '../../../../../environments/environment';
@@ -57,6 +57,7 @@ export class OwnerWebSettingsComponent implements OnInit {
   readonly integrationIconOptions = INTEGRATION_ICON_OPTIONS;
   readonly tenantId = computed(() => this.settings()?.tenantId ?? this.facade.resolveTenantId());
   readonly publicWebsiteUrl = 'http://localhost:3000/';
+  private readonly backendOrigin = environment.apiBaseUrl.replace(/\/api\/v1\/?$/, '');
   readonly apiPreviewUrl = computed(
     () => `${environment.apiBaseUrl}/public/website-settings/${this.tenantId()}`,
   );
@@ -67,6 +68,13 @@ export class OwnerWebSettingsComponent implements OnInit {
   readonly focusedFieldRichHtml = signal('');
   readonly focusedFieldFontSize = signal('16px');
   readonly focusedFieldEditorOpen = signal(false);
+  readonly docsVideoModeByIndex = signal<Record<number, 'url' | 'upload'>>({});
+  readonly docsVideoUploadProgressByIndex = signal<Record<number, number>>({});
+  readonly docsVideoUploadingByIndex = signal<Record<number, boolean>>({});
+  readonly featureImageUploadProgressByIndex = signal<Record<number, number>>({});
+  readonly featureImageUploadingByIndex = signal<Record<number, boolean>>({});
+  readonly featureImageDragActiveByIndex = signal<Record<number, boolean>>({});
+  readonly featureAccordionOpenByIndex = signal<Record<number, boolean>>({});
   private focusedFieldElement: HTMLInputElement | HTMLTextAreaElement | null = null;
   private promoEditorSelectionRange: Range | null = null;
   private focusedEditorSelectionRange: Range | null = null;
@@ -135,6 +143,7 @@ export class OwnerWebSettingsComponent implements OnInit {
         hqValue: ['', [Validators.required]],
       }),
       docsVideoUrl: [''],
+      docsVideos: this.fb.array([]),
     }),
     onboarding: this.fb.group({
       stepOneTitle: ['', [Validators.required]],
@@ -184,6 +193,9 @@ export class OwnerWebSettingsComponent implements OnInit {
   }
   get marketingIntegrationBullets(): FormArray<FormGroup> {
     return this.form.get(['marketing', 'integrations', 'bullets']) as FormArray<FormGroup>;
+  }
+  get marketingDocsVideos(): FormArray<FormGroup> {
+    return this.form.get(['marketing', 'docsVideos']) as FormArray<FormGroup>;
   }
   get trialFeatureBullets(): FormArray<FormGroup> {
     return this.form.get(['trialDashboard', 'trialFeatureBullets']) as FormArray<FormGroup>;
@@ -284,11 +296,76 @@ export class OwnerWebSettingsComponent implements OnInit {
   }
 
   addFeature(): void {
-    this.features.push(this.buildFeatureGroup({ iconKey: 'star', titleText: '', titleFontSize: 32, descriptionText: '', descriptionFontSize: 18, ctaLabel: 'Learn More', ctaFontSize: 18, ctaLink: '/features', visible: true, displayOrder: this.features.length + 1 }));
+    this.features.push(this.buildFeatureGroup({
+      iconKey: 'star',
+      titleText: '',
+      titleFontSize: 32,
+      descriptionText: '',
+      descriptionFontSize: 18,
+      ctaLabel: 'Learn More',
+      ctaFontSize: 18,
+      ctaLink: '/features',
+      imageUrl: '',
+      detailTitle: '',
+      detailSummary: '',
+      detailContent: '',
+      detailImageUrl: '',
+      visible: true,
+      displayOrder: this.features.length + 1,
+    }));
+    const nextIndex = this.features.length - 1;
+    this.featureAccordionOpenByIndex.update((state) => ({ ...state, [nextIndex]: true }));
   }
 
   removeFeature(index: number): void {
     this.features.removeAt(index);
+    this.featureAccordionOpenByIndex.update((state) => {
+      const next: Record<number, boolean> = {};
+      this.features.controls.forEach((_, i) => {
+        const previousIndex = i >= index ? i + 1 : i;
+        next[i] = i === 0 ? true : !!state[previousIndex];
+      });
+      return next;
+    });
+  }
+
+  featureImageUploadProgress(index: number): number {
+    return this.featureImageUploadProgressByIndex()[index] ?? 0;
+  }
+
+  featureImageUploading(index: number): boolean {
+    return this.featureImageUploadingByIndex()[index] ?? false;
+  }
+
+  isFeatureAccordionOpen(index: number): boolean {
+    const state = this.featureAccordionOpenByIndex();
+    if (Object.prototype.hasOwnProperty.call(state, index)) {
+      return !!state[index];
+    }
+    return index === 0;
+  }
+
+  toggleFeatureAccordion(index: number): void {
+    this.featureAccordionOpenByIndex.update((state) => ({ ...state, [index]: !this.isFeatureAccordionOpen(index) }));
+  }
+
+  featureAccordionTitle(index: number): string {
+    const title = String(this.features.at(index)?.get('titleText')?.value ?? '').trim();
+    return title || `Feature ${index + 1}`;
+  }
+
+  featurePreviewUrl(index: number): string {
+    const raw = String(this.features.at(index)?.get('imageUrl')?.value ?? '').trim();
+    if (!raw) {
+      return '';
+    }
+    if (/^https?:\/\//i.test(raw) || raw.startsWith('data:') || raw.startsWith('blob:')) {
+      return raw;
+    }
+    if (raw.startsWith('/')) {
+      return `${this.backendOrigin}${raw}`;
+    }
+    return `${this.backendOrigin}/${raw}`;
   }
 
   addOnboardingTask(): void {
@@ -321,6 +398,45 @@ export class OwnerWebSettingsComponent implements OnInit {
   }
   removeMarketingIntegrationBullet(index: number): void {
     this.marketingIntegrationBullets.removeAt(index);
+  }
+  addMarketingDocsVideo(): void {
+    this.marketingDocsVideos.push(this.fb.group({
+      title: [''],
+      url: [''],
+    }));
+  }
+  removeMarketingDocsVideo(index: number): void {
+    this.marketingDocsVideos.removeAt(index);
+    const firstUrl = this.marketingDocsVideos.at(0)?.get('url')?.value ?? '';
+    (this.form.get(['marketing', 'docsVideoUrl']) as FormControl<string>).setValue(String(firstUrl));
+  }
+  setDocsVideoMode(index: number, mode: 'url' | 'upload'): void {
+    this.docsVideoModeByIndex.update((current) => ({ ...current, [index]: mode }));
+  }
+  docsVideoMode(index: number): 'url' | 'upload' {
+    return this.docsVideoModeByIndex()[index] ?? 'url';
+  }
+  docsVideoUploadProgress(index: number): number {
+    return this.docsVideoUploadProgressByIndex()[index] ?? 0;
+  }
+  docsVideoUploading(index: number): boolean {
+    return this.docsVideoUploadingByIndex()[index] ?? false;
+  }
+  async deleteDocsVideoAsset(index: number): Promise<void> {
+    const url = String(this.marketingDocsVideos.at(index)?.get('url')?.value ?? '').trim();
+    if (!url) {
+      return;
+    }
+    const parsed = this.parseWebsiteAssetUrl(url);
+    if (parsed) {
+      await this.facade.deleteWebsiteAsset(parsed.section, parsed.fileName).catch(() => null);
+    }
+    const row = this.marketingDocsVideos.at(index);
+    row?.get('url')?.setValue('');
+    row?.markAsDirty();
+    if (index === 0) {
+      (this.form.get(['marketing', 'docsVideoUrl']) as FormControl<string>).setValue('');
+    }
   }
 
   addTrialFeatureBullet(): void {
@@ -385,7 +501,7 @@ export class OwnerWebSettingsComponent implements OnInit {
     }
   }
 
-  async onDocsVideoFileSelected(event: Event): Promise<void> {
+  async onDocsVideoFileSelected(event: Event, index?: number): Promise<void> {
     const input = event.target as HTMLInputElement | null;
     const file = input?.files?.[0];
     if (!file) {
@@ -400,22 +516,54 @@ export class OwnerWebSettingsComponent implements OnInit {
       return;
     }
 
+    const targetIndex = typeof index === 'number' ? index : this.marketingDocsVideos.length;
+    if (typeof index !== 'number') {
+      this.marketingDocsVideos.push(this.fb.group({
+        title: [file.name.replace(/\.[^.]+$/, '') || 'Feature Video', Validators.required],
+        url: [''],
+      }));
+    }
+    this.docsVideoUploadingByIndex.update((current) => ({ ...current, [targetIndex]: true }));
+    this.docsVideoUploadProgressByIndex.update((current) => ({ ...current, [targetIndex]: 0 }));
+    this.facade.uploadWebsiteAssetWithProgress('feature-view', file).subscribe({
+      next: (event) => {
+        if (event.type === HttpEventType.UploadProgress) {
+          const total = event.total ?? file.size;
+          const percent = total > 0 ? Math.round((event.loaded / total) * 100) : 0;
+          this.docsVideoUploadProgressByIndex.update((current) => ({ ...current, [targetIndex]: percent }));
+        }
+        if (event.type === HttpEventType.Response && event.body) {
+          const row = this.marketingDocsVideos.at(targetIndex);
+          row?.get('url')?.setValue(event.body.url);
+          if (!(row?.get('title')?.value ?? '').toString().trim()) {
+            row?.get('title')?.setValue(file.name.replace(/\.[^.]+$/, '') || 'Feature Video');
+          }
+          const firstUrl = this.marketingDocsVideos.at(0)?.get('url')?.value ?? event.body.url;
+          const control = this.form.get(['marketing', 'docsVideoUrl']) as FormControl<string>;
+          control.setValue(String(firstUrl));
+          control.markAsDirty();
+          this.docsVideoUploadProgressByIndex.update((current) => ({ ...current, [targetIndex]: 100 }));
+          this.saveStatus.set({
+            type: 'success',
+            title: 'Video Uploaded',
+            message: 'Feature video uploaded to backend storage. Save draft and publish to apply.',
+          });
+        }
+      },
+      error: (error) => {
+        this.saveStatus.set({
+          type: 'error',
+          title: 'Upload Failed',
+          message: this.resolveError(error),
+        });
+        this.docsVideoUploadProgressByIndex.update((current) => ({ ...current, [targetIndex]: 0 }));
+      },
+      complete: () => {
+        this.docsVideoUploadingByIndex.update((current) => ({ ...current, [targetIndex]: false }));
+      },
+    });
     try {
-      const dataUrl = await this.readFileAsDataUrl(file);
-      const control = this.form.get(['marketing', 'docsVideoUrl']) as FormControl<string>;
-      control.setValue(dataUrl);
-      control.markAsDirty();
-      this.saveStatus.set({
-        type: 'success',
-        title: 'Video Loaded',
-        message: 'Video selected from local device. Save draft and publish to apply.',
-      });
-    } catch {
-      this.saveStatus.set({
-        type: 'error',
-        title: 'Upload Failed',
-        message: 'Could not read the selected video file.',
-      });
+      // no-op: upload handled by observable above
     } finally {
       if (input) {
         input.value = '';
@@ -438,26 +586,111 @@ export class OwnerWebSettingsComponent implements OnInit {
       return;
     }
     try {
-      const dataUrl = await this.readFileAsDataUrl(file);
+      const uploaded = await this.facade.uploadWebsiteAsset('hero-background', file);
       const control = this.form.get(['hero', 'backgroundImageUrl']) as FormControl<string>;
-      control.setValue(dataUrl);
+      control.setValue(uploaded.url);
       control.markAsDirty();
       this.saveStatus.set({
         type: 'success',
-        title: 'Image Loaded',
-        message: 'Hero background selected. Save draft and publish to apply.',
+        title: 'Image Uploaded',
+        message: 'Hero background uploaded to backend storage. Save draft and publish to apply.',
       });
-    } catch {
+    } catch (error) {
       this.saveStatus.set({
         type: 'error',
         title: 'Upload Failed',
-        message: 'Could not read the selected image file.',
+        message: this.resolveError(error),
       });
     } finally {
       if (input) {
         input.value = '';
       }
     }
+  }
+
+  async onFeatureImageFileSelected(event: Event, index: number): Promise<void> {
+    const input = event.target as HTMLInputElement | null;
+    const file = input?.files?.[0];
+    if (!file) {
+      return;
+    }
+    this.uploadFeatureImageFile(file, index, input);
+  }
+
+  onFeatureImageDragOver(event: DragEvent, index: number): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.featureImageDragActiveByIndex.update((s) => ({ ...s, [index]: true }));
+  }
+
+  onFeatureImageDragLeave(event: DragEvent, index: number): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.featureImageDragActiveByIndex.update((s) => ({ ...s, [index]: false }));
+  }
+
+  onFeatureImageDrop(event: DragEvent, index: number): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.featureImageDragActiveByIndex.update((s) => ({ ...s, [index]: false }));
+    const file = event.dataTransfer?.files?.[0];
+    if (!file) {
+      return;
+    }
+    this.uploadFeatureImageFile(file, index);
+  }
+
+  featureImageDragActive(index: number): boolean {
+    return !!this.featureImageDragActiveByIndex()[index];
+  }
+
+  private uploadFeatureImageFile(file: File, index: number, input?: HTMLInputElement | null): void {
+    if (!file.type.startsWith('image/')) {
+      this.saveStatus.set({
+        type: 'error',
+        title: 'Invalid File',
+        message: 'Please choose an image file.',
+      });
+      return;
+    }
+
+    this.featureImageUploadingByIndex.update((s) => ({ ...s, [index]: true }));
+    this.featureImageUploadProgressByIndex.update((s) => ({ ...s, [index]: 0 }));
+
+    this.facade.uploadWebsiteAssetWithProgress('features', file).subscribe({
+      next: (evt) => {
+        if (evt.type === HttpEventType.UploadProgress) {
+          const total = evt.total ?? file.size;
+          const percent = total > 0 ? Math.round((evt.loaded / total) * 100) : 0;
+          this.featureImageUploadProgressByIndex.update((s) => ({ ...s, [index]: percent }));
+        }
+        if (evt.type === HttpEventType.Response && evt.body) {
+          const control = this.features.at(index).get('imageUrl') as FormControl<string>;
+          control.setValue(evt.body.url);
+          control.markAsDirty();
+          this.featureImageUploadProgressByIndex.update((s) => ({ ...s, [index]: 100 }));
+          this.saveStatus.set({
+            type: 'success',
+            title: 'Image Uploaded',
+            message: 'Feature image uploaded to backend storage. Save draft and publish to apply.',
+          });
+        }
+      },
+      error: (error) => {
+        this.featureImageUploadProgressByIndex.update((s) => ({ ...s, [index]: 0 }));
+        this.saveStatus.set({
+          type: 'error',
+          title: 'Upload Failed',
+          message: this.resolveError(error),
+        });
+      },
+      complete: () => {
+        this.featureImageUploadingByIndex.update((s) => ({ ...s, [index]: false }));
+        if (input) {
+          input.value = '';
+        }
+      },
+    });
   }
 
   applyPromoBlockquote(): void {
@@ -755,6 +988,7 @@ export class OwnerWebSettingsComponent implements OnInit {
           hqValue: data.marketing?.contact?.hqValue ?? '',
         },
         docsVideoUrl: data.marketing?.docsVideoUrl ?? '',
+        docsVideos: [],
       },
       trialDashboard: {
         headerTitle: data.trialDashboard?.headerTitle ?? '',
@@ -806,6 +1040,19 @@ export class OwnerWebSettingsComponent implements OnInit {
     this.resetFormArray(
       this.marketingIntegrationBullets,
       (data.marketing?.integrations?.bullets?.length ? data.marketing.integrations.bullets : ['Open API for custom integrations']).map((item) => this.fb.group({ value: [item, Validators.required] })),
+    );
+    this.resetFormArray(
+      this.marketingDocsVideos,
+      (
+        data.marketing?.docsVideos?.length
+          ? data.marketing.docsVideos
+          : (data.marketing?.docsVideoUrl ? [{ title: 'Feature Video', url: data.marketing.docsVideoUrl }] : [])
+      ).map((row) =>
+        this.fb.group({
+          title: [row.title ?? 'Feature Video'],
+          url: [row.url ?? ''],
+        }),
+      ),
     );
     this.resetFormArray(
       this.trialFeatureBullets,
@@ -861,6 +1108,11 @@ export class OwnerWebSettingsComponent implements OnInit {
       ctaLabel: [row.ctaLabel ?? ''],
       ctaFontSize: [row.ctaFontSize ?? 18],
       ctaLink: [row.ctaLink ?? ''],
+      imageUrl: [row.imageUrl ?? ''],
+      detailTitle: [row.detailTitle ?? ''],
+      detailSummary: [row.detailSummary ?? ''],
+      detailContent: [row.detailContent ?? ''],
+      detailImageUrl: [row.detailImageUrl ?? ''],
       visible: [row.visible],
       displayOrder: [row.displayOrder],
     });
@@ -947,6 +1199,11 @@ export class OwnerWebSettingsComponent implements OnInit {
             ?? 18,
         ),
         ctaLink: String(group.get('ctaLink')?.value ?? fallback.ctaLink ?? '').trim(),
+        imageUrl: String(group.get('imageUrl')?.value ?? (fallback as { imageUrl?: string | null }).imageUrl ?? '').trim(),
+        detailTitle: this.stripHtmlToText(String(group.get('detailTitle')?.value ?? (fallback as { detailTitle?: string | null }).detailTitle ?? '')).trim(),
+        detailSummary: this.normalizeRichHtml(String(group.get('detailSummary')?.value ?? (fallback as { detailSummary?: string | null }).detailSummary ?? '')),
+        detailContent: this.normalizeRichHtml(String(group.get('detailContent')?.value ?? (fallback as { detailContent?: string | null }).detailContent ?? '')),
+        detailImageUrl: String(group.get('detailImageUrl')?.value ?? (fallback as { detailImageUrl?: string | null }).detailImageUrl ?? '').trim(),
         visible: Boolean(group.get('visible')?.value ?? fallback.visible ?? true),
         displayOrder: Number(group.get('displayOrder')?.value ?? fallback.displayOrder ?? index + 1),
       };
@@ -1002,7 +1259,13 @@ export class OwnerWebSettingsComponent implements OnInit {
           hqLabel: String(raw.marketing?.contact?.hqLabel ?? '').trim(),
           hqValue: String(raw.marketing?.contact?.hqValue ?? '').trim(),
         },
-        docsVideoUrl: String(raw.marketing?.docsVideoUrl ?? '').trim(),
+        docsVideoUrl: String(this.marketingDocsVideos.at(0)?.get('url')?.value ?? raw.marketing?.docsVideoUrl ?? '').trim(),
+        docsVideos: this.marketingDocsVideos.controls
+          .map((group) => ({
+            title: String(group.get('title')?.value ?? '').trim(),
+            url: String(group.get('url')?.value ?? '').trim(),
+          }))
+          .filter((item) => item.url.length > 0),
       },
       onboarding: {
         stepOneTitle: raw.onboarding?.stepOneTitle ?? '',
@@ -1143,5 +1406,16 @@ export class OwnerWebSettingsComponent implements OnInit {
       reader.onerror = () => reject(reader.error);
       reader.readAsDataURL(file);
     });
+  }
+
+  private parseWebsiteAssetUrl(url: string): { section: string; fileName: string } | null {
+    const match = url.match(/\/api\/v1\/public\/website-assets\/[^/]+\/([^/]+)\/([^/?#]+)/);
+    if (!match) {
+      return null;
+    }
+    return {
+      section: decodeURIComponent(match[1]),
+      fileName: decodeURIComponent(match[2]),
+    };
   }
 }
