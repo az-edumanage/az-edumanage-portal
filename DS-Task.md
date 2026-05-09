@@ -6,6 +6,7 @@ Status legend:
 - `Blocked`
 - `Done`
 
+
 ## Epic 0: Architecture Alignment
 - [x] `Done` Switch project build mode from SSR to CSR (`angular.json` CSR-only build options, remove SSR serve script) (`docs/architecture-csr-migration.md`).
 

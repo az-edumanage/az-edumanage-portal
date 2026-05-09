@@ -41,11 +41,13 @@ Build an enterprise-grade Design System on top of the current Angular + Tailwind
 
 ## 6) Migration Phases
 1. Baseline + safety net
+
 2. Token foundation
 3. Tailwind and Material alignment
 4. Primitive standardization
 5. Feature adoption
 6. Hardening
+
 
 ## 7) Definition of Done (Program Level)
 - 100% critical views pass visual comparison in light/dark themes.
@@ -54,6 +56,7 @@ Build an enterprise-grade Design System on top of the current Angular + Tailwind
 - Shared primitives cover repeated UI patterns.
 - Lint/CI prevents token bypass and style drift.
 - Legacy style compatibility shims are removed only after full adoption.
+
 
 ## Current Execution Status
 - Epic 5 slices are completed through Slice 07.

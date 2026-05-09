@@ -7,7 +7,7 @@ import { AuthSessionService } from './core/auth/auth-session.service';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-root',
-  imports: [RouterOutlet],
+    imports: [RouterOutlet, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
