@@ -70,6 +70,7 @@ export const EN_TRANSLATIONS = {
   'owner.tenants.filter.status': 'Status',
   'owner.tenants.filter.plan': 'Plan',
   'owner.tenants.filter.health': 'Health',
+  'owner.tenants.tableColumnSubscription': 'Subscription',
   'owner.tenants.filter.search': 'Search options...',
   'owner.tenants.filter.clearAll': 'Clear all',
   'owner.settings.tab.general': 'General',
@@ -269,6 +270,7 @@ export const EN_TRANSLATIONS = {
   'owner.tenants.tableColumnPhoneNo': 'Phone No',
   'owner.tenants.tableColumnCreatedAt': 'Created At',
   'owner.tenants.tableColumnHealth': 'App Health',
+  'owner.tenants.tableColumnCreatedBy': 'Created By',
   'owner.tenants.tableColumnAction': 'Action ',
   'owner.tenants.fullNameLabel': 'Full Name',
 

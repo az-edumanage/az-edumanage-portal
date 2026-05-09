@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { Tenant, TenantStatus } from '../models/owner-tenants.models';
+import { Tenant, TenantStatus, TenantSubscriptionType, TenantCreatedBy } from '../models/owner-tenants.models';
 import { environment } from '../../../../environments/environment';
 import { AuthApiService } from '../../../core/auth/auth-api.service';
 
@@ -17,6 +17,9 @@ interface BackendTenantResponse {
   contactPhone: string | null;
   planName: string;
   isTrial: boolean;
+  subscriptionType?: string | null;
+  createdBy?: string | null;
+  provisioningTriggeredBy?: string | null;
   createdAt: string;
 }
 
@@ -67,6 +70,8 @@ export class OwnerTenantsDataService {
       ownerEmail: payload.ownerEmail.trim().toLowerCase(),
       healthStatus: 'Healthy',
       tenantType: 'center',
+      subscriptionType: 'trial',
+      createdBy: 'system',
     };
     this.tenants.update((all) => [tenant, ...all]);
     return tenant;
@@ -86,7 +91,32 @@ export class OwnerTenantsDataService {
       ownerEmail: row.contactEmail?.trim() || 'N/A',
       healthStatus: 'Healthy',
       tenantType,
+      subscriptionType: this.normalizeSubscriptionType(row.subscriptionType, row.isTrial),
+      createdBy: this.normalizeCreatedBy(row.createdBy, row.provisioningTriggeredBy),
     };
+  }
+
+  private normalizeSubscriptionType(raw: string | null | undefined, isTrial: boolean): TenantSubscriptionType {
+    const normalized = String(raw ?? '').trim().toLowerCase();
+    if (normalized === 'production') {
+      return 'production';
+    }
+    if (normalized === 'trial') {
+      return 'trial';
+    }
+    return isTrial ? 'trial' : 'production';
+  }
+
+  private normalizeCreatedBy(
+    createdByRaw: string | null | undefined,
+    triggeredByRaw: string | null | undefined,
+  ): TenantCreatedBy {
+    const createdBy = String(createdByRaw ?? '').trim().toLowerCase();
+    if (createdBy === 'admin' || createdBy === 'system') {
+      return createdBy;
+    }
+    const triggeredBy = String(triggeredByRaw ?? '').trim().toLowerCase();
+    return triggeredBy === 'admin' ? 'admin' : 'system';
   }
 
   private toDateLabel(value: string): string {

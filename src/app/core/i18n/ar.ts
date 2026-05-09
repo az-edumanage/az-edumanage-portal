@@ -5,6 +5,8 @@ export const AR_TRANSLATIONS: Record<I18nKey, string> = {
     "owner.tenants.tableColumnAction": "الإجراءات",
     "owner.tenants.tableColumnCreatedAt": "تاريخ الإنشاء",
     "owner.tenants.tableColumnHealth": "حالة التطبيق",
+    "owner.tenants.tableColumnSubscription": "الاشتراك",
+    "owner.tenants.tableColumnCreatedBy": "تم الإنشاء بواسطة",
     "owner.tenants.tableColumnOwnerMail": "بريد المسؤول",
     "owner.tenants.tableColumnPhoneNo": "رقم الهاتف",
     "owner.tenants.tableColumnPlan": "خطة الإشتراك",

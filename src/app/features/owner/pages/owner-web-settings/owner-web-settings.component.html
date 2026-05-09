@@ -196,14 +196,24 @@
                       <label class="owner-web-field"><span>Feature Title</span></label>
                       <input formControlName="titleText" class="owner-web-input" placeholder="Feature title" data-feature-title="true" [attr.data-feature-index]="$index" />
                     </div>
-                    <div class="md:col-span-3">
+                    <!-- <div class="md:col-span-3">
                       <label class="owner-web-field"><span>Order ID</span></label>
                       <input type="number" min="1" step="1" formControlName="displayOrder" class="owner-web-input" placeholder="Order ID" />
+                    </div> -->
+
+                    <div>
+                      <label class="owner-web-field"><span>Title Font Size (px)</span></label>
+                      <input type="number" min="1" max="96" step="1" formControlName="titleFontSize" class="owner-web-input" />
                     </div>
-                    <div class="md:col-span-12">
+                    <div class="md:col-span-9">
                       <label class="owner-web-field"><span>Feature Summary</span></label>
                       <textarea formControlName="descriptionText" class="owner-web-textarea" placeholder="Feature summary"></textarea>
                     </div>
+                    <div>
+                      <label class="owner-web-field"><span>Description Font Size (px)</span></label>
+                      <input type="number" min="1" max="96" step="1" formControlName="descriptionFontSize" class="owner-web-input" />
+                    </div>
+                    
                   </div>
                 </section>
 
@@ -215,18 +225,19 @@
                       <label class="owner-web-field"><span>CTA Label / HTML Snippet</span></label>
                       <input formControlName="ctaLabel" class="owner-web-input" placeholder="CTA Label" />
                     </div>
-                    <div>
+                    <!-- <div>
                       <label class="owner-web-field"><span>URL Slug / Path</span></label>
                       <input formControlName="ctaLink" class="owner-web-input" placeholder="/features" />
-                    </div>
-                    <div>
+                    </div> -->
+                    <!-- <div>
                       <label class="owner-web-field"><span>Title Font Size (px)</span></label>
                       <input type="number" min="1" max="96" step="1" formControlName="titleFontSize" class="owner-web-input" />
-                    </div>
-                    <div>
+                    </div> -->
+                    
+                    <!-- <div>
                       <label class="owner-web-field"><span>Description Font Size (px)</span></label>
                       <input type="number" min="1" max="96" step="1" formControlName="descriptionFontSize" class="owner-web-input" />
-                    </div>
+                    </div> -->
                     <div>
                       <label class="owner-web-field"><span>Learn More Font Size (px)</span></label>
                       <input type="number" min="1" max="96" step="1" formControlName="ctaFontSize" class="owner-web-input" />
@@ -278,8 +289,22 @@
                   <div class="grid grid-cols-1 gap-3 mt-3">
                     <input formControlName="detailTitle" class="owner-web-input" placeholder="Detail page title" />
                     <textarea formControlName="detailSummary" class="owner-web-textarea" placeholder="Detail page summary"></textarea>
-                    <textarea formControlName="detailContent" class="owner-web-textarea" placeholder="Detail page content (supports basic HTML)"></textarea>
-                    <input formControlName="detailImageUrl" class="owner-web-input" placeholder="Detail page hero image URL (optional)" />
+                    <quill-editor
+                      formControlName="detailContent"
+                      [ngStyle]="{ height: '200px' }"
+                      [modules]="{
+                        toolbar: [
+                          ['bold', 'italic', 'underline', 'strike'],
+                          [{ size: ['small', false, 'large', 'huge'] }],
+                          [{ color: [] }, { background: [] }],
+                          [{ list: 'ordered' }, { list: 'bullet' }],
+                          [{ align: [] }],
+                          ['blockquote', 'link'],
+                          ['clean']
+                        ]
+                      }">
+                    </quill-editor>
+                    <!-- <input formControlName="detailImageUrl" class="owner-web-input" placeholder="Detail page hero image URL (optional)" /> -->
                   </div>
                 </section>
               </div>

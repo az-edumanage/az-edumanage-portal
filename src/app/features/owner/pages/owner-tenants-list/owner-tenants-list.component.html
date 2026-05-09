@@ -138,7 +138,8 @@
                 <th class="px-6 py-4 font-medium">{{t('owner.tenants.tableColumnOwnerMail')}}</th>
                 <th class="px-6 py-4 font-medium">{{t('owner.tenants.tableColumnPhoneNo')}}</th>
                 <th class="px-6 py-4 font-medium">{{t('owner.tenants.tableColumnCreatedAt')}}</th>
-                <th class="px-6 py-4 font-medium">{{t('owner.tenants.tableColumnHealth')}}</th>
+                <th class="px-6 py-4 font-medium">{{t('owner.tenants.tableColumnSubscription')}}</th>
+                <th class="px-6 py-4 font-medium">{{t('owner.tenants.tableColumnCreatedBy')}}</th>
                 <th class="px-6 py-4 font-medium text-right">{{t('owner.tenants.tableColumnAction')}}</th>
               </tr>
             </thead>
@@ -205,19 +206,22 @@
                   </td>
                   <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ tenant.createdDate }}</td>
                   <td class="px-6 py-4">
-                    <div class="flex items-center gap-2 text-xs font-medium"
-                      [class.text-green-600]="tenant.healthStatus === 'Healthy'"
-                      [class.dark:text-green-400]="tenant.healthStatus === 'Healthy'"
-                      [class.text-amber-600]="tenant.healthStatus === 'Degraded'"
-                      [class.dark:text-amber-400]="tenant.healthStatus === 'Degraded'"
-                      [class.text-red-600]="tenant.healthStatus === 'Down'"
-                      [class.dark:text-red-400]="tenant.healthStatus === 'Down'"
-                    >
-                      <mat-icon class="text-sm">
-                        {{ tenant.healthStatus === 'Healthy' ? 'check_circle' : tenant.healthStatus === 'Degraded' ? 'warning' : 'error' }}
-                      </mat-icon>
-                      {{ tenant.healthStatus }}
-                    </div>
+                    <span class="px-2 py-1 rounded-full text-xs font-semibold uppercase tracking-wide"
+                          [class.bg-amber-100]="tenant.subscriptionType === 'trial'"
+                          [class.text-amber-700]="tenant.subscriptionType === 'trial'"
+                          [class.bg-emerald-100]="tenant.subscriptionType === 'production'"
+                          [class.text-emerald-700]="tenant.subscriptionType === 'production'">
+                      {{ tenant.subscriptionType }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="px-2 py-1 rounded-full text-xs font-semibold uppercase tracking-wide"
+                          [class.bg-slate-100]="tenant.createdBy === 'system'"
+                          [class.text-slate-700]="tenant.createdBy === 'system'"
+                          [class.bg-indigo-100]="tenant.createdBy === 'admin'"
+                          [class.text-indigo-700]="tenant.createdBy === 'admin'">
+                      {{ tenant.createdBy }}
+                    </span>
                   </td>
                   <td class="px-6 py-4 text-right">
                     <div class="owner-tenants-actions flex items-center justify-end gap-2">

@@ -6,6 +6,7 @@ import { HttpClient, HttpErrorResponse, HttpEventType } from '@angular/common/ht
 import { firstValueFrom } from 'rxjs';
 import { OwnerWebSettingsFacade } from '../../state/owner-web-settings.facade';
 import { environment } from '../../../../../environments/environment';
+import { QuillModule } from 'ngx-quill';
 import {
   SaveWebsiteSettingsRequest,
   WebsiteSettingsView,
@@ -39,7 +40,7 @@ const INTEGRATION_ICON_OPTIONS: readonly string[] = [
 @Component({
   selector: 'app-owner-web-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatIconModule],
+  imports: [CommonModule, ReactiveFormsModule, MatIconModule, QuillModule],
   templateUrl: './owner-web-settings.component.html',
   styleUrl: './owner-web-settings.component.css',
 })
