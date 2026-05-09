@@ -1,0 +1,141 @@
+@if (view() === 'cards') {
+  <div class="owner-settings-card owner-settings-card--shell">
+    <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+      <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Status</h3>
+      <p class="text-sm text-slate-500 dark:text-slate-500 mt-1">Choose a status group to manage.</p>
+    </div>
+
+    <div class="p-6 grid grid-cols-1 md:grid-cols-5 gap-4">
+      <button type="button" (click)="openTenantStatus()" class="owner-status-card text-left rounded-xl border p-5">
+        <div class="flex items-center gap-3 mb-2">
+          <mat-icon>apartment</mat-icon>
+          <h4 class="text-base font-semibold">Tenant Status</h4>
+        </div>
+        <p class="text-sm text-slate-500 dark:text-slate-500">Manage tenant lifecycle statuses (EN/AR labels and color).</p>
+      </button>
+
+      <button type="button" (click)="openSubscriptionStatus()" class="owner-status-card text-left rounded-xl border p-5">
+        <div class="flex items-center gap-3 mb-2">
+          <mat-icon>subscriptions</mat-icon>
+          <h4 class="text-base font-semibold">Subscription Status</h4>
+        </div>
+        <p class="text-sm text-slate-500 dark:text-slate-500">Manage subscription statuses used across billing and renewals.</p>
+      </button>
+
+      <button type="button" (click)="openSubscriptionOrderStatus()" class="owner-status-card text-left rounded-xl border p-5">
+        <div class="flex items-center gap-3 mb-2">
+          <mat-icon>receipt_long</mat-icon>
+          <h4 class="text-base font-semibold">Subscription Orders Status</h4>
+        </div>
+        <p class="text-sm text-slate-500 dark:text-slate-500">Manage status values for subscription order workflows.</p>
+      </button>
+
+      <button type="button" (click)="openBillingStatus()" class="owner-status-card text-left rounded-xl border p-5">
+        <div class="flex items-center gap-3 mb-2">
+          <mat-icon>payments</mat-icon>
+          <h4 class="text-base font-semibold">Billing & Revenue Status</h4>
+        </div>
+        <p class="text-sm text-slate-500 dark:text-slate-500">Manage invoice and revenue lifecycle statuses.</p>
+      </button>
+
+      <button type="button" (click)="openProvisioningStatus()" class="owner-status-card text-left rounded-xl border p-5">
+        <div class="flex items-center gap-3 mb-2">
+          <mat-icon>sync_alt</mat-icon>
+          <h4 class="text-base font-semibold">Provisioning Jobs Status</h4>
+        </div>
+        <p class="text-sm text-slate-500 dark:text-slate-500">Manage status values for provisioning job lifecycle.</p>
+      </button>
+    </div>
+  </div>
+}
+
+@if (view() === 'tenant-status' || view() === 'subscription-status' || view() === 'subscription-order-status' || view() === 'billing-status' || view() === 'provisioning-status') {
+  <div class="owner-settings-card owner-settings-card--shell">
+    <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <button type="button" (click)="goToCards()" class="owner-status-back-btn p-2 rounded-lg">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div>
+          <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">
+            {{ view() === 'tenant-status' ? 'Tenant Status' : view() === 'subscription-status' ? 'Subscription Status' : view() === 'subscription-order-status' ? 'Subscription Orders Status' : view() === 'billing-status' ? 'Billing & Revenue Status' : 'Provisioning Jobs Status' }}
+          </h3>
+          <p class="text-sm text-slate-500 dark:text-slate-500 mt-1">List and manage statuses.</p>
+        </div>
+      </div>
+      <button type="button" (click)="openAddModal()" class="owner-settings-btn-primary px-4 py-2 inline-flex items-center gap-2">
+        <mat-icon class="text-sm">add</mat-icon>
+        Add New Status
+      </button>
+    </div>
+
+    <div class="p-6 overflow-x-auto">
+      <table class="w-full text-sm text-left owner-status-table">
+        <thead class="text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
+          <tr>
+            <th class="py-3 pr-4 font-medium">EN Name</th>
+            <th class="py-3 pr-4 font-medium">AR Name</th>
+            <th class="py-3 pr-4 font-medium">Color</th>
+            <th class="py-3 text-right font-medium">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+          @for (status of (view() === 'tenant-status' ? tenantStatuses() : view() === 'subscription-status' ? subscriptionStatuses() : view() === 'subscription-order-status' ? subscriptionOrderStatuses() : view() === 'billing-status' ? billingStatuses() : provisioningStatuses()); track status.id) {
+            <tr>
+              <td class="py-3 pr-4 text-slate-900 dark:text-white">{{ status.nameEn }}</td>
+              <td class="py-3 pr-4 text-slate-900 dark:text-white">{{ status.nameAr }}</td>
+              <td class="py-3 pr-4">
+                <div class="inline-flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full" [style.backgroundColor]="status.color"></span>
+                  <span class="text-slate-500">{{ status.color }}</span>
+                </div>
+              </td>
+              <td class="py-3 text-right">
+                <div class="inline-flex items-center gap-2">
+                  <button type="button" (click)="openEditModal(status)" class="owner-status-icon-btn" title="Edit">
+                    <mat-icon class="text-sm">edit</mat-icon>
+                  </button>
+                  <button type="button" (click)="deleteStatus(status.id)" class="owner-status-icon-btn owner-status-icon-btn-danger" title="Delete">
+                    <mat-icon class="text-sm">delete</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+
+@if (showModal()) {
+  <div class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="owner-status-modal w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+      <div class="p-5 border-b border-slate-200 dark:border-slate-800">
+        <h4 class="text-lg font-semibold text-slate-900 dark:text-white">{{ editingId() ? 'Edit Status' : 'Add New Status' }}</h4>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="saveStatus()" class="p-5 space-y-4">
+        <div>
+          <label class="owner-settings-field-label" for="statusNameAr">AR Name</label>
+          <input id="statusNameAr" formControlName="nameAr" class="owner-settings-input" type="text" placeholder="مثال: نشط">
+        </div>
+
+        <div>
+          <label class="owner-settings-field-label" for="statusNameEn">EN Name</label>
+          <input id="statusNameEn" formControlName="nameEn" class="owner-settings-input" type="text" placeholder="e.g. Active">
+        </div>
+
+        <div>
+          <label class="owner-settings-field-label" for="statusColor">Color</label>
+          <input id="statusColor" formControlName="color" class="owner-settings-input owner-settings-color-input" type="color">
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" (click)="closeModal()" class="owner-status-btn owner-status-btn-secondary">Cancel</button>
+          <button type="submit" [disabled]="!canSubmit()" class="owner-status-btn owner-status-btn-primary disabled:opacity-50">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

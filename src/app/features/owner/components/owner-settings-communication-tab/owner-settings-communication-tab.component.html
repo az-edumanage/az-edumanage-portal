@@ -1,0 +1,43 @@
+<div class="owner-settings-card owner-settings-card--shell">
+  <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+    <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">{{ translate()('owner.settings.communication.title') }}</h3>
+  </div>
+  <div class="p-6 space-y-6">
+    <div class="space-y-4">
+      <h4 class="text-sm font-bold text-slate-500 uppercase tracking-wider">SMTP Configuration</h4>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="smtp-host" class="owner-settings-field-label">SMTP Host</label>
+          <input id="smtp-host" type="text" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="smtp.sendgrid.net">
+        </div>
+        <div>
+          <label for="smtp-port" class="owner-settings-field-label">SMTP Port</label>
+          <input id="smtp-port" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="587">
+        </div>
+        <div>
+          <label for="from-email" class="owner-settings-field-label">Default From Email</label>
+          <input id="from-email" type="email" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="no-reply@remix.com">
+        </div>
+        <div>
+          <label for="sms-prov" class="owner-settings-field-label">SMS Provider</label>
+          <select id="sms-prov" class="owner-settings-select dark:bg-slate-800 dark:border-slate-700">
+            <option selected>Twilio</option>
+            <option>MessageBird</option>
+            <option>AWS SNS</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="owner-settings-banner p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex justify-between">
+      <div class="flex gap-3">
+        <span class="material-icons text-indigo-600">mail</span>
+        <p class="text-sm text-blue-800 dark:text-blue-400">Test your SMTP configuration by sending a test email.</p>
+      </div>
+      <button class="owner-settings-btn-chip px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-medium">Send Test Email</button>
+    </div>
+  </div>
+  <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
+    <button class="owner-settings-btn-primary px-4 py-2 shadow-sm">{{ translate()('owner.settings.communication.save') }}</button>
+  </div>
+</div>

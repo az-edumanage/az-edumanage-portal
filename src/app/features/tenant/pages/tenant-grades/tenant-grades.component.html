@@ -1,259 +1,257 @@
+<div class="tenant-grades-page">
+  <!-- Header -->
+  <div class="tenant-grades-header">
+    <div>
+      <h2 class="tenant-grades-title">Grades & Levels</h2>
+      <p class="tenant-grades-subtitle">Manage academic grades and educational levels.</p>
+    </div>
+    <div class="tenant-grades-header-actions">
+      <div class="tenant-grades-view-switch">
+        <button
+          (click)="viewMode.set('grid')"
+          [class.bg-indigo-600/10]="viewMode() === 'grid'"
+          [class.text-indigo-600]="viewMode() === 'grid'"
+          [class.text-slate-500]="viewMode() !== 'grid'"
+          class="tenant-grades-view-btn"
+          title="Grid View"
+        >
+          <mat-icon class="text-sm block">grid_view</mat-icon>
+        </button>
+        <button
+          (click)="viewMode.set('list')"
+          [class.bg-indigo-600/10]="viewMode() === 'list'"
+          [class.text-indigo-600]="viewMode() === 'list'"
+          [class.text-slate-500]="viewMode() !== 'list'"
+          class="tenant-grades-view-btn"
+          title="List View"
+        >
+          <mat-icon class="text-sm block">view_list</mat-icon>
+        </button>
+      </div>
+      <a routerLink="/tenant/grades/create" class="tenant-grades-add-btn">
+        <mat-icon class="text-sm">add</mat-icon>
+        Add Grade
+      </a>
+    </div>
+  </div>
 
-    <div class="space-y-6">
-      <!-- Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Grades & Levels</h2>
-          <p class="text-slate-500 dark:text-slate-500 text-sm">Manage academic grades and educational levels.</p>
-        </div>
-        <div class="flex items-center gap-2">
-          <div class="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-1 shadow-sm h-10">
-            <button 
-              (click)="viewMode.set('grid')"
-              [class.bg-indigo-600/10]="viewMode() === 'grid'"
-              [class.text-indigo-600]="viewMode() === 'grid'"
-              [class.text-slate-500]="viewMode() !== 'grid'"
-              class="h-full px-2 rounded-md transition-all flex items-center justify-center"
-              title="Grid View"
-            >
-              <mat-icon class="text-sm block">grid_view</mat-icon>
-            </button>
-            <button 
-              (click)="viewMode.set('list')"
-              [class.bg-indigo-600/10]="viewMode() === 'list'"
-              [class.text-indigo-600]="viewMode() === 'list'"
-              [class.text-slate-500]="viewMode() !== 'list'"
-              class="h-full px-2 rounded-md transition-all flex items-center justify-center"
-              title="List View"
-            >
-              <mat-icon class="text-sm block">view_list</mat-icon>
-            </button>
-          </div>
-          <a routerLink="/tenant/grades/create" class="flex items-center gap-2 px-4 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20">
-            <mat-icon class="text-sm">add</mat-icon>
-            Add Grade
-          </a>
-        </div>
+  <!-- Search & Filter Bar -->
+  <div class="tenant-grades-filter-shell">
+    <div class="tenant-grades-filter-row">
+      <div class="tenant-grades-search">
+        <mat-icon class="tenant-grades-search-icon">search</mat-icon>
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Search grades by name or level..."
+          class="tenant-grades-search-input"
+        >
       </div>
 
-      <!-- Search & Filter Bar -->
-      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div class="flex flex-col md:flex-row gap-4 items-center">
-          <div class="flex-1 w-full relative">
-            <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</mat-icon>
-            <input 
-              type="text" 
-              [(ngModel)]="searchQuery"
-              placeholder="Search grades by name or level..."
-              class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-            >
-          </div>
-          
-          <div class="flex items-center gap-3 w-full md:w-auto relative">
-            <div class="relative">
-              <button 
-                (click)="toggleFilterPanel()"
-                [class.bg-indigo-600/10]="showFilterPanel() || activeFiltersCount() > 0"
-                [class.text-indigo-600]="showFilterPanel() || activeFiltersCount() > 0"
-                [class.border-indigo-200]="showFilterPanel() || activeFiltersCount() > 0"
-                class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all whitespace-nowrap"
-              >
-                <mat-icon class="text-sm">filter_list</mat-icon>
-                Advanced Filters
-                @if (activeFiltersCount() > 0) {
-                  <span class="flex items-center justify-center min-w-[20px] h-5 px-1 bg-indigo-600 text-white text-[10px] rounded-full shadow-sm shadow-indigo-500/40">
-                    {{ activeFiltersCount() }}
-                  </span>
-                }
-                <mat-icon class="text-xs transition-transform duration-200" [class.rotate-180]="showFilterPanel()">expand_more</mat-icon>
-              </button>
-
-              <!-- Dropdown Panel -->
-              @if (showFilterPanel()) {
-                <div class="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50 p-5 space-y-5 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
-                  <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-                    <h3 class="font-bold text-slate-900 dark:text-white text-sm">Filter Options</h3>
-                    <button (click)="clearAdvancedFilters()" class="text-[10px] font-bold text-red-600 hover:text-red-700 uppercase tracking-wider">Reset</button>
-                  </div>
-
-                  <div class="space-y-4">
-                    <div [formGroup]="filterForm">
-                      <label for="filter-level" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Academic Level</label>
-                      <select 
-                        id="filter-level"
-                        formControlName="level"
-                        class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
-                      >
-                        <option value="">All Levels</option>
-                        <option value="Primary">Primary</option>
-                        <option value="Preparatory">Preparatory</option>
-                        <option value="Secondary">Secondary</option>
-                      </select>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                      <div [formGroup]="filterForm">
-                        <label for="filter-min" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Min Students</label>
-                        <input 
-                          id="filter-min"
-                          type="number" 
-                          formControlName="minStudents"
-                          placeholder="0"
-                          class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
-                        >
-                      </div>
-
-                      <div [formGroup]="filterForm">
-                        <label for="filter-max" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Max Students</label>
-                        <input 
-                          id="filter-max"
-                          type="number" 
-                          formControlName="maxStudents"
-                          placeholder="500"
-                          class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
-                        >
-                      </div>
-                    </div>
-
-                    <div [formGroup]="filterForm">
-                      <label for="filter-sort" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Sort By</label>
-                      <select 
-                        id="filter-sort"
-                        formControlName="sortBy"
-                        class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
-                      >
-                        <option value="name">Name (A-Z)</option>
-                        <option value="students-desc">Students (High to Low)</option>
-                        <option value="students-asc">Students (Low to High)</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div class="pt-2">
-                    <button 
-                      (click)="toggleFilterPanel()"
-                      class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-lg shadow-indigo-500/20"
-                    >
-                      Apply Filters
-                    </button>
-                  </div>
-                </div>
-              }
-            </div>
-
-            @if (activeFiltersCount() > 0 || searchQuery()) {
-              <button 
-                (click)="clearAllFilters()"
-                class="flex items-center gap-1.5 px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl text-xs font-bold transition-all whitespace-nowrap"
-              >
-                <mat-icon class="text-sm">restart_alt</mat-icon>
-                Reset All
-              </button>
+      <div class="tenant-grades-filter-actions">
+        <div class="relative">
+          <button
+            (click)="toggleFilterPanel()"
+            [class.bg-indigo-600/10]="showFilterPanel() || activeFiltersCount() > 0"
+            [class.text-indigo-600]="showFilterPanel() || activeFiltersCount() > 0"
+            [class.border-indigo-200]="showFilterPanel() || activeFiltersCount() > 0"
+            class="tenant-grades-advanced-filter-btn"
+          >
+            <mat-icon class="text-sm">filter_list</mat-icon>
+            Advanced Filters
+            @if (activeFiltersCount() > 0) {
+              <span class="tenant-grades-filter-count">
+                {{ activeFiltersCount() }}
+              </span>
             }
-          </div>
-        </div>
-      </div>
+            <mat-icon class="text-xs transition-transform duration-200" [class.rotate-180]="showFilterPanel()">expand_more</mat-icon>
+          </button>
 
-      <!-- Results Grid/List -->
-      @if (filteredGrades().length > 0) {
-        @if (viewMode() === 'grid') {
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-300">
-            @for (grade of filteredGrades(); track grade.id) {
-              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 hover:shadow-md transition-all group">
-                <div class="flex justify-between items-start mb-4">
-                  <div class="p-2 rounded-xl bg-indigo-600/10 dark:bg-indigo-900/20">
-                    <mat-icon class="text-indigo-600">school</mat-icon>
+          <!-- Dropdown Panel -->
+          @if (showFilterPanel()) {
+            <div class="tenant-grades-filter-dropdown">
+              <div class="tenant-grades-filter-dropdown-head">
+                <h3 class="tenant-grades-filter-dropdown-title">Filter Options</h3>
+                <button (click)="clearAdvancedFilters()" class="tenant-grades-filter-reset">Reset</button>
+              </div>
+
+              <div class="tenant-grades-filter-fields">
+                <div [formGroup]="filterForm">
+                  <label for="filter-level" class="tenant-grades-filter-label">Academic Level</label>
+                  <select
+                    id="filter-level"
+                    formControlName="level"
+                    class="tenant-grades-filter-select"
+                  >
+                    <option value="">All Levels</option>
+                    <option value="Primary">Primary</option>
+                    <option value="Preparatory">Preparatory</option>
+                    <option value="Secondary">Secondary</option>
+                  </select>
+                </div>
+
+                <div class="tenant-grades-filter-grid">
+                  <div [formGroup]="filterForm">
+                    <label for="filter-min" class="tenant-grades-filter-label">Min Students</label>
+                    <input
+                      id="filter-min"
+                      type="number"
+                      formControlName="minStudents"
+                      placeholder="0"
+                      class="tenant-grades-filter-select"
+                    >
                   </div>
-                  <div class="flex gap-2">
-                    <button class="p-1.5 text-slate-500 hover:text-indigo-600 transition-colors">
-                      <mat-icon class="text-sm">edit</mat-icon>
-                    </button>
-                    <button class="p-1.5 text-slate-500 hover:text-red-600 transition-colors">
-                      <mat-icon class="text-sm">delete</mat-icon>
-                    </button>
+
+                  <div [formGroup]="filterForm">
+                    <label for="filter-max" class="tenant-grades-filter-label">Max Students</label>
+                    <input
+                      id="filter-max"
+                      type="number"
+                      formControlName="maxStudents"
+                      placeholder="500"
+                      class="tenant-grades-filter-select"
+                    >
                   </div>
                 </div>
-                
-                <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ grade.name }}</h3>
-                <p class="text-xs text-slate-500 mb-4">{{ grade.level }}</p>
-                
-                <div class="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
-                  <div class="flex items-center gap-2">
-                    <mat-icon class="text-slate-500 text-sm">groups</mat-icon>
-                    <span class="text-xs font-medium text-slate-500 dark:text-slate-500">{{ grade.studentCount }} Students</span>
-                  </div>
-                  <a [routerLink]="['/tenant/grades', grade.id]" class="text-xs font-bold text-indigo-600 hover:text-indigo-600 transition-colors">
-                    View Details
-                  </a>
+
+                <div [formGroup]="filterForm">
+                  <label for="filter-sort" class="tenant-grades-filter-label">Sort By</label>
+                  <select
+                    id="filter-sort"
+                    formControlName="sortBy"
+                    class="tenant-grades-filter-select"
+                  >
+                    <option value="name">Name (A-Z)</option>
+                    <option value="students-desc">Students (High to Low)</option>
+                    <option value="students-asc">Students (Low to High)</option>
+                  </select>
                 </div>
               </div>
-            }
-          </div>
-        } @else {
-          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden animate-in fade-in duration-300">
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-sm">
-                <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                  <tr>
-                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Grade Name</th>
-                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Level</th>
-                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px] text-center">Students</th>
-                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px] text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
-                  @for (grade of filteredGrades(); track grade.id) {
-                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
-                      <td class="px-6 py-4">
-                        <div class="flex items-center gap-3">
-                          <div class="p-1.5 rounded-lg bg-indigo-600/10 dark:bg-indigo-900/20 text-indigo-600">
-                            <mat-icon class="text-sm block">school</mat-icon>
-                          </div>
-                          <span class="font-bold text-slate-900 dark:text-white">{{ grade.name }}</span>
-                        </div>
-                      </td>
-                      <td class="px-6 py-4">
-                        <span class="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-md text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider">
-                          {{ grade.level }}
-                        </span>
-                      </td>
-                      <td class="px-6 py-4 text-center">
-                        <div class="flex items-center justify-center gap-1.5 text-slate-500 dark:text-slate-500">
-                          <mat-icon class="text-xs">groups</mat-icon>
-                          <span class="font-medium">{{ grade.studentCount }}</span>
-                        </div>
-                      </td>
-                      <td class="px-6 py-4 text-right">
-                        <div class="flex items-center justify-end gap-2">
-                          <a [routerLink]="['/tenant/grades', grade.id]" class="p-2 text-indigo-600 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="View Details">
-                            <mat-icon class="text-sm block">visibility</mat-icon>
-                          </a>
-                          <button class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Edit">
-                            <mat-icon class="text-sm block">edit</mat-icon>
-                          </button>
-                          <button class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-colors" title="Delete">
-                            <mat-icon class="text-sm block">delete</mat-icon>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
+
+              <div class="tenant-grades-filter-apply-wrap">
+                <button
+                  (click)="toggleFilterPanel()"
+                  class="tenant-grades-filter-apply"
+                >
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        @if (activeFiltersCount() > 0 || searchQuery()) {
+          <button
+            (click)="clearAllFilters()"
+            class="tenant-grades-reset-all"
+          >
+            <mat-icon class="text-sm">restart_alt</mat-icon>
+            Reset All
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Grid/List -->
+  @if (filteredGrades().length > 0) {
+    @if (viewMode() === 'grid') {
+      <div class="tenant-grades-grid">
+        @for (grade of filteredGrades(); track grade.id) {
+          <div class="tenant-grades-card">
+            <div class="tenant-grades-card-head">
+              <div class="tenant-grades-card-icon-wrap">
+                <mat-icon class="tenant-grades-card-icon">school</mat-icon>
+              </div>
+              <div class="tenant-grades-card-actions">
+                <button class="tenant-grades-icon-btn" title="Edit">
+                  <mat-icon class="text-sm">edit</mat-icon>
+                </button>
+                <button class="tenant-grades-icon-btn tenant-grades-icon-btn--danger" title="Delete">
+                  <mat-icon class="text-sm">delete</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <h3 class="tenant-grades-card-name">{{ grade.name }}</h3>
+            <p class="tenant-grades-card-level">{{ grade.level }}</p>
+
+            <div class="tenant-grades-card-footer">
+              <div class="tenant-grades-card-students">
+                <mat-icon class="text-sm">groups</mat-icon>
+                <span>{{ grade.studentCount }} Students</span>
+              </div>
+              <a [routerLink]="['/tenant/grades', grade.id]" class="tenant-grades-view-link">
+                View Details
+              </a>
             </div>
           </div>
         }
-      } @else {
-        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center">
-          <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-            <mat-icon class="text-slate-500">search_off</mat-icon>
-          </div>
-          <h3 class="text-lg font-bold text-slate-900 dark:text-white">No grades found</h3>
-          <p class="text-slate-500 dark:text-slate-500 text-sm max-w-xs mx-auto mt-1">We couldn't find any grades matching your current search and filter criteria.</p>
-          <button (click)="clearAllFilters()" class="mt-6 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-all">
-            Clear All Filters
-          </button>
+      </div>
+    } @else {
+      <div class="tenant-grades-table-shell">
+        <div class="tenant-grades-table-scroll">
+          <table class="tenant-grades-table">
+            <thead class="tenant-grades-table-head">
+              <tr>
+                <th class="tenant-grades-th">Grade Name</th>
+                <th class="tenant-grades-th">Level</th>
+                <th class="tenant-grades-th tenant-grades-th--center">Students</th>
+                <th class="tenant-grades-th tenant-grades-th--actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="tenant-grades-tbody">
+              @for (grade of filteredGrades(); track grade.id) {
+                <tr class="tenant-grades-tr">
+                  <td class="tenant-grades-td">
+                    <div class="tenant-grades-row-name-wrap">
+                      <div class="tenant-grades-row-icon-wrap">
+                        <mat-icon class="text-sm block">school</mat-icon>
+                      </div>
+                      <span class="tenant-grades-row-name">{{ grade.name }}</span>
+                    </div>
+                  </td>
+                  <td class="tenant-grades-td">
+                    <span class="tenant-grades-level-chip">
+                      {{ grade.level }}
+                    </span>
+                  </td>
+                  <td class="tenant-grades-td tenant-grades-td--center">
+                    <div class="tenant-grades-row-students">
+                      <mat-icon class="text-xs">groups</mat-icon>
+                      <span>{{ grade.studentCount }}</span>
+                    </div>
+                  </td>
+                  <td class="tenant-grades-td tenant-grades-td--actions">
+                    <div class="tenant-grades-row-actions">
+                      <a [routerLink]="['/tenant/grades', grade.id]" class="tenant-grades-row-btn tenant-grades-row-btn--view" title="View Details">
+                        <mat-icon class="text-sm block">visibility</mat-icon>
+                      </a>
+                      <button class="tenant-grades-row-btn tenant-grades-row-btn--edit" title="Edit">
+                        <mat-icon class="text-sm block">edit</mat-icon>
+                      </button>
+                      <button class="tenant-grades-row-btn tenant-grades-row-btn--delete" title="Delete">
+                        <mat-icon class="text-sm block">delete</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
-      }
+      </div>
+    }
+  } @else {
+    <div class="tenant-grades-empty">
+      <div class="tenant-grades-empty-icon-wrap">
+        <mat-icon class="text-slate-500">search_off</mat-icon>
+      </div>
+      <h3 class="tenant-grades-empty-title">No grades found</h3>
+      <p class="tenant-grades-empty-text">We couldn't find any grades matching your current search and filter criteria.</p>
+      <button (click)="clearAllFilters()" class="tenant-grades-empty-btn">
+        Clear All Filters
+      </button>
     </div>
-  
+  }
+</div>

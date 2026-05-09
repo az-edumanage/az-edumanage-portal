@@ -1,7 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { OwnerSubscriptionTemplatesDataService } from '../../data-access/owner-subscription-templates-data.service';
+import { OwnerPlanCreateDataService } from '../../data-access/owner-plan-create-data.service';
 
 interface TemplateDetails {
   id: string;
@@ -23,28 +25,52 @@ interface TemplateDetails {
   imports: [CommonModule, RouterModule, MatIconModule],
   templateUrl: './owner-subscription-template-details.component.html',
   styleUrl: './owner-subscription-template-details.component.css'})
-export class OwnerSubscriptionTemplateDetailsComponent {
+export class OwnerSubscriptionTemplateDetailsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private templatesData = inject(OwnerSubscriptionTemplatesDataService);
+  private planData = inject(OwnerPlanCreateDataService);
 
   template = signal<TemplateDetails | null>(null);
+  isLoading = signal(true);
 
-  constructor() {
+  ngOnInit(): void {
+    void this.loadTemplate();
+  }
+
+  private async loadTemplate(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');
-    // Mock data based on ID
-    this.template.set({
-      id: id || 'TMP_001',
-      name: id === 'TMP_001' ? 'Standard Annual Contract' : id === 'TMP_002' ? 'Monthly Flexible Plan' : 'Semester Academic Pack',
-      billingCycle: id === 'TMP_001' ? 'Yearly' : id === 'TMP_002' ? 'Monthly' : 'Semester',
-      gracePeriod: id === 'TMP_001' ? 15 : id === 'TMP_002' ? 5 : 30,
-      status: id === 'TMP_003' ? 'Draft' : 'Active',
-      plans: ['Starter Plan', 'Professional Plan', 'Enterprise Plan'],
-      paymentMethods: ['Bank Transfer', 'InstaPay', 'Wallet Transfer'],
-      discountType: id === 'TMP_001' ? 'percentage' : id === 'TMP_003' ? 'fixed' : 'none',
-      discountValue: id === 'TMP_001' ? 10 : id === 'TMP_003' ? 50 : 0,
-      hasActiveSubscriptions: id === 'TMP_001',
-      createdAt: 'Jan 10, 2024'
-    });
+    if (!id) {
+      this.router.navigate(['/owner/subscriptions/templates']);
+      return;
+    }
+
+    this.isLoading.set(true);
+    try {
+      const [template, plans] = await Promise.all([
+        this.templatesData.fetchTemplateById(id),
+        this.planData.listPlans(),
+      ]);
+      const selectedPlanName = plans.find((plan) => plan.id === template.selectedPlanId)?.name ?? template.selectedPlanId ?? 'N/A';
+
+      this.template.set({
+        id: template.id,
+        name: template.name,
+        billingCycle: template.billingCycle,
+        gracePeriod: template.gracePeriod,
+        status: template.status,
+        plans: [selectedPlanName],
+        paymentMethods: template.selectedMethods ?? [],
+        discountType: template.discountType ?? 'none',
+        discountValue: template.discountValue ?? 0,
+        hasActiveSubscriptions: template.hasActiveSubscriptions,
+        createdAt: template.createdAt ? new Date(template.createdAt).toLocaleDateString() : 'N/A',
+      });
+    } catch {
+      this.router.navigate(['/owner/subscriptions/templates']);
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 
   goBack() {

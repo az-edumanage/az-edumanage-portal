@@ -12,7 +12,8 @@ Chart.register(...registerables);
   selector: 'app-owner-usage-analytics',
   standalone: true,
   imports: [CommonModule, RouterModule, MatIconModule, FormsModule],
-  templateUrl: './owner-usage-analytics.component.html'})
+  templateUrl: './owner-usage-analytics.component.html',
+  styleUrl: './owner-usage-analytics.component.css'})
 export class OwnerUsageAnalyticsComponent implements AfterViewInit {
   @ViewChild('topModulesChart') topModulesCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('usageTrendChart') usageTrendCanvas!: ElementRef<HTMLCanvasElement>;

@@ -1,0 +1,140 @@
+:host {
+  display: block;
+}
+
+.owner-tenants-page {
+  align-content: start;
+}
+
+.owner-tenants-title {
+  letter-spacing: -0.01em;
+}
+
+.owner-tenants-subtitle {
+  line-height: 1.25rem;
+}
+
+.owner-tenants-create-btn {
+  white-space: nowrap;
+}
+
+.owner-tenants-filter-card,
+.owner-tenants-table-card {
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.owner-tenants-search-icon {
+  pointer-events: none;
+}
+
+.ds-owner-tenant-search-input {
+  height: 42px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.owner-tenants-filter-actions {
+  align-items: center;
+}
+
+.owner-tenants-filter-btn {
+  white-space: nowrap;
+}
+
+.owner-tenants-filter-count {
+  min-width: 1rem;
+  text-align: center;
+}
+
+.owner-tenants-status-dropdown,
+.owner-tenants-plan-dropdown {
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.owner-tenants-filters-dropdown {
+  inset-inline-end: 0;
+  width: min(20rem, calc(100vw - 2rem));
+  max-width: calc(100vw - 2rem);
+}
+
+.owner-tenants-filter-search-icon {
+  pointer-events: none;
+}
+
+.owner-tenants-filter-search-input {
+  height: 2.5rem;
+}
+
+.owner-tenants-filters-title {
+  font-size: 0.9375rem;
+}
+
+.owner-tenants-clear-filters {
+  font-weight: 500;
+}
+
+.owner-tenants-clear-filters-btn {
+  white-space: nowrap;
+}
+
+.owner-tenants-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.owner-tenants-row {
+  vertical-align: middle;
+}
+
+.owner-tenants-name-btn,
+.owner-tenants-id-btn,
+.owner-tenants-owner-btn {
+  text-align: left;
+}
+
+.owner-tenants-owner-avatar {
+  flex-shrink: 0;
+}
+
+.owner-tenants-actions {
+  min-width: max-content;
+}
+
+.owner-tenants-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.owner-tenants-pagination {
+  gap: 1rem;
+}
+
+.owner-tenants-modal {
+  box-shadow:
+    0 25px 50px -12px rgb(0 0 0 / 0.25),
+    0 8px 16px -8px rgb(0 0 0 / 0.2);
+}
+
+.owner-tenants-modal-icon {
+  flex-shrink: 0;
+}
+
+.owner-tenants-modal-actions {
+  align-items: center;
+}
+
+.owner-tenants-modal-btn-cancel,
+.owner-tenants-modal-btn-primary {
+  white-space: nowrap;
+}
+
+.owner-tenants-plan-summary {
+  align-items: center;
+}
+
+.owner-tenants-toast-content {
+  white-space: nowrap;
+}

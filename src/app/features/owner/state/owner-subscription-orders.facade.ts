@@ -1,6 +1,7 @@
 import { Injectable, computed, effect, inject } from '@angular/core';
 import { DashboardService } from '../../../core/services/dashboard.service';
 import { OwnerSubscriptionOrdersDataService } from '../data-access/owner-subscription-orders-data.service';
+import { OwnerSubscriptionOrderStatusesDataService } from '../data-access/owner-subscription-order-statuses-data.service';
 import {
   SubscriptionOrder,
   SubscriptionOrderActionType,
@@ -13,6 +14,7 @@ import { OwnerSubscriptionOrdersStore } from './owner-subscription-orders.store'
 export class OwnerSubscriptionOrdersFacade {
   private readonly store = inject(OwnerSubscriptionOrdersStore);
   private readonly data = inject(OwnerSubscriptionOrdersDataService);
+  private readonly orderStatusesData = inject(OwnerSubscriptionOrderStatusesDataService);
   private readonly dashboardService = inject(DashboardService);
 
   readonly orders = this.data.orders;
@@ -37,15 +39,15 @@ export class OwnerSubscriptionOrdersFacade {
   readonly exportDateFrom = this.store.exportDateFrom;
   readonly exportDateTo = this.store.exportDateTo;
   readonly exportMode = this.store.exportMode;
-  readonly statuses = this.store.statuses;
+  readonly statuses = this.orderStatusesData.statusNames;
 
   readonly filteredStatuses = computed(() => {
     const query = this.statusDropdownSearchQuery().toLowerCase();
     if (!query) {
-      return this.statuses;
+      return this.statuses();
     }
 
-    return this.statuses.filter((status) =>
+    return this.statuses().filter((status) =>
       status.toLowerCase().includes(query),
     );
   });

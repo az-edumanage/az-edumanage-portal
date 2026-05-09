@@ -7,7 +7,9 @@ import { MatIconModule } from '@angular/material/icon';
   selector: 'app-owner-subscription-details',
   standalone: true,
   imports: [CommonModule, RouterModule, MatIconModule],
-  templateUrl: './owner-subscription-details.component.html'})
+  templateUrl: './owner-subscription-details.component.html',
+  styleUrl: './owner-subscription-details.component.css'
+})
 export class OwnerSubscriptionDetailsComponent {
   private route = inject(ActivatedRoute);
 }

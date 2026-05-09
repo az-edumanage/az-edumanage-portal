@@ -1,0 +1,84 @@
+:host {
+  display: block;
+}
+
+.owner-billing-page {
+  align-content: start;
+}
+
+.owner-billing-title {
+  letter-spacing: -0.01em;
+}
+
+.owner-billing-subtitle {
+  line-height: 1.25rem;
+}
+
+.owner-billing-header-actions {
+  flex-wrap: wrap;
+}
+
+.owner-billing-btn-icon {
+  flex-shrink: 0;
+}
+
+.owner-billing-stat-card {
+  display: block;
+}
+
+.owner-billing-stat-label {
+  letter-spacing: 0.04em;
+}
+
+.owner-billing-stat-value {
+  line-height: 1.2;
+}
+
+.owner-billing-stat-trend {
+  white-space: nowrap;
+}
+
+.owner-billing-stat-trend-icon {
+  flex-shrink: 0;
+}
+
+.owner-billing-tab-shell {
+  isolation: isolate;
+}
+
+.owner-billing-filter-indicator {
+  gap: var(--space-3);
+}
+
+.owner-billing-filter-indicator-text {
+  min-width: 0;
+}
+
+.owner-billing-filter-clear {
+  white-space: nowrap;
+}
+
+.owner-billing-modal-overlay {
+  overscroll-behavior: contain;
+}
+
+.owner-billing-copy-btn {
+  text-align: left;
+}
+
+.owner-billing-retry-btn {
+  white-space: nowrap;
+}
+
+.owner-billing-gateway-card,
+.owner-billing-tax-card {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-border-primary) 28%, transparent);
+}
+
+.owner-billing-report-btn {
+  white-space: nowrap;
+}
+
+.owner-billing-revenue-tooltip {
+  pointer-events: none;
+}

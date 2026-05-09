@@ -1,4 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
+import { OwnerPlanModuleOption } from '../models/owner-plan-create.models';
 
 @Injectable({ providedIn: 'root' })
 export class OwnerPlanCreateStore {
@@ -14,7 +15,15 @@ export class OwnerPlanCreateStore {
   readonly showCurrencyDropdown = signal(false);
   readonly currencySearchQuery = signal('');
 
+  readonly showAudienceTypeDropdown = signal(false);
+  readonly audienceTypeSearchQuery = signal('');
+  readonly selectedAudienceType = signal<string>('');
+  readonly existingPlans = signal<{ id: string; name: string }[]>([]);
+  readonly moduleOptions = signal<OwnerPlanModuleOption[]>([]);
+
   readonly taskId = signal('create-plan-task');
+  readonly isSubmitting = signal(false);
+  readonly actionStatus = signal<{ success: boolean; message: string } | null>(null);
 
   readonly effectiveTaskId = computed(() => {
     if (this.isEditMode() && this.planId()) {
@@ -27,5 +36,13 @@ export class OwnerPlanCreateStore {
   setPlanId(planId: string | null): void {
     this.planId.set(planId);
     this.isEditMode.set(!!planId);
+  }
+
+  setSubmitting(value: boolean): void {
+    this.isSubmitting.set(value);
+  }
+
+  setActionStatus(value: { success: boolean; message: string } | null): void {
+    this.actionStatus.set(value);
   }
 }

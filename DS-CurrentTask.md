@@ -1,24 +1,27 @@
-# Current Task: Phase 1 - Baseline & Planning
+
+# Current Task: Design System Program Closeout
 
 ## Objective
-Prepare a zero-regression execution foundation before touching visual implementation.
+Finalize DS migration governance/stabilization and close the DS v1 program with full regression validation.
 
 ## Status
-`In Progress`
+`Done`
 
 ## Sub-Tasks
-- [x] Create high-level DS program plan (`DS-Plan.md`).
-- [x] Create master DS task tracker (`DS-Task.ms`).
-- [ ] Define and lock the critical route matrix for visual baselines.
-- [ ] Define light/dark + breakpoint baseline capture strategy.
-- [ ] Confirm CI integration approach for visual regression checks.
-- [ ] Create first migration task batch for token foundation scaffolding.
-
-## Scope Guardrails
-- Do not alter existing UI visuals in this task.
-- Do not change feature component markup/styles yet.
-- Focus only on planning artifacts and execution readiness.
+- [x] Add DS style guard enforcement for raw hex and semantic-token bypass (`scripts/ds-style-guard.mjs`, `docs/ds-style-guard-baseline.json`, `package.json`).
+- [x] Add DS contribution guide and naming rules (`docs/ds-contribution-guide.md`).
+- [x] Add UI PR DS review checklist template (`.github/pull_request_template.md`).
+- [x] Apply parity-safe owner closeout continuation and integrations layout fix (`owner-settings`, `owner-integrations`).
+- [x] Run full visual baseline refresh for critical route matrix (`npm run vr:update`).
+- [x] Run full non-update visual regression verification (`npm run vr:test`, `257 passed`).
+- [x] Record DS v1 completion artifact (`docs/ds-v1-complete.md`).
 
 ## Exit Criteria
-- Planning docs reviewed and accepted.
-- Next implementation task (Token Foundation Scaffolding) is fully scoped and ready.
+- Governance/lint enforcement active in CI lint pipeline.
+- Contribution/review standards documented.
+- Full critical route matrix passes regression verification.
+- DS task tracker contains no remaining open migration/stabilization items.
+
+## Next Task (Active)
+None. DS v1 is complete.
+

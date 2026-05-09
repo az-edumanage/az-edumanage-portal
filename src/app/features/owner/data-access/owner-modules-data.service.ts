@@ -1,152 +1,78 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { OwnerModule } from '../models/owner-modules.models';
+import { ModuleCatalogFeature, OwnerModuleCatalogApiService } from './owner-modulecatalog-api.service';
 
 @Injectable({ providedIn: 'root' })
 export class OwnerModulesDataService {
-  readonly modules = signal<OwnerModule[]>([
-    {
-      id: 'mod-acad',
-      name: 'Academic Structure',
-      code: 'CORE_ACAD',
-      description: 'Manage academic years, terms, levels, and classes.',
-      category: 'Core Business',
-      status: 'Enabled',
-      activeTenantsCount: 124,
-      lastUpdated: '2 days ago',
-      includedInPlans: ['All Plans'],
-      icon: 'school',
-    },
-    {
-      id: 'mod-students',
-      name: 'Students Management',
-      code: 'CORE_STUD',
-      description: 'Comprehensive student profiles, enrollment, and history.',
-      category: 'Core Business',
-      status: 'Enabled',
-      activeTenantsCount: 124,
-      lastUpdated: '1 week ago',
-      includedInPlans: ['All Plans'],
-      icon: 'people',
-    },
-    {
-      id: 'mod-sched',
-      name: 'Scheduling & Timetable',
-      code: 'CORE_SCHED',
-      description: 'Class scheduling, teacher allocation, and conflict detection.',
-      category: 'Core Business',
-      status: 'Enabled',
-      activeTenantsCount: 124,
-      lastUpdated: '3 days ago',
-      includedInPlans: ['All Plans'],
-      icon: 'calendar_today',
-    },
-    {
-      id: 'mod-users',
-      name: 'Users Management',
-      code: 'SYS_USERS',
-      description: 'System users, roles, and access control.',
-      category: 'Core System',
-      status: 'Enabled',
-      activeTenantsCount: 124,
-      lastUpdated: '1 month ago',
-      includedInPlans: ['All Plans'],
-      icon: 'manage_accounts',
-    },
-    {
-      id: 'mod-audit',
-      name: 'Audit Logs',
-      code: 'SYS_AUDIT',
-      description: 'Track all system activities and security events.',
-      category: 'Core System',
-      status: 'Enabled',
-      activeTenantsCount: 124,
-      lastUpdated: '2 weeks ago',
-      includedInPlans: ['All Plans'],
-      icon: 'history',
-    },
-    {
-      id: 'mod-exams',
-      name: 'Exams & Grades',
-      code: 'ADV_EXAM',
-      description: 'Create exams, record grades, and generate report cards.',
-      category: 'Advanced',
-      status: 'Enabled',
-      activeTenantsCount: 85,
-      lastUpdated: '5 days ago',
-      includedInPlans: ['Professional', 'Enterprise'],
-      icon: 'assignment',
-    },
-    {
-      id: 'mod-finance',
-      name: 'Finance',
-      code: 'ADV_FIN',
-      description: 'Invoicing, payments, and financial reporting.',
-      category: 'Advanced',
-      status: 'Enabled',
-      activeTenantsCount: 42,
-      lastUpdated: '1 day ago',
-      includedInPlans: ['Enterprise'],
-      icon: 'payments',
-    },
-    {
-      id: 'mod-sms',
-      name: 'SMS Integration',
-      code: 'ADV_SMS',
-      description: 'Send automated SMS notifications to parents and students.',
-      category: 'Advanced',
-      status: 'Disabled',
-      activeTenantsCount: 0,
-      lastUpdated: '1 month ago',
-      includedInPlans: [],
-      icon: 'sms',
-    },
-    {
-      id: 'mod-analytics',
-      name: 'Advanced Analytics',
-      code: 'ADV_ANALYTICS',
-      description: 'Deep insights into academic performance and operations.',
-      category: 'Advanced',
-      status: 'Enabled',
-      activeTenantsCount: 15,
-      lastUpdated: '2 days ago',
-      includedInPlans: ['Enterprise'],
-      icon: 'analytics',
-    },
-    {
-      id: 'mod-parent-portal',
-      name: 'Parent Portal',
-      code: 'ADV_PARENT',
-      description: 'Dedicated portal for parents to track student progress and communicate.',
-      category: 'Advanced',
-      status: 'Enabled',
-      activeTenantsCount: 60,
-      lastUpdated: '1 week ago',
-      includedInPlans: ['Professional', 'Enterprise'],
-      icon: 'family_restroom',
-    },
-    {
-      id: 'mod-lms',
-      name: 'LMS',
-      code: 'ADV_LMS',
-      description: 'Learning Management System for online courses and assignments.',
-      category: 'Advanced',
-      status: 'Enabled',
-      activeTenantsCount: 35,
-      lastUpdated: '3 days ago',
-      includedInPlans: ['Enterprise'],
-      icon: 'menu_book',
-    },
-    {
-      id: 'mod-question-bank',
-      name: 'Question Bank',
-      code: 'ADV_QBANK',
-      description: 'Centralized repository for exam questions and assessments.',
-      category: 'Advanced',
-      status: 'Enabled',
-      activeTenantsCount: 20,
-      lastUpdated: '4 days ago',
-      includedInPlans: ['Professional', 'Enterprise'],
-      icon: 'quiz',
-    },
-  ]);
+  private readonly api = inject(OwnerModuleCatalogApiService);
+
+  readonly modules = signal<OwnerModule[]>([]);
+  readonly features = signal<ModuleCatalogFeature[]>([]);
+
+  constructor() {
+    void this.refreshModules();
+    void this.refreshFeatures();
+  }
+
+  async createModule(payload: {
+    nameEn: string;
+    nameAr: string;
+    description: string;
+    category: OwnerModule['category'];
+    status: OwnerModule['status'];
+    includedInPlans: string[];
+    featureIds: string[];
+  }): Promise<void> {
+    await this.api.createModule({
+      nameAr: payload.nameAr.trim(),
+      nameEn: payload.nameEn.trim(),
+      description: payload.description.trim(),
+      category: payload.category,
+      status: payload.status,
+      plans: payload.includedInPlans,
+      featureIds: payload.featureIds,
+    });
+    await this.refreshModules();
+  }
+
+  async refreshModules(): Promise<void> {
+    const modules = await this.api.listModules();
+    this.modules.set(modules);
+  }
+
+  async updateModule(payload: {
+    id: string;
+    nameEn: string;
+    nameAr: string;
+    description: string;
+    category: OwnerModule['category'];
+    status: OwnerModule['status'];
+    includedInPlans: string[];
+    featureIds: string[];
+  }): Promise<void> {
+    await this.api.updateModule(payload.id, {
+      nameAr: payload.nameAr.trim(),
+      nameEn: payload.nameEn.trim(),
+      description: payload.description.trim(),
+      category: payload.category,
+      status: payload.status,
+      plans: payload.includedInPlans,
+      featureIds: payload.featureIds,
+    });
+    await this.refreshModules();
+  }
+
+  async deleteModule(id: string): Promise<void> {
+    await this.api.deleteModule(id);
+    await this.refreshModules();
+  }
+
+  async refreshFeatures(): Promise<void> {
+    const features = await this.api.listFeatures();
+    this.features.set(features);
+  }
+
+  async getModule(id: string): Promise<OwnerModule> {
+    return this.api.getModule(id);
+  }
 }

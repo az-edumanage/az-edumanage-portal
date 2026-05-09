@@ -46,7 +46,7 @@
             </div>
           </div>
           <div class="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-            <div class="h-full bg-indigo-500" [style.width.%]="(totalOccupiedHours() / 60) * 100"></div>
+            <div class="ds-progress-fill" [style.--ds-progress]="((totalOccupiedHours() / 60) * 100) + '%'"></div>
           </div>
         </div>
 
@@ -193,7 +193,7 @@
                     <span class="text-indigo-600 font-bold">{{ occupancyRate() }}%</span>
                   </div>
                   <div class="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                    <div class="h-full bg-indigo-500" [style.width.%]="occupancyRate()"></div>
+                    <div class="ds-progress-fill" [style.--ds-progress]="occupancyRate() + '%'"></div>
                   </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">

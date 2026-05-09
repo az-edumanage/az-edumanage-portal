@@ -6,9 +6,10 @@ import {
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { I18nService } from '../../../../core/services/i18n.service';
 import { OwnerTenantCreateFacade } from '../../state/owner-tenant-create.facade';
 import { OwnerSearchableDropdownComponent } from '../../components/owner-searchable-dropdown/owner-searchable-dropdown.component';
 import { OwnerDomainDropdownComponent } from '../../components/owner-domain-dropdown/owner-domain-dropdown.component';
@@ -31,6 +32,9 @@ import { OwnerPlanDropdownComponent } from '../../components/owner-plan-dropdown
 })
 export class OwnerTenantCreatePageComponent implements OnInit, OnDestroy {
   private readonly facade = inject(OwnerTenantCreateFacade);
+  private readonly i18nService = inject(I18nService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   readonly tenantForm = this.facade.tenantForm;
 
@@ -48,16 +52,31 @@ export class OwnerTenantCreatePageComponent implements OnInit, OnDestroy {
   readonly countrySearchQuery = this.facade.countrySearchQuery;
   readonly showCustomizationMenu = this.facade.showCustomizationMenu;
 
-  readonly plans = this.facade.plans;
+  readonly subscriptionTemplates = this.facade.subscriptionTemplates;
   readonly tenantTypes = this.facade.tenantTypes;
   readonly industries = this.facade.industries;
   readonly domains = this.facade.domains;
   readonly cities = this.facade.cities;
   readonly countries = this.facade.countries;
   readonly selectedPlanName = this.facade.selectedPlanName;
+  readonly isRtl = this.i18nService.isRtl;
 
-  ngOnInit(): void {
-    this.facade.initialize();
+  t(key: string): string {
+    return this.i18nService.t(key);
+  }
+
+  async ngOnInit(): Promise<void> {
+    await this.facade.initialize();
+    const contactName = (this.route.snapshot.queryParamMap.get('contactName') ?? '').trim();
+    const contactEmail = (this.route.snapshot.queryParamMap.get('contactEmail') ?? '').trim();
+    if (contactName || contactEmail) {
+      this.tenantForm.patchValue({
+        contactName: contactName || this.tenantForm.get('contactName')?.value || '',
+        contactEmail: contactEmail || this.tenantForm.get('contactEmail')?.value || '',
+      });
+      this.tenantForm.get('contactName')?.markAsDirty();
+      this.tenantForm.get('contactEmail')?.markAsDirty();
+    }
   }
 
   ngOnDestroy(): void {
@@ -65,6 +84,14 @@ export class OwnerTenantCreatePageComponent implements OnInit, OnDestroy {
   }
 
   onCancel(): void {
+    const source = (this.route.snapshot.queryParamMap.get('source') ?? '').trim();
+    if (source === 'web-users') {
+      const returnSearch = (this.route.snapshot.queryParamMap.get('returnSearch') ?? '').trim();
+      void this.router.navigate(['/owner/web-users'], {
+        queryParams: returnSearch ? { search: returnSearch } : {},
+      });
+      return;
+    }
     this.facade.onCancel();
   }
 
@@ -113,6 +140,10 @@ export class OwnerTenantCreatePageComponent implements OnInit, OnDestroy {
   }
 
   toggleCityDropdown(): void {
+    if (!this.tenantForm.get('country')?.value) {
+      this.facade.setCityDropdownOpen(false);
+      return;
+    }
     this.facade.setCityDropdownOpen(!this.showCityDropdown());
   }
 

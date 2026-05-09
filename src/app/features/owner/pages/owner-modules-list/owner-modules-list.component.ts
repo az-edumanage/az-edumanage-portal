@@ -1,23 +1,79 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { FormsModule } from '@angular/forms';
-import { ModuleCategory } from '../../models/owner-modules.models';
+import { ModuleCategory, OwnerModule } from '../../models/owner-modules.models';
 import { OwnerModulesListFacade } from '../../state/owner-modules-list.facade';
+import { OwnerModulesDataService } from '../../data-access/owner-modules-data.service';
 
 @Component({
   selector: 'app-owner-modules-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule, FormsModule],
-  templateUrl: './owner-modules-list.component.html'})
+  imports: [CommonModule, RouterModule, MatIconModule],
+  templateUrl: './owner-modules-list.component.html',
+  styleUrl: './owner-modules-list.component.css'
+})
 export class OwnerModulesListComponent {
   private readonly facade = inject(OwnerModulesListFacade);
+  private readonly data = inject(OwnerModulesDataService);
+  private readonly router = inject(Router);
 
   readonly filter = this.facade.filter;
   readonly filteredModules = this.facade.filteredModules;
+  pendingDeleteModule: OwnerModule | null = null;
+  deleting = false;
+  actionStatus: { success: boolean; message: string } | null = null;
 
   setFilter(value: 'All' | ModuleCategory): void {
     this.facade.setFilter(value);
+  }
+
+  openEdit(module: OwnerModule): void {
+    void this.router.navigate(['/owner/modules', module.id, 'edit']);
+  }
+
+  openDeleteConfirm(module: OwnerModule): void {
+    this.pendingDeleteModule = module;
+  }
+
+  closeDeleteConfirm(): void {
+    if (this.deleting) return;
+    this.pendingDeleteModule = null;
+  }
+
+  closeActionStatus(): void {
+    this.actionStatus = null;
+  }
+
+  async confirmDelete(): Promise<void> {
+    if (!this.pendingDeleteModule || this.deleting) return;
+    try {
+      this.deleting = true;
+      await this.data.deleteModule(this.pendingDeleteModule.id);
+      this.pendingDeleteModule = null;
+      this.actionStatus = { success: true, message: 'Module deleted successfully.' };
+    } catch (error) {
+      const errorMessage = this.extractErrorMessage(error);
+      this.actionStatus = { success: false, message: errorMessage };
+    } finally {
+      this.deleting = false;
+    }
+  }
+
+  private extractErrorMessage(error: unknown): string {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'error' in error &&
+      typeof (error as { error?: unknown }).error === 'object' &&
+      (error as { error: { message?: unknown } }).error?.message &&
+      typeof (error as { error: { message: unknown } }).error.message === 'string'
+    ) {
+      return (error as { error: { message: string } }).error.message;
+    }
+    if (error instanceof Error && error.message) {
+      return error.message;
+    }
+    return 'Failed to delete module.';
   }
 }

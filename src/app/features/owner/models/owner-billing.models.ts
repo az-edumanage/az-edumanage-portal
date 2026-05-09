@@ -8,7 +8,7 @@ export interface Invoice {
   amount: number;
   issueDate: string;
   dueDate: string;
-  status: 'Paid' | 'Unpaid' | 'Overdue' | 'Cancelled' | 'Refunded';
+  status: string;
 }
 
 export interface Payment {

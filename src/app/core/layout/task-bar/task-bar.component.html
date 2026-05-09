@@ -11,9 +11,9 @@
             >
               <div class="flex items-center gap-2 overflow-hidden">
                 <mat-icon class="text-indigo-400 text-sm shrink-0">pending_actions</mat-icon>
-                <span class="text-xs font-bold text-slate-200 truncate uppercase tracking-wider">
-                  {{ taskService.activeTasks().length }} Pending Tasks
-                </span>
+	                <span class="text-xs font-bold text-slate-200 truncate uppercase tracking-wider">
+		                  {{ taskService.activeTasks().length }} {{ t('task.pendingTasks') }}
+	                </span>
               </div>
               <mat-icon class="text-slate-500 text-sm transition-transform duration-200" [class.rotate-180]="isDropdownOpen()">expand_more</mat-icon>
             </button>
@@ -28,14 +28,14 @@
                         (click)="navigateToTask(task)"
                         class="flex-1 text-left px-3 py-2"
                       >
-                        <div class="text-xs font-bold text-slate-200 group-hover:text-indigo-400 transition-colors">{{ task.label }}</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5">{{ task.type }}</div>
-                      </button>
+	                        <div class="text-xs font-bold text-slate-200 group-hover:text-indigo-400 transition-colors">{{ t(task.label) }}</div>
+	                        <div class="text-[10px] text-slate-500 mt-0.5">{{ t(task.type) }}</div>
+	                      </button>
                       <button 
                         (click)="taskService.removeTask(task.id)"
                         class="p-2 hover:bg-red-500/20 text-slate-500 hover:text-red-400 rounded-lg transition-all"
-                        title="Discard task"
-                      >
+	                        [title]="t('task.discardTask')"
+	                      >
                         <mat-icon class="text-sm">delete_outline</mat-icon>
                       </button>
                     </div>
@@ -47,8 +47,8 @@
                     class="w-full py-2 text-[10px] font-bold text-slate-500 hover:text-red-400 uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
                   >
                     <mat-icon class="text-xs">clear_all</mat-icon>
-                    Clear All Tasks
-                  </button>
+		                    {{ t('task.clearAllTasks') }}
+	                  </button>
                 </div>
               </div>
             }
@@ -60,8 +60,8 @@
           <button 
             (click)="taskService.clearAll()"
             class="p-2 text-slate-500 hover:text-white transition-colors"
-            title="Clear all"
-          >
+		            [title]="t('task.clearAll')"
+	          >
             <mat-icon class="text-sm">close</mat-icon>
           </button>
         </div>

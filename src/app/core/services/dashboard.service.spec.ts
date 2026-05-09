@@ -10,6 +10,17 @@ describe('DashboardService', () => {
   };
 
   beforeEach(() => {
+    localStorage.clear();
+    document.documentElement.classList.remove(
+      'dark',
+      'theme-brand',
+      'theme-light',
+      'theme-dark',
+      'theme-tenant-default',
+      'theme-tenant-ocean'
+    );
+    document.documentElement.style.colorScheme = '';
+
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
       value: () => ({
@@ -54,6 +65,44 @@ describe('DashboardService', () => {
     const initial = service.theme();
     service.toggleTheme();
     expect(service.theme()).not.toBe(initial);
+  });
+
+  it('should apply root theme classes on init', () => {
+    service.initTheme();
+
+    expect(document.documentElement.classList.contains('theme-brand')).toBe(true);
+    expect(document.documentElement.classList.contains('theme-light')).toBe(true);
+    expect(document.documentElement.classList.contains('theme-dark')).toBe(false);
+    expect(document.documentElement.classList.contains('theme-tenant-default')).toBe(true);
+    expect(document.documentElement.classList.contains('theme-tenant-ocean')).toBe(false);
+    expect(document.documentElement.classList.contains('dark')).toBe(false);
+    expect(document.documentElement.style.colorScheme).toBe('light');
+  });
+
+  it('should persist theme and switch classes when toggled', () => {
+    service.initTheme();
+
+    service.toggleTheme();
+
+    expect(localStorage.getItem('theme')).toBe('dark');
+    expect(document.documentElement.classList.contains('theme-brand')).toBe(true);
+    expect(document.documentElement.classList.contains('theme-dark')).toBe(true);
+    expect(document.documentElement.classList.contains('theme-light')).toBe(false);
+    expect(document.documentElement.classList.contains('theme-tenant-default')).toBe(true);
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+    expect(document.documentElement.style.colorScheme).toBe('dark');
+  });
+
+  it('should apply tenant theme only for tenant role', () => {
+    service.setTenantTheme('ocean');
+    service.setRole('tenant');
+
+    expect(document.documentElement.classList.contains('theme-tenant-ocean')).toBe(true);
+    expect(localStorage.getItem('tenant-theme')).toBe('ocean');
+
+    service.setRole('owner');
+    expect(document.documentElement.classList.contains('theme-tenant-default')).toBe(true);
+    expect(document.documentElement.classList.contains('theme-tenant-ocean')).toBe(false);
   });
 
   it('should navigate to return URL when switching to owner with pending returnUrl', () => {

@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { SubscriptionOrder } from '../../models/owner-subscription-orders.models';
+import { OwnerSubscriptionOrderStatusesDataService } from '../../data-access/owner-subscription-order-statuses-data.service';
 
 @Component({
   selector: 'app-owner-subscription-orders-table',
@@ -12,6 +13,8 @@ import { SubscriptionOrder } from '../../models/owner-subscription-orders.models
   styleUrl: './owner-subscription-orders-table.component.css',
 })
 export class OwnerSubscriptionOrdersTableComponent {
+  private readonly orderStatusesData = inject(OwnerSubscriptionOrderStatusesDataService);
+
   readonly orders = input<SubscriptionOrder[]>([]);
   readonly selectedOrderIds = input<Set<string>>(new Set<string>());
   readonly isAllSelected = input(false);
@@ -45,5 +48,9 @@ export class OwnerSubscriptionOrdersTableComponent {
   onToggleRow(id: string, event: Event): void {
     event.stopPropagation();
     this.orderSelectionToggled.emit(id);
+  }
+
+  getStatusColor(status: string): string {
+    return this.orderStatusesData.findByName(status)?.color ?? '#64748b';
   }
 }

@@ -1,17 +1,17 @@
 
-    <div class="space-y-6">
+    <div class="owner-notifications-page">
       <!-- Header -->
-      <div class="flex items-center justify-between">
+      <div class="owner-notifications-header">
         <div>
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Platform Notifications</h2>
-          <p class="text-slate-500 dark:text-slate-500 text-sm">Broadcast announcements, maintenance alerts, and security updates to tenants.</p>
+          <h2 class="owner-notifications-header-title">Platform Notifications</h2>
+          <p class="owner-notifications-header-subtitle">Broadcast announcements, maintenance alerts, and security updates to tenants.</p>
         </div>
-        <div class="flex gap-3">
-          <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+        <div class="owner-notifications-header-actions">
+          <button class="owner-notifications-action owner-notifications-action--secondary">
             <mat-icon class="text-sm">filter_list</mat-icon>
             Filter
           </button>
-          <a routerLink="/owner/notifications/create" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20">
+          <a routerLink="/owner/notifications/create" class="owner-notifications-action owner-notifications-action--primary">
             <mat-icon class="text-sm">add</mat-icon>
             Create Notification
           </a>
@@ -19,51 +19,51 @@
       </div>
 
       <!-- Stats Summary -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Sent This Month</p>
-          <p class="text-2xl font-bold text-slate-900 dark:text-white">24</p>
+      <div class="owner-notifications-stats">
+        <div class="owner-notifications-stat-card">
+          <p class="owner-notifications-stat-label">Sent This Month</p>
+          <p class="owner-notifications-stat-value">24</p>
         </div>
-        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Scheduled</p>
-          <p class="text-2xl font-bold text-indigo-600">3</p>
+        <div class="owner-notifications-stat-card">
+          <p class="owner-notifications-stat-label">Scheduled</p>
+          <p class="owner-notifications-stat-value text-indigo-600">3</p>
         </div>
-        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Avg. Open Rate</p>
-          <p class="text-2xl font-bold text-emerald-600">78.4%</p>
+        <div class="owner-notifications-stat-card">
+          <p class="owner-notifications-stat-label">Avg. Open Rate</p>
+          <p class="owner-notifications-stat-value text-emerald-600">78.4%</p>
         </div>
-        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Active Banners</p>
-          <p class="text-2xl font-bold text-amber-500">1</p>
+        <div class="owner-notifications-stat-card">
+          <p class="owner-notifications-stat-label">Active Banners</p>
+          <p class="owner-notifications-stat-value text-amber-500">1</p>
         </div>
       </div>
 
       <!-- Table -->
-      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <div class="owner-notifications-table-shell">
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500">
+          <table class="owner-notifications-table">
+            <thead class="owner-notifications-table-head">
               <tr>
-                <th class="px-6 py-3 font-medium">Notification Title</th>
-                <th class="px-6 py-3 font-medium">Type</th>
-                <th class="px-6 py-3 font-medium">Target</th>
-                <th class="px-6 py-3 font-medium">Channels</th>
-                <th class="px-6 py-3 font-medium">Status</th>
-                <th class="px-6 py-3 font-medium">Created Date</th>
-                <th class="px-6 py-3 font-medium text-right">Actions</th>
+                <th class="owner-notifications-table-head-cell">Notification Title</th>
+                <th class="owner-notifications-table-head-cell">Type</th>
+                <th class="owner-notifications-table-head-cell">Target</th>
+                <th class="owner-notifications-table-head-cell">Channels</th>
+                <th class="owner-notifications-table-head-cell">Status</th>
+                <th class="owner-notifications-table-head-cell">Created Date</th>
+                <th class="owner-notifications-table-head-cell owner-notifications-actions-cell">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+            <tbody class="owner-notifications-table-body">
               @for (item of notifications(); track item.id) {
-                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                  <td class="px-6 py-4">
+                <tr class="owner-notifications-table-row">
+                  <td class="owner-notifications-table-cell">
                     <div class="flex flex-col">
-                      <span class="font-medium text-slate-900 dark:text-white">{{ item.title }}</span>
-                      <span class="text-xs text-slate-500">By {{ item.createdBy }}</span>
+                      <span class="owner-notifications-title">{{ item.title }}</span>
+                      <span class="owner-notifications-meta">By {{ item.createdBy }}</span>
                     </div>
                   </td>
-                  <td class="px-6 py-4">
-                    <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                  <td class="owner-notifications-table-cell">
+                    <span class="owner-notifications-type"
                       [class.bg-blue-100]="item.type === 'Announcement'"
                       [class.text-blue-700]="item.type === 'Announcement'"
                       [class.bg-amber-100]="item.type === 'Maintenance'"
@@ -76,19 +76,19 @@
                       {{ item.type }}
                     </span>
                   </td>
-                  <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ item.target }}</td>
-                  <td class="px-6 py-4">
-                    <div class="flex gap-1">
+                  <td class="owner-notifications-table-cell owner-notifications-target">{{ item.target }}</td>
+                  <td class="owner-notifications-table-cell">
+                    <div class="owner-notifications-channels">
                       @for (channel of item.channels; track channel) {
-                        <mat-icon class="text-xs text-slate-500" [title]="channel">
+                        <mat-icon class="owner-notifications-channel-icon" [title]="channel">
                           {{ channel === 'In-App' ? 'notifications' : channel === 'Email' ? 'email' : 'sms' }}
                         </mat-icon>
                       }
                     </div>
                   </td>
-                  <td class="px-6 py-4">
-                    <span class="flex items-center gap-1.5">
-                      <span class="w-1.5 h-1.5 rounded-full"
+                  <td class="owner-notifications-table-cell">
+                    <span class="owner-notifications-status">
+                      <span class="owner-notifications-status-dot"
                         [class.bg-slate-400]="item.status === 'Draft'"
                         [class.bg-blue-500]="item.status === 'Scheduled'"
                         [class.bg-green-500]="item.status === 'Sent'"
@@ -97,16 +97,16 @@
                       {{ item.status }}
                     </span>
                   </td>
-                  <td class="px-6 py-4 text-slate-500">{{ item.createdDate }}</td>
-                  <td class="px-6 py-4 text-right">
-                    <div class="flex justify-end gap-2">
-                      <a [routerLink]="['/owner/notifications', item.id]" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-500 hover:text-indigo-600 transition-colors">
+                  <td class="owner-notifications-table-cell owner-notifications-date">{{ item.createdDate }}</td>
+                  <td class="owner-notifications-table-cell owner-notifications-actions-cell">
+                    <div class="owner-notifications-row-actions">
+                      <a [routerLink]="['/owner/notifications', item.id]" class="owner-notifications-row-action">
                         <mat-icon class="text-sm">visibility</mat-icon>
                       </a>
-                      <button class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-500 hover:text-indigo-600 transition-colors">
+                      <button class="owner-notifications-row-action">
                         <mat-icon class="text-sm">edit</mat-icon>
                       </button>
-                      <button class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-500 hover:text-indigo-600 transition-colors">
+                      <button class="owner-notifications-row-action">
                         <mat-icon class="text-sm">content_copy</mat-icon>
                       </button>
                     </div>

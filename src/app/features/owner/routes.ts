@@ -17,6 +17,7 @@ import { OwnerSubscriptionOrderDetailsComponent } from './pages/owner-subscripti
 import { OwnerBillingPageComponent } from './pages/owner-billing/owner-billing-page.component';
 import { OwnerInvoiceDetailsComponent } from './pages/owner-invoice-details/owner-invoice-details.component';
 import { OwnerModulesListComponent } from './pages/owner-modules-list/owner-modules-list.component';
+import { OwnerModuleCreateComponent } from './pages/owner-module-create/owner-module-create.component';
 import { OwnerModuleDetailsComponent } from './pages/owner-module-details/owner-module-details.component';
 import { OwnerAcademicStructureDetailsComponent } from './pages/owner-academic-structure-details/owner-academic-structure-details.component';
 import { OwnerUsageAnalyticsComponent } from './pages/owner-usage-analytics/owner-usage-analytics.component';
@@ -27,6 +28,7 @@ import { OwnerIntegrationsListComponent } from './pages/owner-integrations-list/
 import { OwnerIntegrationDetailsComponent } from './pages/owner-integration-details/owner-integration-details.component';
 import { OwnerMonitoringComponent } from './pages/owner-monitoring/owner-monitoring.component';
 import { OwnerUsersListComponent } from './pages/owner-users-list/owner-users-list.component';
+import { OwnerWebUsersListComponent } from './pages/owner-web-users-list/owner-web-users-list.component';
 import { OwnerUserFormComponent } from './pages/owner-user-form/owner-user-form.component';
 import { OwnerSecurityComponent } from './pages/owner-security/owner-security.component';
 import { OwnerAuditLogsComponent } from './pages/owner-audit-logs/owner-audit-logs.component';
@@ -35,6 +37,10 @@ import { OwnerNotificationsListComponent } from './pages/owner-notifications-lis
 import { OwnerNotificationFormComponent } from './pages/owner-notification-form/owner-notification-form.component';
 import { OwnerNotificationDetailsComponent } from './pages/owner-notification-details/owner-notification-details.component';
 import { OwnerSettingsComponent } from './pages/owner-settings/owner-settings.component';
+import { OwnerTestQuestionBankComponent } from './pages/owner-test-question-bank/owner-test-question-bank.component';
+import { OwnerRoleCreateComponent } from './pages/owner-role-create/owner-role-create.component';
+import { OwnerRolesListComponent } from './pages/owner-roles-list/owner-roles-list.component';
+import { OwnerWebSettingsComponent } from './pages/owner-web-settings/owner-web-settings.component';
 
 export const OWNER_ROUTES: Routes = [
   { path: 'overview', component: OwnerOverviewComponent },
@@ -72,6 +78,8 @@ export const OWNER_ROUTES: Routes = [
   { path: 'billing', component: OwnerBillingPageComponent },
   { path: 'billing/invoices/:id', component: OwnerInvoiceDetailsComponent },
   { path: 'modules', component: OwnerModulesListComponent },
+  { path: 'modules/create', component: OwnerModuleCreateComponent },
+  { path: 'modules/:id/edit', component: OwnerModuleCreateComponent },
   { path: 'modules/mod-acad', component: OwnerAcademicStructureDetailsComponent },
   { path: 'modules/:id', component: OwnerModuleDetailsComponent },
   { path: 'analytics', component: OwnerUsageAnalyticsComponent },
@@ -84,8 +92,12 @@ export const OWNER_ROUTES: Routes = [
   { path: 'integrations', component: OwnerIntegrationsListComponent },
   { path: 'integrations/:id', component: OwnerIntegrationDetailsComponent },
   { path: 'monitoring', component: OwnerMonitoringComponent },
+  { path: 'web-users', component: OwnerWebUsersListComponent },
   { path: 'users', component: OwnerUsersListComponent },
   { path: 'users/create', component: OwnerUserFormComponent },
+  { path: 'users/roles', component: OwnerRolesListComponent },
+  { path: 'users/roles/create', component: OwnerRoleCreateComponent },
+  { path: 'users/roles/:id/edit', component: OwnerRoleCreateComponent },
   { path: 'users/:id', component: OwnerUserFormComponent },
   { path: 'security', component: OwnerSecurityComponent },
   { path: 'audit', component: OwnerAuditLogsComponent },
@@ -94,4 +106,6 @@ export const OWNER_ROUTES: Routes = [
   { path: 'notifications/create', component: OwnerNotificationFormComponent },
   { path: 'notifications/:id', component: OwnerNotificationDetailsComponent },
   { path: 'settings', component: OwnerSettingsComponent },
+  { path: 'web-settings', component: OwnerWebSettingsComponent },
+  { path: 'test', component: OwnerTestQuestionBankComponent },
 ];

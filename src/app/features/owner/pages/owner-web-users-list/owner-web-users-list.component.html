@@ -1,0 +1,259 @@
+
+    <div class="owner-users-page space-y-6" (click)="closeStatusMenu()">
+      <!-- Header -->
+      <div class="owner-users-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="owner-users-title text-2xl font-bold text-slate-900 dark:text-white">Web Users</h2>
+          <p class="owner-users-subtitle text-slate-500 dark:text-slate-500 text-sm">Manage website-facing user accounts and access.</p>
+        </div>
+        <div class="owner-users-header-actions flex gap-3">
+          <div class="owner-users-search-wrap relative">
+            <input 
+              type="text" 
+              placeholder="Search users..." 
+              [ngModel]="searchTerm()"
+              (ngModelChange)="onSearchChange($event)"
+              class="owner-users-search-input pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white w-64"
+            >
+            <mat-icon class="owner-users-search-icon absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</mat-icon>
+          </div>
+          <button routerLink="/owner/users/create" class="owner-users-add-btn flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20">
+            <mat-icon class="text-sm">add</mat-icon>
+            Add User
+          </button>
+        </div>
+      </div>
+
+      <div class="owner-users-filters flex flex-wrap gap-2 border-b border-slate-200 dark:border-slate-800 pb-4">
+        <button
+          (click)="setTab('current')"
+          class="owner-users-filter-btn px-4 py-2 rounded-full text-sm font-medium transition-colors"
+          [class.bg-slate-900]="activeTab() === 'current'"
+          [class.text-white]="activeTab() === 'current'"
+          [class.bg-slate-100]="activeTab() !== 'current'"
+          [class.text-slate-500]="activeTab() !== 'current'"
+          [class.dark:bg-white]="activeTab() === 'current'"
+          [class.dark:text-slate-900]="activeTab() === 'current'"
+          [class.dark:bg-slate-800]="activeTab() !== 'current'"
+          [class.dark:text-slate-500]="activeTab() !== 'current'"
+        >
+          Current User
+        </button>
+        <button
+          (click)="setTab('subscribers')"
+          class="owner-users-filter-btn px-4 py-2 rounded-full text-sm font-medium transition-colors"
+          [class.bg-slate-900]="activeTab() === 'subscribers'"
+          [class.text-white]="activeTab() === 'subscribers'"
+          [class.bg-slate-100]="activeTab() !== 'subscribers'"
+          [class.text-slate-500]="activeTab() !== 'subscribers'"
+          [class.dark:bg-white]="activeTab() === 'subscribers'"
+          [class.dark:text-slate-900]="activeTab() === 'subscribers'"
+          [class.dark:bg-slate-800]="activeTab() !== 'subscribers'"
+          [class.dark:text-slate-500]="activeTab() !== 'subscribers'"
+        >
+          Subscribers
+        </button>
+      </div>
+
+      @if (loading()) {
+        <div class="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+          Loading web users from backend...
+        </div>
+      }
+      @if (loadError()) {
+        <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+          {{ loadError() }}
+        </div>
+      }
+
+      @if (activeTab() === 'current') {
+      <!-- Users Table -->
+      <div class="owner-users-table-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="owner-users-table-wrap overflow-x-auto">
+          <table class="owner-users-table w-full text-left text-sm">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
+              <tr>
+                <th class="px-6 py-3 font-medium">User</th>
+                <th class="px-6 py-3 font-medium">Tenant Name</th>
+                <th class="px-6 py-3 font-medium">Status</th>
+                <th class="px-6 py-3 font-medium">Last Login</th>
+                <th class="px-6 py-3 font-medium text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+              @for (user of pagedUsers(); track user.id) {
+                <tr class="owner-users-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <td class="px-6 py-4">
+                    <div class="owner-users-user-cell flex items-center gap-3">
+                      <div class="owner-users-avatar w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-500 dark:text-slate-300">
+                        {{ user.fullName.charAt(0) }}
+                      </div>
+                      <div>
+                        <div class="font-medium text-slate-900 dark:text-white">{{ user.fullName }}</div>
+                        <div class="text-xs text-slate-500">{{ user.email }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    @if (user.tenantId) {
+                      <a
+                        [routerLink]="['/owner/tenants', user.tenantId]"
+                        class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:underline"
+                        title="View tenant details"
+                      >
+                        {{ tenantNameOf(user) }}
+                      </a>
+                    } @else {
+                      <span class="text-slate-500 dark:text-slate-500">{{ tenantNameOf(user) }}</span>
+                    }
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="owner-users-status-badge inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium"
+                      [class.bg-green-100]="user.status === 'Active'"
+                      [class.text-green-700]="user.status === 'Active'"
+                      [class.dark:bg-green-900/30]="user.status === 'Active'"
+                      [class.dark:text-green-400]="user.status === 'Active'"
+                      [class.bg-slate-200]="user.status === 'Inactive'"
+                      [class.text-slate-700]="user.status === 'Inactive'"
+                      [class.dark:bg-slate-700]="user.status === 'Inactive'"
+                      [class.dark:text-slate-300]="user.status === 'Inactive'"
+                      [class.bg-red-100]="user.status === 'Suspended'"
+                      [class.text-red-700]="user.status === 'Suspended'"
+                      [class.dark:bg-red-900/30]="user.status === 'Suspended'"
+                      [class.dark:text-red-400]="user.status === 'Suspended'"
+                    >
+                      <span class="owner-users-status-dot w-1.5 h-1.5 rounded-full"
+                        [class.bg-green-500]="user.status === 'Active'"
+                        [class.bg-slate-500]="user.status === 'Inactive'"
+                        [class.bg-red-500]="user.status === 'Suspended'"
+                      ></span>
+                      {{ user.status }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ user.lastLogin }}</td>
+                  <td class="px-6 py-4 text-right">
+                    <div class="owner-users-actions relative flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
+                      @if (!user.tenantId) {
+                        <button
+                          type="button"
+                          class="owner-users-icon-btn p-1.5 text-slate-500 hover:text-emerald-600 hover:bg-emerald-600/10 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
+                          title="Assign To"
+                          (click)="assignToTenant(user)"
+                        >
+                          <mat-icon class="text-sm">assignment_ind</mat-icon>
+                        </button>
+                      }
+                      <button
+                        type="button"
+                        class="owner-users-icon-btn p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
+                        title="Change Status"
+                        (click)="toggleStatusMenu(user.id)"
+                      >
+                        <mat-icon class="text-sm">autorenew</mat-icon>
+                      </button>
+
+                      @if (statusMenuUserId() === user.id) {
+                        <div class="owner-users-status-menu absolute right-0 top-10 z-20 w-44 rounded-lg border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800">
+                          @for (statusOption of statusOptions; track statusOption) {
+                            <button
+                              type="button"
+                              class="w-full rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
+                              [class.font-semibold]="user.status === statusOption"
+                              [class.text-indigo-600]="user.status === statusOption"
+                              [class.dark:text-indigo-400]="user.status === statusOption"
+                              (click)="setUserStatus(user, statusOption)"
+                            >
+                              {{ statusOption }}
+                            </button>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      } @else {
+      <div class="owner-users-table-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="owner-users-table-wrap overflow-x-auto">
+          <table class="owner-users-table w-full text-left text-sm">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
+              <tr>
+                <th class="px-6 py-3 font-medium">Subscriber</th>
+                <th class="px-6 py-3 font-medium">Tenant Name</th>
+                <th class="px-6 py-3 font-medium">Status</th>
+                <th class="px-6 py-3 font-medium">Last Login</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+              @for (user of pagedUsers(); track user.id) {
+                <tr class="owner-users-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <td class="px-6 py-4">
+                    <div class="font-medium text-slate-900 dark:text-white">{{ user.fullName }}</div>
+                    <div class="text-xs text-slate-500">{{ user.email }}</div>
+                  </td>
+                  <td class="px-6 py-4">
+                    @if (user.tenantId) {
+                      <a
+                        [routerLink]="['/owner/tenants', user.tenantId]"
+                        class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:underline"
+                        title="View tenant details"
+                      >
+                        {{ tenantNameOf(user) }}
+                      </a>
+                    } @else {
+                      <span class="text-slate-500 dark:text-slate-500">{{ tenantNameOf(user) }}</span>
+                    }
+                  </td>
+                  <td class="px-6 py-4 text-slate-700 dark:text-slate-300">{{ user.status }}</td>
+                  <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ user.lastLogin }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      }
+
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-800 dark:bg-slate-900">
+        <div class="text-slate-600 dark:text-slate-300">
+          Showing {{ pagedUsers().length }} of {{ totalItems() }} users
+        </div>
+        <div class="flex items-center gap-3">
+          <label class="text-slate-600 dark:text-slate-300">
+            Rows:
+            <select
+              class="ml-1 rounded border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800"
+              [ngModel]="pageSize()"
+              (ngModelChange)="onPageSizeChange($event)"
+            >
+              <option [ngValue]="5">5</option>
+              <option [ngValue]="10">10</option>
+              <option [ngValue]="20">20</option>
+              <option [ngValue]="50">50</option>
+            </select>
+          </label>
+          <button
+            type="button"
+            class="rounded border border-slate-300 px-3 py-1 disabled:opacity-50 dark:border-slate-700"
+            (click)="prevPage()"
+            [disabled]="currentPage() <= 1"
+          >
+            Prev
+          </button>
+          <span class="text-slate-600 dark:text-slate-300">Page {{ currentPageDisplay() }} / {{ totalPages() }}</span>
+          <button
+            type="button"
+            class="rounded border border-slate-300 px-3 py-1 disabled:opacity-50 dark:border-slate-700"
+            (click)="nextPage()"
+            [disabled]="currentPage() >= totalPages()"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+  

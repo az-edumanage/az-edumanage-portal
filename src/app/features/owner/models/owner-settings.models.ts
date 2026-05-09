@@ -1,7 +1,11 @@
 export type OwnerSettingsTabId =
   | 'general'
+  | 'subject'
   | 'presets'
   | 'security'
+  | 'roles'
+  | 'status'
+  | 'modules-features'
   | 'billing'
   | 'communication'
   | 'storage'
@@ -26,4 +30,34 @@ export interface OwnerSettingsPaymentMethod {
   description: string;
   icon: string;
   active: boolean;
+}
+
+export interface OwnerSettingsPresetsSaveStatus {
+  type: 'success' | 'error';
+  title: string;
+  message: string;
+}
+
+export interface SubjectTemplate {
+  id: number;
+  name: string;
+  levels: string[];
+  createdAt: string;
+  isDefault: boolean;
+}
+
+export interface SubjectTemplateCreateInput {
+  name: string;
+  levels: string[];
+  isDefault: boolean;
+}
+
+export type SubjectStructureNodeType = 'field' | 'sequence';
+
+export interface SubjectStructureNode {
+  id: number;
+  type: SubjectStructureNodeType;
+  nameEn: string;
+  nameAr: string;
+  children: SubjectStructureNode[];
 }

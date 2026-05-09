@@ -1,0 +1,102 @@
+:host {
+  display: block;
+}
+
+.owner-role-create-page {
+  align-content: start;
+}
+
+.owner-role-create-card {
+  background: var(--color-bg-card);
+  border-color: var(--color-border-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.owner-role-create-group {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-border-primary);
+}
+
+.owner-role-create-back-btn {
+  color: var(--color-text-secondary);
+}
+
+.owner-role-create-back-btn:hover {
+  background: var(--color-bg-subtle);
+}
+
+.owner-role-create-selected {
+  background: color-mix(in srgb, var(--color-action-primary) 10%, transparent);
+  color: var(--color-action-primary);
+}
+
+.owner-role-create-label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.owner-role-create-input {
+  width: 100%;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-input);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  padding: 0.5rem 0.75rem;
+  outline: 0;
+}
+
+.owner-role-create-input:focus {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-action-primary) 25%, transparent);
+}
+
+.owner-role-create-checkline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.owner-role-create-permission-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  padding: 0.5rem 0.75rem;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.owner-role-create-btn {
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  padding: 0.625rem 1rem;
+}
+
+.owner-role-create-btn-secondary {
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+}
+
+.owner-role-create-btn-secondary:hover {
+  background: var(--color-bg-subtle);
+}
+
+.owner-role-create-btn-primary {
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action, #fff);
+}
+
+.owner-role-create-btn-primary:hover {
+  background: var(--color-action-primary-hover, var(--color-action-primary));
+}

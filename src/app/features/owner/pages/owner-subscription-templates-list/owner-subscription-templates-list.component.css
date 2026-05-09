@@ -1,0 +1,55 @@
+:host {
+  display: block;
+}
+
+.owner-subscription-templates-page {
+  align-content: start;
+}
+
+.owner-subscription-templates-title {
+  letter-spacing: -0.01em;
+}
+
+.owner-subscription-templates-subtitle {
+  line-height: 1.25rem;
+}
+
+.owner-subscription-templates-header-actions {
+  flex-wrap: wrap;
+}
+
+.owner-subscription-templates-create-btn {
+  white-space: nowrap;
+}
+
+.owner-subscription-templates-create-icon {
+  flex-shrink: 0;
+}
+
+.owner-subscription-templates-card {
+  display: block;
+}
+
+.owner-subscription-templates-status,
+.owner-subscription-templates-meta-label {
+  letter-spacing: 0.04em;
+}
+
+.owner-subscription-templates-card-title {
+  line-height: 1.25;
+}
+
+.owner-subscription-templates-meta-value,
+.owner-subscription-templates-stat {
+  white-space: nowrap;
+}
+
+.owner-subscription-templates-stats-row {
+  flex-wrap: wrap;
+}
+
+.owner-subscription-templates-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

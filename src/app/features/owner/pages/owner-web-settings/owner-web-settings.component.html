@@ -1,0 +1,708 @@
+<div class="owner-web-settings-page space-y-6">
+  <div class="flex items-start justify-between gap-4">
+    <div>
+      <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Web Settings</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-500">Manage public website content per tenant and publish updates.</p>
+      <p class="owner-web-meta-status">
+        Status:
+        <strong [class.text-emerald-700]="settings()?.published" [class.text-amber-700]="!settings()?.published">
+          {{ settings()?.published ? 'Published' : 'Draft' }}
+        </strong>
+        @if (settings()?.publishedAt) {
+          <span class="owner-web-meta-sep">•</span>
+          <span>Published at {{ settings()?.publishedAt }}</span>
+        }
+      </p>
+      <p class="owner-web-meta-status owner-web-health-line">
+        Last publish health:
+        <strong
+          [class.owner-web-health-checking]="healthState() === 'checking'"
+          [class.owner-web-health-ok]="healthState() === 'ok'"
+          [class.owner-web-health-failed]="healthState() === 'failed'">
+          {{ healthState() === 'checking' ? 'Checking' : healthState() === 'ok' ? 'OK' : healthState() === 'failed' ? 'Failed' : 'Idle' }}
+        </strong>
+        <span class="owner-web-meta-sep">•</span>
+        <span>{{ healthMessage() }}</span>
+      </p>
+      <p class="owner-web-meta-status">Tip: double-click any input field to open rich editor.</p>
+    </div>
+
+    <div class="flex gap-2 flex-wrap justify-end">
+      <a
+        [href]="publicWebsiteUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="owner-web-btn owner-web-btn-secondary">
+        Open Public Website
+      </a>
+      <a
+        [href]="apiPreviewUrl()"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="owner-web-btn owner-web-btn-secondary">
+        Open API Preview
+      </a>
+      <button type="button" (click)="openFocusedFieldEditor()" [disabled]="loading() || isBusy()" class="owner-web-btn owner-web-btn-secondary">
+        Rich Edit Focused Field
+      </button>
+      <button type="button" (click)="checkPublicApiHealth()" [disabled]="loading() || isBusy() || healthState() === 'checking'" class="owner-web-btn owner-web-btn-secondary">
+        @if (healthState() === 'checking') { <span class="material-icons animate-spin text-sm">autorenew</span> }
+        Recheck Health
+      </button>
+      <button type="button" (click)="saveDraft()" [disabled]="loading() || isBusy()" class="owner-web-btn owner-web-btn-secondary">
+        @if (isSaving()) { <span class="material-icons animate-spin text-sm">autorenew</span> }
+        Save Draft
+      </button>
+      <button type="button" (click)="publish()" [disabled]="loading() || isBusy()" class="owner-web-btn owner-web-btn-primary">
+        @if (isPublishing()) { <span class="material-icons animate-spin text-sm">autorenew</span> }
+        Publish
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="owner-web-card p-8 text-sm text-slate-500">Loading website settings...</div>
+  } @else {
+    <form [formGroup]="form" class="space-y-6" (ngSubmit)="$event.preventDefault()">
+      <datalist id="owner-integration-icon-options">
+        @for (iconName of integrationIconOptions; track iconName) {
+          <option [value]="iconName"></option>
+        }
+      </datalist>
+
+      <div class="owner-web-tabs">
+        @for (section of sections; track section.key) {
+          <button
+            type="button"
+            class="owner-web-tab-btn"
+            [class.owner-web-tab-btn-invalid]="isSectionInvalid(section.key)"
+            [class.owner-web-tab-btn-active]="activeSection() === section.key"
+            (click)="setSection(section.key)">
+            {{ section.label }}
+            @if (isSectionInvalid(section.key)) {
+              <span class="owner-web-tab-dot" aria-hidden="true"></span>
+            }
+          </button>
+        }
+      </div>
+
+      <div class="owner-web-card p-5 space-y-4" formGroupName="siteConfig" [class.owner-web-hidden]="activeSection() !== 'site'">
+        <h3 class="owner-web-section-title">Site Config</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="owner-web-field">
+            <span>Site Name *</span>
+            <input formControlName="siteName" class="owner-web-input" />
+          </label>
+          <label class="owner-web-field">
+            <span>Support Email</span>
+            <input formControlName="supportEmail" class="owner-web-input" />
+          </label>
+          <label class="owner-web-field">
+            <span>Contact Phone</span>
+            <input formControlName="contactPhone" class="owner-web-input" />
+          </label>
+          <label class="owner-web-field">
+            <span>Primary Locale *</span>
+            <input formControlName="primaryLocale" class="owner-web-input" />
+          </label>
+        </div>
+      </div>
+
+      <div class="owner-web-card p-5 space-y-4" formGroupName="hero" [class.owner-web-hidden]="activeSection() !== 'hero'">
+        <h3 class="owner-web-section-title">Hero</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="owner-web-field"><span>Badge</span><input formControlName="badgeText" class="owner-web-input" /></label>
+          <label class="owner-web-field"><span>Title *</span><input formControlName="titleText" class="owner-web-input" /></label>
+          <label class="owner-web-field md:col-span-2"><span>Description</span><textarea formControlName="descriptionText" class="owner-web-textarea"></textarea></label>
+          <label class="owner-web-field md:col-span-2">
+            <span>Hero Background Image URL</span>
+            <input formControlName="backgroundImageUrl" class="owner-web-input" placeholder="https://... or data:image/..." />
+          </label>
+          <label class="owner-web-field md:col-span-2">
+            <span>Upload Hero Background (local file)</span>
+            <input type="file" accept="image/*" class="owner-web-input" (change)="onHeroBackgroundFileSelected($event)" />
+          </label>
+          <label class="owner-web-field"><span>Primary CTA Label</span><input formControlName="primaryCtaLabel" class="owner-web-input" /></label>
+          <label class="owner-web-field"><span>Primary CTA Link</span><input formControlName="primaryCtaLink" class="owner-web-input" /></label>
+          <label class="owner-web-field"><span>Secondary CTA Label</span><input formControlName="secondaryCtaLabel" class="owner-web-input" /></label>
+          <label class="owner-web-field"><span>Secondary CTA Link</span><input formControlName="secondaryCtaLink" class="owner-web-input" /></label>
+        </div>
+      </div>
+
+      <div class="owner-web-card p-5 space-y-4" [class.owner-web-hidden]="activeSection() !== 'pages'">
+        <h3 class="owner-web-section-title">Pages</h3>
+        <div formArrayName="pages" class="space-y-3">
+          @for (row of pages.controls; track $index) {
+            <div [formGroupName]="$index" class="owner-web-grid-row">
+              <input formControlName="pageKey" class="owner-web-input" placeholder="Page key" />
+              <input formControlName="title" class="owner-web-input" placeholder="Title" />
+              <input formControlName="routePath" class="owner-web-input" placeholder="Path" />
+              <label class="owner-web-check"><input type="checkbox" formControlName="visible" /> Visible</label>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="owner-web-card p-5 space-y-4" [class.owner-web-hidden]="activeSection() !== 'navigation'">
+        <div class="flex items-center justify-between"><h3 class="owner-web-section-title">Navigation</h3><button type="button" (click)="addNavLink()" class="owner-web-mini-btn">Add Link</button></div>
+        <div formArrayName="navigation" class="space-y-3">
+          @for (row of navigation.controls; track $index) {
+            <div [formGroupName]="$index" class="owner-web-grid-row">
+              <input formControlName="label" class="owner-web-input" placeholder="Label" />
+              <input formControlName="routePath" class="owner-web-input" placeholder="Path" />
+              <input formControlName="linkType" class="owner-web-input" placeholder="Type" />
+              <input type="number" min="1" step="1" formControlName="displayOrder" class="owner-web-input" placeholder="Display order" />
+              <label class="owner-web-check"><input type="checkbox" formControlName="visible" /> Visible</label>
+              <button type="button" (click)="removeNavLink($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="owner-web-card p-5 space-y-4" [class.owner-web-hidden]="activeSection() !== 'features'">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="owner-web-section-title">Features</h3>
+            <p class="owner-web-feature-subtitle">Manage and organize your platform feature modules.</p>
+          </div>
+          <button type="button" (click)="addFeature()" class="owner-web-btn owner-web-btn-primary">Add Feature</button>
+        </div>
+        <div formArrayName="features" class="space-y-3">
+          @for (row of features.controls; track $index) {
+            <div [formGroupName]="$index" class="owner-web-feature-accordion">
+              <button type="button" class="owner-web-feature-accordion-head" (click)="toggleFeatureAccordion($index)">
+                <div class="owner-web-feature-accordion-head-left">
+                  <span class="owner-web-feature-chip">Feature {{ $index + 1 }}</span>
+                  <span class="owner-web-feature-divider">•</span>
+                  <span class="owner-web-feature-title">{{ featureAccordionTitle($index) }}</span>
+                </div>
+                <mat-icon class="owner-web-feature-accordion-arrow" [class.owner-web-feature-accordion-arrow-open]="isFeatureAccordionOpen($index)">expand_more</mat-icon>
+              </button>
+
+              @if (isFeatureAccordionOpen($index)) {
+              <div class="owner-web-feature-accordion-body owner-web-feature-accordion-body-open">
+                <section class="owner-web-feature-panel">
+                  <h4 class="owner-web-feature-panel-title">General Information</h4>
+                  <p class="owner-web-feature-panel-subtitle">Core identifying details for this feature module.</p>
+                  <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                    <div class="md:col-span-5">
+                      <label class="owner-web-field"><span>Domain / Icon Type</span></label>
+                      <div class="owner-web-icon-picker">
+                        <mat-icon>{{ featureIconControlAt($index).value || 'help' }}</mat-icon>
+                        <input [formControl]="featureIconControlAt($index)" class="owner-web-input" list="owner-integration-icon-options" placeholder="domain" />
+                      </div>
+                    </div>
+                    <div class="md:col-span-4">
+                      <label class="owner-web-field"><span>Feature Title</span></label>
+                      <input formControlName="titleText" class="owner-web-input" placeholder="Feature title" data-feature-title="true" [attr.data-feature-index]="$index" />
+                    </div>
+                    <!-- <div class="md:col-span-3">
+                      <label class="owner-web-field"><span>Order ID</span></label>
+                      <input type="number" min="1" step="1" formControlName="displayOrder" class="owner-web-input" placeholder="Order ID" />
+                    </div> -->
+
+                    <div>
+                      <label class="owner-web-field"><span>Title Font Size (px)</span></label>
+                      <input type="number" min="1" max="96" step="1" formControlName="titleFontSize" class="owner-web-input" />
+                    </div>
+                    <div class="md:col-span-9">
+                      <label class="owner-web-field"><span>Feature Summary</span></label>
+                      <textarea formControlName="descriptionText" class="owner-web-textarea" placeholder="Feature summary"></textarea>
+                    </div>
+                    <div>
+                      <label class="owner-web-field"><span>Description Font Size (px)</span></label>
+                      <input type="number" min="1" max="96" step="1" formControlName="descriptionFontSize" class="owner-web-input" />
+                    </div>
+                    
+                  </div>
+                </section>
+
+                <section class="owner-web-feature-panel">
+                  <h4 class="owner-web-feature-panel-title">Navigation & Metadata</h4>
+                  <p class="owner-web-feature-panel-subtitle">Configure how this feature appears in menus and links.</p>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label class="owner-web-field"><span>CTA Label / HTML Snippet</span></label>
+                      <input formControlName="ctaLabel" class="owner-web-input" placeholder="CTA Label" />
+                    </div>
+                    <!-- <div>
+                      <label class="owner-web-field"><span>URL Slug / Path</span></label>
+                      <input formControlName="ctaLink" class="owner-web-input" placeholder="/features" />
+                    </div> -->
+                    <!-- <div>
+                      <label class="owner-web-field"><span>Title Font Size (px)</span></label>
+                      <input type="number" min="1" max="96" step="1" formControlName="titleFontSize" class="owner-web-input" />
+                    </div> -->
+                    
+                    <!-- <div>
+                      <label class="owner-web-field"><span>Description Font Size (px)</span></label>
+                      <input type="number" min="1" max="96" step="1" formControlName="descriptionFontSize" class="owner-web-input" />
+                    </div> -->
+                    <div>
+                      <label class="owner-web-field"><span>Learn More Font Size (px)</span></label>
+                      <input type="number" min="1" max="96" step="1" formControlName="ctaFontSize" class="owner-web-input" />
+                    </div>
+                    <div>
+                      <label class="owner-web-field"><span>Visible</span></label>
+                      <label class="owner-web-check"><input type="checkbox" formControlName="visible" /> Show on website</label>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="owner-web-feature-panel">
+                  <h4 class="owner-web-feature-panel-title">Media Assets</h4>
+                  <p class="owner-web-feature-panel-subtitle">Primary visual representing this feature across the site.</p>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
+                    <div class="space-y-2">
+                      <label class="owner-web-field"><span>Feature Image URL</span></label>
+                      <input formControlName="imageUrl" class="owner-web-input" placeholder="https://... or /api/..." />
+                      <label
+                        class="owner-web-upload-dropzone cursor-pointer"
+                        [class.owner-web-upload-dropzone-active]="featureImageDragActive($index)"
+                        (dragover)="onFeatureImageDragOver($event, $index)"
+                        (dragleave)="onFeatureImageDragLeave($event, $index)"
+                        (drop)="onFeatureImageDrop($event, $index)">
+                        <input type="file" accept="image/*" class="hidden" (change)="onFeatureImageFileSelected($event, $index)" />
+                        <span class="owner-web-upload-dropzone-icon-wrap">
+                          <mat-icon class="owner-web-upload-dropzone-icon">image</mat-icon>
+                        </span>
+                        <p class="owner-web-upload-dropzone-title">
+                          <span class="owner-web-upload-dropzone-link">Upload a file</span>
+                          <span class="text-slate-500"> or drag and drop</span>
+                        </p>
+                        <p class="owner-web-upload-dropzone-hint">PNG, JPG, GIF up to 10MB</p>
+                      </label>
+                      @if (featureImageUploading($index)) {
+                        <p class="text-xs text-slate-500">Uploading... {{ featureImageUploadProgress($index) }}%</p>
+                      }
+                      <div class="w-full h-2 bg-slate-100 rounded overflow-hidden border border-slate-200">
+                        <div class="h-full bg-indigo-600 transition-all duration-200" [style.width.%]="featureImageUploadProgress($index)"></div>
+                      </div>
+                    </div>
+                    @if (row.get('imageUrl')?.value) {
+                      <div class="rounded-lg border border-slate-200 bg-slate-50 p-2">
+                        <img [src]="featurePreviewUrl($index)" alt="Feature preview" class="w-full h-44 object-cover rounded" />
+                      </div>
+                    }
+                  </div>
+
+                  <div class="grid grid-cols-1 gap-3 mt-3">
+                    <input formControlName="detailTitle" class="owner-web-input" placeholder="Detail page title" />
+                    <textarea formControlName="detailSummary" class="owner-web-textarea" placeholder="Detail page summary"></textarea>
+                    <quill-editor
+                      formControlName="detailContent"
+                      [ngStyle]="{ height: '200px' }"
+                      [modules]="{
+                        toolbar: [
+                          ['bold', 'italic', 'underline', 'strike'],
+                          [{ size: ['small', false, 'large', 'huge'] }],
+                          [{ color: [] }, { background: [] }],
+                          [{ list: 'ordered' }, { list: 'bullet' }],
+                          [{ align: [] }],
+                          ['blockquote', 'link'],
+                          ['clean']
+                        ]
+                      }">
+                    </quill-editor>
+                    <!-- <input formControlName="detailImageUrl" class="owner-web-input" placeholder="Detail page hero image URL (optional)" /> -->
+                  </div>
+                </section>
+              </div>
+              }
+              <div class="flex justify-end"><button type="button" (click)="removeFeature($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button></div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="owner-web-card p-5 space-y-4" [class.owner-web-hidden]="activeSection() !== 'testimonials'">
+        <h3 class="owner-web-section-title">Testimonials</h3>
+        <div formArrayName="testimonials" class="space-y-3">
+          @for (row of testimonials.controls; track $index) {
+            <div [formGroupName]="$index" class="owner-web-feature-block">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input formControlName="authorName" class="owner-web-input" placeholder="Author" />
+                <input formControlName="authorRole" class="owner-web-input" placeholder="Role" />
+                <textarea formControlName="quoteText" class="owner-web-textarea md:col-span-2" placeholder="Quote"></textarea>
+                <input formControlName="avatarUrl" class="owner-web-input md:col-span-2" placeholder="Avatar URL" />
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="owner-web-card p-5 space-y-4" [class.owner-web-hidden]="activeSection() !== 'pricing'">
+        <h3 class="owner-web-section-title">Pricing Plans</h3>
+        <div formArrayName="pricingPlans" class="space-y-3">
+          @for (plan of pricingPlans.controls; track $index; let planIndex = $index) {
+            <div [formGroupName]="planIndex" class="owner-web-plan-block">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <input formControlName="planKey" class="owner-web-input" placeholder="Plan key" />
+                <input formControlName="nameText" class="owner-web-input" placeholder="Name" />
+                <input formControlName="priceText" class="owner-web-input" placeholder="Price" />
+              </div>
+              <div class="space-y-2 mt-3" formArrayName="features">
+                @for (feature of pricingFeaturesAt(planIndex).controls; track $index; let featureIndex = $index) {
+                  <div [formGroupName]="featureIndex" class="owner-web-grid-row">
+                    <input formControlName="featureText" class="owner-web-input" placeholder="Feature text" />
+                    <label class="owner-web-check"><input type="checkbox" formControlName="included" /> Included</label>
+                    <button type="button" (click)="removePricingFeature(planIndex, featureIndex)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button>
+                  </div>
+                }
+              </div>
+              <button type="button" (click)="addPricingFeature(planIndex)" class="owner-web-mini-btn mt-2">Add Plan Feature</button>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="owner-web-card p-5 space-y-4" [class.owner-web-hidden]="activeSection() !== 'ctas'">
+        <h3 class="owner-web-section-title">CTA Blocks</h3>
+        <div formArrayName="ctas" class="space-y-3">
+          @for (row of ctas.controls; track $index) {
+            <div [formGroupName]="$index" class="owner-web-grid-row">
+              <input formControlName="ctaKey" class="owner-web-input" placeholder="CTA key" />
+              <input formControlName="titleText" class="owner-web-input" placeholder="Title" />
+              <input formControlName="buttonLabel" class="owner-web-input" placeholder="Button label" />
+              <input formControlName="buttonLink" class="owner-web-input" placeholder="Button link" />
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="owner-web-card p-5 space-y-4" [class.owner-web-hidden]="activeSection() !== 'footer'">
+        <h3 class="owner-web-section-title">Footer Links</h3>
+        <div formArrayName="footerLinks" class="space-y-3">
+          @for (row of footerLinks.controls; track $index) {
+            <div [formGroupName]="$index" class="owner-web-grid-row">
+              <input formControlName="sectionTitle" class="owner-web-input" placeholder="Section" />
+              <input formControlName="label" class="owner-web-input" placeholder="Label" />
+              <input formControlName="routePath" class="owner-web-input" placeholder="Path" />
+              <label class="owner-web-check"><input type="checkbox" formControlName="visible" /> Visible</label>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="owner-web-card p-5 space-y-4" formGroupName="marketing" [class.owner-web-hidden]="activeSection() !== 'marketing'">
+        <h3 class="owner-web-section-title">Marketing Content</h3>
+
+        <div formGroupName="promo" class="space-y-3">
+          <h4 class="owner-web-section-title">Promo Banner</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <input formControlName="icon" class="owner-web-input" placeholder="Icon (campaign)" />
+            <input formControlName="ctaLabel" class="owner-web-input" placeholder="CTA label" />
+            <div class="md:col-span-2 owner-web-rich-wrap">
+              <div class="owner-web-rich-toolbar">
+                <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommand('bold')"><b>B</b></button>
+                <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommand('italic')"><i>I</i></button>
+                <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommand('underline')"><u>U</u></button>
+                <select class="owner-web-input owner-web-font-size" (change)="onPromoFontSizePick($event)">
+                  <option value="">Font size</option>
+                  <option value="12px">XS</option>
+                  <option value="14px">S</option>
+                  <option value="16px">M</option>
+                  <option value="18px">L</option>
+                  <option value="22px">XL</option>
+                  <option value="28px">2XL</option>
+                  <option value="34px">3XL</option>
+                </select>
+                <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoBlockquote()">Quote</button>
+                <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoParagraph()">Paragraph</button>
+                <label class="owner-web-color-label">
+                  <span>Color</span>
+                  <input type="color" (mousedown)="$event.preventDefault()" (input)="onPromoColorPick($event)" />
+                </label>
+                <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommand('removeFormat')">Clear</button>
+              </div>
+              <div
+                id="promo-rich-editor"
+                class="owner-web-rich-editor"
+                contenteditable="true"
+                [innerHTML]="promoEditorHtml()"
+                (mouseup)="capturePromoSelection()"
+                (keyup)="capturePromoSelection()"
+                (input)="onPromoEditorInput($event)">
+              </div>
+              <textarea formControlName="text" class="owner-web-hidden-textarea" aria-hidden="true"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="owner-web-section-title">How It Works Steps</h4>
+            <button type="button" (click)="addMarketingStep()" class="owner-web-mini-btn">Add Step</button>
+          </div>
+          <div formArrayName="steps" class="space-y-2">
+            @for (row of marketingSteps.controls; track $index) {
+              <div [formGroupName]="$index" class="owner-web-feature-block">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <input formControlName="step" class="owner-web-input" placeholder="Step no (01)" />
+                  <input formControlName="title" class="owner-web-input" placeholder="Title" />
+                  <input formControlName="description" class="owner-web-input" placeholder="Description" />
+                </div>
+                <div class="flex justify-end mt-2">
+                  <button type="button" (click)="removeMarketingStep($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div formGroupName="integrations" class="space-y-3">
+          <h4 class="owner-web-section-title">Integrations</h4>
+          <div class="grid grid-cols-1 gap-3">
+            <input formControlName="title" class="owner-web-input" placeholder="Section title" />
+            <textarea formControlName="description" class="owner-web-textarea" placeholder="Section description"></textarea>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <h5 class="owner-web-section-title">Integration Items</h5>
+              <button type="button" (click)="addMarketingIntegrationItem()" class="owner-web-mini-btn">Add Item</button>
+            </div>
+            <div formArrayName="items" class="space-y-2">
+              @for (row of marketingIntegrationItems.controls; track $index) {
+                <div [formGroupName]="$index" class="owner-web-grid-row">
+                  <input formControlName="value" class="owner-web-input" placeholder="Item" />
+                  <div class="owner-web-icon-picker">
+                    <mat-icon>{{ marketingIntegrationItemIconControlAt($index).value || 'help' }}</mat-icon>
+                    <input
+                      [formControl]="marketingIntegrationItemIconControlAt($index)"
+                      class="owner-web-input"
+                      list="owner-integration-icon-options"
+                      placeholder="Search icon name (mail, hub, security...)"
+                    />
+                  </div>
+                  <button type="button" (click)="removeMarketingIntegrationItem($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button>
+                </div>
+              }
+            </div>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <h5 class="owner-web-section-title">Bullet Points</h5>
+              <button type="button" (click)="addMarketingIntegrationBullet()" class="owner-web-mini-btn">Add Bullet</button>
+            </div>
+            <div formArrayName="bullets" class="space-y-2">
+              @for (row of marketingIntegrationBullets.controls; track $index) {
+                <div [formGroupName]="$index" class="owner-web-grid-row">
+                  <input formControlName="value" class="owner-web-input" placeholder="Bullet" />
+                  <button type="button" (click)="removeMarketingIntegrationBullet($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div formGroupName="contact" class="space-y-3">
+          <h4 class="owner-web-section-title">Contact Section</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <input formControlName="title" class="owner-web-input md:col-span-2" placeholder="Contact title" />
+            <textarea formControlName="description" class="owner-web-textarea md:col-span-2" placeholder="Contact description"></textarea>
+            <input formControlName="hqLabel" class="owner-web-input" placeholder="HQ label" />
+            <input formControlName="hqValue" class="owner-web-input" placeholder="HQ value" />
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <h4 class="owner-web-section-title">Feature View Video</h4>
+          <div class="flex items-center justify-between">
+            <p class="text-xs text-slate-500">Add multiple videos. Website will display slider controls.</p>
+            <button type="button" (click)="addMarketingDocsVideo()" class="owner-web-mini-btn">Add Video Row</button>
+          </div>
+          <div formArrayName="docsVideos" class="space-y-2">
+            @for (row of marketingDocsVideos.controls; track $index) {
+              <div [formGroupName]="$index" class="owner-web-feature-block">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <input formControlName="title" class="owner-web-input" placeholder="Video title" />
+                  <div class="flex items-center gap-2">
+                    <button
+                      type="button"
+                      class="owner-web-mini-btn"
+                      [class.owner-web-btn-primary]="docsVideoMode($index) === 'url'"
+                      (click)="setDocsVideoMode($index, 'url')">URL</button>
+                    <button
+                      type="button"
+                      class="owner-web-mini-btn"
+                      [class.owner-web-btn-primary]="docsVideoMode($index) === 'upload'"
+                      (click)="setDocsVideoMode($index, 'upload')">Upload</button>
+                  </div>
+                </div>
+                <div class="mt-2 space-y-2">
+                  @if (docsVideoMode($index) === 'url') {
+                    <input formControlName="url" class="owner-web-input" placeholder="Video URL" />
+                  } @else {
+                    <div class="flex items-center gap-2">
+                      <label class="owner-web-mini-btn cursor-pointer">
+                        Upload Video
+                        <input type="file" accept="video/*" class="hidden" (change)="onDocsVideoFileSelected($event, $index)" />
+                      </label>
+                      @if (docsVideoUploading($index)) {
+                        <span class="text-xs text-slate-500">Uploading... {{ docsVideoUploadProgress($index) }}%</span>
+                      }
+                    </div>
+                    <div class="w-full h-2 bg-slate-100 rounded overflow-hidden border border-slate-200">
+                      <div class="h-full bg-indigo-600 transition-all duration-200" [style.width.%]="docsVideoUploadProgress($index)"></div>
+                    </div>
+                  }
+
+                  @if (row.get('url')?.value) {
+                    <div class="rounded-lg border border-slate-200 bg-slate-50 p-2">
+                      <video class="w-full max-h-56 rounded bg-black" [src]="row.get('url')?.value" controls preload="metadata"></video>
+                    </div>
+                  }
+
+                  <div class="flex items-center gap-2">
+                    <button type="button" (click)="deleteDocsVideoAsset($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Delete Video</button>
+                    <button type="button" (click)="removeMarketingDocsVideo($index)" class="owner-web-mini-btn">Remove Row</button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="owner-web-card p-5 space-y-4" formGroupName="onboarding" [class.owner-web-hidden]="activeSection() !== 'onboarding'">
+        <h3 class="owner-web-section-title">Onboarding Content</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="owner-web-field"><span>Step 1 Title *</span><input formControlName="stepOneTitle" class="owner-web-input" /></label>
+          <label class="owner-web-field"><span>Plan Badge *</span><input formControlName="planSelectorBadge" class="owner-web-input" /></label>
+          <label class="owner-web-field md:col-span-2"><span>Step 1 Description *</span><textarea formControlName="stepOneDescription" class="owner-web-textarea"></textarea></label>
+          <label class="owner-web-field md:col-span-2"><span>Trust Badge Text *</span><textarea formControlName="trustBadgeText" class="owner-web-textarea"></textarea></label>
+          <label class="owner-web-field"><span>Provisioning Title *</span><input formControlName="provisioningTitle" class="owner-web-input" /></label>
+          <label class="owner-web-field"><span>Success Title *</span><input formControlName="successTitle" class="owner-web-input" /></label>
+          <label class="owner-web-field md:col-span-2"><span>Provisioning Description *</span><textarea formControlName="provisioningDescription" class="owner-web-textarea"></textarea></label>
+          <label class="owner-web-field md:col-span-2"><span>Success Description *</span><textarea formControlName="successDescription" class="owner-web-textarea"></textarea></label>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="owner-web-section-title">Provisioning Tasks</h4>
+            <button type="button" (click)="addOnboardingTask()" class="owner-web-mini-btn">Add Task</button>
+          </div>
+          <div formArrayName="provisioningTasks" class="space-y-2">
+            @for (row of onboardingTasks.controls; track $index) {
+              <div [formGroupName]="$index" class="owner-web-grid-row">
+                <input formControlName="value" class="owner-web-input" placeholder="Task label" />
+                <button type="button" (click)="removeOnboardingTask($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="owner-web-card p-5 space-y-4" formGroupName="trialDashboard" [class.owner-web-hidden]="activeSection() !== 'trial'">
+        <h3 class="owner-web-section-title">Trial Dashboard Content</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="owner-web-field"><span>Header Title *</span><input formControlName="headerTitle" class="owner-web-input" /></label>
+          <label class="owner-web-field"><span>Trial Remaining Text *</span><input formControlName="trialRemainingText" class="owner-web-input" /></label>
+          <label class="owner-web-field md:col-span-2"><span>Header Description *</span><textarea formControlName="headerDescription" class="owner-web-textarea"></textarea></label>
+          <label class="owner-web-field md:col-span-2"><span>Trial Ends Text *</span><input formControlName="trialEndsText" class="owner-web-input" /></label>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="owner-web-section-title">Feature Bullets</h4>
+            <button type="button" (click)="addTrialFeatureBullet()" class="owner-web-mini-btn">Add Bullet</button>
+          </div>
+          <div formArrayName="trialFeatureBullets" class="space-y-2">
+            @for (row of trialFeatureBullets.controls; track $index) {
+              <div [formGroupName]="$index" class="owner-web-grid-row">
+                <input formControlName="value" class="owner-web-input" placeholder="Bullet text" />
+                <button type="button" (click)="removeTrialFeatureBullet($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="owner-web-section-title">Setup Steps</h4>
+            <button type="button" (click)="addTrialSetupStep()" class="owner-web-mini-btn">Add Step</button>
+          </div>
+          <div formArrayName="setupSteps" class="space-y-3">
+            @for (row of trialSetupSteps.controls; track $index) {
+              <div [formGroupName]="$index" class="owner-web-feature-block">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <input formControlName="label" class="owner-web-input" placeholder="Label" />
+                  <input formControlName="description" class="owner-web-input" placeholder="Description" />
+                  <input formControlName="status" class="owner-web-input" placeholder="Status (completed/current/pending)" />
+                </div>
+                <div class="flex justify-end mt-2">
+                  <button type="button" (click)="removeTrialSetupStep($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </form>
+  }
+
+  @if (saveStatus(); as status) {
+    <div class="owner-web-modal-backdrop">
+      <div class="owner-web-modal-card">
+        <div class="owner-web-modal-head">
+          <mat-icon [class.text-emerald-600]="status.type === 'success'" [class.text-red-600]="status.type === 'error'">{{ status.type === 'success' ? 'check_circle' : 'error' }}</mat-icon>
+          <h4>{{ status.title }}</h4>
+        </div>
+        <div class="owner-web-modal-body">
+          <p>{{ status.message }}</p>
+        </div>
+        <div class="owner-web-modal-actions">
+          <button type="button" (click)="closeStatus()" class="owner-web-btn owner-web-btn-primary">OK</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (focusedFieldEditorOpen()) {
+    <div class="owner-web-modal-backdrop">
+      <div class="owner-web-modal-card owner-web-modal-card-lg">
+        <div class="owner-web-modal-head">
+          <mat-icon>edit</mat-icon>
+          <h4>Rich Editor: {{ focusedFieldLabel() }}</h4>
+        </div>
+        <div class="owner-web-modal-body space-y-3">
+          <div class="owner-web-rich-toolbar">
+            <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyFocusedFieldCommand('bold')"><b>B</b></button>
+            <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyFocusedFieldCommand('italic')"><i>I</i></button>
+            <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyFocusedFieldCommand('underline')"><u>U</u></button>
+            <select class="owner-web-input owner-web-font-size" [value]="focusedFieldFontSize()" (change)="onFocusedFieldFontSizePick($event)">
+              <option value="">Font size</option>
+              <option value="12px">XS</option>
+              <option value="14px">S</option>
+              <option value="16px">M</option>
+              <option value="18px">L</option>
+              <option value="22px">XL</option>
+              <option value="28px">2XL</option>
+              <option value="34px">3XL</option>
+            </select>
+            <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyFocusedFieldCommand('formatBlock', 'blockquote')">Quote</button>
+            <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyFocusedFieldCommand('formatBlock', 'p')">Paragraph</button>
+            <label class="owner-web-color-label">
+              <span>Color</span>
+              <input type="color" (mousedown)="$event.preventDefault()" (input)="onFocusedFieldColorPick($event)" />
+            </label>
+            <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyFocusedFieldCommand('removeFormat')">Clear</button>
+          </div>
+          <div
+            id="focused-field-rich-editor"
+            class="owner-web-rich-editor"
+            contenteditable="true"
+            [innerHTML]="focusedFieldRichHtml()"
+            (mouseup)="captureFocusedEditorSelection()"
+            (keyup)="captureFocusedEditorSelection()"
+            (input)="onFocusedFieldEditorInput($event)">
+          </div>
+        </div>
+        <div class="owner-web-modal-actions">
+          <button type="button" (click)="closeFocusedFieldEditor()" class="owner-web-btn owner-web-btn-secondary">Cancel</button>
+          <button type="button" (click)="applyFocusedFieldEditor()" class="owner-web-btn owner-web-btn-primary">Apply</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

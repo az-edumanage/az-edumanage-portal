@@ -35,3 +35,15 @@ Purpose: identify where shared primitives are justified by real reuse, while pre
 ## Notes
 - This matrix is intentionally incremental and non-destructive.
 - Apply extraction in small PR-sized steps with visual regression checks after each promoted primitive.
+
+## Phase 5 Slice 01 Update (2026-04-21)
+- Usage audit:
+  - `<app-button>`: `7`
+  - `<app-card>`: `6`
+  - `<app-badge>`: `4`
+  - `appTable*` directives: `81`
+  - `<app-pager-button>`: `6`
+- Standardization executed:
+  - `app-badge` now supports `info` variant and replaced one-off custom purple class in owner billing invoice status.
+- Next extraction target:
+  - `table` directives (`appTable*`) as highest-impact candidate; migrate to DS class ownership in controlled slices.

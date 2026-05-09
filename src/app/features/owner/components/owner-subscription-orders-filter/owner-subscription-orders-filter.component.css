@@ -1,1 +1,48 @@
+:host {
+  display: block;
+}
 
+.owner-subscription-orders-filter {
+  align-items: center;
+}
+
+.owner-subscription-orders-filter-search-wrap {
+  min-width: 14rem;
+}
+
+.owner-subscription-orders-filter-search-icon,
+.owner-subscription-orders-filter-dropdown-search-icon {
+  pointer-events: none;
+}
+
+.owner-subscription-orders-filter-controls {
+  align-items: center;
+}
+
+.owner-subscription-orders-filter-dropdown-label {
+  min-width: 0;
+}
+
+.owner-subscription-orders-filter-dropdown-panel {
+  isolation: isolate;
+}
+
+.owner-subscription-orders-filter-dropdown-options {
+  overscroll-behavior: contain;
+}
+
+.owner-subscription-orders-filter-dropdown-option {
+  line-height: 1.1rem;
+}
+
+.owner-subscription-orders-filter-pending-row {
+  flex-wrap: wrap;
+}
+
+.owner-subscription-orders-filter-pending-btn {
+  white-space: nowrap;
+}
+
+.owner-subscription-orders-filter-clear-btn {
+  white-space: nowrap;
+}

@@ -1,3 +1,256 @@
 
-    :host { display: block; }
+:host {
+  display: block;
+}
+
+.owner-tenant-create-page {
+  align-content: start;
+}
+
+.owner-tenant-create-header {
+  gap: 1rem;
+}
+
+.owner-tenant-create-title {
+  letter-spacing: -0.01em;
+}
+
+.owner-tenant-create-breadcrumb-link {
+  font-weight: 600;
+}
+
+.owner-tenant-create-header-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.owner-tenant-create-btn {
+  white-space: nowrap;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.owner-tenant-create-btn-secondary {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-primary);
+  color: var(--color-text-secondary);
+}
+
+.owner-tenant-create-btn-secondary:hover {
+  background: var(--color-bg-subtle);
+}
+
+.owner-tenant-create-btn-secondary-inline {
+  gap: 0.5rem;
+}
+
+.owner-tenant-create-btn-primary {
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action, #fff);
+  box-shadow:
+    0 10px 15px -3px rgb(99 102 241 / 0.22),
+    0 4px 6px -4px rgb(99 102 241 / 0.18);
+}
+
+.owner-tenant-create-btn-primary:hover {
+  background: var(--color-action-primary-hover, var(--color-action-primary));
+}
+
+.owner-tenant-create-btn-primary-inline {
+  transition: all 150ms ease;
+}
+
+.owner-tenant-create-btn-primary-full {
+  width: 100%;
+}
+
+.owner-tenant-create-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.owner-tenant-create-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  padding: 1.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.owner-tenant-create-section-title {
+  letter-spacing: 0.04em;
+  color: var(--color-text-tertiary, #64748b);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.owner-tenant-create-label {
+  color: var(--color-text-secondary);
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  line-height: 1.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.owner-tenant-create-sub-label {
+  color: var(--color-text-tertiary, #64748b);
+  display: block;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.owner-tenant-create-control {
+  width: 100%;
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  outline: 0;
+  padding: 0.5rem 0.75rem;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  min-height: 2.5rem;
+}
+
+.owner-tenant-create-control:focus {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-action-primary) 25%, transparent);
+}
+
+.owner-tenant-create-control-with-icon {
+  padding-right: 2.5rem;
+}
+
+.owner-tenant-create-control-ghost {
+  min-height: 0;
+  background: transparent;
+  border: 0;
+}
+
+.owner-tenant-create-control-ghost:focus {
+  box-shadow: none;
+}
+
+.owner-tenant-create-control-ghost-with-icon {
+  padding-right: 2.5rem;
+}
+
+.owner-tenant-create-control-drawer {
+  color: var(--color-text-primary);
+}
+
+.owner-tenant-create-customize-btn {
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--color-action-primary) 16%, var(--color-border-primary));
+  background: color-mix(in srgb, var(--color-action-primary) 10%, transparent);
+  color: var(--color-action-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  transition: background-color 150ms ease;
+}
+
+.owner-tenant-create-customize-btn:hover {
+  background: color-mix(in srgb, var(--color-action-primary) 16%, transparent);
+}
+
+.owner-tenant-create-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+
+.owner-tenant-create-checkbox {
+  border-radius: 0.25rem;
+  accent-color: var(--color-action-primary);
+}
+
+.owner-tenant-create-section-title-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.owner-tenant-create-overlay,
+.tenant-customization-overlay {
+  z-index: var(--ds-layer-overlay);
+}
+
+.owner-tenant-create-drawer {
+  background: var(--color-bg-card);
+  box-shadow:
+    -10px 0 15px -3px rgb(0 0 0 / 0.12),
+    -4px 0 6px -4px rgb(0 0 0 / 0.08);
+}
+
+.owner-tenant-create-drawer-head {
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.owner-tenant-create-drawer-title {
+  letter-spacing: 0.04em;
+}
+
+.owner-tenant-create-drawer-foot {
+  border-top: 1px solid var(--color-border-primary);
+  background: var(--color-bg-subtle);
+}
+
+.owner-tenant-create-icon-btn {
+  border-radius: var(--radius-lg);
+  color: var(--color-text-secondary);
+  padding: 0.5rem;
+  transition: background-color 150ms ease;
+}
+
+.owner-tenant-create-icon-btn:hover {
+  background: var(--color-bg-subtle);
+}
+
+.owner-tenant-create-module-option {
+  align-items: center;
+  border: 1px solid var(--color-border-primary);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  transition: background-color 150ms ease;
+  user-select: none;
+}
+
+.owner-tenant-create-module-option:hover {
+  background: var(--color-bg-subtle);
+}
+
+.owner-tenant-create-module-checkbox {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.25rem;
+  accent-color: var(--color-action-primary);
+}
+
+@media (max-width: 1024px) {
+  .owner-tenant-create-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .owner-tenant-create-header-actions {
+    justify-content: flex-start;
+    width: 100%;
+  }
+}
   

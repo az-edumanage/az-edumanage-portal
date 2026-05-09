@@ -1,0 +1,94 @@
+<div class="min-h-screen bg-gradient-to-br from-slate-100 via-cyan-50 to-blue-100 px-4 py-8 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+  <div class="mx-auto grid w-full max-w-6xl overflow-hidden rounded-3xl border border-white/70 bg-white/75 shadow-2xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80 md:grid-cols-2">
+    <section class="relative hidden overflow-hidden bg-slate-900 p-10 text-white md:flex md:flex-col md:justify-between">
+      <div class="absolute -right-12 -top-16 h-56 w-56 rounded-full bg-cyan-400/30 blur-3xl"></div>
+      <div class="absolute -bottom-10 -left-10 h-52 w-52 rounded-full bg-indigo-500/30 blur-3xl"></div>
+
+      <div class="relative space-y-4">
+        <p class="text-xs uppercase tracking-[0.4em] text-cyan-300">Beedu Platform</p>
+        <h1 class="text-4xl font-semibold leading-tight">
+          @if (flowType() === 'trial') { Start your free trial } @else { Create your account }
+        </h1>
+        <p class="max-w-md text-sm text-slate-300">
+          @if (flowType() === 'trial') {
+            We will auto-provision your tenant workspace and trial dashboard.
+          } @else {
+            Register your web account and continue to sign in.
+          }
+        </p>
+      </div>
+    </section>
+
+    <section class="p-6 sm:p-10">
+      <div class="mx-auto w-full max-w-md">
+        <div class="mb-8 space-y-2">
+          <h2 class="text-3xl font-semibold text-slate-900 dark:text-slate-100">
+            @if (flowType() === 'trial') { Free Trial Registration } @else { Standard Registration }
+          </h2>
+          <p class="text-sm text-slate-600 dark:text-slate-400">
+            Enter your details to continue.
+          </p>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4" novalidate>
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-slate-700 dark:text-slate-300" for="fullName">Full Name</label>
+            <input id="fullName" formControlName="fullName" class="auth-input" />
+          </div>
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-slate-700 dark:text-slate-300" for="email">Email Address</label>
+            <input id="email" type="email" formControlName="email" class="auth-input" />
+          </div>
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-slate-700 dark:text-slate-300" for="phoneNumber">Phone Number</label>
+            <input id="phoneNumber" formControlName="phoneNumber" class="auth-input" />
+          </div>
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-slate-700 dark:text-slate-300" for="username">Username</label>
+            <input id="username" formControlName="username" class="auth-input" />
+          </div>
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-slate-700 dark:text-slate-300" for="password">Password</label>
+            <div class="relative">
+              <input id="password" [type]="showPassword() ? 'text' : 'password'" formControlName="password" class="auth-input pr-12" />
+              <button type="button" class="absolute inset-y-0 right-2 grid place-items-center rounded-lg px-2 text-slate-500 hover:text-slate-700" (click)="togglePasswordVisibility()">
+                <mat-icon class="text-[20px]">{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          @if (errorMessage()) {
+            <p class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+              {{ errorMessage() }}
+            </p>
+          }
+          @if (successMessage()) {
+            <p class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300">
+              {{ successMessage() }}
+            </p>
+          }
+
+          <button type="submit" class="auth-primary-btn" [disabled]="submitting()">
+            <mat-icon class="text-[20px]">{{ submitting() ? 'hourglass_top' : 'how_to_reg' }}</mat-icon>
+            {{ submitting() ? 'Submitting...' : (flowType() === 'trial' ? 'Start Free Trial' : 'Register') }}
+          </button>
+        </form>
+
+        <div class="mt-4 grid gap-3">
+          <button type="button" class="auth-secondary-btn" (click)="signInWithGoogle()">
+            <mat-icon class="text-[20px]">public</mat-icon>
+            Continue with Google
+          </button>
+          <button type="button" class="auth-secondary-btn" (click)="signInWithMicrosoft()">
+            <mat-icon class="text-[20px]">business</mat-icon>
+            Continue with Microsoft
+          </button>
+          <a routerLink="/owner/login" class="text-center text-sm font-medium text-cyan-700 hover:underline dark:text-cyan-300">
+            Back to Sign in
+          </a>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+

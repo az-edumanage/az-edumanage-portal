@@ -19,7 +19,7 @@
             >
             <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</mat-icon>
           </div>
-          <button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+          <button (click)="refresh()" class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
             <mat-icon class="text-sm">refresh</mat-icon>
             Refresh
           </button>
@@ -42,34 +42,22 @@
         >
           All Jobs
         </button>
-        <button 
-          (click)="setFilter('In Progress')"
-          class="px-4 py-2 rounded-full text-sm font-medium transition-colors"
-          [class.bg-blue-100]="filter() === 'In Progress'"
-          [class.text-blue-700]="filter() === 'In Progress'"
-          [class.bg-slate-100]="filter() !== 'In Progress'"
-          [class.text-slate-500]="filter() !== 'In Progress'"
-          [class.dark:bg-blue-900/30]="filter() === 'In Progress'"
-          [class.dark:text-blue-400]="filter() === 'In Progress'"
-          [class.dark:bg-slate-800]="filter() !== 'In Progress'"
-          [class.dark:text-slate-500]="filter() !== 'In Progress'"
-        >
-          In Progress
-        </button>
-        <button 
-          (click)="setFilter('Failed')"
-          class="px-4 py-2 rounded-full text-sm font-medium transition-colors"
-          [class.bg-red-100]="filter() === 'Failed'"
-          [class.text-red-700]="filter() === 'Failed'"
-          [class.bg-slate-100]="filter() !== 'Failed'"
-          [class.text-slate-500]="filter() !== 'Failed'"
-          [class.dark:bg-red-900/30]="filter() === 'Failed'"
-          [class.dark:text-red-400]="filter() === 'Failed'"
-          [class.dark:bg-slate-800]="filter() !== 'Failed'"
-          [class.dark:text-slate-500]="filter() !== 'Failed'"
-        >
-          Failed
-        </button>
+        @for (status of statusOptions(); track status) {
+          <button
+            (click)="setFilter(status)"
+            class="px-4 py-2 rounded-full text-sm font-medium transition-colors"
+            [class.bg-slate-900]="filter() === status"
+            [class.text-white]="filter() === status"
+            [class.bg-slate-100]="filter() !== status"
+            [class.text-slate-500]="filter() !== status"
+            [class.dark:bg-white]="filter() === status"
+            [class.dark:text-slate-900]="filter() === status"
+            [class.dark:bg-slate-800]="filter() !== status"
+            [class.dark:text-slate-500]="filter() !== status"
+          >
+            {{ status }}
+          </button>
+        }
       </div>
 
       <!-- Jobs Table -->
@@ -83,7 +71,10 @@
                 <th class="px-6 py-3 font-medium">Triggered By</th>
                 <th class="px-6 py-3 font-medium">Created Date</th>
                 <th class="px-6 py-3 font-medium">Status</th>
-                <th class="px-6 py-3 font-medium">Duration</th>
+                <th class="px-6 py-3 font-medium">Source</th>
+                <th class="px-6 py-3 font-medium">Schema Name</th>
+                <th class="px-6 py-3 font-medium">Active</th>
+                <th class="px-6 py-3 font-medium">Error</th>
                 <th class="px-6 py-3 font-medium text-right">Actions</th>
               </tr>
             </thead>
@@ -100,25 +91,8 @@
                   <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ job.createdDate }}</td>
                   <td class="px-6 py-4">
                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-                      [class.bg-green-100]="job.status === 'Completed'"
-                      [class.text-green-700]="job.status === 'Completed'"
-                      [class.dark:bg-green-900/30]="job.status === 'Completed'"
-                      [class.dark:text-green-400]="job.status === 'Completed'"
-                      
-                      [class.bg-blue-100]="job.status === 'In Progress'"
-                      [class.text-blue-700]="job.status === 'In Progress'"
-                      [class.dark:bg-blue-900/30]="job.status === 'In Progress'"
-                      [class.dark:text-blue-400]="job.status === 'In Progress'"
-                      
-                      [class.bg-amber-100]="job.status === 'Pending'"
-                      [class.text-amber-700]="job.status === 'Pending'"
-                      [class.dark:bg-amber-900/30]="job.status === 'Pending'"
-                      [class.dark:text-amber-400]="job.status === 'Pending'"
-
-                      [class.bg-red-100]="job.status === 'Failed'"
-                      [class.text-red-700]="job.status === 'Failed'"
-                      [class.dark:bg-red-900/30]="job.status === 'Failed'"
-                      [class.dark:text-red-400]="job.status === 'Failed'"
+                      [style.color]="getStatusColor(job.status)"
+                      [style.backgroundColor]="getStatusColor(job.status) + '1f'"
                     >
                       @if (job.status === 'In Progress') {
                         <mat-icon class="text-[14px] w-[14px] h-[14px] animate-spin">sync</mat-icon>
@@ -126,7 +100,10 @@
                       {{ job.status }}
                     </span>
                   </td>
-                  <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ job.duration }}</td>
+                  <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ job.source }}</td>
+                  <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ job.schemaName }}</td>
+                  <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ job.isActive ? 'Yes' : 'No' }}</td>
+                  <td class="px-6 py-4 text-slate-500 dark:text-slate-500 max-w-[240px] truncate" [title]="job.error || ''">{{ job.error || '-' }}</td>
                   <td class="px-6 py-4 text-right">
                     <div class="flex items-center justify-end gap-2">
                       @if (job.status === 'Failed') {

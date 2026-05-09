@@ -1,0 +1,82 @@
+:host {
+  display: block;
+}
+
+.owner-status-card {
+  background: var(--color-bg-card);
+  border-color: var(--color-border-primary);
+  color: var(--color-text-primary);
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.owner-status-card:hover {
+  border-color: color-mix(in srgb, var(--color-action-primary) 50%, var(--color-border-primary));
+  background: color-mix(in srgb, var(--color-action-primary) 6%, var(--color-bg-card));
+}
+
+.owner-status-back-btn {
+  color: var(--color-text-secondary);
+}
+
+.owner-status-back-btn:hover {
+  background: var(--color-bg-subtle);
+}
+
+.owner-status-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.owner-status-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  padding: 0.375rem;
+  border-radius: var(--radius-md);
+}
+
+.owner-status-icon-btn:hover {
+  color: var(--color-action-primary);
+  background: color-mix(in srgb, var(--color-action-primary) 10%, transparent);
+}
+
+.owner-status-icon-btn-danger:hover {
+  color: var(--color-danger, #dc2626);
+  background: color-mix(in srgb, var(--color-danger, #dc2626) 10%, transparent);
+}
+
+.owner-status-modal {
+  box-shadow: var(--shadow-lg);
+}
+
+.owner-settings-color-input {
+  min-height: 2.5rem;
+  padding: 0.25rem;
+}
+
+.owner-status-btn {
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  padding: 0.5rem 0.875rem;
+}
+
+.owner-status-btn-secondary {
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+}
+
+.owner-status-btn-secondary:hover {
+  background: var(--color-bg-subtle);
+}
+
+.owner-status-btn-primary {
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action, #fff);
+}
+
+.owner-status-btn-primary:hover {
+  background: var(--color-action-primary-hover, var(--color-action-primary));
+}

@@ -6,16 +6,17 @@ export class OwnerModuleDetailsFacade {
   private readonly store = inject(OwnerModuleDetailsStore);
 
   readonly activeTab = this.store.activeTab;
+  readonly loading = this.store.loading;
+  readonly loadError = this.store.loadError;
   readonly module = this.store.module;
   readonly features = this.store.features;
   readonly limits = this.store.limits;
   readonly availablePlans = this.store.availablePlans;
   readonly overrides = this.store.overrides;
-  readonly dependencies = this.store.dependencies;
   readonly changeLogs = this.store.changeLogs;
 
-  loadModuleData(id: string): void {
-    this.store.loadModuleData(id);
+  async loadModuleData(id: string): Promise<void> {
+    await this.store.loadModuleData(id);
   }
 
   toggleStatus(): boolean {
@@ -33,10 +34,6 @@ export class OwnerModuleDetailsFacade {
         }
       }
 
-      if (this.dependencies.requiredBy.length > 0) {
-        alert(`Cannot disable module. It is required by: ${this.dependencies.requiredBy.join(', ')}`);
-        return false;
-      }
     }
 
     this.module.update((moduleItem) => ({ ...moduleItem, status: newStatus }));

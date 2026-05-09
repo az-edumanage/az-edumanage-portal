@@ -1,40 +1,40 @@
 
-    <div class="max-w-4xl mx-auto space-y-6 pb-12">
+    <div class="owner-subscription-create-page space-y-6">
       <!-- Header -->
-      <div class="flex items-center gap-4">
-        <button routerLink="/owner/subscriptions" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-500 transition-colors">
+      <div class="owner-subscription-create-header flex gap-4">
+        <button [routerLink]="backRoute" class="owner-subscription-create-back p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-500">
           <mat-icon>arrow_back</mat-icon>
         </button>
         <div>
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Subscription Templates</h2>
-          <p class="text-slate-500 dark:text-slate-500 text-sm">Define general subscription contracts and configurations to be applied to tenants.</p>
+          <h2 class="owner-subscription-create-title text-2xl font-bold text-slate-900 dark:text-white">Subscription Templates</h2>
+          <p class="owner-subscription-create-subtitle text-slate-500 dark:text-slate-500 text-sm">Define general subscription contracts and configurations to be applied to tenants.</p>
         </div>
       </div>
 
-      <form [formGroup]="subForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      <form [formGroup]="subForm" (ngSubmit)="onSubmit()" class="owner-subscription-create-form space-y-6">
         <!-- Basic Info -->
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-          <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-            <mat-icon class="text-indigo-600">description</mat-icon>
+        <div class="owner-subscription-create-card space-y-4">
+          <h3 class="owner-subscription-create-card-title text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+            <mat-icon class="owner-subscription-create-card-icon text-indigo-600">description</mat-icon>
             Template Configuration
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="md:col-span-1">
-              <label for="subName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Template Name</label>
-              <input id="subName" type="text" formControlName="name" placeholder="e.g., Standard Annual Contract" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:text-white">
+              <label for="subName" class="owner-subscription-create-field-label">Template Name</label>
+              <input id="subName" type="text" formControlName="name" placeholder="e.g., Standard Annual Contract" class="owner-subscription-create-input">
             </div>
             <div>
-              <label for="gracePeriod" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Grace Period (Days)</label>
-              <input id="gracePeriod" type="number" formControlName="gracePeriod" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:text-white" placeholder="0">
-              <p class="text-xs text-slate-500 mt-1">Days allowed for payment after subscription ends.</p>
+              <label for="gracePeriod" class="owner-subscription-create-field-label">Grace Period (Days)</label>
+              <input id="gracePeriod" type="number" formControlName="gracePeriod" class="owner-subscription-create-input" placeholder="0">
+              <p class="owner-subscription-create-help">Days allowed for payment after subscription ends.</p>
             </div>
           </div>
         </div>
 
         <!-- Duration Selection -->
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-            <mat-icon class="text-indigo-600">schedule</mat-icon>
+        <fieldset class="owner-subscription-create-card" [disabled]="!isDurationEnabled" [class.opacity-50]="!isDurationEnabled">
+          <h3 class="owner-subscription-create-card-title text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+            <mat-icon class="owner-subscription-create-card-icon text-indigo-600">schedule</mat-icon>
             Subscription Duration
           </h3>
           <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mb-4">
@@ -56,26 +56,22 @@
           
           @if (subForm.get('billingCycle')?.value === 'Custom') {
             <div class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-2">
-              <label for="customDays" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Custom Duration (Days)</label>
-              <input id="customDays" type="number" formControlName="customDuration" class="w-32 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:text-white">
+              <label for="customDays" class="owner-subscription-create-field-label">Custom Duration (Days)</label>
+              <input id="customDays" type="number" formControlName="customDuration" class="owner-subscription-create-input owner-subscription-create-input--custom">
             </div>
           }
-        </div>
+        </fieldset>
 
         <!-- Plan Selection (Multi-select) -->
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <fieldset class="owner-subscription-create-card" [disabled]="!isPlansEnabled" [class.opacity-50]="!isPlansEnabled">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-              <mat-icon class="text-indigo-600">layers</mat-icon>
+            <h3 class="owner-subscription-create-card-title text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+              <mat-icon class="owner-subscription-create-card-icon text-indigo-600">layers</mat-icon>
               Compatible Plans
             </h3>
-            <label class="flex items-center gap-2 cursor-pointer text-sm text-slate-500 hover:text-indigo-600 transition-colors">
-              <input type="checkbox" [checked]="isAllPlansSelected()" (change)="toggleAllPlans()" class="w-4 h-4 text-indigo-600 border-slate-200 rounded focus:ring-indigo-500">
-              Select All
-            </label>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            @for (plan of availablePlans; track plan.id) {
+            @for (plan of availablePlans(); track plan.id) {
               <label 
                 class="flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all"
                 [class.border-indigo-600]="isPlanSelected(plan.id)"
@@ -84,7 +80,7 @@
                 [class.border-slate-200]="!isPlanSelected(plan.id)"
                 [class.dark:border-slate-800]="!isPlanSelected(plan.id)"
               >
-                <input type="checkbox" [checked]="isPlanSelected(plan.id)" (change)="togglePlan(plan.id)" class="w-4 h-4 text-indigo-600 border-slate-200 rounded focus:ring-indigo-500">
+                <input type="radio" [checked]="isPlanSelected(plan.id)" (change)="togglePlan(plan.id)" class="w-4 h-4 text-indigo-600 border-slate-200 focus:ring-indigo-500">
                 <div>
                   <div class="font-semibold text-slate-900 dark:text-white text-sm">{{ plan.name }}</div>
                   <div class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Plan Template</div>
@@ -92,16 +88,16 @@
               </label>
             }
           </div>
-        </div>
+        </fieldset>
 
         <!-- Payment Methods (Multi-select) -->
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <fieldset class="owner-subscription-create-card" [disabled]="!isRemainingSectionsEnabled" [class.opacity-50]="!isRemainingSectionsEnabled">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-              <mat-icon class="text-indigo-600">payments</mat-icon>
+            <h3 class="owner-subscription-create-card-title text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+              <mat-icon class="owner-subscription-create-card-icon text-indigo-600">payments</mat-icon>
               Allowed Payment Methods
             </h3>
-            <label class="flex items-center gap-2 cursor-pointer text-sm text-slate-500 hover:text-emerald-600 transition-colors">
+            <label class="owner-subscription-create-select-all owner-subscription-create-select-all--methods flex items-center gap-2 cursor-pointer text-sm text-slate-500">
               <input type="checkbox" [checked]="isAllMethodsSelected()" (change)="toggleAllMethods()" class="w-4 h-4 text-emerald-600 border-slate-200 rounded focus:ring-emerald-500">
               Select All
             </label>
@@ -127,20 +123,32 @@
               </label>
             }
           </div>
-        </div>
+        </fieldset>
 
         <!-- Discounts & Financials -->
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-            <mat-icon class="text-indigo-600">sell</mat-icon>
+        <fieldset class="owner-subscription-create-card" [disabled]="!isRemainingSectionsEnabled" [class.opacity-50]="!isRemainingSectionsEnabled">
+          <h3 class="owner-subscription-create-card-title text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+            <mat-icon class="owner-subscription-create-card-icon text-indigo-600">sell</mat-icon>
             Pricing Adjustments
           </h3>
           <p class="text-sm text-slate-500 mb-6">Define discounts or fixed adjustments that will be applied to the plan price during tenant assignment.</p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <label for="basePrice" class="owner-subscription-create-field-label">Base Price (From Plan Modules)</label>
+              <input id="basePrice" type="number" [value]="basePrice()" class="owner-subscription-create-input" readonly>
+              <p class="owner-subscription-create-help">Calculated after selecting subscription duration: (plan modules total / 30) × duration days.</p>
+            </div>
+            <div>
+              <label for="finalPrice" class="owner-subscription-create-field-label">Final Price (Before Discount)</label>
+              <input id="finalPrice" type="number" formControlName="finalPrice" class="owner-subscription-create-input" min="0" step="0.01">
+            </div>
+          </div>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label for="discountType" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Adjustment Type</label>
-              <select id="discountType" formControlName="discountType" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:text-white">
+              <label for="discountType" class="owner-subscription-create-field-label">Adjustment Type</label>
+              <select id="discountType" formControlName="discountType" class="owner-subscription-create-select">
                 <option value="none">No Adjustment</option>
                 <option value="percentage">Percentage Discount (%)</option>
                 <option value="fixed">Fixed Amount Discount ($)</option>
@@ -148,26 +156,38 @@
             </div>
             @if (subForm.get('discountType')?.value !== 'none') {
               <div class="animate-in fade-in slide-in-from-right-2">
-                <label for="discountValue" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label for="discountValue" class="owner-subscription-create-field-label">
                   {{ subForm.get('discountType')?.value === 'percentage' ? 'Discount Percentage' : 'Discount Amount' }}
                 </label>
-                <div class="relative">
+                <div class="owner-subscription-create-input-wrap">
                   @if (subForm.get('discountType')?.value === 'percentage') {
-                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">%</span>
+                    <span class="owner-subscription-create-input-affix owner-subscription-create-input-affix--right">%</span>
                   } @else {
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                    <span class="owner-subscription-create-input-affix owner-subscription-create-input-affix--left">$</span>
                   }
-                  <input id="discountValue" type="number" formControlName="discountValue" [class.pl-8]="subForm.get('discountType')?.value === 'fixed'" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                  <input id="discountValue" type="number" formControlName="discountValue" [class.owner-subscription-create-input--fixed]="subForm.get('discountType')?.value === 'fixed'" class="owner-subscription-create-input">
                 </div>
               </div>
             }
           </div>
-        </div>
+
+          <div class="mt-6 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40">
+            <div class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Total Price</div>
+            <div class="text-2xl font-bold text-slate-900 dark:text-white">{{ totalPrice | number:'1.2-2' }}</div>
+            <p class="text-xs text-slate-500 mt-1">
+              @if (subForm.get('discountType')?.value === 'none') {
+                Final price is used directly.
+              } @else {
+                Discount applied automatically on final price.
+              }
+            </p>
+          </div>
+        </fieldset>
 
         <!-- Advanced Policy Settings -->
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-8">
-          <h3 class="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <mat-icon class="text-indigo-600">gavel</mat-icon>
+        <fieldset class="owner-subscription-create-card space-y-8" [disabled]="!isRemainingSectionsEnabled" [class.opacity-50]="!isRemainingSectionsEnabled">
+          <h3 class="owner-subscription-create-card-title text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <mat-icon class="owner-subscription-create-card-icon text-indigo-600">gavel</mat-icon>
             Advanced Policy & Access Control
           </h3>
 
@@ -188,8 +208,8 @@
                   <span class="text-sm text-slate-700 dark:text-slate-300">Allow Reports Viewing</span>
                 </label>
                 <div>
-                  <label for="restrictedModules" class="block text-xs font-medium text-slate-500 mb-1">Restricted Modules</label>
-                  <input id="restrictedModules" type="text" formControlName="restrictedModulesAfterExpiry" placeholder="e.g., Exams, Financials" class="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                  <label for="restrictedModules" class="owner-subscription-create-field-label owner-subscription-create-field-label--xs text-slate-500">Restricted Modules</label>
+                  <input id="restrictedModules" type="text" formControlName="restrictedModulesAfterExpiry" placeholder="e.g., Exams, Financials" class="owner-subscription-create-input owner-subscription-create-input--compact">
                 </div>
               </div>
             </div>
@@ -209,8 +229,8 @@
                   <span class="text-sm text-slate-700 dark:text-slate-300">Read-Only Mode (No Data Entry)</span>
                 </label>
                 <div>
-                  <label for="graceBlockMessage" class="block text-xs font-medium text-slate-500 mb-1">Custom Block Message</label>
-                  <input id="graceBlockMessage" type="text" formControlName="graceBlockMessage" placeholder="Your subscription has been suspended..." class="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                  <label for="graceBlockMessage" class="owner-subscription-create-field-label owner-subscription-create-field-label--xs text-slate-500">Custom Block Message</label>
+                  <input id="graceBlockMessage" type="text" formControlName="graceBlockMessage" placeholder="Your subscription has been suspended..." class="owner-subscription-create-input owner-subscription-create-input--compact">
                 </div>
               </div>
             </div>
@@ -224,16 +244,16 @@
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label for="statusOnExpiry" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Status on Expiry</label>
-                <select id="statusOnExpiry" formControlName="statusOnExpiry" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                <label for="statusOnExpiry" class="owner-subscription-create-field-label">Status on Expiry</label>
+                <select id="statusOnExpiry" formControlName="statusOnExpiry" class="owner-subscription-create-select">
                   <option value="Past Due">Past Due</option>
                   <option value="Suspended">Suspended</option>
                   <option value="Grace Period">Grace Period</option>
                 </select>
               </div>
               <div>
-                <label for="statusAfterGrace" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Status after Grace Period</label>
-                <select id="statusAfterGrace" formControlName="statusAfterGrace" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                <label for="statusAfterGrace" class="owner-subscription-create-field-label">Status after Grace Period</label>
+                <select id="statusAfterGrace" formControlName="statusAfterGrace" class="owner-subscription-create-select">
                   <option value="Suspended">Suspended</option>
                   <option value="Cancelled">Cancelled</option>
                   <option value="Archived">Archived</option>
@@ -252,12 +272,12 @@
               <!-- Pre-Expiry -->
               <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
                 <div class="md:col-span-1">
-                  <label for="preExpiryDays" class="block text-xs font-medium text-slate-500 mb-1">Pre-Expiry Alert (Days)</label>
-                  <input id="preExpiryDays" type="number" formControlName="preExpiryDays" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                  <label for="preExpiryDays" class="owner-subscription-create-field-label owner-subscription-create-field-label--xs text-slate-500">Pre-Expiry Alert (Days)</label>
+                  <input id="preExpiryDays" type="number" formControlName="preExpiryDays" class="owner-subscription-create-input">
                 </div>
                 <div class="md:col-span-3">
-                  <label for="preExpiryMessage" class="block text-xs font-medium text-slate-500 mb-1">Pre-Expiry Message</label>
-                  <textarea id="preExpiryMessage" formControlName="preExpiryMessage" rows="2" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:text-white" placeholder="Your subscription will expire in {days} days..."></textarea>
+                  <label for="preExpiryMessage" class="owner-subscription-create-field-label owner-subscription-create-field-label--xs text-slate-500">Pre-Expiry Message</label>
+                  <textarea id="preExpiryMessage" formControlName="preExpiryMessage" rows="2" class="owner-subscription-create-textarea" placeholder="Your subscription will expire in {days} days..."></textarea>
                 </div>
               </div>
 
@@ -267,20 +287,20 @@
                   <span class="text-sm font-medium text-slate-700 dark:text-slate-300">On Expiry Alert</span>
                 </div>
                 <div class="md:col-span-3">
-                  <label for="onExpiryMessage" class="block text-xs font-medium text-slate-500 mb-1">Expiry Message</label>
-                  <textarea id="onExpiryMessage" formControlName="onExpiryMessage" rows="2" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:text-white" placeholder="Your subscription has expired. Please renew to avoid service interruption."></textarea>
+                  <label for="onExpiryMessage" class="owner-subscription-create-field-label owner-subscription-create-field-label--xs text-slate-500">Expiry Message</label>
+                  <textarea id="onExpiryMessage" formControlName="onExpiryMessage" rows="2" class="owner-subscription-create-textarea" placeholder="Your subscription has expired. Please renew to avoid service interruption."></textarea>
                 </div>
               </div>
 
               <!-- Pre-Grace -->
               <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-start pt-4 border-t border-slate-50 dark:border-slate-800/50">
                 <div class="md:col-span-1">
-                  <label for="preGraceDays" class="block text-xs font-medium text-slate-500 mb-1">Pre-Grace End Alert (Days)</label>
-                  <input id="preGraceDays" type="number" formControlName="preGraceDays" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                  <label for="preGraceDays" class="owner-subscription-create-field-label owner-subscription-create-field-label--xs text-slate-500">Pre-Grace End Alert (Days)</label>
+                  <input id="preGraceDays" type="number" formControlName="preGraceDays" class="owner-subscription-create-input">
                 </div>
                 <div class="md:col-span-3">
-                  <label for="preGraceMessage" class="block text-xs font-medium text-slate-500 mb-1">Pre-Grace End Message</label>
-                  <textarea id="preGraceMessage" formControlName="preGraceMessage" rows="2" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:text-white" placeholder="Your grace period ends in {days} days. Access will be restricted."></textarea>
+                  <label for="preGraceMessage" class="owner-subscription-create-field-label owner-subscription-create-field-label--xs text-slate-500">Pre-Grace End Message</label>
+                  <textarea id="preGraceMessage" formControlName="preGraceMessage" rows="2" class="owner-subscription-create-textarea" placeholder="Your grace period ends in {days} days. Access will be restricted."></textarea>
                 </div>
               </div>
 
@@ -290,27 +310,51 @@
                   <span class="text-sm font-medium text-slate-700 dark:text-slate-300">On Grace End Alert</span>
                 </div>
                 <div class="md:col-span-3">
-                  <label for="onGraceMessage" class="block text-xs font-medium text-slate-500 mb-1">Grace End Message</label>
-                  <textarea id="onGraceMessage" formControlName="onGraceMessage" rows="2" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:text-white" placeholder="Service suspended. Please contact support or pay outstanding invoices."></textarea>
+                  <label for="onGraceMessage" class="owner-subscription-create-field-label owner-subscription-create-field-label--xs text-slate-500">Grace End Message</label>
+                  <textarea id="onGraceMessage" formControlName="onGraceMessage" rows="2" class="owner-subscription-create-textarea" placeholder="Service suspended. Please contact support or pay outstanding invoices."></textarea>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </fieldset>
 
         <!-- Actions -->
-        <div class="flex justify-end gap-3">
-          <button type="button" routerLink="/owner/subscriptions" class="px-6 py-2 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+        <div class="owner-subscription-create-action-row flex gap-3">
+          <button type="button" routerLink="/owner/subscriptions" class="owner-subscription-create-btn owner-subscription-create-btn--secondary px-6 py-2">
             Cancel
           </button>
           <button 
             type="submit" 
-            [disabled]="subForm.invalid"
-            class="px-8 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-500/20"
+            [disabled]="subForm.invalid || isSubmitting()"
+            class="owner-subscription-create-btn owner-subscription-create-btn--primary px-8 py-2 inline-flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
+            @if (isSubmitting()) {
+              <span class="material-icons animate-spin text-sm">autorenew</span>
+            }
             Save Template Configuration
           </button>
         </div>
       </form>
+
+      @if (saveStatus(); as status) {
+        <div class="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+          <div class="w-full max-w-md rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
+              <span class="material-icons text-sm" [class.text-emerald-600]="status.type === 'success'" [class.text-red-600]="status.type === 'error'">
+                {{ status.type === 'success' ? 'check_circle' : 'error' }}
+              </span>
+              <h4 class="text-base font-semibold text-slate-900 dark:text-white">{{ status.title }}</h4>
+            </div>
+            <div class="px-5 py-4">
+              <p class="text-sm text-slate-600 dark:text-slate-300">{{ status.message }}</p>
+            </div>
+            <div class="px-5 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end">
+              <button type="button" (click)="closeSaveStatus()" class="owner-subscription-create-btn owner-subscription-create-btn--primary px-4 py-2">
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   

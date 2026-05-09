@@ -9,7 +9,8 @@ import { OwnerSecurityFacade } from '../../state/owner-security.facade';
   selector: 'app-owner-security',
   standalone: true,
   imports: [CommonModule, RouterModule, MatIconModule, FormsModule, ReactiveFormsModule],
-  templateUrl: './owner-security.component.html'})
+  templateUrl: './owner-security.component.html',
+  styleUrl: './owner-security.component.css'})
 export class OwnerSecurityComponent implements OnInit, OnDestroy {
   private readonly facade = inject(OwnerSecurityFacade);
 

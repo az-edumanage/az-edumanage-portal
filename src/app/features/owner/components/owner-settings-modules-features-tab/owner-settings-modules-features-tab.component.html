@@ -1,0 +1,111 @@
+<div class="owner-settings-card owner-settings-card--shell">
+  <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+    <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Modules Features</h3>
+    <p class="text-sm text-slate-500 dark:text-slate-500 mt-1">
+      Manage all existing module features with localized names, price, and status.
+    </p>
+  </div>
+
+  <div class="p-6 overflow-x-auto">
+    <div class="mb-4">
+      <input
+        class="owner-settings-input max-w-md"
+        type="text"
+        [value]="query()"
+        (input)="onSearch($any($event.target).value)"
+        placeholder="Search by AR name, EN name, or category"
+      >
+    </div>
+    @if (loading()) {
+      <div class="text-sm text-slate-500 dark:text-slate-400">Loading features...</div>
+    } @else {
+    <table class="w-full text-sm text-left owner-mod-features-table">
+      <thead class="text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
+        <tr>
+          <th class="py-3 pr-4 font-medium">AR Name</th>
+          <th class="py-3 pr-4 font-medium">EN Name</th>
+          <th class="py-3 pr-4 font-medium">Price</th>
+          <th class="py-3 pr-4 font-medium text-center">Status</th>
+          <th class="py-3 text-right font-medium">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+        @for (item of filteredFeatures(); track item.id) {
+          <tr>
+            <td class="py-3 pr-4 text-slate-900 dark:text-white">{{ item.nameAr }}</td>
+            <td class="py-3 pr-4 text-slate-900 dark:text-white">{{ item.nameEn }}</td>
+            <td class="py-3 pr-4 text-slate-900 dark:text-white">{{ item.price | number:'1.0-2' }}</td>
+            <td class="py-3 pr-4 text-center">
+              <input
+                type="checkbox"
+                class="owner-mod-features-checkbox"
+                [checked]="item.enabled"
+                (change)="onStatusToggle(item, $any($event.target).checked)"
+              >
+            </td>
+            <td class="py-3 text-right">
+              <button type="button" (click)="openEditModal(item)" class="owner-status-icon-btn" title="Edit">
+                <mat-icon class="text-sm">edit</mat-icon>
+              </button>
+            </td>
+          </tr>
+        }
+        @if (filteredFeatures().length === 0) {
+          <tr>
+            <td colspan="5" class="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+              No features match your search.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    }
+  </div>
+</div>
+
+@if (showModal()) {
+  <div class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="owner-status-modal w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+      <div class="p-5 border-b border-slate-200 dark:border-slate-800">
+        <h4 class="text-lg font-semibold text-slate-900 dark:text-white">Edit Module Feature</h4>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="save()" class="p-5 space-y-4">
+        <div>
+          <label class="owner-settings-field-label" for="featureNameAr">AR Name</label>
+          <input id="featureNameAr" formControlName="nameAr" class="owner-settings-input" type="text">
+        </div>
+
+        <div>
+          <label class="owner-settings-field-label" for="featureNameEn">EN Name</label>
+          <input id="featureNameEn" formControlName="nameEn" class="owner-settings-input" type="text">
+        </div>
+
+        <div>
+          <label class="owner-settings-field-label" for="featurePrice">Price</label>
+          <input id="featurePrice" formControlName="price" class="owner-settings-input" type="number" min="0" step="0.01">
+        </div>
+
+        <div>
+          <label class="owner-settings-field-label" for="featureCategory">Module / Category</label>
+          <input id="featureCategory" formControlName="moduleCategory" class="owner-settings-input" type="text">
+        </div>
+
+        <label class="inline-flex items-center gap-2 text-sm text-slate-900 dark:text-white">
+          <input formControlName="enabled" type="checkbox" class="owner-mod-features-checkbox">
+          Active
+        </label>
+
+        <div class="owner-mod-features-modal-actions pt-3">
+          <button type="button" (click)="closeModal()" class="owner-mod-features-btn owner-mod-features-btn-cancel">
+            Cancel
+          </button>
+          <button type="submit" [disabled]="!canSubmit() || submitting()" class="owner-mod-features-btn owner-mod-features-btn-save">
+            <mat-icon class="text-sm">check</mat-icon>
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

@@ -1,5 +1,8 @@
-import { Injectable } from '@angular/core';
-import { Observable, map, timer } from 'rxjs';
+import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, from, firstValueFrom } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import { AuthApiService } from '../../../core/auth/auth-api.service';
 import {
   ExistingTenant,
   TenantCreatePayload,
@@ -9,35 +12,15 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class OwnerTenantCreateDataService {
-  readonly existingTenants: ExistingTenant[] = [
-    {
-      name: 'Cairo Excellence Academy',
-      subdomain: 'cairo-excellence',
-      email: 'contact@cairo-excellence.com',
-      phone: '+201000000001',
-    },
-    {
-      name: 'Alexandria Language School',
-      subdomain: 'alex-lang',
-      email: 'info@alex-lang.com',
-      phone: '+201000000002',
-    },
-  ];
+  private readonly http = inject(HttpClient);
+  private readonly authApi = inject(AuthApiService);
 
-  readonly plans: TenantPlanOption[] = [
-    { id: 'starter', name: 'Starter', price: '$49/mo', popular: false },
-    { id: 'pro', name: 'Professional', price: '$149/mo', popular: true },
-    { id: 'enterprise', name: 'Enterprise', price: 'Custom', popular: false },
-  ];
+  readonly existingTenants = signal<ExistingTenant[]>([]);
+  readonly subscriptionTemplates = signal<TenantPlanOption[]>([]);
 
   readonly tenantTypes = [
-    'School',
-    'Educational Center',
-    'Individual Tutor',
-    'Corporate Training',
-    'University',
-    'Bootcamp',
-    'Online Academy',
+    'Center',
+    'Teacher'
   ];
 
   readonly industries = [
@@ -72,6 +55,39 @@ export class OwnerTenantCreateDataService {
     'Qatar',
   ];
 
+  async loadBootstrapData(): Promise<void> {
+    await this.authApi.ensureLoggedIn();
+
+    const [tenants, templates] = await Promise.all([
+      firstValueFrom(this.http.get<Array<{
+        centerName: string;
+        subdomain: string;
+        contactEmail: string | null;
+        contactPhone: string | null;
+      }>>(`${environment.apiBaseUrl}/tenant-catalog/tenants`)),
+      firstValueFrom(this.http.get<Array<{
+        id: string;
+        name: string;
+        monthlyPrice: number;
+        currency: 'USD' | 'EUR' | 'EGP';
+      }>>(`${environment.apiBaseUrl}/plan-catalog/plans`)),
+    ]);
+
+    this.existingTenants.set((tenants ?? []).map((tenant) => ({
+      name: tenant.centerName ?? '',
+      subdomain: tenant.subdomain ?? '',
+      email: tenant.contactEmail ?? '',
+      phone: tenant.contactPhone ?? '',
+    })));
+
+    this.subscriptionTemplates.set((templates ?? []).map((template) => ({
+      id: template.id,
+      name: template.name,
+      price: `${this.currencyPrefix(template.currency)}${template.monthlyPrice}/mo`,
+      popular: false,
+    })));
+  }
+
   findExisting(field: TenantDuplicateField, value: string): ExistingTenant | null {
     const normalized = value.trim().toLowerCase();
     if (!normalized) {
@@ -79,14 +95,24 @@ export class OwnerTenantCreateDataService {
     }
 
     return (
-      this.existingTenants.find(
+      this.existingTenants().find(
         (tenant) => tenant[field].trim().toLowerCase() === normalized,
       ) ?? null
     );
   }
 
   createTenant(payload: TenantCreatePayload): Observable<void> {
-    void payload;
-    return timer(2000).pipe(map(() => void 0));
+    return from(this.saveTenant(payload));
+  }
+
+  private async saveTenant(payload: TenantCreatePayload): Promise<void> {
+    await this.authApi.ensureLoggedIn();
+    await firstValueFrom(this.http.post(`${environment.apiBaseUrl}/tenant-catalog/tenants`, payload));
+  }
+
+  private currencyPrefix(currency: 'USD' | 'EUR' | 'EGP'): string {
+    if (currency === 'USD') return '$';
+    if (currency === 'EUR') return '€';
+    return 'LE ';
   }
 }

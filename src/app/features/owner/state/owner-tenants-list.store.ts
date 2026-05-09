@@ -1,10 +1,12 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { OwnerTenantsDataService } from '../data-access/owner-tenants-data.service';
+import { OwnerTenantStatusesDataService } from '../data-access/owner-tenant-statuses-data.service';
 import { Tenant, TenantStatus } from '../models/owner-tenants.models';
 
 @Injectable({ providedIn: 'root' })
 export class OwnerTenantsListStore {
   private readonly data = inject(OwnerTenantsDataService);
+  private readonly statusData = inject(OwnerTenantStatusesDataService);
 
   readonly searchQuery = signal('');
   readonly showFiltersDropdown = signal(false);
@@ -18,7 +20,7 @@ export class OwnerTenantsListStore {
   readonly selectedPlans = signal<Set<string>>(new Set());
   readonly selectedHealths = signal<Set<string>>(new Set());
 
-  readonly statuses = ['Active', 'Trial', 'Past Due', 'Suspended', 'Cancelled'];
+  readonly statuses = computed(() => this.statusData.statusNames());
   readonly plans = ['Starter', 'Professional', 'Enterprise'];
   readonly healths = ['Healthy', 'Degraded', 'Down'];
 
@@ -36,6 +38,9 @@ export class OwnerTenantsListStore {
       const matchesSearch =
         !search ||
         tenant.name.toLowerCase().includes(search) ||
+        tenant.tenantType.toLowerCase().includes(search) ||
+        tenant.fullName.toLowerCase().includes(search) ||
+        tenant.phoneNumber.toLowerCase().includes(search) ||
         tenant.id.toLowerCase().includes(search) ||
         tenant.ownerEmail.toLowerCase().includes(search);
       const matchesStatus = statuses.size === 0 || statuses.has(tenant.status);

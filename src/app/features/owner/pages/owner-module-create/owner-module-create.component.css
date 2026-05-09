@@ -1,0 +1,138 @@
+:host {
+  display: block;
+}
+
+.owner-module-create-page {
+  max-width: 58rem;
+  margin-inline: auto;
+  padding-top: var(--space-1);
+  padding-bottom: 3rem;
+}
+
+.owner-module-create-back {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.owner-module-create-back:hover {
+  background: var(--color-bg-subtle, #f1f5f9);
+}
+
+.owner-module-create-form {
+  display: grid;
+  row-gap: var(--space-6);
+}
+
+.owner-module-create-card {
+  background: var(--color-bg-card, #fff);
+  border: 1px solid var(--color-border-primary, #e2e8f0);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-5);
+}
+
+.owner-module-create-field-label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary, #334155);
+}
+
+.owner-module-create-input,
+.owner-module-create-select,
+.owner-module-create-textarea {
+  width: 100%;
+  border: 1px solid var(--color-border-primary, #e2e8f0);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-input, #f8fafc);
+  color: var(--color-text-primary, #0f172a);
+  font-size: var(--font-size-sm);
+  padding: 0.5rem 0.875rem;
+  outline: 0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.owner-module-create-select {
+  appearance: none;
+}
+
+.owner-module-create-textarea {
+  resize: vertical;
+}
+
+.owner-module-create-input:focus,
+.owner-module-create-select:focus,
+.owner-module-create-textarea:focus {
+  border-color: var(--color-border-focus, var(--color-action-primary));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-action-primary) 25%, transparent);
+}
+
+.owner-module-create-check-card {
+  border-color: var(--color-border-primary, #e2e8f0);
+  background: var(--color-bg-card, #fff);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.owner-module-create-check-card--active {
+  border-color: var(--color-action-primary, #4f46e5);
+  background: color-mix(in srgb, var(--color-action-primary) 8%, transparent);
+}
+
+.owner-module-create-checkbox {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-action-primary);
+}
+
+.owner-module-create-action-row {
+  justify-content: flex-end;
+}
+
+.owner-module-create-btn {
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+
+.owner-module-create-btn--secondary {
+  border: 1px solid var(--color-border-primary, #cbd5e1);
+  color: var(--color-text-secondary, #334155);
+  background: var(--color-bg-card, #fff);
+}
+
+.owner-module-create-btn--secondary:hover {
+  background: var(--color-bg-subtle, #f8fafc);
+}
+
+.owner-module-create-btn--primary {
+  background: var(--color-action-primary, #4f46e5);
+  color: var(--color-text-on-action, #fff);
+}
+
+.owner-module-create-btn--primary:hover {
+  background: var(--color-action-primary-hover, var(--color-action-primary));
+}
+
+.owner-module-create-btn--primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dark .owner-module-create-card {
+  background: var(--color-bg-card, #0f172a);
+  border-color: var(--color-border-primary, #334155);
+}
+
+.dark .owner-module-create-input,
+.dark .owner-module-create-select,
+.dark .owner-module-create-textarea {
+  background: var(--color-bg-input, #1e293b);
+  border-color: var(--color-border-primary, #334155);
+  color: var(--color-text-primary, #e2e8f0);
+}
+
+.dark .owner-module-create-check-card {
+  background: var(--color-bg-card, #0f172a);
+  border-color: var(--color-border-primary, #334155);
+}

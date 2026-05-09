@@ -1,0 +1,13 @@
+@layer base {
+  :root {
+    /*
+     * Compatibility aliases for Tailwind utility consumption.
+     * Values intentionally match current visual output (brand parity).
+     */
+    --ds-color-text-inverse: #f8fafc;
+    --ds-color-surface-subtle: #f1f5f9;
+    --ds-color-surface-inverse: #020617;
+    --ds-color-border-strong: #334155;
+    --ds-color-border-muted: #cbd5e1;
+  }
+}

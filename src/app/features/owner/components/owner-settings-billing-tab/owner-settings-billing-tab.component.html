@@ -1,0 +1,42 @@
+<div class="owner-settings-card owner-settings-card--shell">
+  <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+    <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">{{ translate()('owner.settings.billing.title') }}</h3>
+  </div>
+  <div class="p-6 space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div>
+        <label for="def-vat" class="owner-settings-field-label">{{ translate()('owner.settings.billing.defaultVAT') }}</label>
+        <input id="def-vat" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="14">
+      </div>
+      <div>
+        <label for="grace-period" class="owner-settings-field-label">{{ translate()('owner.settings.billing.gracePeriod') }}</label>
+        <input id="grace-period" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="7">
+      </div>
+      <div>
+        <label for="trial-dur" class="owner-settings-field-label">{{ translate()('owner.settings.billing.trialDuration') }}</label>
+        <input id="trial-dur" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="14">
+      </div>
+      <div>
+        <label for="inv-prefix" class="owner-settings-field-label">{{ translate()('owner.settings.billing.invoicePrefix') }}</label>
+        <input id="inv-prefix" type="text" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="REMIX-">
+      </div>
+    </div>
+
+    <div class="owner-settings-banner flex justify-between p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+      <div class="flex gap-3">
+        <span class="material-icons text-red-600">block</span>
+        <div>
+          <p class="text-sm font-medium text-red-900 dark:text-red-300">{{ translate()('owner.settings.billing.autoSuspend') }}</p>
+          <p class="text-xs text-red-800/70 dark:text-red-400/70">{{ translate()('owner.settings.billing.autoSuspendDescription') }}</p>
+        </div>
+      </div>
+      <label class="owner-settings-toggle inline-flex items-center cursor-pointer">
+        <input type="checkbox" class="sr-only peer" checked>
+        <div class="owner-settings-toggle-track owner-settings-toggle-track--green"></div>
+      </label>
+    </div>
+  </div>
+  <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
+    <button class="owner-settings-btn-primary px-4 py-2 shadow-sm">{{ translate()('owner.settings.billing.save') }}</button>
+  </div>
+</div>

@@ -1,0 +1,31 @@
+<div class="owner-settings-card owner-settings-card--shell">
+  <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+    <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">{{ translate()('owner.settings.compliance.title') }}</h3>
+  </div>
+  <div class="p-6 space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <label for="log-ret" class="owner-settings-field-label">Log Retention Period (Days)</label>
+        <input id="log-ret" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="90">
+      </div>
+      <div>
+        <label for="data-ret" class="owner-settings-field-label">Data Retention Policy (Years)</label>
+        <input id="data-ret" type="number" class="owner-settings-input dark:bg-slate-800 dark:border-slate-700" value="5">
+      </div>
+    </div>
+
+    <div class="owner-settings-banner flex justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+      <div>
+        <p class="owner-settings-toggle-title">Allow Tenant Data Export</p>
+        <p class="owner-settings-toggle-note">Enable self-service data portability for all tenants.</p>
+      </div>
+      <label class="owner-settings-toggle inline-flex items-center cursor-pointer">
+        <input type="checkbox" class="sr-only peer" checked>
+        <div class="owner-settings-toggle-track owner-settings-toggle-track--indigo"></div>
+      </label>
+    </div>
+  </div>
+  <div class="owner-settings-footer p-4 dark:bg-slate-800/50">
+    <button class="owner-settings-btn-primary px-4 py-2 shadow-sm">{{ translate()('owner.settings.compliance.save') }}</button>
+  </div>
+</div>

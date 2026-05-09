@@ -4,12 +4,14 @@ import { RouterModule, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { OwnerPlanCreateFacade } from '../../state/owner-plan-create.facade';
+import { FORM_COMPONENTS } from '../../../../shared/components/form';
 
 @Component({
   selector: 'app-owner-plan-create',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule, FormsModule, ReactiveFormsModule],
-  templateUrl: './owner-plan-create.component.html'})
+  imports: [CommonModule, RouterModule, MatIconModule, FormsModule, ReactiveFormsModule, ...FORM_COMPONENTS],
+  templateUrl: './owner-plan-create.component.html',
+  styleUrl: './owner-plan-create.component.css'})
 export class OwnerPlanCreateComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly facade = inject(OwnerPlanCreateFacade);
@@ -31,12 +33,19 @@ export class OwnerPlanCreateComponent implements OnInit, OnDestroy {
   readonly currencySearchQuery = this.facade.currencySearchQuery;
   readonly currencies = this.facade.currencies;
   readonly filteredCurrencies = this.facade.filteredCurrencies;
+  readonly showAudienceTypeDropdown = this.facade.showAudienceTypeDropdown;
+  readonly audienceTypeSearchQuery = this.facade.audienceTypeSearchQuery;
+  readonly filteredAudienceTypes = this.facade.filteredAudienceTypes;
+  readonly isTeacherAudience = this.facade.isTeacherAudience;
 
   readonly existingPlans = this.facade.existingPlans;
+  readonly moduleOptions = this.facade.moduleOptions;
   readonly planForm = this.facade.planForm;
+  readonly isSubmitting = this.facade.isSubmitting;
+  readonly actionStatus = this.facade.actionStatus;
 
   ngOnInit(): void {
-    this.facade.initialize(this.route.snapshot.params['id'] ?? null);
+    void this.facade.initialize(this.route.snapshot.params['id'] ?? null);
   }
 
   ngOnDestroy(): void {
@@ -59,7 +68,23 @@ export class OwnerPlanCreateComponent implements OnInit, OnDestroy {
     this.facade.selectCurrency(currency);
   }
 
+  selectAudienceType(audienceType: string): void {
+    this.facade.selectAudienceType(audienceType);
+  }
+
   onSubmit(): void {
     this.facade.onSubmit();
+  }
+
+  isModuleSelected(moduleId: string): boolean {
+    return this.facade.isModuleSelected(moduleId);
+  }
+
+  toggleModule(moduleId: string): void {
+    this.facade.toggleModule(moduleId);
+  }
+
+  closeActionStatus(): void {
+    this.facade.closeActionStatus();
   }
 }

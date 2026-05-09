@@ -1,4 +1,4 @@
-export type SubscriptionOrderStatus = 'Pending' | 'Approved' | 'Rejected' | 'Paid';
+export type SubscriptionOrderStatus = string;
 
 export interface SubscriptionOrder {
   id: string;

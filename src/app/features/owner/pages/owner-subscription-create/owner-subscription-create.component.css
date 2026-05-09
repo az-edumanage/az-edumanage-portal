@@ -1,5 +1,202 @@
+:host {
+  display: block;
+}
 
-    :host { display: block; }
-    input::-webkit-outer-spin-button,
-    input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  
+.owner-subscription-create-page {
+  max-width: 56rem;
+  margin-inline: auto;
+  padding-top: var(--space-1);
+  padding-bottom: 3rem;
+}
+
+.owner-subscription-create-header {
+  align-items: center;
+}
+
+.owner-subscription-create-back {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.owner-subscription-create-title {
+  letter-spacing: -0.01em;
+}
+
+.owner-subscription-create-subtitle {
+  line-height: 1.25rem;
+}
+
+.owner-subscription-create-form {
+  display: grid;
+  row-gap: var(--space-6);
+  align-content: start;
+}
+
+.owner-subscription-create-card {
+  background: var(--color-bg-card, #ffffff);
+  border: 1px solid var(--color-border-primary, #e2e8f0);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-5);
+}
+
+.owner-subscription-create-card > * + * {
+  margin-top: var(--space-4);
+}
+
+.owner-subscription-create-card-title {
+  line-height: 1.35;
+  margin-bottom: 0;
+}
+
+.owner-subscription-create-card-icon {
+  flex-shrink: 0;
+}
+
+.owner-subscription-create-field-label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary, #334155);
+}
+
+.owner-subscription-create-field-label--xs {
+  font-size: 0.75rem;
+}
+
+.owner-subscription-create-input,
+.owner-subscription-create-select,
+.owner-subscription-create-textarea {
+  width: 100%;
+  border: 1px solid var(--color-border-primary, #e2e8f0);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-input, #f8fafc);
+  color: var(--color-text-primary, #0f172a);
+  font-size: var(--font-size-sm);
+  padding: 0.5rem 1rem;
+  outline: 0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.owner-subscription-create-select {
+  appearance: none;
+}
+
+.owner-subscription-create-input:focus,
+.owner-subscription-create-select:focus,
+.owner-subscription-create-textarea:focus {
+  border-color: var(--color-border-focus, var(--color-action-primary));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-action-primary) 25%, transparent);
+}
+
+.owner-subscription-create-input--compact {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.owner-subscription-create-input--fixed {
+  padding-left: 2rem;
+}
+
+.owner-subscription-create-input--custom {
+  width: 8rem;
+}
+
+.owner-subscription-create-textarea {
+  resize: vertical;
+}
+
+.owner-subscription-create-help {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #64748b);
+}
+
+.owner-subscription-create-select-all {
+  transition: color 0.2s ease;
+}
+
+.owner-subscription-create-select-all:hover {
+  color: var(--color-action-primary);
+}
+
+.owner-subscription-create-select-all--methods:hover {
+  color: var(--color-state-success);
+}
+
+.owner-subscription-create-input-wrap {
+  position: relative;
+}
+
+.owner-subscription-create-input-affix {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted, #64748b);
+}
+
+.owner-subscription-create-input-affix--left {
+  left: 0.75rem;
+}
+
+.owner-subscription-create-input-affix--right {
+  right: 0.75rem;
+}
+
+.owner-subscription-create-action-row {
+  margin-top: var(--space-2);
+  justify-content: flex-end;
+}
+
+.owner-subscription-create-btn {
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+
+.owner-subscription-create-btn--secondary {
+  border: 1px solid var(--color-border-primary, #cbd5e1);
+  color: var(--color-text-secondary, #334155);
+  background: var(--color-bg-card, #ffffff);
+}
+
+.owner-subscription-create-btn--primary {
+  background: var(--color-action-primary, #4f46e5);
+  color: var(--color-text-on-action, #fff);
+  box-shadow: var(--shadow-sm);
+}
+
+.owner-subscription-create-btn--primary:hover {
+  background: var(--color-action-primary-hover, var(--color-action-primary));
+}
+
+.dark .owner-subscription-create-card {
+  background: var(--color-bg-card, #0f172a);
+  border-color: var(--color-border-primary, #334155);
+}
+
+.dark .owner-subscription-create-input,
+.dark .owner-subscription-create-select,
+.dark .owner-subscription-create-textarea {
+  background: var(--color-bg-input, #1e293b);
+  border-color: var(--color-border-primary, #334155);
+  color: var(--color-text-primary, #e2e8f0);
+}
+
+.dark .owner-subscription-create-btn--secondary {
+  background: var(--color-bg-card, #0f172a);
+  border-color: var(--color-border-primary, #334155);
+  color: var(--color-text-secondary, #cbd5e1);
+}
+
+.owner-subscription-create-btn--primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

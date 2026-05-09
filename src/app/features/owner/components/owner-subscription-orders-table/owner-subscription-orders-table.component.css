@@ -1,1 +1,58 @@
+:host {
+  display: block;
+}
 
+.owner-subscription-orders-th,
+.owner-subscription-orders-cell {
+  vertical-align: middle;
+}
+
+.owner-subscription-orders-th {
+  letter-spacing: 0.01em;
+}
+
+.owner-subscription-orders-th-checkbox {
+  width: 2.5rem;
+}
+
+.owner-subscription-orders-th-actions {
+  width: 8rem;
+}
+
+.owner-subscription-orders-checkbox {
+  flex-shrink: 0;
+}
+
+.owner-subscription-orders-tenant {
+  line-height: 1.2;
+}
+
+.owner-subscription-orders-order-id,
+.owner-subscription-orders-amount,
+.owner-subscription-orders-order-date {
+  white-space: nowrap;
+}
+
+.owner-subscription-orders-method {
+  white-space: nowrap;
+}
+
+.owner-subscription-orders-status {
+  white-space: nowrap;
+}
+
+.owner-subscription-orders-actions,
+.owner-subscription-orders-bulk-actions {
+  min-height: 1.75rem;
+}
+
+.owner-subscription-orders-action-btn,
+.owner-subscription-orders-bulk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.owner-subscription-orders-empty-icon {
+  display: inline-flex;
+}

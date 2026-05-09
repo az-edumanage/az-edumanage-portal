@@ -1,0 +1,92 @@
+<div class="owner-module-create-page space-y-6">
+  <div class="owner-module-create-header flex gap-4">
+    <button routerLink="/owner/modules" class="owner-module-create-back p-2 rounded-lg text-slate-500 dark:text-slate-500">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div>
+      <h2 class="owner-module-create-title text-2xl font-bold text-slate-900 dark:text-white">{{ isEditMode ? 'Edit Module' : 'Create Module' }}</h2>
+      <p class="owner-module-create-subtitle text-slate-500 dark:text-slate-500 text-sm">{{ isEditMode ? 'Update module information and selected features.' : 'Set up a new module with category and features.' }}</p>
+    </div>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="save()" class="owner-module-create-form space-y-6">
+    <div class="owner-module-create-card space-y-5">
+      <h3 class="owner-module-create-card-title text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+        <mat-icon class="text-indigo-600">extension</mat-icon>
+        Module Information
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+          <label for="nameAr" class="owner-module-create-field-label">AR Name</label>
+          <input id="nameAr" type="text" formControlName="nameAr" class="owner-module-create-input" placeholder="مثال: إدارة الطلاب">
+        </div>
+        <div>
+          <label for="nameEn" class="owner-module-create-field-label">EN Name</label>
+          <input id="nameEn" type="text" formControlName="nameEn" class="owner-module-create-input" placeholder="e.g. Students Management">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+          <label for="category" class="owner-module-create-field-label">Module Type</label>
+          <select id="category" formControlName="category" class="owner-module-create-select">
+            @for (category of categoryOptions; track category) {
+              <option [value]="category">{{ category }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label for="status" class="owner-module-create-field-label">Status</label>
+          <select id="status" formControlName="status" class="owner-module-create-select">
+            @for (status of statusOptions; track status) {
+              <option [value]="status">{{ status }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label for="description" class="owner-module-create-field-label">Description</label>
+        <textarea id="description" rows="4" formControlName="description" class="owner-module-create-textarea" placeholder="Describe what this module provides."></textarea>
+      </div>
+    </div>
+
+    <div class="owner-module-create-card space-y-5">
+      <h3 class="owner-module-create-card-title text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+        <mat-icon class="text-indigo-600">tune</mat-icon>
+        Module Features (Multi Select)
+      </h3>
+      <div>
+        <input
+          type="text"
+          [(ngModel)]="featureSearch"
+          [ngModelOptions]="{ standalone: true }"
+          class="owner-module-create-input"
+          placeholder="Search features by name or category..."
+        >
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        @for (feature of filteredFeatureOptions(); track feature.id) {
+          <label class="owner-module-create-check-card flex items-center gap-3 p-3 rounded-xl border cursor-pointer"
+            [class.owner-module-create-check-card--active]="isFeatureSelected(feature.id)">
+            <input type="checkbox" [checked]="isFeatureSelected(feature.id)" (change)="toggleFeature(feature.id)" class="owner-module-create-checkbox">
+            <span class="text-sm text-slate-900 dark:text-white">{{ feature.nameEn }}</span>
+          </label>
+        }
+      </div>
+      @if (filteredFeatureOptions().length === 0) {
+        <p class="text-sm text-slate-500">No features match your search.</p>
+      }
+    </div>
+
+    <div class="owner-module-create-action-row flex gap-3">
+      <button type="button" routerLink="/owner/modules" class="owner-module-create-btn owner-module-create-btn--secondary px-6 py-2">
+        Cancel
+      </button>
+      <button type="submit" [disabled]="!canSubmit" class="owner-module-create-btn owner-module-create-btn--primary px-8 py-2">
+        {{ isEditMode ? 'Save Changes' : 'Save Module' }}
+      </button>
+    </div>
+  </form>
+</div>

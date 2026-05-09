@@ -1,7 +1,8 @@
 export interface Plan {
   id: string;
   name: string;
-  status: 'Active' | 'Archived';
+  audienceType: 'center' | 'teacher';
+  status: 'Active' | 'Archived' | 'Draft';
   monthlyPrice: number;
   yearlyPrice: number;
   currency: string;
@@ -9,4 +10,6 @@ export interface Plan {
   maxStorage: number;
   trialDays: number;
   visibility: 'Public' | 'Private';
+  isRecommended: boolean;
+  showAnnualPrice: boolean;
 }
