@@ -5,7 +5,7 @@ import { TEACHER_ROUTES } from './features/teacher/routes';
 
 describe('Route Deep Link Matrix', () => {
   it('should keep root lazy route entries for owner/tenant/teacher', () => {
-    const root = routes.find((r) => r.path === '');
+    const root = routes.find((r) => r.path === '' && r.component !== undefined);
     expect(root).toBeDefined();
 
     const children = root?.children ?? [];

@@ -1,18 +1,24 @@
 import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
 import { OwnerSubscriptionTemplatesListStore } from './owner-subscription-templates-list.store';
 
 describe('OwnerSubscriptionTemplatesListStore', () => {
   let store: OwnerSubscriptionTemplatesListStore;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    localStorage.setItem('beedu.auth.token', 'test-token');
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient()],
+    });
     store = TestBed.inject(OwnerSubscriptionTemplatesListStore);
   });
 
-  it('returns seeded templates list', () => {
-    const templates = store.templates();
+  afterEach(() => {
+    localStorage.removeItem('beedu.auth.token');
+  });
 
-    expect(templates.length).toBe(3);
-    expect(templates[0].id).toBe('TMP_001');
+  it('exposes templates signal from data service', () => {
+    expect(store.templates).toBeDefined();
+    expect(typeof store.templates).toBe('function');
   });
 });

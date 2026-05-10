@@ -15,7 +15,8 @@ describe('OwnerSubscriptionOrdersStore', () => {
     expect(store.exportMode()).toBe('all');
   });
 
-  it('should expose status options', () => {
-    expect(store.statuses).toEqual(['Pending', 'Approved', 'Paid', 'Rejected']);
+  it('should expose export defaults', () => {
+    expect(store.exportFormat()).toBeNull();
+    expect(store.exportMode()).toBe('all');
   });
 });

@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { OwnerPlanDetailsDataService } from '../data-access/owner-plan-details-data.service';
+import { PlanSubscription } from '../models/owner-plan-details.models';
 
 @Injectable({ providedIn: 'root' })
 export class OwnerPlanDetailsStore {
@@ -12,7 +13,7 @@ export class OwnerPlanDetailsStore {
   readonly auditLogs = signal(this.data.auditLogs);
   readonly offers = signal(this.data.offers);
 
-  readonly lastSubscription = computed(() => this.subscriptions()[0] ?? null);
+  readonly lastSubscription = computed<PlanSubscription | null>(() => this.subscriptions()[0] ?? null);
 
   setPlanId(id: string | null): void {
     this.planId.set(id);

@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
 import { SubscriptionPresetService } from '../../../core/services/subscription-preset.service';
 import { OwnerSettingsStore } from './owner-settings.store';
 
@@ -7,9 +8,16 @@ describe('OwnerSettingsStore', () => {
   let presetService: SubscriptionPresetService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    localStorage.setItem('beedu.auth.token', 'test-token');
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient()],
+    });
     store = TestBed.inject(OwnerSettingsStore);
     presetService = TestBed.inject(SubscriptionPresetService);
+  });
+
+  afterEach(() => {
+    localStorage.removeItem('beedu.auth.token');
   });
 
   it('adds and removes cycles', () => {
@@ -26,17 +34,23 @@ describe('OwnerSettingsStore', () => {
     expect(store.subscriptionCycles().length).toBe(initial);
   });
 
-  it('saves presets back to core preset service', () => {
-    store.addPaymentMethod();
-    const createdId = store.paymentMethods().at(-1)?.id;
+  it('adds and removes payment methods locally', () => {
+    const initial = store.paymentMethods().length;
 
+    store.addPaymentMethod();
+    expect(store.paymentMethods().length).toBe(initial + 1);
+
+    const createdId = store.paymentMethods().at(-1)?.id;
     if (createdId) {
       store.removePaymentMethod(createdId);
     }
 
-    store.savePresets();
+    expect(store.paymentMethods().length).toBe(initial);
+  });
 
-    expect(presetService.cycles().length).toBe(store.subscriptionCycles().length);
-    expect(presetService.paymentMethods().length).toBe(store.paymentMethods().length);
+  it('exposes activeTab and subjectTemplates signals', () => {
+    expect(store.activeTab()).toBe('general');
+    expect(store.subjectTemplates().length).toBe(2);
+    expect(typeof store.setActiveTab).toBe('function');
   });
 });

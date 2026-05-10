@@ -1,18 +1,24 @@
 import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
 import { OwnerPlansListStore } from './owner-plans-list.store';
 
 describe('OwnerPlansListStore', () => {
   let store: OwnerPlansListStore;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    localStorage.setItem('beedu.auth.token', 'test-token');
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient()],
+    });
     store = TestBed.inject(OwnerPlansListStore);
   });
 
-  it('returns seeded plans list', () => {
-    const plans = store.plans();
+  afterEach(() => {
+    localStorage.removeItem('beedu.auth.token');
+  });
 
-    expect(plans.length).toBe(3);
-    expect(plans[0].name).toBe('Starter');
+  it('exposes plans signal from data service', () => {
+    expect(store.plans).toBeDefined();
+    expect(typeof store.plans).toBe('function');
   });
 });

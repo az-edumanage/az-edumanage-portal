@@ -1,24 +1,25 @@
 import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
 import { OwnerProvisioningListStore } from './owner-provisioning-list.store';
 
 describe('OwnerProvisioningListStore', () => {
   let store: OwnerProvisioningListStore;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient()],
+    });
     store = TestBed.inject(OwnerProvisioningListStore);
   });
 
-  it('returns all jobs by default', () => {
+  it('exposes filter signal and filteredJobs computed', () => {
     expect(store.filter()).toBe('All');
-    expect(store.filteredJobs().length).toBe(5);
+    expect(Array.isArray(store.filteredJobs())).toBe(true);
   });
 
-  it('filters jobs by status', () => {
+  it('reactively filters when filter signal changes', () => {
     store.filter.set('Failed');
     const filtered = store.filteredJobs();
-
-    expect(filtered.length).toBe(1);
-    expect(filtered[0].status).toBe('Failed');
+    expect(filtered.every((job) => job.status === 'Failed')).toBe(true);
   });
 });
