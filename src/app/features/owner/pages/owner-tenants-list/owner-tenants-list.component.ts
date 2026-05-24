@@ -83,6 +83,12 @@ export class OwnerTenantsListComponent implements OnInit {
     return this.statusesData.findByName(status)?.color ?? '#64748b';
   }
 
+  formatBackendStatus(value: string): string {
+    return value
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+
   toggleFilter(type: 'status' | 'plan' | 'health', value: string): void {
     this.tenantsFacade.toggleFilter(type, value);
   }

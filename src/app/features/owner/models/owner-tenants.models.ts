@@ -7,6 +7,7 @@ export type ProviderPaymentStatus =
   | 'unknown';
 export type TenantOperationalStatus = 'active' | 'suspended' | 'disabled' | 'blocked' | 'pending' | 'unknown';
 export type SettlementStatus = 'provider_paid' | 'manual_paid' | 'unpaid' | 'failed' | 'unknown';
+export type OwnerDisplayStatus = 'pending' | 'active' | 'suspended' | 'disabled' | 'blocked' | 'unknown';
 export type TenantStatus = string;
 export type TenantHealthStatus = 'Healthy' | 'Degraded' | 'Down';
 export type TenantType = 'center' | 'teacher';
@@ -28,6 +29,7 @@ export interface Tenant {
   fullName: string;
   phoneNumber: string;
   status: TenantStatus;
+  ownerDisplayStatus: OwnerDisplayStatus;
   providerPaymentStatus: ProviderPaymentStatus;
   tenantOperationalStatus: TenantOperationalStatus;
   settlementStatus: SettlementStatus;

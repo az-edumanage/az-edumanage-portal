@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import {
+  OwnerDisplayStatus,
   ProviderPaymentStatus,
   SettlementStatus,
   Tenant,
@@ -31,6 +32,7 @@ interface BackendTenantResponse {
   providerPaymentStatus?: string | null;
   tenantOperationalStatus?: string | null;
   settlementStatus?: string | null;
+  ownerDisplayStatus?: string | null;
   createdAt: string;
 }
 
@@ -70,6 +72,7 @@ export class OwnerTenantsDataService {
       fullName: payload.fullName.trim(),
       phoneNumber: payload.phoneNumber.trim(),
       status: 'Pending',
+      ownerDisplayStatus: 'pending',
       providerPaymentStatus: 'unknown',
       tenantOperationalStatus: 'pending',
       settlementStatus: 'unknown',
@@ -91,12 +94,14 @@ export class OwnerTenantsDataService {
     const providerPaymentStatus = this.normalizeProviderPaymentStatus(row.providerPaymentStatus);
     const tenantOperationalStatus = this.normalizeTenantOperationalStatus(row.tenantOperationalStatus);
     const settlementStatus = this.normalizeSettlementStatus(row.settlementStatus);
+    const ownerDisplayStatus = this.normalizeOwnerDisplayStatus(row.ownerDisplayStatus, tenantOperationalStatus);
     return {
       id: row.id,
       name: row.centerName || 'N/A',
       fullName: row.contactName?.trim() || 'N/A',
       phoneNumber: row.contactPhone?.trim() || 'N/A',
-      status: this.toDisplayStatus(tenantOperationalStatus),
+      status: this.toDisplayStatus(ownerDisplayStatus),
+      ownerDisplayStatus,
       providerPaymentStatus,
       tenantOperationalStatus,
       settlementStatus,
@@ -190,7 +195,33 @@ export class OwnerTenantsDataService {
     return 'unknown';
   }
 
-  private toDisplayStatus(status: TenantOperationalStatus): TenantStatus {
+  private normalizeOwnerDisplayStatus(
+    value: string | null | undefined,
+    fallback: TenantOperationalStatus,
+  ): OwnerDisplayStatus {
+    const normalized = String(value ?? '').trim().toLowerCase();
+    if (normalized === 'active') {
+      return 'active';
+    }
+    if (normalized === 'suspended') {
+      return 'suspended';
+    }
+    if (normalized === 'disabled') {
+      return 'disabled';
+    }
+    if (normalized === 'blocked') {
+      return 'blocked';
+    }
+    if (normalized === 'pending') {
+      return 'pending';
+    }
+    if (normalized === 'unknown') {
+      return 'unknown';
+    }
+    return fallback === 'unknown' ? 'unknown' : 'pending';
+  }
+
+  private toDisplayStatus(status: OwnerDisplayStatus): TenantStatus {
     switch (status) {
       case 'active':
         return 'Active';
