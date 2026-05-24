@@ -15,5 +15,9 @@ export const roleGuard: CanMatchFn = (route) => {
     return true;
   }
 
+  if (expectedRole === 'tenant' && authenticatedRole === 'owner') {
+    return true;
+  }
+
   return router.createUrlTree([`/${authenticatedRole}/overview`]);
 };

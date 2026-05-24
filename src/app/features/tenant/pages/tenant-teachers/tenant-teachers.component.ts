@@ -12,7 +12,9 @@ import { Teacher } from '../../models/tenant-teachers.models';
   selector: 'app-tenant-teachers',
   standalone: true,
   imports: [CommonModule, RouterModule, MatIconModule, FormsModule, ReactiveFormsModule],
-  templateUrl: './tenant-teachers.component.html'})
+  templateUrl: './tenant-teachers.component.html',
+  styleUrl: './tenant-teachers.component.css'
+  })
 export class TenantTeachersComponent {
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);

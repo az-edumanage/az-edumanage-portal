@@ -1,12 +1,10 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { OwnerTenantsDataService } from '../data-access/owner-tenants-data.service';
-import { OwnerTenantStatusesDataService } from '../data-access/owner-tenant-statuses-data.service';
-import { Tenant, TenantStatus } from '../models/owner-tenants.models';
+import { TENANT_STATUS_OPTIONS, Tenant, TenantStatus } from '../models/owner-tenants.models';
 
 @Injectable({ providedIn: 'root' })
 export class OwnerTenantsListStore {
   private readonly data = inject(OwnerTenantsDataService);
-  private readonly statusData = inject(OwnerTenantStatusesDataService);
 
   readonly searchQuery = signal('');
   readonly showFiltersDropdown = signal(false);
@@ -20,7 +18,7 @@ export class OwnerTenantsListStore {
   readonly selectedPlans = signal<Set<string>>(new Set());
   readonly selectedHealths = signal<Set<string>>(new Set());
 
-  readonly statuses = computed(() => this.statusData.statusNames());
+  readonly statuses = computed(() => TENANT_STATUS_OPTIONS);
   readonly plans = ['Starter', 'Professional', 'Enterprise'];
   readonly healths = ['Healthy', 'Degraded', 'Down'];
 
@@ -93,12 +91,9 @@ export class OwnerTenantsListStore {
   }
 
   confirmStatusChange(): void {
-    const pending = this.pendingStatusChange();
-    if (!pending) {
+    if (!this.pendingStatusChange()) {
       return;
     }
-
-    this.data.updateTenantStatus(pending.tenant.id, pending.status);
     this.pendingStatusChange.set(null);
   }
 

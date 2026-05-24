@@ -10,7 +10,9 @@ import { TenantScheduleFacade } from '../../state/tenant-schedule.facade';
   selector: 'app-tenant-schedule',
   standalone: true,
   imports: [CommonModule, MatIconModule, ReactiveFormsModule],
-  templateUrl: './tenant-schedule.component.html'})
+  templateUrl: './tenant-schedule.component.html',
+    styleUrl: './tenant-schedule.component.css'
+})
 export class TenantScheduleComponent {
   private readonly fb = inject(FormBuilder);
   private readonly facade = inject(TenantScheduleFacade);

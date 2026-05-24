@@ -169,6 +169,8 @@ export class SidebarComponent {
               { labelKey: 'sidebar.item.students', icon: 'school', route: '/tenant/students' },
               { labelKey: 'sidebar.item.teachers', icon: 'person_outline', route: '/tenant/teachers' },
               { labelKey: 'sidebar.item.groupsClasses', icon: 'groups', route: '/tenant/groups' },
+              { labelKey: 'sidebar.item.rooms', icon: 'rooms', route: '/tenant/rooms' },
+              { labelKey: 'sidebar.item.grades', icon: 'grades', route: '/tenant/grades' },
             ]
           },
           {
@@ -192,7 +194,13 @@ export class SidebarComponent {
             items: [
               { labelKey: 'sidebar.item.designSystem', icon: 'palette', route: '/design-system' },
             ]
-          }
+          },
+            {
+                titleKey: 'sidebar.section.users',
+                items: [
+                    { labelKey: 'sidebar.item.users', icon: 'person', route: '/tenant/users' },
+                ]
+            }
         ];
       case 'teacher':
         return [

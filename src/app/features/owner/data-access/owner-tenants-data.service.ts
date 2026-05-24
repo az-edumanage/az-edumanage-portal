@@ -1,7 +1,15 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { Tenant, TenantStatus, TenantSubscriptionType, TenantCreatedBy } from '../models/owner-tenants.models';
+import {
+  ProviderPaymentStatus,
+  SettlementStatus,
+  Tenant,
+  TenantCreatedBy,
+  TenantOperationalStatus,
+  TenantStatus,
+  TenantSubscriptionType,
+} from '../models/owner-tenants.models';
 import { environment } from '../../../../environments/environment';
 import { AuthApiService } from '../../../core/auth/auth-api.service';
 
@@ -20,6 +28,9 @@ interface BackendTenantResponse {
   subscriptionType?: string | null;
   createdBy?: string | null;
   provisioningTriggeredBy?: string | null;
+  providerPaymentStatus?: string | null;
+  tenantOperationalStatus?: string | null;
+  settlementStatus?: string | null;
   createdAt: string;
 }
 
@@ -40,12 +51,6 @@ export class OwnerTenantsDataService {
     this.tenants.set(mapped);
   }
 
-  updateTenantStatus(tenantId: string, status: TenantStatus): void {
-    this.tenants.update((all) =>
-      all.map((tenant) => (tenant.id === tenantId ? { ...tenant, status } : tenant)),
-    );
-  }
-
   updateTenantPlan(tenantId: string, plan: string): void {
     this.tenants.update((all) =>
       all.map((tenant) => (tenant.id === tenantId ? { ...tenant, plan } : tenant)),
@@ -64,7 +69,10 @@ export class OwnerTenantsDataService {
       name: payload.name.trim(),
       fullName: payload.fullName.trim(),
       phoneNumber: payload.phoneNumber.trim(),
-      status: 'Active',
+      status: 'Pending',
+      providerPaymentStatus: 'unknown',
+      tenantOperationalStatus: 'pending',
+      settlementStatus: 'unknown',
       plan: payload.plan?.trim() || 'Trial Plan',
       createdDate: this.toDateLabel(new Date().toISOString()),
       ownerEmail: payload.ownerEmail.trim().toLowerCase(),
@@ -80,12 +88,18 @@ export class OwnerTenantsDataService {
   private mapTenant(row: BackendTenantResponse): Tenant {
     const normalizedType = (row.tenantType || '').toLowerCase();
     const tenantType = normalizedType.includes('teacher') ? 'teacher' : 'center';
+    const providerPaymentStatus = this.normalizeProviderPaymentStatus(row.providerPaymentStatus);
+    const tenantOperationalStatus = this.normalizeTenantOperationalStatus(row.tenantOperationalStatus);
+    const settlementStatus = this.normalizeSettlementStatus(row.settlementStatus);
     return {
       id: row.id,
       name: row.centerName || 'N/A',
       fullName: row.contactName?.trim() || 'N/A',
       phoneNumber: row.contactPhone?.trim() || 'N/A',
-      status: 'Active',
+      status: this.toDisplayStatus(tenantOperationalStatus),
+      providerPaymentStatus,
+      tenantOperationalStatus,
+      settlementStatus,
       plan: row.planName || 'N/A',
       createdDate: this.toDateLabel(row.createdAt),
       ownerEmail: row.contactEmail?.trim() || 'N/A',
@@ -117,6 +131,80 @@ export class OwnerTenantsDataService {
     }
     const triggeredBy = String(triggeredByRaw ?? '').trim().toLowerCase();
     return triggeredBy === 'admin' ? 'admin' : 'system';
+  }
+
+  private normalizeProviderPaymentStatus(value: string | null | undefined): ProviderPaymentStatus {
+    const normalized = String(value ?? '').trim().toLowerCase();
+    if (normalized === 'paid') {
+      return 'paid';
+    }
+    if (normalized === 'failed') {
+      return 'failed';
+    }
+    if (normalized === 'cancelled') {
+      return 'cancelled';
+    }
+    if (normalized === 'expired') {
+      return 'expired';
+    }
+    if (normalized === 'pending') {
+      return 'pending';
+    }
+    return 'unknown';
+  }
+
+  private normalizeTenantOperationalStatus(value: string | null | undefined): TenantOperationalStatus {
+    const normalized = String(value ?? '').trim().toLowerCase();
+    if (normalized === 'active') {
+      return 'active';
+    }
+    if (normalized === 'suspended') {
+      return 'suspended';
+    }
+    if (normalized === 'disabled') {
+      return 'disabled';
+    }
+    if (normalized === 'blocked') {
+      return 'blocked';
+    }
+    if (normalized === 'pending') {
+      return 'pending';
+    }
+    return 'unknown';
+  }
+
+  private normalizeSettlementStatus(value: string | null | undefined): SettlementStatus {
+    const normalized = String(value ?? '').trim().toLowerCase();
+    if (normalized === 'provider_paid') {
+      return 'provider_paid';
+    }
+    if (normalized === 'manual_paid') {
+      return 'manual_paid';
+    }
+    if (normalized === 'unpaid') {
+      return 'unpaid';
+    }
+    if (normalized === 'failed') {
+      return 'failed';
+    }
+    return 'unknown';
+  }
+
+  private toDisplayStatus(status: TenantOperationalStatus): TenantStatus {
+    switch (status) {
+      case 'active':
+        return 'Active';
+      case 'suspended':
+        return 'Suspended';
+      case 'disabled':
+        return 'Disabled';
+      case 'blocked':
+        return 'Blocked';
+      case 'unknown':
+        return 'Unknown';
+      default:
+        return 'Pending';
+    }
   }
 
   private toDateLabel(value: string): string {
