@@ -2,24 +2,25 @@ import { Component, OnInit, computed, effect, inject, signal } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DashboardService } from '../../../../core/services/dashboard.service';
 import { I18nService } from '../../../../core/services/i18n.service';
 import { UiPagerButtonComponent } from '../../../../shared/ui';
 import { OwnerTenantsListFacade } from '../../state/owner-tenants-list.facade';
-import { Tenant } from '../../models/owner-tenants.models';
+import { ManualSettlementRequest, Tenant } from '../../models/owner-tenants.models';
 import { OwnerTenantStatusesDataService } from '../../data-access/owner-tenant-statuses-data.service';
 import { OwnerTenantsDataService } from '../../data-access/owner-tenants-data.service';
 
 @Component({
   selector: 'app-owner-tenants-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule, FormsModule, UiPagerButtonComponent],
+  imports: [CommonModule, RouterModule, MatIconModule, FormsModule, ReactiveFormsModule, UiPagerButtonComponent],
   templateUrl: './owner-tenants-list.component.html',
   styleUrl: './owner-tenants-list.component.css'
 })
 export class OwnerTenantsListComponent implements OnInit {
   private router = inject(Router);
+  private readonly fb = inject(FormBuilder);
   private readonly dashboardService = inject(DashboardService);
   private readonly i18nService = inject(I18nService);
   private readonly tenantsFacade = inject(OwnerTenantsListFacade);
@@ -32,6 +33,9 @@ export class OwnerTenantsListComponent implements OnInit {
   readonly pendingStatusChange = this.tenantsFacade.pendingStatusChange;
   readonly activePlanDropdown = this.tenantsFacade.activePlanDropdown;
   readonly pendingPlanChange = this.tenantsFacade.pendingPlanChange;
+  readonly pendingManualSettlement = this.tenantsFacade.pendingManualSettlement;
+  readonly manualSettlementSubmitting = this.tenantsFacade.manualSettlementSubmitting;
+  readonly manualSettlementError = this.tenantsFacade.manualSettlementError;
   readonly copyNotification = this.tenantsFacade.copyNotification;
   readonly isRtl = this.i18nService.isRtl;
   t(text: string): string {
@@ -64,6 +68,17 @@ export class OwnerTenantsListComponent implements OnInit {
   readonly filteredStatuses = computed(() => this.filterPanelOptions(this.statuses()));
   readonly filteredPlans = computed(() => this.filterPanelOptions(this.plans));
   readonly filteredHealths = computed(() => this.filterPanelOptions(this.healths));
+  readonly manualSettlementForm = this.fb.group({
+    paymentTransactionRef: [''],
+    manualInvoiceRef: ['', [Validators.required, Validators.maxLength(120)]],
+    manualPaymentRef: ['', [Validators.required, Validators.maxLength(120)]],
+    amount: [null as number | null, [Validators.required, Validators.min(0.01)]],
+    currency: ['EGP', [Validators.required, Validators.maxLength(8)]],
+    settledAt: ['', [Validators.required]],
+    evidenceRef: [''],
+    evidenceNote: [''],
+    note: [''],
+  });
 
   constructor() {
     effect(() => {
@@ -170,6 +185,71 @@ export class OwnerTenantsListComponent implements OnInit {
     this.tenantsFacade.cancelPlanChange();
   }
 
+  canManualSettle(tenant: Tenant): boolean {
+    return this.tenantsFacade.canManualSettle(tenant);
+  }
+
+  openManualSettlement(tenant: Tenant): void {
+    this.tenantsFacade.requestManualSettlement(tenant);
+    if (this.pendingManualSettlement()) {
+      this.manualSettlementForm.reset({
+        paymentTransactionRef: '',
+        manualInvoiceRef: '',
+        manualPaymentRef: '',
+        amount: null,
+        currency: 'EGP',
+        settledAt: this.toDateTimeLocal(new Date()),
+        evidenceRef: '',
+        evidenceNote: '',
+        note: '',
+      });
+    }
+  }
+
+  closeManualSettlement(): void {
+    this.tenantsFacade.cancelManualSettlement();
+  }
+
+  async submitManualSettlement(): Promise<void> {
+    if (this.manualSettlementForm.invalid) {
+      this.manualSettlementForm.markAllAsTouched();
+      return;
+    }
+
+    const raw = this.manualSettlementForm.getRawValue();
+    const payload: ManualSettlementRequest = {
+      paymentTransactionRef: raw.paymentTransactionRef || null,
+      manualInvoiceRef: raw.manualInvoiceRef || '',
+      manualPaymentRef: raw.manualPaymentRef || '',
+      amount: raw.amount ?? 0,
+      currency: raw.currency || '',
+      settledAt: new Date(raw.settledAt || '').toISOString(),
+      evidenceRef: raw.evidenceRef || null,
+      evidenceNote: raw.evidenceNote || null,
+      note: raw.note || null,
+    };
+
+    const success = await this.tenantsFacade.submitManualSettlement(payload);
+    if (success) {
+      this.manualSettlementForm.reset({
+        paymentTransactionRef: '',
+        manualInvoiceRef: '',
+        manualPaymentRef: '',
+        amount: null,
+        currency: 'EGP',
+        settledAt: '',
+        evidenceRef: '',
+        evidenceNote: '',
+        note: '',
+      });
+    }
+  }
+
+  hasManualSettlementFieldError(fieldName: keyof typeof this.manualSettlementForm.controls): boolean {
+    const control = this.manualSettlementForm.controls[fieldName];
+    return !!control && control.invalid && (control.touched || control.dirty);
+  }
+
   copyToClipboard(text: string): void {
     navigator.clipboard.writeText(text).then(() => {
       this.copyNotification.set(text);
@@ -188,5 +268,10 @@ export class OwnerTenantsListComponent implements OnInit {
     }
 
     return options.filter((option) => option.toLowerCase().includes(query));
+  }
+
+  private toDateTimeLocal(value: Date): string {
+    const pad = (input: number) => String(input).padStart(2, '0');
+    return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}T${pad(value.getHours())}:${pad(value.getMinutes())}`;
   }
 }

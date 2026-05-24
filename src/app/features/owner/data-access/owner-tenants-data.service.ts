@@ -2,6 +2,9 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import {
+  ManualSettlementRequest,
+  ManualSettlementResult,
+  ManualSettlementSummary,
   OwnerDisplayStatus,
   ProviderPaymentStatus,
   SettlementStatus,
@@ -36,6 +39,25 @@ interface BackendTenantResponse {
   createdAt: string;
 }
 
+interface BackendManualSettlementResponse {
+  tenant: BackendTenantResponse;
+  manualSettlement: {
+    id: string;
+    tenantId: string;
+    paymentTransactionRef: string | null;
+    manualInvoiceRef: string;
+    manualPaymentRef: string;
+    amount: number;
+    currency: string;
+    settledAt: string;
+    evidenceRef: string | null;
+    evidenceNote: string | null;
+    note: string | null;
+    settledBy: string;
+    status: string;
+  };
+}
+
 @Injectable({ providedIn: 'root' })
 export class OwnerTenantsDataService {
   private readonly http = inject(HttpClient);
@@ -57,6 +79,27 @@ export class OwnerTenantsDataService {
     this.tenants.update((all) =>
       all.map((tenant) => (tenant.id === tenantId ? { ...tenant, plan } : tenant)),
     );
+  }
+
+  async recordManualSettlement(tenantId: string, payload: ManualSettlementRequest): Promise<ManualSettlementResult> {
+    await this.authApi.ensureLoggedIn();
+    const response = await firstValueFrom(
+      this.http.post<BackendManualSettlementResponse>(
+        `${environment.apiBaseUrl}/tenant-catalog/tenants/${tenantId}/manual-settlements`,
+        this.toBackendManualSettlementRequest(payload),
+      ),
+    );
+
+    const result: ManualSettlementResult = {
+      tenant: this.mapTenant(response.tenant),
+      manualSettlement: this.mapManualSettlement(response.manualSettlement),
+    };
+
+    this.tenants.update((all) =>
+      all.map((tenant) => (tenant.id === tenantId ? result.tenant : tenant)),
+    );
+
+    return result;
   }
 
   addTrialTenant(payload: {
@@ -112,6 +155,38 @@ export class OwnerTenantsDataService {
       tenantType,
       subscriptionType: this.normalizeSubscriptionType(row.subscriptionType, row.isTrial),
       createdBy: this.normalizeCreatedBy(row.createdBy, row.provisioningTriggeredBy),
+    };
+  }
+
+  private mapManualSettlement(row: BackendManualSettlementResponse['manualSettlement']): ManualSettlementSummary {
+    return {
+      id: row.id,
+      tenantId: row.tenantId,
+      paymentTransactionRef: row.paymentTransactionRef,
+      manualInvoiceRef: row.manualInvoiceRef,
+      manualPaymentRef: row.manualPaymentRef,
+      amount: row.amount,
+      currency: row.currency,
+      settledAt: row.settledAt,
+      evidenceRef: row.evidenceRef,
+      evidenceNote: row.evidenceNote,
+      note: row.note,
+      settledBy: row.settledBy,
+      status: row.status,
+    };
+  }
+
+  private toBackendManualSettlementRequest(payload: ManualSettlementRequest): ManualSettlementRequest {
+    return {
+      paymentTransactionRef: this.normalizeOptionalText(payload.paymentTransactionRef),
+      manualInvoiceRef: payload.manualInvoiceRef.trim(),
+      manualPaymentRef: payload.manualPaymentRef.trim(),
+      amount: payload.amount,
+      currency: payload.currency.trim(),
+      settledAt: payload.settledAt,
+      evidenceRef: this.normalizeOptionalText(payload.evidenceRef),
+      evidenceNote: this.normalizeOptionalText(payload.evidenceNote),
+      note: this.normalizeOptionalText(payload.note),
     };
   }
 
@@ -248,5 +323,10 @@ export class OwnerTenantsDataService {
       day: 'numeric',
       year: 'numeric',
     });
+  }
+
+  private normalizeOptionalText(value: string | null | undefined): string | null {
+    const normalized = String(value ?? '').trim();
+    return normalized ? normalized : null;
   }
 }

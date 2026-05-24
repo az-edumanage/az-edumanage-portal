@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { OwnerTenantsListStore } from './owner-tenants-list.store';
-import { Tenant } from '../models/owner-tenants.models';
+import { ManualSettlementRequest, Tenant } from '../models/owner-tenants.models';
 
 @Injectable({ providedIn: 'root' })
 export class OwnerTenantsListFacade {
@@ -12,6 +12,9 @@ export class OwnerTenantsListFacade {
   readonly activePlanDropdown = this.store.activePlanDropdown;
   readonly pendingStatusChange = this.store.pendingStatusChange;
   readonly pendingPlanChange = this.store.pendingPlanChange;
+  readonly pendingManualSettlement = this.store.pendingManualSettlement;
+  readonly manualSettlementSubmitting = this.store.manualSettlementSubmitting;
+  readonly manualSettlementError = this.store.manualSettlementError;
   readonly copyNotification = this.store.copyNotification;
 
   readonly selectedStatuses = this.store.selectedStatuses;
@@ -55,5 +58,21 @@ export class OwnerTenantsListFacade {
 
   cancelPlanChange(): void {
     this.store.cancelPlanChange();
+  }
+
+  canManualSettle(tenant: Tenant): boolean {
+    return this.store.canManualSettle(tenant);
+  }
+
+  requestManualSettlement(tenant: Tenant): void {
+    this.store.requestManualSettlement(tenant);
+  }
+
+  cancelManualSettlement(): void {
+    this.store.cancelManualSettlement();
+  }
+
+  submitManualSettlement(payload: ManualSettlementRequest): Promise<boolean> {
+    return this.store.submitManualSettlement(payload);
   }
 }

@@ -1,6 +1,7 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { vi } from 'vitest';
 import { OwnerTenantsListComponent } from './owner-tenants-list.component';
 import { OwnerTenantsListFacade } from '../../state/owner-tenants-list.facade';
 import { I18nService } from '../../../../core/services/i18n.service';
@@ -35,6 +36,9 @@ describe('OwnerTenantsListComponent', () => {
     pendingStatusChange: signal(null),
     activePlanDropdown: signal<string | null>(null),
     pendingPlanChange: signal(null),
+    pendingManualSettlement: signal<typeof mockTenant | null>(null),
+    manualSettlementSubmitting: signal(false),
+    manualSettlementError: signal<string | null>(null),
     copyNotification: signal<string | null>(null),
     selectedStatuses: signal(new Set<string>()),
     selectedPlans: signal(new Set<string>()),
@@ -52,6 +56,10 @@ describe('OwnerTenantsListComponent', () => {
     requestPlanChange: () => {},
     confirmPlanChange: () => {},
     cancelPlanChange: () => {},
+    canManualSettle: () => true,
+    requestManualSettlement: vi.fn(),
+    cancelManualSettlement: vi.fn(),
+    submitManualSettlement: vi.fn().mockResolvedValue(true),
   };
 
   const mockI18n = {
@@ -95,5 +103,61 @@ describe('OwnerTenantsListComponent', () => {
     expect(text).toContain('Payment: Pending');
     expect(text).toContain('Settlement: Unpaid');
     expect(text).toContain('Operational: Active');
+  });
+
+  it('shows manual settlement action for an eligible tenant', () => {
+    const fixture = TestBed.createComponent(OwnerTenantsListComponent);
+    fixture.detectChanges();
+
+    const action = fixture.nativeElement.querySelector('[data-testid="manual-settlement-action-tenant-1"]');
+    expect(action).not.toBeNull();
+  });
+
+  it('does not show manual settlement action when the tenant is not eligible', () => {
+    mockFacade.canManualSettle = () => false;
+
+    const fixture = TestBed.createComponent(OwnerTenantsListComponent);
+    fixture.detectChanges();
+
+    const action = fixture.nativeElement.querySelector('[data-testid="manual-settlement-action-tenant-1"]');
+    expect(action).toBeNull();
+
+    mockFacade.canManualSettle = () => true;
+  });
+
+  it('maps the modal form values to the backend payload contract', async () => {
+    const fixture = TestBed.createComponent(OwnerTenantsListComponent);
+    fixture.detectChanges();
+
+    fixture.componentInstance.openManualSettlement(mockTenant);
+    mockFacade.pendingManualSettlement.set(mockTenant);
+    fixture.detectChanges();
+
+    fixture.componentInstance.manualSettlementForm.setValue({
+      paymentTransactionRef: ' FWK-ABC123 ',
+      manualInvoiceRef: ' INV-MAN-2026-0001 ',
+      manualPaymentRef: ' BANK-TRF-9981 ',
+      amount: 149,
+      currency: ' EGP ',
+      settledAt: '2026-05-24T10:30',
+      evidenceRef: ' https://example.com/receipt.pdf ',
+      evidenceNote: ' uploaded receipt ',
+      note: ' offline confirmation ',
+    });
+
+    await fixture.componentInstance.submitManualSettlement();
+
+    const expectedSettledAt = new Date('2026-05-24T10:30').toISOString();
+    expect(mockFacade.submitManualSettlement).toHaveBeenCalledWith({
+      paymentTransactionRef: ' FWK-ABC123 ',
+      manualInvoiceRef: ' INV-MAN-2026-0001 ',
+      manualPaymentRef: ' BANK-TRF-9981 ',
+      amount: 149,
+      currency: ' EGP ',
+      settledAt: expectedSettledAt,
+      evidenceRef: ' https://example.com/receipt.pdf ',
+      evidenceNote: ' uploaded receipt ',
+      note: ' offline confirmation ',
+    });
   });
 });

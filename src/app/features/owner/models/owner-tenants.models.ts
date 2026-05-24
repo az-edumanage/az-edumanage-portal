@@ -41,3 +41,36 @@ export interface Tenant {
   subscriptionType: TenantSubscriptionType;
   createdBy: TenantCreatedBy;
 }
+
+export interface ManualSettlementRequest {
+  paymentTransactionRef: string | null;
+  manualInvoiceRef: string;
+  manualPaymentRef: string;
+  amount: number;
+  currency: string;
+  settledAt: string;
+  evidenceRef: string | null;
+  evidenceNote: string | null;
+  note: string | null;
+}
+
+export interface ManualSettlementSummary {
+  id: string;
+  tenantId: string;
+  paymentTransactionRef: string | null;
+  manualInvoiceRef: string;
+  manualPaymentRef: string;
+  amount: number;
+  currency: string;
+  settledAt: string;
+  evidenceRef: string | null;
+  evidenceNote: string | null;
+  note: string | null;
+  settledBy: string;
+  status: string;
+}
+
+export interface ManualSettlementResult {
+  tenant: Tenant;
+  manualSettlement: ManualSettlementSummary;
+}
