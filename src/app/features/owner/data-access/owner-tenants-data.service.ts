@@ -5,14 +5,19 @@ import {
   ManualSettlementRequest,
   ManualSettlementResult,
   ManualSettlementSummary,
+  ManualTenantLifecycleStatusChangeRequest,
   OwnerDisplayStatus,
   ProviderPaymentStatus,
   SettlementStatus,
+  SubscriptionState,
   Tenant,
   TenantCreatedBy,
+  TenantLifecycleBillingSideEffectSummary,
+  TenantLifecycleStatusChangeResult,
+  TenantLifecycleAuditSummary,
   TenantOperationalStatus,
-  TenantStatus,
   TenantSubscriptionType,
+  TenantStatus,
 } from '../models/owner-tenants.models';
 import { environment } from '../../../../environments/environment';
 import { AuthApiService } from '../../../core/auth/auth-api.service';
@@ -29,6 +34,7 @@ interface BackendTenantResponse {
   contactPhone: string | null;
   planName: string;
   isTrial: boolean;
+  subscriptionState?: string | null;
   subscriptionType?: string | null;
   createdBy?: string | null;
   provisioningTriggeredBy?: string | null;
@@ -55,6 +61,29 @@ interface BackendManualSettlementResponse {
     note: string | null;
     settledBy: string;
     status: string;
+  };
+}
+
+interface BackendLifecycleStatusChangeResponse {
+  tenant: BackendTenantResponse;
+  billingSideEffect: {
+    happened: boolean;
+    type: 'none' | 'invoice_created_and_manually_settled' | 'existing_invoice_manually_settled';
+    invoiceId: string | null;
+    invoiceRef: string | null;
+    manualSettlementId: string | null;
+    manualSettlementRef: string | null;
+    paymentTransactionId: string | null;
+  };
+  audit: {
+    id: string;
+    source: 'OWNER_MANUAL';
+    outcome: 'success' | 'rejected' | 'failed';
+    previousStatus: 'pending' | 'active' | 'suspended' | 'disabled' | 'blocked';
+    requestedTargetStatus: 'pending' | 'active' | 'suspended' | 'disabled' | 'blocked';
+    finalStatus: 'pending' | 'active' | 'suspended' | 'disabled' | 'blocked' | null;
+    failureReason: string | null;
+    createdAt: string;
   };
 }
 
@@ -102,6 +131,31 @@ export class OwnerTenantsDataService {
     return result;
   }
 
+  async changeTenantLifecycleStatus(
+    tenantId: string,
+    payload: ManualTenantLifecycleStatusChangeRequest,
+  ): Promise<TenantLifecycleStatusChangeResult> {
+    await this.authApi.ensureLoggedIn();
+    const response = await firstValueFrom(
+      this.http.patch<BackendLifecycleStatusChangeResponse>(
+        `${environment.apiBaseUrl}/owner/tenants/${tenantId}/lifecycle-status`,
+        this.toBackendLifecycleStatusChangeRequest(payload),
+      ),
+    );
+
+    const result: TenantLifecycleStatusChangeResult = {
+      tenant: this.mapTenant(response.tenant),
+      billingSideEffect: this.mapLifecycleBillingSideEffect(response.billingSideEffect),
+      audit: this.mapLifecycleAudit(response.audit),
+    };
+
+    this.tenants.update((all) =>
+      all.map((tenant) => (tenant.id === tenantId ? result.tenant : tenant)),
+    );
+
+    return result;
+  }
+
   addTrialTenant(payload: {
     name: string;
     fullName: string;
@@ -124,6 +178,7 @@ export class OwnerTenantsDataService {
       ownerEmail: payload.ownerEmail.trim().toLowerCase(),
       healthStatus: 'Healthy',
       tenantType: 'center',
+      subscriptionState: 'trial',
       subscriptionType: 'trial',
       createdBy: 'system',
     };
@@ -135,15 +190,18 @@ export class OwnerTenantsDataService {
     const normalizedType = (row.tenantType || '').toLowerCase();
     const tenantType = normalizedType.includes('teacher') ? 'teacher' : 'center';
     const providerPaymentStatus = this.normalizeProviderPaymentStatus(row.providerPaymentStatus);
+    const subscriptionState = this.normalizeSubscriptionState(row.subscriptionState);
+    const subscriptionType = this.normalizeSubscriptionType(row.subscriptionType, row.isTrial);
     const tenantOperationalStatus = this.normalizeTenantOperationalStatus(row.tenantOperationalStatus);
     const settlementStatus = this.normalizeSettlementStatus(row.settlementStatus);
-    const ownerDisplayStatus = this.normalizeOwnerDisplayStatus(row.ownerDisplayStatus, tenantOperationalStatus);
+    const ownerDisplayStatus = this.normalizeOwnerDisplayStatus(row.ownerDisplayStatus);
+    const status = this.resolveTenantStatus(tenantOperationalStatus, ownerDisplayStatus);
     return {
       id: row.id,
       name: row.centerName || 'N/A',
       fullName: row.contactName?.trim() || 'N/A',
       phoneNumber: row.contactPhone?.trim() || 'N/A',
-      status: this.toDisplayStatus(ownerDisplayStatus),
+      status: this.toDisplayStatus(status),
       ownerDisplayStatus,
       providerPaymentStatus,
       tenantOperationalStatus,
@@ -153,7 +211,8 @@ export class OwnerTenantsDataService {
       ownerEmail: row.contactEmail?.trim() || 'N/A',
       healthStatus: 'Healthy',
       tenantType,
-      subscriptionType: this.normalizeSubscriptionType(row.subscriptionType, row.isTrial),
+      subscriptionState,
+      subscriptionType,
       createdBy: this.normalizeCreatedBy(row.createdBy, row.provisioningTriggeredBy),
     };
   }
@@ -190,13 +249,74 @@ export class OwnerTenantsDataService {
     };
   }
 
-  private normalizeSubscriptionType(raw: string | null | undefined, isTrial: boolean): TenantSubscriptionType {
+  private toBackendLifecycleStatusChangeRequest(
+    payload: ManualTenantLifecycleStatusChangeRequest,
+  ): ManualTenantLifecycleStatusChangeRequest {
+    return {
+      targetStatus: payload.targetStatus,
+      reason: payload.reason.trim(),
+    };
+  }
+
+  private mapLifecycleBillingSideEffect(
+    row: BackendLifecycleStatusChangeResponse['billingSideEffect'],
+  ): TenantLifecycleBillingSideEffectSummary {
+    return {
+      happened: row.happened,
+      type: row.type,
+      invoiceId: row.invoiceId,
+      invoiceRef: row.invoiceRef,
+      manualSettlementId: row.manualSettlementId,
+      manualSettlementRef: row.manualSettlementRef,
+      paymentTransactionId: row.paymentTransactionId,
+    };
+  }
+
+  private mapLifecycleAudit(
+    row: BackendLifecycleStatusChangeResponse['audit'],
+  ): TenantLifecycleAuditSummary {
+    return {
+      id: row.id,
+      source: row.source,
+      outcome: row.outcome,
+      previousStatus: row.previousStatus,
+      requestedTargetStatus: row.requestedTargetStatus,
+      finalStatus: row.finalStatus,
+      failureReason: row.failureReason,
+      createdAt: row.createdAt,
+    };
+  }
+
+  private normalizeSubscriptionState(raw: string | null | undefined): SubscriptionState {
     const normalized = String(raw ?? '').trim().toLowerCase();
+    if (normalized === 'pending_payment') {
+      return 'pending_payment';
+    }
     if (normalized === 'production') {
       return 'production';
     }
     if (normalized === 'trial') {
       return 'trial';
+    }
+    if (normalized === 'expired') {
+      return 'expired';
+    }
+    if (normalized === 'cancelled') {
+      return 'cancelled';
+    }
+    return 'unknown';
+  }
+
+  private normalizeSubscriptionType(
+    raw: string | null | undefined,
+    isTrial: boolean,
+  ): TenantSubscriptionType {
+    const normalized = String(raw ?? '').trim().toLowerCase();
+    if (normalized === 'trial') {
+      return 'trial';
+    }
+    if (normalized === 'production') {
+      return 'production';
     }
     return isTrial ? 'trial' : 'production';
   }
@@ -270,10 +390,7 @@ export class OwnerTenantsDataService {
     return 'unknown';
   }
 
-  private normalizeOwnerDisplayStatus(
-    value: string | null | undefined,
-    fallback: TenantOperationalStatus,
-  ): OwnerDisplayStatus {
+  private normalizeOwnerDisplayStatus(value: string | null | undefined): OwnerDisplayStatus {
     const normalized = String(value ?? '').trim().toLowerCase();
     if (normalized === 'active') {
       return 'active';
@@ -293,7 +410,17 @@ export class OwnerTenantsDataService {
     if (normalized === 'unknown') {
       return 'unknown';
     }
-    return fallback === 'unknown' ? 'unknown' : 'pending';
+    return 'unknown';
+  }
+
+  private resolveTenantStatus(
+    tenantOperationalStatus: TenantOperationalStatus,
+    ownerDisplayStatus: OwnerDisplayStatus,
+  ): OwnerDisplayStatus {
+    if (tenantOperationalStatus !== 'unknown') {
+      return tenantOperationalStatus;
+    }
+    return ownerDisplayStatus;
   }
 
   private toDisplayStatus(status: OwnerDisplayStatus): TenantStatus {

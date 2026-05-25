@@ -5,7 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { vi } from 'vitest';
 import { OwnerTenantsListStore } from './owner-tenants-list.store';
 import { OwnerTenantsDataService } from '../data-access/owner-tenants-data.service';
-import { ManualSettlementRequest, Tenant } from '../models/owner-tenants.models';
+import { Tenant, TenantLifecycleStatusChangeResult } from '../models/owner-tenants.models';
 
 describe('OwnerTenantsListStore', () => {
   let store: OwnerTenantsListStore;
@@ -13,6 +13,7 @@ describe('OwnerTenantsListStore', () => {
     tenants: WritableSignal<Tenant[]>;
     updateTenantPlan: (...args: unknown[]) => void;
     recordManualSettlement: ReturnType<typeof vi.fn>;
+    changeTenantLifecycleStatus: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
@@ -34,12 +35,14 @@ describe('OwnerTenantsListStore', () => {
           ownerEmail: 'owner@example.com',
           healthStatus: 'Healthy',
           tenantType: 'center',
+          subscriptionState: 'production',
           subscriptionType: 'production',
           createdBy: 'system',
         },
       ]),
       updateTenantPlan: () => {},
       recordManualSettlement: vi.fn(),
+      changeTenantLifecycleStatus: vi.fn(),
     };
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), { provide: OwnerTenantsDataService, useValue: dataService }],
@@ -70,29 +73,173 @@ describe('OwnerTenantsListStore', () => {
     expect(store.pendingStatusChange()?.status).toBe('Suspended');
   });
 
-  it('clears pendingStatusChange after confirm', () => {
+  it('clears pendingStatusChange after confirm', async () => {
     store.searchQuery.set('bright');
     const tenants = store.filteredTenants();
     if (tenants.length === 0) return;
 
     const target = tenants[0];
+    dataService.changeTenantLifecycleStatus.mockResolvedValue({
+      tenant: {
+        ...target,
+        status: 'Suspended',
+        ownerDisplayStatus: 'suspended',
+        tenantOperationalStatus: 'suspended',
+      },
+      billingSideEffect: {
+        happened: false,
+        type: 'none',
+        invoiceId: null,
+        invoiceRef: null,
+        manualSettlementId: null,
+        manualSettlementRef: null,
+        paymentTransactionId: null,
+      },
+      audit: {
+        id: 'audit-1',
+        source: 'OWNER_MANUAL',
+        outcome: 'success',
+        previousStatus: 'pending',
+        requestedTargetStatus: 'suspended',
+        finalStatus: 'suspended',
+        failureReason: null,
+        createdAt: '2026-05-24T10:30:00Z',
+      },
+    } as TenantLifecycleStatusChangeResult);
     store.requestStatusChange(target, 'Suspended');
-    store.confirmStatusChange();
+    await store.confirmStatusChange();
     expect(store.pendingStatusChange()).toBeNull();
   });
 
-  it('does not mutate backend-derived status fields when confirming a pending status change', () => {
+  it('updates only the affected row after backend success', async () => {
     const target = store.filteredTenants()[0];
+    const updatedTenant: Tenant = {
+      ...target,
+      status: 'Suspended',
+      ownerDisplayStatus: 'suspended',
+      tenantOperationalStatus: 'suspended',
+    };
+    dataService.changeTenantLifecycleStatus.mockImplementation(async () => {
+      dataService.tenants.set([updatedTenant]);
+      return {
+        tenant: updatedTenant,
+        billingSideEffect: {
+          happened: false,
+          type: 'none',
+          invoiceId: null,
+          invoiceRef: null,
+          manualSettlementId: null,
+          manualSettlementRef: null,
+          paymentTransactionId: null,
+        },
+        audit: {
+          id: 'audit-1',
+          source: 'OWNER_MANUAL',
+          outcome: 'success',
+          previousStatus: 'pending',
+          requestedTargetStatus: 'suspended',
+          finalStatus: 'suspended',
+          failureReason: null,
+          createdAt: '2026-05-24T10:30:00Z',
+        },
+      } as TenantLifecycleStatusChangeResult;
+    });
 
     store.requestStatusChange(target, 'Suspended');
-    store.confirmStatusChange();
+    const success = await store.confirmStatusChange();
 
     const after = store.filteredTenants()[0];
-    expect(after.status).toBe('Pending');
-    expect(after.ownerDisplayStatus).toBe('pending');
+    expect(success).toBe(true);
+    expect(dataService.changeTenantLifecycleStatus).toHaveBeenCalledWith('tenant-1', {
+      targetStatus: 'suspended',
+      reason: 'Owner manual lifecycle change from /owner/tenants',
+    });
+    expect(after.status).toBe('Suspended');
+    expect(after.ownerDisplayStatus).toBe('suspended');
     expect(after.providerPaymentStatus).toBe('pending');
-    expect(after.tenantOperationalStatus).toBe('active');
+    expect(after.tenantOperationalStatus).toBe('suspended');
+    expect(after.subscriptionState).toBe('production');
     expect(after.settlementStatus).toBe('unpaid');
+  });
+
+  it('shows row-level pending state while the lifecycle request is in flight', async () => {
+    const target = store.filteredTenants()[0];
+    let resolveRequest: ((value: TenantLifecycleStatusChangeResult) => void) | undefined;
+
+    dataService.changeTenantLifecycleStatus.mockImplementation(
+      () =>
+        new Promise<TenantLifecycleStatusChangeResult>((resolve) => {
+          resolveRequest = resolve;
+        }),
+    );
+
+    store.requestStatusChange(target, 'Suspended');
+    const submission = store.confirmStatusChange();
+
+    expect(store.isLifecycleStatusPending(target.id)).toBe(true);
+    expect(store.pendingStatusChange()).toBeNull();
+
+    resolveRequest?.({
+      tenant: {
+        ...target,
+        status: 'Suspended',
+        ownerDisplayStatus: 'suspended',
+        tenantOperationalStatus: 'suspended',
+      },
+      billingSideEffect: {
+        happened: false,
+        type: 'none',
+        invoiceId: null,
+        invoiceRef: null,
+        manualSettlementId: null,
+        manualSettlementRef: null,
+        paymentTransactionId: null,
+      },
+      audit: {
+        id: 'audit-1',
+        source: 'OWNER_MANUAL',
+        outcome: 'success',
+        previousStatus: 'pending',
+        requestedTargetStatus: 'suspended',
+        finalStatus: 'suspended',
+        failureReason: null,
+        createdAt: '2026-05-24T10:30:00Z',
+      },
+    });
+
+    await submission;
+    expect(store.isLifecycleStatusPending(target.id)).toBe(false);
+  });
+
+  it('keeps the old row unchanged and shows an error when lifecycle status submission fails', async () => {
+    const before = store.filteredTenants()[0];
+    dataService.changeTenantLifecycleStatus.mockRejectedValue(
+      new HttpErrorResponse({
+        status: 409,
+        error: { message: 'Tenant lifecycle update is not allowed right now' },
+      }),
+    );
+
+    store.requestStatusChange(before, 'Suspended');
+    const success = await store.confirmStatusChange();
+
+    expect(success).toBe(false);
+    expect(store.lifecycleStatusSubmissionError()).toBe('Tenant lifecycle update is not allowed right now');
+    expect(store.filteredTenants()[0]).toEqual(before);
+    expect(store.isLifecycleStatusPending(before.id)).toBe(false);
+  });
+
+  it('excludes Unknown from actionable statuses and ignores unsupported manual targets', async () => {
+    const target = store.filteredTenants()[0];
+
+    expect(store.statuses()).not.toContain('Unknown');
+
+    store.requestStatusChange(target, 'Unknown');
+    expect(store.pendingStatusChange()).toBeNull();
+
+    const success = await store.confirmStatusChange();
+    expect(success).toBe(false);
+    expect(dataService.changeTenantLifecycleStatus).not.toHaveBeenCalled();
   });
 
   it('records manual settlement through the backend response and uses backend-derived status values', async () => {
@@ -102,6 +249,7 @@ describe('OwnerTenantsListStore', () => {
       ownerDisplayStatus: 'active',
       providerPaymentStatus: 'failed',
       tenantOperationalStatus: 'active',
+      subscriptionState: 'production',
       settlementStatus: 'manual_paid',
     };
     dataService.recordManualSettlement.mockImplementation(async () => {
@@ -140,6 +288,7 @@ describe('OwnerTenantsListStore', () => {
     expect(after.settlementStatus).toBe('manual_paid');
     expect(after.ownerDisplayStatus).toBe('active');
     expect(after.tenantOperationalStatus).toBe('active');
+    expect(after.subscriptionState).toBe('production');
     expect(store.pendingManualSettlement()).toBeNull();
   });
 

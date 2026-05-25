@@ -18,6 +18,16 @@ export interface MeResponse {
   roles: string[];
   primaryRole: string;
   tenantId: string | null;
+  tenantAccess: TenantAccessContext | null;
+}
+
+export interface TenantAccessContext {
+  tenantId: string;
+  subscriptionState: string;
+  tenantOperationalStatus: string;
+  ownerDisplayStatus: string;
+  accessMessage: string | null;
+  operationalStatusReason: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -49,7 +59,9 @@ export class AuthApiService {
   }
 
   async me(): Promise<MeResponse> {
-    return firstValueFrom(this.http.get<MeResponse>(`${environment.apiBaseUrl}/auth/me`));
+    const response = await firstValueFrom(this.http.get<MeResponse>(`${environment.apiBaseUrl}/auth/me`));
+    this.identityService.setIdentity(this.toIdentity(response));
+    return response;
   }
 
   async logout(): Promise<void> {

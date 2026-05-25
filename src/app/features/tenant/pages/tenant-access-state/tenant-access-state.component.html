@@ -1,0 +1,24 @@
+<section class="tenant-access-shell">
+  <div class="tenant-access-card">
+    <div class="tenant-access-badge">{{ state().badge }}</div>
+    <div class="tenant-access-icon">
+      <mat-icon>{{ state().icon }}</mat-icon>
+    </div>
+    <h1>{{ state().title }}</h1>
+    <p>{{ accessContext.context()?.accessMessage ?? state().description }}</p>
+
+    @if (accessContext.context()?.operationalStatusReason; as reason) {
+      <div class="tenant-access-reason">
+        <span>Reason</span>
+        <strong>{{ reason }}</strong>
+      </div>
+    }
+
+    <div class="tenant-access-meta">
+      <div>Subscription: {{ accessContext.context()?.subscriptionState ?? 'unknown' }}</div>
+      <div>Status: {{ accessContext.context()?.tenantOperationalStatus ?? 'unknown' }}</div>
+    </div>
+
+    <a routerLink="/tenant/login" class="tenant-access-link">Back to sign in</a>
+  </div>
+</section>

@@ -122,6 +122,11 @@
 	      </div>
 
       <!-- Tenants Table -->
+      @if (lifecycleStatusSubmissionError()) {
+        <div class="mx-4 mt-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-300">
+          {{ lifecycleStatusSubmissionError() }}
+        </div>
+      }
       <div class="owner-tenants-table-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
         <div class="owner-tenants-table-wrap overflow-x-auto">
 	          <table
@@ -145,7 +150,9 @@
             </thead>
             <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
               @for (tenant of pagedTenants(); track tenant.id; let i = $index) {
-                <tr class="owner-tenants-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                <tr class="owner-tenants-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+                  [attr.aria-busy]="isLifecycleStatusPending(tenant.id)"
+                >
                   <td class="px-6 py-4">
                     <button 
                       class="owner-tenants-name-btn font-medium text-slate-900 dark:text-white flex items-center gap-2 hover:text-indigo-600 transition-colors group/cell focus:outline-none" 
@@ -179,11 +186,12 @@
                       <span class="w-1.5 h-1.5 rounded-full" [style.backgroundColor]="getStatusColor(tenant.status)"></span>
                       {{ tenant.status }}
                     </span>
-                    <div class="mt-2 space-y-1 text-[11px] text-slate-500 dark:text-slate-400">
+                    <!-- <div class="mt-2 space-y-1 text-[11px] text-slate-500 dark:text-slate-400">
+                      <div>Subscription: {{ formatBackendStatus(tenant.subscriptionState) }}</div>
                       <div>Payment: {{ formatBackendStatus(tenant.providerPaymentStatus) }}</div>
                       <div>Settlement: {{ formatBackendStatus(tenant.settlementStatus) }}</div>
                       <div>Operational: {{ formatBackendStatus(tenant.tenantOperationalStatus) }}</div>
-                    </div>
+                    </div> -->
                   </td>
                   <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ tenant.plan }}</td>
                   <td class="px-6 py-4 text-slate-500 dark:text-slate-500">
@@ -211,12 +219,11 @@
                   </td>
                   <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ tenant.createdDate }}</td>
                   <td class="px-6 py-4">
-                    <span class="px-2 py-1 rounded-full text-xs font-semibold uppercase tracking-wide"
-                          [class.bg-amber-100]="tenant.subscriptionType === 'trial'"
-                          [class.text-amber-700]="tenant.subscriptionType === 'trial'"
-                          [class.bg-emerald-100]="tenant.subscriptionType === 'production'"
-                          [class.text-emerald-700]="tenant.subscriptionType === 'production'">
-                      {{ tenant.subscriptionType }}
+                    <span
+                      class="px-2 py-1 rounded-full text-xs font-semibold uppercase tracking-wide"
+                      [ngClass]="subscriptionBadgeClasses(tenant.subscriptionType)"
+                    >
+                      {{ formatBackendStatus(tenant.subscriptionType) }}
                     </span>
                   </td>
                   <td class="px-6 py-4">
@@ -258,8 +265,12 @@
                       <div class="relative">
                         <button 
                           (click)="activeStatusDropdown.set(activeStatusDropdown() === tenant.id ? null : tenant.id)"
-                          class="owner-tenants-icon-btn p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors" 
+                          class="owner-tenants-icon-btn p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors"
+                          [class.opacity-60]="isLifecycleStatusPending(tenant.id)"
+                          [class.cursor-wait]="isLifecycleStatusPending(tenant.id)"
+                          [disabled]="isLifecycleStatusPending(tenant.id)"
                           [title]="'Change Status (Current: ' + tenant.status + ')'"
+                          [attr.data-testid]="'status-action-' + tenant.id"
                         >
                           <mat-icon class="text-lg">
                             {{ 
@@ -286,6 +297,7 @@
                                 <button 
                                   (click)="requestStatusChange(tenant, status); activeStatusDropdown.set(null)"
                                   class="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md transition-colors"
+                                  [disabled]="isLifecycleStatusPending(tenant.id)"
                                   [class.bg-indigo-600/10]="tenant.status === status"
                                   [class.text-indigo-600]="tenant.status === status"
                                   [class.dark:bg-indigo-900/30]="tenant.status === status"
@@ -293,6 +305,7 @@
                                   [class.dark:text-slate-300]="tenant.status !== status"
                                   [class.hover:bg-slate-50]="tenant.status !== status"
                                   [class.dark:hover:bg-slate-700]="tenant.status !== status"
+                                  [attr.data-testid]="'status-option-' + tenant.id + '-' + status.toLowerCase()"
                                 >
                                   <span class="w-2 h-2 rounded-full" [style.backgroundColor]="getStatusColor(status)"></span>
                                   {{ status }}

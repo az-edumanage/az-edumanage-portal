@@ -16,7 +16,11 @@ export class OwnerTenantStatusesDataService {
   private readonly statusesState = signal<TenantStatusItem[]>(this.loadSeed());
 
   readonly statuses = computed(() => this.statusesState());
-  readonly statusNames = computed(() => this.statusesState().map((item) => item.nameEn));
+  readonly statusNames = computed(() =>
+    this.statusesState()
+      .filter((item) => item.nameEn.toLowerCase() !== 'unknown')
+      .map((item) => item.nameEn),
+  );
 
   addStatus(payload: Omit<TenantStatusItem, 'id'>): void {
     const next: TenantStatusItem = {

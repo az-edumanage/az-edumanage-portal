@@ -25,6 +25,7 @@ describe('OwnerTenantsListComponent', () => {
     ownerEmail: 'owner@example.com',
     healthStatus: 'Healthy',
     tenantType: 'center',
+    subscriptionState: 'pending_payment',
     subscriptionType: 'production',
     createdBy: 'system',
   } as const;
@@ -37,13 +38,15 @@ describe('OwnerTenantsListComponent', () => {
     activePlanDropdown: signal<string | null>(null),
     pendingPlanChange: signal(null),
     pendingManualSettlement: signal<typeof mockTenant | null>(null),
+    pendingLifecycleStatusTenantIds: signal(new Set<string>()),
+    lifecycleStatusSubmissionError: signal<string | null>(null),
     manualSettlementSubmitting: signal(false),
     manualSettlementError: signal<string | null>(null),
     copyNotification: signal<string | null>(null),
     selectedStatuses: signal(new Set<string>()),
     selectedPlans: signal(new Set<string>()),
     selectedHealths: signal(new Set<string>()),
-    statuses: signal(['Pending', 'Active', 'Suspended', 'Disabled', 'Blocked', 'Unknown']),
+    statuses: signal(['Pending', 'Active', 'Suspended', 'Disabled', 'Blocked']),
     plans: ['Starter', 'Professional'],
     healths: ['Healthy', 'Degraded', 'Down'],
     activeFilterCount: signal(0),
@@ -51,8 +54,9 @@ describe('OwnerTenantsListComponent', () => {
     toggleFilter: () => {},
     clearFilters: () => {},
     requestStatusChange: () => {},
-    confirmStatusChange: () => {},
+    confirmStatusChange: vi.fn().mockResolvedValue(true),
     cancelStatusChange: () => {},
+    isLifecycleStatusPending: (tenantId: string) => mockFacade.pendingLifecycleStatusTenantIds().has(tenantId),
     requestPlanChange: () => {},
     confirmPlanChange: () => {},
     cancelPlanChange: () => {},
@@ -94,15 +98,24 @@ describe('OwnerTenantsListComponent', () => {
     }).compileComponents();
   });
 
-  it('renders separate backend status fields for each tenant row', () => {
+  it('renders the row status badge from the tenant row model', () => {
     const fixture = TestBed.createComponent(OwnerTenantsListComponent);
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent.replace(/\s+/g, ' ');
     expect(text).toContain('Pending');
-    expect(text).toContain('Payment: Pending');
-    expect(text).toContain('Settlement: Unpaid');
-    expect(text).toContain('Operational: Active');
+    expect(text).not.toContain('Pending Payment');
+  });
+
+  it('renders the Subscription column from trial vs production only', () => {
+    const fixture = TestBed.createComponent(OwnerTenantsListComponent);
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent.replace(/\s+/g, ' ');
+    expect(text).toContain('Production');
+    expect(text).not.toContain('Pending Payment');
+    expect(text).not.toContain('Expired');
+    expect(text).not.toContain('Cancelled');
   });
 
   it('shows manual settlement action for an eligible tenant', () => {
@@ -159,5 +172,41 @@ describe('OwnerTenantsListComponent', () => {
       evidenceNote: ' uploaded receipt ',
       note: ' offline confirmation ',
     });
+  });
+
+  it('excludes Unknown from the status action dropdown', () => {
+    mockFacade.activeStatusDropdown.set('tenant-1');
+
+    const fixture = TestBed.createComponent(OwnerTenantsListComponent);
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent.replace(/\s+/g, ' ');
+    expect(text).toContain('Pending');
+    expect(text).toContain('Blocked');
+    expect(text).not.toContain('Unknown');
+  });
+
+  it('disables the status action while a lifecycle update is pending', () => {
+    mockFacade.pendingLifecycleStatusTenantIds.set(new Set(['tenant-1']));
+
+    const fixture = TestBed.createComponent(OwnerTenantsListComponent);
+    fixture.detectChanges();
+
+    const action = fixture.nativeElement.querySelector('[data-testid="status-action-tenant-1"]') as HTMLButtonElement | null;
+    expect(action?.disabled).toBe(true);
+
+    mockFacade.pendingLifecycleStatusTenantIds.set(new Set());
+  });
+
+  it('renders lifecycle submission errors without changing the existing table layout', () => {
+    mockFacade.lifecycleStatusSubmissionError.set('Tenant lifecycle status could not be updated.');
+
+    const fixture = TestBed.createComponent(OwnerTenantsListComponent);
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent.replace(/\s+/g, ' ');
+    expect(text).toContain('Tenant lifecycle status could not be updated.');
+
+    mockFacade.lifecycleStatusSubmissionError.set(null);
   });
 });

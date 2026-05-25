@@ -5,13 +5,15 @@ export type ProviderPaymentStatus =
   | 'cancelled'
   | 'expired'
   | 'unknown';
+export type SubscriptionState = 'trial' | 'pending_payment' | 'production' | 'expired' | 'cancelled' | 'unknown';
+export type TenantSubscriptionType = 'trial' | 'production';
 export type TenantOperationalStatus = 'active' | 'suspended' | 'disabled' | 'blocked' | 'pending' | 'unknown';
 export type SettlementStatus = 'provider_paid' | 'manual_paid' | 'unpaid' | 'failed' | 'unknown';
 export type OwnerDisplayStatus = 'pending' | 'active' | 'suspended' | 'disabled' | 'blocked' | 'unknown';
+export type ManualTenantLifecycleTargetStatus = 'pending' | 'active' | 'suspended' | 'disabled' | 'blocked';
 export type TenantStatus = string;
 export type TenantHealthStatus = 'Healthy' | 'Degraded' | 'Down';
 export type TenantType = 'center' | 'teacher';
-export type TenantSubscriptionType = 'trial' | 'production';
 export type TenantCreatedBy = 'system' | 'admin';
 
 export const TENANT_STATUS_OPTIONS: TenantStatus[] = [
@@ -20,7 +22,6 @@ export const TENANT_STATUS_OPTIONS: TenantStatus[] = [
   'Suspended',
   'Disabled',
   'Blocked',
-  'Unknown',
 ];
 
 export interface Tenant {
@@ -38,6 +39,7 @@ export interface Tenant {
   ownerEmail: string;
   healthStatus: TenantHealthStatus;
   tenantType: TenantType;
+  subscriptionState: SubscriptionState;
   subscriptionType: TenantSubscriptionType;
   createdBy: TenantCreatedBy;
 }
@@ -73,4 +75,56 @@ export interface ManualSettlementSummary {
 export interface ManualSettlementResult {
   tenant: Tenant;
   manualSettlement: ManualSettlementSummary;
+}
+
+export interface ManualTenantLifecycleStatusChangeRequest {
+  targetStatus: ManualTenantLifecycleTargetStatus;
+  reason: string;
+}
+
+export interface TenantLifecycleBillingSideEffectSummary {
+  happened: boolean;
+  type: 'none' | 'invoice_created_and_manually_settled' | 'existing_invoice_manually_settled';
+  invoiceId: string | null;
+  invoiceRef: string | null;
+  manualSettlementId: string | null;
+  manualSettlementRef: string | null;
+  paymentTransactionId: string | null;
+}
+
+export interface TenantLifecycleAuditSummary {
+  id: string;
+  source: 'OWNER_MANUAL';
+  outcome: 'success' | 'rejected' | 'failed';
+  previousStatus: ManualTenantLifecycleTargetStatus;
+  requestedTargetStatus: ManualTenantLifecycleTargetStatus;
+  finalStatus: ManualTenantLifecycleTargetStatus | null;
+  failureReason: string | null;
+  createdAt: string;
+}
+
+export interface TenantLifecycleStatusChangeResult {
+  tenant: Tenant;
+  billingSideEffect: TenantLifecycleBillingSideEffectSummary;
+  audit: TenantLifecycleAuditSummary;
+}
+
+export function toManualTenantLifecycleTargetStatus(
+  status: TenantStatus,
+): ManualTenantLifecycleTargetStatus | null {
+  const normalized = status.trim().toLowerCase();
+  switch (normalized) {
+    case 'pending':
+      return 'pending';
+    case 'active':
+      return 'active';
+    case 'suspended':
+      return 'suspended';
+    case 'disabled':
+      return 'disabled';
+    case 'blocked':
+      return 'blocked';
+    default:
+      return null;
+  }
 }

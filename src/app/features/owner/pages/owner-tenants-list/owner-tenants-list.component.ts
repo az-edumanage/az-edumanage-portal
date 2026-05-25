@@ -7,7 +7,7 @@ import { DashboardService } from '../../../../core/services/dashboard.service';
 import { I18nService } from '../../../../core/services/i18n.service';
 import { UiPagerButtonComponent } from '../../../../shared/ui';
 import { OwnerTenantsListFacade } from '../../state/owner-tenants-list.facade';
-import { ManualSettlementRequest, Tenant } from '../../models/owner-tenants.models';
+import { ManualSettlementRequest, Tenant, TenantSubscriptionType } from '../../models/owner-tenants.models';
 import { OwnerTenantStatusesDataService } from '../../data-access/owner-tenant-statuses-data.service';
 import { OwnerTenantsDataService } from '../../data-access/owner-tenants-data.service';
 
@@ -34,6 +34,8 @@ export class OwnerTenantsListComponent implements OnInit {
   readonly activePlanDropdown = this.tenantsFacade.activePlanDropdown;
   readonly pendingPlanChange = this.tenantsFacade.pendingPlanChange;
   readonly pendingManualSettlement = this.tenantsFacade.pendingManualSettlement;
+  readonly pendingLifecycleStatusTenantIds = this.tenantsFacade.pendingLifecycleStatusTenantIds;
+  readonly lifecycleStatusSubmissionError = this.tenantsFacade.lifecycleStatusSubmissionError;
   readonly manualSettlementSubmitting = this.tenantsFacade.manualSettlementSubmitting;
   readonly manualSettlementError = this.tenantsFacade.manualSettlementError;
   readonly copyNotification = this.tenantsFacade.copyNotification;
@@ -104,6 +106,13 @@ export class OwnerTenantsListComponent implements OnInit {
       .replace(/\b\w/g, (char) => char.toUpperCase());
   }
 
+  subscriptionBadgeClasses(subscriptionType: TenantSubscriptionType): Record<string, boolean> {
+    return {
+      'bg-amber-100 text-amber-700': subscriptionType === 'trial',
+      'bg-emerald-100 text-emerald-700': subscriptionType === 'production',
+    };
+  }
+
   toggleFilter(type: 'status' | 'plan' | 'health', value: string): void {
     this.tenantsFacade.toggleFilter(type, value);
   }
@@ -165,12 +174,16 @@ export class OwnerTenantsListComponent implements OnInit {
     this.tenantsFacade.requestStatusChange(tenant, newStatus);
   }
 
-  confirmStatusChange(): void {
-    this.tenantsFacade.confirmStatusChange();
+  async confirmStatusChange(): Promise<void> {
+    await this.tenantsFacade.confirmStatusChange();
   }
 
   cancelStatusChange(): void {
     this.tenantsFacade.cancelStatusChange();
+  }
+
+  isLifecycleStatusPending(tenantId: string): boolean {
+    return this.tenantsFacade.isLifecycleStatusPending(tenantId);
   }
 
   requestPlanChange(tenant: Tenant, newPlan: string): void {
