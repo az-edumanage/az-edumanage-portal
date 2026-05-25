@@ -102,6 +102,9 @@ describe('OwnerTenantsListStore', () => {
         previousStatus: 'pending',
         requestedTargetStatus: 'suspended',
         finalStatus: 'suspended',
+        actorUsername: 'admin',
+        reason: 'Owner manual lifecycle change from /owner/tenants',
+        billingSideEffect: false,
         failureReason: null,
         createdAt: '2026-05-24T10:30:00Z',
       },
@@ -139,6 +142,9 @@ describe('OwnerTenantsListStore', () => {
           previousStatus: 'pending',
           requestedTargetStatus: 'suspended',
           finalStatus: 'suspended',
+          actorUsername: 'admin',
+          reason: 'Owner manual lifecycle change from /owner/tenants',
+          billingSideEffect: false,
           failureReason: null,
           createdAt: '2026-05-24T10:30:00Z',
         },
@@ -202,6 +208,9 @@ describe('OwnerTenantsListStore', () => {
         previousStatus: 'pending',
         requestedTargetStatus: 'suspended',
         finalStatus: 'suspended',
+        actorUsername: 'admin',
+        reason: 'Owner manual lifecycle change from /owner/tenants',
+        billingSideEffect: false,
         failureReason: null,
         createdAt: '2026-05-24T10:30:00Z',
       },
@@ -226,6 +235,28 @@ describe('OwnerTenantsListStore', () => {
     expect(success).toBe(false);
     expect(store.lifecycleStatusSubmissionError()).toBe('Tenant lifecycle update is not allowed right now');
     expect(store.filteredTenants()[0]).toEqual(before);
+    expect(store.isLifecycleStatusPending(before.id)).toBe(false);
+  });
+
+  it('uses validation details for owner-facing lifecycle errors and leaves the row unchanged', async () => {
+    const before = store.filteredTenants()[0];
+    dataService.changeTenantLifecycleStatus.mockRejectedValue(
+      new HttpErrorResponse({
+        status: 400,
+        error: {
+          message: 'Validation failed',
+          details: ['Tenant is already in the requested lifecycle status'],
+        },
+      }),
+    );
+
+    store.requestStatusChange(before, 'Active');
+    const success = await store.confirmStatusChange();
+
+    expect(success).toBe(false);
+    expect(store.lifecycleStatusSubmissionError()).toBe('Tenant is already in the requested lifecycle status');
+    expect(store.filteredTenants()[0]).toEqual(before);
+    expect(store.pendingStatusChange()).toBeNull();
     expect(store.isLifecycleStatusPending(before.id)).toBe(false);
   });
 

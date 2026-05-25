@@ -99,6 +99,9 @@ export interface TenantLifecycleAuditSummary {
   previousStatus: ManualTenantLifecycleTargetStatus;
   requestedTargetStatus: ManualTenantLifecycleTargetStatus;
   finalStatus: ManualTenantLifecycleTargetStatus | null;
+  actorUsername: string | null;
+  reason: string;
+  billingSideEffect: boolean;
   failureReason: string | null;
   createdAt: string;
 }

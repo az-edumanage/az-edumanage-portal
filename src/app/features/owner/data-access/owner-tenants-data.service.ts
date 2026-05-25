@@ -82,6 +82,9 @@ interface BackendLifecycleStatusChangeResponse {
     previousStatus: 'pending' | 'active' | 'suspended' | 'disabled' | 'blocked';
     requestedTargetStatus: 'pending' | 'active' | 'suspended' | 'disabled' | 'blocked';
     finalStatus: 'pending' | 'active' | 'suspended' | 'disabled' | 'blocked' | null;
+    actorUsername: string | null;
+    reason: string;
+    billingSideEffect: boolean;
     failureReason: string | null;
     createdAt: string;
   };
@@ -282,6 +285,9 @@ export class OwnerTenantsDataService {
       previousStatus: row.previousStatus,
       requestedTargetStatus: row.requestedTargetStatus,
       finalStatus: row.finalStatus,
+      actorUsername: row.actorUsername,
+      reason: row.reason,
+      billingSideEffect: row.billingSideEffect,
       failureReason: row.failureReason,
       createdAt: row.createdAt,
     };

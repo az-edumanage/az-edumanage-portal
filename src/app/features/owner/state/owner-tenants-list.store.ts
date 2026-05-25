@@ -261,8 +261,18 @@ export class OwnerTenantsListStore {
   private toLifecycleOwnerFacingErrorMessage(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
       const message = typeof error.error?.message === 'string' ? error.error.message.trim() : '';
+      const firstDetail =
+        Array.isArray(error.error?.details) && typeof error.error.details[0] === 'string'
+          ? error.error.details[0].trim()
+          : '';
+      if (message.toLowerCase() === 'validation failed' && firstDetail) {
+        return firstDetail;
+      }
       if (message) {
         return message;
+      }
+      if (firstDetail) {
+        return firstDetail;
       }
     }
 
