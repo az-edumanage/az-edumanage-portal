@@ -1,23 +1,27 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
-import { TenantTeachersDataService } from '../data-access/tenant-teachers-data.service';
+import { Injectable, computed, signal } from '@angular/core';
 import { Teacher } from '../models/tenant-teachers.models';
 
 @Injectable({ providedIn: 'root' })
 export class TenantTeachersStore {
-  private readonly data = inject(TenantTeachersDataService);
-
   readonly searchQuery = signal('');
   readonly showFilterPanel = signal(false);
-  readonly viewMode = signal<'grid' | 'list'>('grid');
+  readonly viewMode = signal<'grid' | 'list'>('list');
 
   readonly subjectFilter = signal('');
   readonly statusFilter = signal('');
   readonly sortBy = signal('name');
+  readonly pageIndex = signal(0);
+  readonly pageSize = signal(10);
 
   readonly activeSettingsId = signal<string | null>(null);
   readonly activeChatTeacher = signal<Teacher | null>(null);
-
-  readonly teachers = this.data.teachers;
+  readonly passwordModalTeacher = signal<Teacher | null>(null);
+  readonly passwordSaving = signal(false);
+  readonly passwordError = signal<string | null>(null);
+  readonly passwordSuccess = signal<string | null>(null);
+  readonly teachers = signal<Teacher[]>([]);
+  readonly isLoading = signal(false);
+  readonly errorMessage = signal<string | null>(null);
 
   readonly activeFiltersCount = computed(() => {
     let count = 0;
@@ -27,6 +31,13 @@ export class TenantTeachersStore {
     return count;
   });
 
+  readonly subjectOptions = computed(() => {
+    const subjects = this.teachers()
+      .flatMap((teacher) => teacher.subjects?.map((subject) => subject.name) ?? [])
+      .filter(Boolean);
+    return Array.from(new Set(subjects)).sort((a, b) => a.localeCompare(b));
+  });
+
   readonly filteredTeachers = computed(() => {
     const query = this.searchQuery().toLowerCase();
     const subject = this.subjectFilter();
@@ -34,13 +45,14 @@ export class TenantTeachersStore {
     const sortBy = this.sortBy();
 
     const filtered = this.teachers().filter((teacher) => {
+      const subjectNames = teacher.subjects?.map((item) => item.name) ?? [];
       const matchesSearch =
         !query ||
         teacher.name.toLowerCase().includes(query) ||
         teacher.subject.toLowerCase().includes(query) ||
         teacher.email.toLowerCase().includes(query);
 
-      const matchesSubject = !subject || teacher.subject === subject;
+      const matchesSubject = !subject || subjectNames.includes(subject) || teacher.subject === subject;
       const matchesStatus = !status || teacher.status === status;
 
       return matchesSearch && matchesSubject && matchesStatus;
@@ -56,4 +68,83 @@ export class TenantTeachersStore {
 
     return filtered;
   });
+
+  readonly totalFilteredTeachers = computed(() => this.filteredTeachers().length);
+  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.totalFilteredTeachers() / this.pageSize())));
+  readonly clampedPageIndex = computed(() => Math.min(this.pageIndex(), this.totalPages() - 1));
+  readonly pagedTeachers = computed(() => {
+    const pageIndex = this.clampedPageIndex();
+    const pageSize = this.pageSize();
+    const start = pageIndex * pageSize;
+    return this.filteredTeachers().slice(start, start + pageSize);
+  });
+  readonly pageStart = computed(() => {
+    if (this.totalFilteredTeachers() === 0) {
+      return 0;
+    }
+    return this.clampedPageIndex() * this.pageSize() + 1;
+  });
+  readonly pageEnd = computed(() => Math.min((this.clampedPageIndex() + 1) * this.pageSize(), this.totalFilteredTeachers()));
+
+  setTeachers(value: Teacher[]): void {
+    this.teachers.set(value);
+    this.clampPage();
+  }
+
+  updateTeacher(value: Teacher): void {
+    this.teachers.update((teachers) => teachers.map((teacher) => (teacher.id === value.id ? value : teacher)));
+    this.clampPage();
+  }
+
+  setLoading(value: boolean): void {
+    this.isLoading.set(value);
+  }
+
+  setError(value: string | null): void {
+    this.errorMessage.set(value);
+  }
+
+  setPageIndex(value: number): void {
+    const next = Number.isFinite(value) ? Math.trunc(value) : 0;
+    this.pageIndex.set(Math.max(0, Math.min(next, this.totalPages() - 1)));
+  }
+
+  setPageSize(value: number): void {
+    const next = Number.isFinite(value) ? Math.trunc(value) : 10;
+    this.pageSize.set(Math.max(1, next));
+    this.setPageIndex(0);
+  }
+
+  resetPage(): void {
+    this.pageIndex.set(0);
+  }
+
+  clampPage(): void {
+    this.setPageIndex(this.pageIndex());
+  }
+
+  openPasswordModal(teacher: Teacher): void {
+    this.passwordModalTeacher.set(teacher);
+    this.passwordError.set(null);
+    this.passwordSuccess.set(null);
+  }
+
+  closePasswordModal(): void {
+    this.passwordModalTeacher.set(null);
+    this.passwordError.set(null);
+    this.passwordSuccess.set(null);
+    this.passwordSaving.set(false);
+  }
+
+  setPasswordSaving(value: boolean): void {
+    this.passwordSaving.set(value);
+  }
+
+  setPasswordError(value: string | null): void {
+    this.passwordError.set(value);
+  }
+
+  setPasswordSuccess(value: string | null): void {
+    this.passwordSuccess.set(value);
+  }
 }

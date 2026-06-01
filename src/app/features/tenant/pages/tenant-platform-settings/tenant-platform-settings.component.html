@@ -1,0 +1,311 @@
+<section class="flex h-[calc(100vh-8rem)] min-h-[640px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+  <header class="shrink-0 border-b border-slate-200 p-4 dark:border-slate-800">
+    <label for="platform-settings-search" class="sr-only">Search platform settings</label>
+    <div class="relative max-w-2xl">
+      <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-base text-slate-500">search</mat-icon>
+      <input
+        id="platform-settings-search"
+        type="search"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        placeholder="Search settings..."
+        class="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm text-slate-900 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+      >
+    </div>
+  </header>
+
+  <div class="flex min-h-0 flex-1 flex-col lg:flex-row">
+    <aside class="h-full shrink-0 overflow-y-auto border-b border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/40 lg:w-[20%] lg:border-b-0 lg:border-r">
+      <div class="mb-4">
+        <h2 class="text-lg font-bold text-slate-900 dark:text-white">Platform Settings</h2>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-500">Tenant configuration sections.</p>
+      </div>
+
+      <nav class="space-y-2" aria-label="Platform settings sections">
+        @for (tab of settingsTabs; track tab.id) {
+          <button
+            type="button"
+            (click)="selectTab(tab.id)"
+            class="flex w-full items-start gap-3 rounded-xl border px-3 py-3 text-left transition-all"
+            [class.border-indigo-200]="activeTab() === tab.id"
+            [class.bg-white]="activeTab() === tab.id"
+            [class.shadow-sm]="activeTab() === tab.id"
+            [class.dark:border-indigo-900]="activeTab() === tab.id"
+            [class.dark:bg-slate-900]="activeTab() === tab.id"
+            [class.border-transparent]="activeTab() !== tab.id"
+            [class.hover:bg-white]="activeTab() !== tab.id"
+            [class.dark:hover:bg-slate-900]="activeTab() !== tab.id"
+            [attr.aria-current]="activeTab() === tab.id ? 'page' : null"
+          >
+            <span
+              class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+              [class.bg-indigo-600]="activeTab() === tab.id"
+              [class.text-white]="activeTab() === tab.id"
+              [class.bg-slate-200]="activeTab() !== tab.id"
+              [class.text-slate-500]="activeTab() !== tab.id"
+              [class.dark:bg-slate-800]="activeTab() !== tab.id"
+            >
+              <mat-icon class="text-lg">{{ tab.icon }}</mat-icon>
+            </span>
+            <span class="min-w-0">
+              <span class="block text-sm font-bold text-slate-900 dark:text-white">{{ tab.title }}</span>
+              <span class="mt-1 block text-xs leading-5 text-slate-500 dark:text-slate-500">{{ tab.description }}</span>
+            </span>
+          </button>
+        }
+      </nav>
+    </aside>
+
+    <main class="min-h-0 flex-1 overflow-y-auto p-5">
+      @if (activeTab() === 'users') {
+        <div class="space-y-5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 class="text-xl font-bold text-slate-900 dark:text-white">Users</h3>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-500">Manage tenant users and workspace access.</p>
+            </div>
+            <button
+              type="button"
+              class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+              disabled
+            >
+              <mat-icon class="text-sm">person_add</mat-icon>
+              Add User
+            </button>
+          </div>
+
+          <div class="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-800/40 sm:flex-row">
+            <div class="relative flex-1">
+              <label for="users-search" class="sr-only">Search users</label>
+              <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-base text-slate-500">search</mat-icon>
+              <input
+                id="users-search"
+                type="search"
+                [ngModel]="userSearchQuery()"
+                (ngModelChange)="userSearchQuery.set($event)"
+                placeholder="Search users..."
+                class="h-10 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-900 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+              >
+            </div>
+            <label for="users-role-filter" class="sr-only">Filter users by role</label>
+            <select
+              id="users-role-filter"
+              [ngModel]="userRoleFilter()"
+              (ngModelChange)="userRoleFilter.set($event)"
+              class="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+            >
+              <option value="">All Roles</option>
+              <option value="Admin">Admin</option>
+              <option value="Manager">Manager</option>
+              <option value="Staff">Staff</option>
+            </select>
+          </div>
+
+          <div class="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
+            <table class="w-full text-left text-sm">
+              <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/50">
+                <tr>
+                  <th class="px-4 py-3 font-bold">User</th>
+                  <th class="px-4 py-3 font-bold">Role</th>
+                  <th class="px-4 py-3 font-bold">Status</th>
+                  <th class="px-4 py-3 text-right font-bold">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                @for (user of filteredUsers(); track user.email) {
+                  <tr class="transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                    <td class="px-4 py-4">
+                      <div class="flex items-center gap-3">
+                        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600/10 text-sm font-bold text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400">
+                          {{ user.name.charAt(0) }}
+                        </div>
+                        <div>
+                          <p class="font-semibold text-slate-900 dark:text-white">{{ user.name }}</p>
+                          <p class="text-xs text-slate-500 dark:text-slate-500">{{ user.email }}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-4 text-slate-600 dark:text-slate-400">{{ user.role }}</td>
+                    <td class="px-4 py-4">
+                      <span
+                        class="rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider"
+                        [class.bg-emerald-100]="user.status === 'Active'"
+                        [class.text-emerald-700]="user.status === 'Active'"
+                        [class.bg-amber-100]="user.status === 'Pending'"
+                        [class.text-amber-700]="user.status === 'Pending'"
+                      >
+                        {{ user.status }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-4 text-right">
+                      <button type="button" class="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:hover:bg-slate-800" title="Edit user">
+                        <mat-icon class="block text-sm">edit</mat-icon>
+                      </button>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="4" class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-500">No users match the current filters.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      } @else if (activeTab() === 'country') {
+        <div class="space-y-5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 class="text-xl font-bold text-slate-900 dark:text-white">Country</h3>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-500">Manage countries available in tenant settings.</p>
+            </div>
+            <button
+              type="button"
+              (click)="openCountryModal()"
+              class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-700"
+            >
+              <mat-icon class="text-sm">add</mat-icon>
+              Add New Country
+            </button>
+          </div>
+
+          <div class="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-800/40 sm:flex-row">
+            <div class="relative flex-1">
+              <label for="country-search" class="sr-only">Search country</label>
+              <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-base text-slate-500">search</mat-icon>
+              <input
+                id="country-search"
+                type="search"
+                [ngModel]="countrySearchQuery()"
+                (ngModelChange)="countrySearchQuery.set($event)"
+                placeholder="Search country..."
+                class="h-10 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-900 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+              >
+            </div>
+            <label for="country-filter" class="sr-only">Filter countries</label>
+            <select
+              id="country-filter"
+              [ngModel]="countryFilter()"
+              (ngModelChange)="countryFilter.set($event)"
+              class="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+            >
+              <option value="">All Countries</option>
+              <option value="E">Starts with E</option>
+              <option value="S">Starts with S</option>
+              <option value="U">Starts with U</option>
+            </select>
+          </div>
+
+          @if (countryLoadError()) {
+            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-300">
+              {{ countryLoadError() }}
+            </div>
+          }
+
+          <div class="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
+            <table class="w-full text-left text-sm">
+              <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/50">
+                <tr>
+                  <th class="px-4 py-3 font-bold">Country</th>
+                  <th class="px-4 py-3 text-right font-bold">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                @if (countriesLoading()) {
+                  <tr>
+                    <td colspan="2" class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-500">Loading countries...</td>
+                  </tr>
+                } @else {
+                  @for (country of filteredCountries(); track country.id) {
+                  <tr class="transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                    <td class="px-4 py-4 font-semibold text-slate-900 dark:text-white">{{ country.name }}</td>
+                    <td class="px-4 py-4 text-right">
+                      <div class="inline-flex items-center justify-end gap-1">
+                        <button
+                          type="button"
+                          (click)="openEditCountryModal(country)"
+                          [disabled]="countrySaving() || countryDeletingId() === country.id"
+                          class="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-60 dark:hover:bg-slate-800"
+                          title="Edit country"
+                        >
+                          <mat-icon class="block text-sm">edit</mat-icon>
+                        </button>
+                        <button
+                          type="button"
+                          (click)="deleteCountry(country)"
+                          [disabled]="countrySaving() || countryDeletingId() === country.id"
+                          class="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60 dark:hover:bg-slate-800"
+                          title="Delete country"
+                        >
+                          <mat-icon class="block text-sm">{{ countryDeletingId() === country.id ? 'hourglass_empty' : 'delete' }}</mat-icon>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="2" class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-500">No countries match the current filters.</td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      } @else {
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-800/40">
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white">
+            {{ activeTab() === 'general' ? 'General' : activeTab() === 'access' ? 'Access' : 'Academic Defaults' }}
+          </h3>
+          <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-500">
+            Settings for this section are not connected to backend data in this task.
+          </p>
+        </div>
+      }
+    </main>
+  </div>
+
+  @if (showCountryModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4" role="dialog" aria-modal="true" aria-labelledby="country-modal-title">
+      <form class="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900" (ngSubmit)="saveCountry()">
+        <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+          <h3 id="country-modal-title" class="text-base font-bold text-slate-900 dark:text-white">
+            {{ editingCountry() ? 'Edit Country' : 'Add New Country' }}
+          </h3>
+          <button type="button" (click)="closeCountryModal()" [disabled]="countrySaving()" class="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60 dark:hover:bg-slate-800 dark:hover:text-white" aria-label="Close">
+            <mat-icon class="block text-sm">close</mat-icon>
+          </button>
+        </div>
+
+        <div class="p-5">
+          <label for="country-name" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Country</label>
+          <input
+            id="country-name"
+            type="text"
+            [ngModel]="newCountryName()"
+            (ngModelChange)="newCountryName.set($event)"
+            name="country"
+            [disabled]="countrySaving()"
+            [attr.aria-invalid]="countryNameError() || countrySaveError() ? 'true' : null"
+            class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+          >
+          @if (countryNameError()) {
+            <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ countryNameError() }}</p>
+          }
+          @if (countrySaveError()) {
+            <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ countrySaveError() }}</p>
+          }
+        </div>
+
+        <div class="flex justify-end gap-3 border-t border-slate-200 px-5 py-4 dark:border-slate-800">
+          <button type="button" (click)="closeCountryModal()" [disabled]="countrySaving()" class="h-10 rounded-lg border border-slate-200 px-4 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+            Cancel
+          </button>
+          <button type="submit" [disabled]="countrySaving()" class="h-10 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60">
+            {{ countrySaving() ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</section>

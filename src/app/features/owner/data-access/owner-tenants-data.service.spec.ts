@@ -70,6 +70,52 @@ describe('OwnerTenantsDataService', () => {
     expect(tenant.tenantOperationalStatus).toBe('disabled');
   });
 
+  it('maps tenant list rows when backend includes managed location fields', async () => {
+    const loadPromise = service.loadFromBackend();
+    await Promise.resolve();
+
+    const request = httpTesting.expectOne(`${environment.apiBaseUrl}/tenant-catalog/tenants`);
+    expect(request.request.method).toBe('GET');
+    request.flush([
+      {
+        id: 'tenant-location',
+        centerName: 'Location Center',
+        tenantType: 'CENTER',
+        subdomain: 'location-center',
+        domain: 'location-center.example.com',
+        industry: 'Education',
+        contactName: 'Location Owner',
+        contactEmail: 'location-owner@example.com',
+        contactPhone: '01000000002',
+        countryId: 101,
+        cityId: 202,
+        countryNameEn: 'Egypt',
+        countryNameAr: 'مصر',
+        cityNameEn: 'Cairo',
+        cityNameAr: 'القاهرة',
+        planName: 'Professional',
+        isTrial: false,
+        subscriptionState: 'production',
+        subscriptionType: 'production',
+        createdBy: 'system',
+        providerPaymentStatus: 'paid',
+        tenantOperationalStatus: 'active',
+        settlementStatus: 'provider_paid',
+        ownerDisplayStatus: 'active',
+        createdAt: '2026-05-24T10:30:00Z',
+      },
+    ]);
+
+    await loadPromise;
+
+    const tenant = service.tenants()[0];
+    expect(tenant.name).toBe('Location Center');
+    expect(tenant.fullName).toBe('Location Owner');
+    expect(tenant.status).toBe('Active');
+    expect(tenant.plan).toBe('Professional');
+  });
+
+
   it('maps the Subscription column display source to trial vs production only', async () => {
     const loadPromise = service.loadFromBackend();
     await Promise.resolve();

@@ -17,6 +17,8 @@ describe('OwnerBillingPageComponent', () => {
       planId: 'plan-1',
       planName: 'Enterprise',
       invoiceType: 'first_payment' as const,
+      billingCycle: 'monthly',
+      subscriptionCycleId: 1,
       issueDate: '2026-05-01T00:00:00Z',
       dueDate: '2026-05-10T00:00:00Z',
       graceUntil: '2026-05-15T00:00:00Z',
@@ -43,6 +45,10 @@ describe('OwnerBillingPageComponent', () => {
       planId: 'plan-2',
       planName: 'Professional',
       invoiceType: 'renewal' as const,
+      invoiceSource: 'scheduled_renewal',
+      source: 'scheduled_renewal',
+      billingCycle: 'monthly',
+      subscriptionCycleId: 1,
       issueDate: '2026-06-01T00:00:00Z',
       dueDate: '2026-06-10T00:00:00Z',
       graceUntil: null,
@@ -69,6 +75,8 @@ describe('OwnerBillingPageComponent', () => {
       planId: 'plan-3',
       planName: 'Starter',
       invoiceType: 'renewal' as const,
+      billingCycle: 'annual',
+      subscriptionCycleId: 2,
       issueDate: '2026-07-01T00:00:00Z',
       dueDate: '2026-07-10T00:00:00Z',
       graceUntil: '2026-07-20T00:00:00Z',
@@ -91,32 +99,48 @@ describe('OwnerBillingPageComponent', () => {
   const mockFacade = {
     activeTab: signal<'invoices'>('invoices'),
     showAdvancedFilters: signal(false),
+    showRefundModal: signal(false),
+    invoiceToRefund: signal(null),
+    tenantFilter: signal<string | null>(null),
+    searchQuery: signal(''),
+    filterStatus: signal('All'),
+    filterMinAmount: signal<number | null>(null),
+    filterMaxAmount: signal<number | null>(null),
     invoices: signal(initialInvoices),
     loading: signal(false),
     loadError: signal<string | null>(null),
-    tenantIdFilter: signal<string | null>(null),
-    invoiceStatusFilter: signal<'paid' | 'open' | 'overdue' | null>(null),
-    settlementStatusFilter: signal<'provider_paid' | 'manual_paid' | 'unpaid' | 'failed' | 'unknown' | null>(null),
-    invoiceTypeFilter: signal<'first_payment' | 'renewal' | null>(null),
-    issueDateFrom: signal(''),
-    issueDateTo: signal(''),
-    dueDateFrom: signal(''),
-    dueDateTo: signal(''),
     isFiltered: signal(false),
-    setActiveTab: () => {},
-    setShowAdvancedFilters: () => {},
-    setTenantIdFilter: () => {},
-    setInvoiceStatusFilter: () => {},
-    setSettlementStatusFilter: () => {},
-    setInvoiceTypeFilter: () => {},
-    setIssueDateFrom: () => {},
-    setIssueDateTo: () => {},
-    setDueDateFrom: () => {},
-    setDueDateTo: () => {},
-    applyFilters: vi.fn().mockResolvedValue(undefined),
-    resetFilters: vi.fn().mockResolvedValue(undefined),
-    clearTenantFilter: vi.fn().mockResolvedValue(undefined),
+    maxRevenue: signal(0),
+    monthlyReports: signal([]),
+    filteredPayments: signal([]),
+    filteredFailedPayments: signal([
+      {
+        id: 'FWK-333',
+        tenant: 'Physics Pro',
+        amount: 49,
+        reason: 'Payment failed',
+        retryCount: 0,
+        lastAttempt: '2026-07-01T00:00:00Z',
+        gracePeriodEnd: 'Jul 20, 2026',
+      },
+    ]),
+    filteredRefunds: signal([]),
+    setActiveTab: vi.fn(),
+    setShowAdvancedFilters: vi.fn(),
+    setSearchQuery: vi.fn(),
+    setFilterStatus: vi.fn(),
+    setFilterMinAmount: vi.fn(),
+    setFilterMaxAmount: vi.fn(),
+    setTenantFilter: vi.fn(),
+    resetFilters: vi.fn(),
+    clearTenantFilter: vi.fn(),
+    generateReport: vi.fn(),
     copyToClipboard: vi.fn(),
+    openRefund: vi.fn(),
+    closeRefund: vi.fn(),
+    confirmRefund: vi.fn(),
+    manualPayInvoice: vi.fn().mockResolvedValue(undefined),
+    manualPayPendingInvoiceId: signal<string | null>(null),
     loadInvoices,
   };
 
@@ -124,7 +148,19 @@ describe('OwnerBillingPageComponent', () => {
     loadInvoices.mockClear();
     mockFacade.invoices.set(initialInvoices);
     mockFacade.loadError.set(null);
-    mockFacade.tenantIdFilter.set(null);
+    mockFacade.tenantFilter.set(null);
+    mockFacade.filteredFailedPayments.set([
+      {
+        id: 'FWK-333',
+        tenant: 'Physics Pro',
+        amount: 49,
+        reason: 'Payment failed',
+        retryCount: 0,
+        lastAttempt: '2026-07-01T00:00:00Z',
+        gracePeriodEnd: 'Jul 20, 2026',
+      },
+    ]);
+    mockFacade.manualPayInvoice.mockClear();
     await TestBed.configureTestingModule({
       imports: [OwnerBillingPageComponent],
       providers: [
@@ -146,6 +182,20 @@ describe('OwnerBillingPageComponent', () => {
     expect(text).toContain('Overdue');
     expect(text).toContain('Manual Paid');
     expect(text).toContain('failed');
+  });
+
+
+
+  it('renders invoice cycle, period, and scheduler status metadata', () => {
+    const fixture = TestBed.createComponent(OwnerBillingPageComponent);
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent.replace(/\s+/g, ' ');
+    expect(text).toContain('Monthly');
+    expect(text).toContain('Annual');
+    expect(text).toContain('2026-06-01T00:00:00Z - 2026-06-30T23:59:59Z');
+    expect(text).toContain('Scheduled Renewal');
+    expect(text).toContain('Open');
   });
 
   it('shows a safe empty state when no invoices are returned', () => {
@@ -174,5 +224,44 @@ describe('OwnerBillingPageComponent', () => {
     fixture.detectChanges();
 
     expect(loadInvoices).toHaveBeenCalled();
+  });
+
+  it('shows Manual Pay only for open invoices and dispatches the selected invoice', () => {
+    const fixture = TestBed.createComponent(OwnerBillingPageComponent);
+    fixture.detectChanges();
+
+    const buttons = fixture.nativeElement.querySelectorAll('button[title="Manual Pay"]');
+    expect(buttons.length).toBe(1);
+
+    buttons[0].click();
+    expect(mockFacade.manualPayInvoice).toHaveBeenCalledWith(initialInvoices[1]);
+  });
+
+  it('does not render proof review actions or modal content', () => {
+    const fixture = TestBed.createComponent(OwnerBillingPageComponent);
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent.replace(/\s+/g, ' ');
+    expect(fixture.nativeElement.querySelector('button[title="View Proof"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('button[title="Review Payment Proof"]')).toBeNull();
+    expect(text).not.toContain('Payment Proof Review');
+    expect(text).not.toContain('Confirm & Mark as Paid');
+  });
+
+  it('shows the failed payments badge from the failed payment rows', () => {
+    const fixture = TestBed.createComponent(OwnerBillingPageComponent);
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent.replace(/\s+/g, ' ');
+    expect(text).toContain('Failed Payments 1');
+  });
+
+  it('shows zero in the failed payments badge when there are no failed payment rows', () => {
+    mockFacade.filteredFailedPayments.set([]);
+    const fixture = TestBed.createComponent(OwnerBillingPageComponent);
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent.replace(/\s+/g, ' ');
+    expect(text).toContain('Failed Payments 0');
   });
 });

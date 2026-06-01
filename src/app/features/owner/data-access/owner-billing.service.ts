@@ -1,44 +1,23 @@
-import { Injectable, signal, computed } from '@angular/core';
-import { Invoice, Payment, FailedPayment, Refund, MonthlyReport } from '../models/owner-billing.models';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { Invoice, Payment, Refund, MonthlyReport } from '../models/owner-billing.models';
+import { OwnerBillingDataService } from './owner-billing-data.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OwnerBillingService {
-  // --- Raw Data State (Mock Data) ---
-  private allInvoices = signal<Invoice[]>([
-    { id: 'INV-2024-001', tenant: 'Bright Future Academy', tenantId: 'tnt_001', plan: 'Enterprise', amount: 4990, issueDate: 'Jan 15, 2024', dueDate: 'Jan 15, 2024', status: 'Paid' },
-    { id: 'INV-2024-002', tenant: 'Cairo Math Center', tenantId: 'tnt_002', plan: 'Professional', amount: 149, issueDate: 'Feb 02, 2024', dueDate: 'Feb 02, 2024', status: 'Paid' },
-    { id: 'INV-2024-003', tenant: 'Physics Pro', tenantId: 'tnt_004', plan: 'Professional', amount: 149, issueDate: 'Feb 20, 2024', dueDate: 'Feb 20, 2024', status: 'Overdue' },
-    { id: 'INV-2024-004', tenant: 'Language Hub', tenantId: 'tnt_005', plan: 'Starter', amount: 49, issueDate: 'Nov 05, 2023', dueDate: 'Nov 05, 2023', status: 'Cancelled' },
-    { id: 'INV-2024-005', tenant: 'Elite Tutors', tenantId: 'tnt_003', plan: 'Starter', amount: 49, issueDate: 'Dec 10, 2023', dueDate: 'Dec 10, 2023', status: 'Paid' },
-  ]);
+  private readonly data = inject(OwnerBillingDataService);
+  private readonly allInvoices = signal<Invoice[]>([]);
 
-  private allPayments = signal<Payment[]>([
-    { id: 'PAY-9821', tenant: 'Bright Future Academy', tenantId: 'tnt_001', amount: 4990, method: 'Bank Transfer', status: 'Success', date: 'Jan 16, 2024', ref: 'TRX_998877' },
-    { id: 'PAY-9822', tenant: 'Cairo Math Center', tenantId: 'tnt_002', amount: 149, method: 'Card', status: 'Success', date: 'Feb 02, 2024', ref: 'ch_1Ok...' },
-    { id: 'PAY-9823', tenant: 'Physics Pro', tenantId: 'tnt_004', amount: 149, method: 'Card', status: 'Failed', date: 'Feb 20, 2024', ref: 'ch_1Om...' },
-  ]);
+  readonly loading = signal(false);
+  readonly loadError = signal<string | null>(null);
+  readonly page = signal(0);
+  readonly size = signal(100);
+  readonly totalItems = signal(0);
 
-  private allFailedPayments = signal<FailedPayment[]>([
-    { id: 'FAIL-001', tenant: 'Physics Pro', amount: 149, reason: 'Insufficient Funds', retryCount: 1, lastAttempt: 'Feb 20, 2024', gracePeriodEnd: 'Feb 27, 2024' },
-    { id: 'FAIL-002', tenant: 'Language Hub', amount: 49, reason: 'Card Expired', retryCount: 3, lastAttempt: 'Nov 08, 2023', gracePeriodEnd: 'Nov 15, 2023' },
-  ]);
+  readonly monthlyReports = signal<MonthlyReport[]>([]);
+  readonly manualPayPendingInvoiceId = signal<string | null>(null);
 
-  private allRefunds = signal<Refund[]>([
-    { id: 'REF-001', tenant: 'Demo School', originalInvoice: 'INV-2023-999', amount: 49, reason: 'Accidental Subscription', date: 'Jan 10, 2024' }
-  ]);
-
-  readonly monthlyReports = signal<MonthlyReport[]>([
-    { month: 'Oct 2023', revenue: 98500, refunds: 1200, netRevenue: 97300, growth: 0, status: 'stable' },
-    { month: 'Nov 2023', revenue: 102400, refunds: 850, netRevenue: 101550, growth: 4.3, status: 'up' },
-    { month: 'Dec 2023', revenue: 115000, refunds: 1500, netRevenue: 113500, growth: 11.7, status: 'up' },
-    { month: 'Jan 2024', revenue: 121000, refunds: 900, netRevenue: 120100, growth: 5.8, status: 'up' },
-    { month: 'Feb 2024', revenue: 118500, refunds: 2400, netRevenue: 116100, growth: -3.3, status: 'down' },
-    { month: 'Mar 2024', revenue: 142300, refunds: 320, netRevenue: 141980, growth: 22.3, status: 'up' },
-  ]);
-
-  // --- Filtering State ---
   tenantFilter = signal<string | null>(null);
   searchQuery = signal<string>('');
   filterStatus = signal<string>('All');
@@ -47,104 +26,92 @@ export class OwnerBillingService {
   filterMinAmount = signal<number | null>(null);
   filterMaxAmount = signal<number | null>(null);
 
-  // --- Computed Selectors ---
   readonly maxRevenue = computed(() => {
-    return Math.max(...this.monthlyReports().map(r => r.netRevenue));
+    const values = this.monthlyReports().map((report) => report.netRevenue);
+    return values.length > 0 ? Math.max(...values) : 0;
   });
 
   readonly isFiltered = computed(() => {
-    return this.searchQuery() !== '' || 
-           this.tenantFilter() !== null || 
-           this.filterStatus() !== 'All' || 
-           this.filterMinAmount() !== null || 
+    return this.searchQuery() !== '' ||
+           this.tenantFilter() !== null ||
+           this.filterStatus() !== 'All' ||
+           this.filterMinAmount() !== null ||
            this.filterMaxAmount() !== null;
   });
 
   readonly filteredInvoices = computed(() => {
     let results = this.allInvoices();
     const tenant = this.tenantFilter();
-    const query = this.searchQuery().toLowerCase();
+    const query = this.searchQuery().trim().toLowerCase();
     const status = this.filterStatus();
     const min = this.filterMinAmount();
     const max = this.filterMaxAmount();
 
     if (tenant) {
-      results = results.filter(inv => inv.tenant.toLowerCase().includes(tenant.toLowerCase()));
+      results = results.filter((invoice) => invoice.tenantId === tenant || invoice.tenant.toLowerCase().includes(tenant.toLowerCase()));
     }
     if (query) {
-      results = results.filter(inv => 
-        inv.id.toLowerCase().includes(query) || 
-        inv.tenant.toLowerCase().includes(query) ||
-        inv.plan.toLowerCase().includes(query)
+      results = results.filter((invoice) =>
+        (invoice.invoiceRef ?? invoice.id).toLowerCase().includes(query) ||
+        invoice.tenant.toLowerCase().includes(query) ||
+        invoice.plan.toLowerCase().includes(query) ||
+        (invoice.paymentTransactionRef ?? '').toLowerCase().includes(query) ||
+        (invoice.manualInvoiceRef ?? '').toLowerCase().includes(query)
       );
     }
     if (status !== 'All') {
-      results = results.filter(inv => inv.status === status);
+      results = results.filter((invoice) => invoice.status === status);
     }
     if (min !== null) {
-      results = results.filter(inv => inv.amount >= min);
+      results = results.filter((invoice) => invoice.amount >= min);
     }
     if (max !== null) {
-      results = results.filter(inv => inv.amount <= max);
+      results = results.filter((invoice) => invoice.amount <= max);
     }
     return results;
   });
 
   readonly filteredPayments = computed(() => {
-    let results = this.allPayments();
-    const tenant = this.tenantFilter();
-    const query = this.searchQuery().toLowerCase();
-
-    if (tenant) {
-      results = results.filter(p => p.tenant.toLowerCase().includes(tenant.toLowerCase()));
-    }
-    if (query) {
-      results = results.filter(p => 
-        p.id.toLowerCase().includes(query) || 
-        p.tenant.toLowerCase().includes(query) ||
-        p.ref.toLowerCase().includes(query)
-      );
-    }
-    return results;
+    return this.filteredInvoices()
+      .filter((invoice) => invoice.paymentTransactionRef || invoice.providerPaymentStatusSnapshot)
+      .map((invoice) => this.toPayment(invoice));
   });
 
   readonly filteredFailedPayments = computed(() => {
-    let results = this.allFailedPayments();
-    const tenant = this.tenantFilter();
-    const query = this.searchQuery().toLowerCase();
-
-    if (tenant) {
-      results = results.filter(f => f.tenant.toLowerCase().includes(tenant.toLowerCase()));
-    }
-    if (query) {
-      results = results.filter(f => 
-        f.tenant.toLowerCase().includes(query) || 
-        f.reason.toLowerCase().includes(query)
-      );
-    }
-    return results;
+    return this.filteredInvoices()
+      .filter((invoice) => invoice.invoiceStatus === 'overdue' || invoice.settlementStatus === 'failed')
+      .map((invoice) => ({
+        id: invoice.paymentTransactionRef || invoice.invoiceRef || invoice.id,
+        tenant: invoice.tenant,
+        amount: invoice.amount,
+        reason: invoice.providerPaymentStatusSnapshot === 'failed' ? 'Payment failed' : 'Invoice overdue',
+        retryCount: 0,
+        lastAttempt: invoice.issueDate,
+        gracePeriodEnd: invoice.graceUntil ? this.toDateLabel(invoice.graceUntil) : invoice.dueDate,
+      }));
   });
 
-  readonly filteredRefunds = computed(() => {
-    let results = this.allRefunds();
-    const tenant = this.tenantFilter();
-    const query = this.searchQuery().toLowerCase();
+  readonly filteredRefunds = signal<Refund[]>([]);
 
-    if (tenant) {
-      results = results.filter(r => r.tenant.toLowerCase().includes(tenant.toLowerCase()));
-    }
-    if (query) {
-      results = results.filter(r => 
-        r.id.toLowerCase().includes(query) || 
-        r.tenant.toLowerCase().includes(query) ||
-        r.reason.toLowerCase().includes(query)
-      );
-    }
-    return results;
-  });
+  async loadInvoices(): Promise<void> {
+    this.loading.set(true);
+    this.loadError.set(null);
 
-  // --- Actions ---
-  resetFilters() {
+    try {
+      const response = await this.data.listInvoices({ page: 0, size: 200 });
+      this.allInvoices.set(response.items);
+      this.page.set(response.page ?? 0);
+      this.size.set(response.size ?? response.items.length);
+      this.totalItems.set(response.totalItems ?? response.items.length);
+    } catch {
+      this.allInvoices.set([]);
+      this.loadError.set('Billing invoices could not be loaded right now.');
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  resetFilters(): void {
     this.filterStatus.set('All');
     this.filterMinAmount.set(null);
     this.filterMaxAmount.set(null);
@@ -154,37 +121,67 @@ export class OwnerBillingService {
     this.tenantFilter.set(null);
   }
 
-  setTenantFilter(tenantId: string | null) {
+  setTenantFilter(tenantId: string | null): void {
     this.tenantFilter.set(tenantId);
   }
 
-  confirmPayment(invoiceId: string) {
-    this.allInvoices.update(invoices => 
-      invoices.map(inv => inv.id === invoiceId ? { ...inv, status: 'Paid' } : inv)
-    );
+  async manualPayInvoice(invoice: Invoice): Promise<void> {
+    if (this.manualPayPendingInvoiceId() === invoice.id) {
+      return;
+    }
+
+    this.manualPayPendingInvoiceId.set(invoice.id);
+    this.loadError.set(null);
+    try {
+      const updatedInvoice = await this.data.manualPayInvoice(invoice.id);
+      this.allInvoices.update((invoices) => invoices.map((current) =>
+        current.id === updatedInvoice.id ? updatedInvoice : current,
+      ));
+    } catch {
+      this.loadError.set("Invoice could not be manually paid right now.");
+    } finally {
+      this.manualPayPendingInvoiceId.set(null);
+    }
   }
 
-  processRefund(invoice: Invoice, reason = 'Customer Request') {
-    // Update invoice status
-    this.allInvoices.update(invoices => 
-      invoices.map(inv => inv.id === invoice.id ? { ...inv, status: 'Refunded' } : inv)
-    );
-    
-    // Add refund record
-    const newRefund: Refund = {
-      id: `REF-${Math.floor(1000 + Math.random() * 9000)}`,
-      tenant: invoice.tenant,
-      originalInvoice: invoice.id,
-      amount: invoice.amount,
-      reason,
-      date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
-    };
-    
-    this.allRefunds.update(refunds => [newRefund, ...refunds]);
+  processRefund(invoice: Invoice): void {
+    void invoice;
+    this.loadError.set('Refund processing is not available from this billing view yet.');
   }
 
-  generateReport() {
-    // Business logic to generate standard/PDF report
+  generateReport(): void {
     console.log('Generating latest financial report...');
+  }
+
+  private toPayment(invoice: Invoice): Payment {
+    const status = invoice.providerPaymentStatusSnapshot === 'failed'
+      ? 'Failed'
+      : invoice.providerPaymentStatusSnapshot === 'pending'
+        ? 'Pending'
+        : 'Success';
+
+    return {
+      id: invoice.paymentTransactionRef || invoice.invoiceRef || invoice.id,
+      tenant: invoice.tenant,
+      tenantId: invoice.tenantId,
+      amount: invoice.amount,
+      method: invoice.source === 'manual_admin_activation' ? 'Bank Transfer' : 'Card',
+      status,
+      date: invoice.paidAt ? this.toDateLabel(invoice.paidAt) : invoice.issueDate,
+      ref: invoice.paymentTransactionRef || invoice.manualInvoiceRef || invoice.invoiceRef || invoice.id,
+    };
+  }
+
+  private toDateLabel(value: string): string {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: '2-digit',
+      year: 'numeric',
+    }).format(date);
   }
 }

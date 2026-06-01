@@ -42,7 +42,8 @@
             <mat-icon class="tenant-teachers-search-icon">search</mat-icon>
             <input 
               type="text" 
-              [(ngModel)]="searchQuery"
+              [ngModel]="searchQuery()"
+              (ngModelChange)="setSearchQuery($event)"
               placeholder="Search teachers by name, subject or email..."
               class="tenant-teachers-search-input"
             >
@@ -84,12 +85,9 @@
                         class="tenant-teachers-filter-select"
                       >
                         <option value="">All Subjects</option>
-                        <option value="Physics">Physics</option>
-                        <option value="Mathematics">Mathematics</option>
-                        <option value="Chemistry">Chemistry</option>
-                        <option value="Biology">Biology</option>
-                        <option value="English">English</option>
-                        <option value="Arabic">Arabic</option>
+                        @for (subject of subjectOptions(); track subject) {
+                          <option [value]="subject">{{ subject }}</option>
+                        }
                       </select>
                     </div>
 
@@ -102,7 +100,6 @@
                       >
                         <option value="">All Statuses</option>
                         <option value="Active">Active</option>
-                        <option value="On Leave">On Leave</option>
                         <option value="Inactive">Inactive</option>
                       </select>
                     </div>
@@ -147,7 +144,18 @@
       </div>
 
       <!-- Results Grid/List -->
-      @if (filteredTeachers().length > 0) {
+      @if (errorMessage()) {
+        <div class="tenant-teachers-empty">
+          <h3 class="tenant-teachers-empty-title">{{ errorMessage() }}</h3>
+        </div>
+      } @else if (isLoading()) {
+        <div class="tenant-teachers-empty">
+          <div class="tenant-teachers-empty-icon-wrap">
+            <mat-icon class="text-slate-500 animate-spin">sync</mat-icon>
+          </div>
+          <h3 class="tenant-teachers-empty-title">Loading teachers</h3>
+        </div>
+      } @else if (filteredTeachers().length > 0) {
         @if (viewMode() === 'grid') {
           <div class="tenant-teachers-grid">
             @for (teacher of filteredTeachers(); track teacher.id) {
@@ -159,8 +167,6 @@
                   <span class="tenant-teachers-status-chip"
                     [class.bg-emerald-100]="teacher.status === 'Active'"
                     [class.text-emerald-700]="teacher.status === 'Active'"
-                    [class.bg-amber-100]="teacher.status === 'On Leave'"
-                    [class.text-amber-700]="teacher.status === 'On Leave'"
                     [class.bg-slate-100]="teacher.status === 'Inactive'"
                     [class.text-slate-500]="teacher.status === 'Inactive'"
                   >
@@ -240,8 +246,15 @@
                   </tr>
                 </thead>
                 <tbody class="tenant-teachers-tbody">
-                  @for (teacher of filteredTeachers(); track teacher.id) {
-                    <tr class="tenant-teachers-tr">
+                  @for (teacher of pagedTeachers(); track teacher.id) {
+                    <tr
+                      class="tenant-teachers-tr"
+                      (click)="openTeacherDetails(teacher)"
+                      (keydown.enter)="openTeacherDetails(teacher)"
+                      (keydown.space)="openTeacherDetails(teacher)"
+                      tabindex="0"
+                      role="button"
+                    >
                       <td class="tenant-teachers-td">
                         <div class="tenant-teachers-row-user">
                           <div class="tenant-teachers-row-avatar">
@@ -262,8 +275,6 @@
                         <span class="tenant-teachers-status-chip tenant-teachers-status-chip--list"
                           [class.bg-emerald-100]="teacher.status === 'Active'"
                           [class.text-emerald-700]="teacher.status === 'Active'"
-                          [class.bg-amber-100]="teacher.status === 'On Leave'"
-                          [class.text-amber-700]="teacher.status === 'On Leave'"
                           [class.bg-slate-100]="teacher.status === 'Inactive'"
                           [class.text-slate-500]="teacher.status === 'Inactive'"
                         >
@@ -273,14 +284,14 @@
                       <td class="tenant-teachers-td tenant-teachers-joined-date">{{ teacher.joinDate }}</td>
                       <td class="tenant-teachers-td tenant-teachers-td--actions">
                         <div class="tenant-teachers-row-actions">
-                          <button (click)="openChat(teacher)" class="tenant-teachers-row-btn tenant-teachers-row-btn--message" title="Message">
+                          <button (click)="openChatFromRow($event, teacher)" class="tenant-teachers-row-btn tenant-teachers-row-btn--message" title="Message">
                             <mat-icon class="text-sm block">mail</mat-icon>
                           </button>
-                          <button [routerLink]="['/tenant/teachers', teacher.id, 'edit']" class="tenant-teachers-row-btn tenant-teachers-row-btn--edit" title="Edit">
-                            <mat-icon class="text-sm block">edit</mat-icon>
+                          <button (click)="openPasswordModal($event, teacher)" class="tenant-teachers-row-btn tenant-teachers-row-btn--password" title="Change Password">
+                            <mat-icon class="text-sm block">password</mat-icon>
                           </button>
-                          <button (click)="updateStatus(teacher.id, 'Inactive')" class="tenant-teachers-row-btn tenant-teachers-row-btn--deactivate" title="Deactivate">
-                            <mat-icon class="text-sm block">block</mat-icon>
+                          <button (click)="openEdit($event, teacher)" class="tenant-teachers-row-btn tenant-teachers-row-btn--edit" title="Edit">
+                            <mat-icon class="text-sm block">edit</mat-icon>
                           </button>
                         </div>
                       </td>
@@ -288,6 +299,44 @@
                   }
                 </tbody>
               </table>
+            </div>
+            <div class="tenant-teachers-pagination">
+              <div class="tenant-teachers-pagination-summary">
+                @if (totalFilteredTeachers() > 0) {
+                  Showing {{ pageStart() }}-{{ pageEnd() }} of {{ totalFilteredTeachers() }} teachers
+                } @else {
+                  No teachers to display
+                }
+              </div>
+              <div class="tenant-teachers-pagination-actions">
+                <label class="tenant-teachers-page-size">
+                  Rows
+                  <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)" class="tenant-teachers-page-size-select">
+                    <option [value]="5">5</option>
+                    <option [value]="10">10</option>
+                    <option [value]="20">20</option>
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  (click)="previousPage()"
+                  [disabled]="pageIndex() === 0"
+                  class="tenant-teachers-page-btn"
+                  title="Previous page"
+                >
+                  <mat-icon class="text-sm">chevron_left</mat-icon>
+                </button>
+                <span class="tenant-teachers-page-current">Page {{ pageIndex() + 1 }} of {{ totalPages() }}</span>
+                <button
+                  type="button"
+                  (click)="nextPage()"
+                  [disabled]="pageIndex() >= totalPages() - 1"
+                  class="tenant-teachers-page-btn"
+                  title="Next page"
+                >
+                  <mat-icon class="text-sm">chevron_right</mat-icon>
+                </button>
+              </div>
             </div>
           </div>
         }
@@ -349,6 +398,56 @@
                 <mat-icon class="text-sm">send</mat-icon>
               </button>
             </div>
+          </div>
+        </div>
+      }
+
+      @if (passwordModalTeacher(); as teacher) {
+        <div class="tenant-teachers-modal-backdrop" (click)="closePasswordModal()">
+          <div class="tenant-teachers-password-modal" (click)="$event.stopPropagation()">
+            <div class="tenant-teachers-password-head">
+              <div>
+                <h3 class="tenant-teachers-card-name">Change Password</h3>
+                <p class="tenant-teachers-card-email">{{ teacher.name }}</p>
+              </div>
+              <button type="button" (click)="closePasswordModal()" class="tenant-teachers-icon-btn" title="Close">
+                <mat-icon class="text-sm">close</mat-icon>
+              </button>
+            </div>
+
+            <form [formGroup]="passwordForm" (ngSubmit)="submitPassword()" class="tenant-teachers-password-form">
+              <label for="teacher-new-password" class="tenant-teachers-filter-label">New password</label>
+              <input
+                id="teacher-new-password"
+                type="password"
+                formControlName="newPassword"
+                autocomplete="new-password"
+                class="tenant-teachers-filter-select"
+              >
+              @if (passwordForm.controls.newPassword.touched && passwordForm.controls.newPassword.invalid) {
+                <p class="tenant-teachers-password-error">Password must be at least 8 characters.</p>
+              }
+              @if (passwordError()) {
+                <p class="tenant-teachers-password-error">{{ passwordError() }}</p>
+              }
+              @if (passwordSuccess()) {
+                <p class="tenant-teachers-password-success">{{ passwordSuccess() }}</p>
+              }
+
+              <div class="tenant-teachers-password-actions">
+                <button type="button" (click)="closePasswordModal()" class="tenant-teachers-reset-all">
+                  Cancel
+                </button>
+                <button type="submit" [disabled]="passwordSaving()" class="tenant-teachers-filter-apply tenant-teachers-password-submit">
+                  @if (passwordSaving()) {
+                    <mat-icon class="text-sm animate-spin">sync</mat-icon>
+                    Saving
+                  } @else {
+                    Save
+                  }
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       }

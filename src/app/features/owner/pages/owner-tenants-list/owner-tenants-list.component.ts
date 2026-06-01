@@ -10,6 +10,7 @@ import { OwnerTenantsListFacade } from '../../state/owner-tenants-list.facade';
 import { ManualSettlementRequest, Tenant, TenantSubscriptionType } from '../../models/owner-tenants.models';
 import { OwnerTenantStatusesDataService } from '../../data-access/owner-tenant-statuses-data.service';
 import { OwnerTenantsDataService } from '../../data-access/owner-tenants-data.service';
+import { TenantImpersonationService } from '../../../../core/auth/tenant-impersonation.service';
 
 @Component({
   selector: 'app-owner-tenants-list',
@@ -26,6 +27,7 @@ export class OwnerTenantsListComponent implements OnInit {
   private readonly tenantsFacade = inject(OwnerTenantsListFacade);
   private readonly statusesData = inject(OwnerTenantStatusesDataService);
   private readonly tenantsData = inject(OwnerTenantsDataService);
+  private readonly tenantImpersonationService = inject(TenantImpersonationService);
 
   readonly searchQuery = this.tenantsFacade.searchQuery;
   readonly showFiltersDropdown = this.tenantsFacade.showFiltersDropdown;
@@ -40,6 +42,7 @@ export class OwnerTenantsListComponent implements OnInit {
   readonly manualSettlementError = this.tenantsFacade.manualSettlementError;
   readonly copyNotification = this.tenantsFacade.copyNotification;
   readonly isRtl = this.i18nService.isRtl;
+  readonly impersonationError = signal<string | null>(null);
   t(text: string): string {
     return this.i18nService.t(text);
   }
@@ -93,7 +96,7 @@ export class OwnerTenantsListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    void this.tenantsData.loadFromBackend().catch(() => {});
+    void this.tenantsData.loadFromBackend().catch(() => undefined);
   }
 
   getStatusColor(status: string): string {
@@ -155,19 +158,16 @@ export class OwnerTenantsListComponent implements OnInit {
     this.filtersSearchQuery.set('');
   }
 
-  impersonate(tenant: Tenant) {
-    // Save current URL to return back later
-    this.dashboardService.returnUrl.set(this.router.url);
-
-    // Navigate based on tenant type and update sidebar role
-    if (tenant.tenantType === 'teacher') {
-      this.dashboardService.setRole('teacher');
-      this.router.navigate(['/teacher/overview']);
-    } else {
-      this.dashboardService.setRole('tenant');
-      this.router.navigate(['/tenant/overview']);
+  async impersonate(tenant: Tenant): Promise<void> {
+    try {
+      this.impersonationError.set(null);
+      this.dashboardService.returnUrl.set(this.router.url);
+      await this.tenantImpersonationService.start(tenant.id, tenant.name, this.router.url);
+      await this.router.navigate(['/tenant/overview']);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Tenant impersonation could not be started.';
+      this.impersonationError.set(message);
     }
-    console.log(`Impersonating tenant: ${tenant.name} (${tenant.tenantType})`);
   }
 
   requestStatusChange(tenant: Tenant, newStatus: string): void {

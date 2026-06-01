@@ -1,0 +1,275 @@
+<div class="tenant-educational-stages-page">
+  <div class="tenant-educational-stages-header">
+    <div>
+      <h2 class="tenant-educational-stages-title">Educational Stages</h2>
+      <p class="tenant-educational-stages-subtitle">Manage stage definitions used to organize grades and classes.</p>
+    </div>
+    <button
+      type="button"
+      class="tenant-educational-stages-add-btn"
+      (click)="openCreateModal()"
+    >
+      <mat-icon class="text-sm">add</mat-icon>
+      Add New Stage
+    </button>
+  </div>
+
+  <div class="tenant-educational-stages-filter-shell">
+    <div class="tenant-educational-stages-filter-row">
+      <div class="tenant-educational-stages-search">
+        <mat-icon class="tenant-educational-stages-search-icon">search</mat-icon>
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Search stages by name or code..."
+          class="tenant-educational-stages-search-input"
+        >
+      </div>
+
+      <div class="tenant-educational-stages-filter-actions">
+        <div class="relative">
+          <button
+            type="button"
+            (click)="toggleFilterPanel()"
+            [class.bg-indigo-600/10]="showFilterPanel() || activeFiltersCount() > 0"
+            [class.text-indigo-600]="showFilterPanel() || activeFiltersCount() > 0"
+            [class.border-indigo-200]="showFilterPanel() || activeFiltersCount() > 0"
+            class="tenant-educational-stages-advanced-filter-btn"
+          >
+            <mat-icon class="text-sm">filter_list</mat-icon>
+            Filters
+            @if (activeFiltersCount() > 0) {
+              <span class="tenant-educational-stages-filter-count">
+                {{ activeFiltersCount() }}
+              </span>
+            }
+            <mat-icon class="text-xs transition-transform duration-200" [class.rotate-180]="showFilterPanel()">expand_more</mat-icon>
+          </button>
+
+          @if (showFilterPanel()) {
+            <div class="tenant-educational-stages-filter-dropdown">
+              <div class="tenant-educational-stages-filter-dropdown-head">
+                <h3 class="tenant-educational-stages-filter-dropdown-title">Filter Options</h3>
+                <button type="button" (click)="clearAdvancedFilters()" class="tenant-educational-stages-filter-reset">Reset</button>
+              </div>
+
+              <div class="tenant-educational-stages-filter-fields" [formGroup]="filterForm">
+                <div>
+                  <label for="stage-country-filter" class="tenant-educational-stages-filter-label">Country</label>
+                  <select id="stage-country-filter" formControlName="country" class="tenant-educational-stages-filter-select">
+                    <option value="">All Countries</option>
+                    @for (country of countryOptions(); track country.value) {
+                      <option [value]="country.value">{{ country.label }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div>
+                  <label for="stage-sort-filter" class="tenant-educational-stages-filter-label">Sort By</label>
+                  <select id="stage-sort-filter" formControlName="sortBy" class="tenant-educational-stages-filter-select">
+                    <option value="order">Stage Order</option>
+                    <option value="name">Name (A-Z)</option>
+                    <option value="grades-desc">Grades (High to Low)</option>
+                    <option value="classes-desc">Classes (High to Low)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="tenant-educational-stages-filter-apply-wrap">
+                <button type="button" (click)="toggleFilterPanel()" class="tenant-educational-stages-filter-apply">
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        @if (activeFiltersCount() > 0 || searchQuery()) {
+          <button type="button" (click)="clearAllFilters()" class="tenant-educational-stages-reset-all">
+            <mat-icon class="text-sm">restart_alt</mat-icon>
+            Reset All
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (loadError()) {
+    <div class="tenant-educational-stages-empty">
+      <div class="tenant-educational-stages-empty-icon-wrap">
+        <mat-icon class="text-slate-500">error</mat-icon>
+      </div>
+      <h3 class="tenant-educational-stages-empty-title">Unable to load stages</h3>
+      <p class="tenant-educational-stages-empty-text">{{ loadError() }}</p>
+    </div>
+  } @else if (loading()) {
+    <div class="tenant-educational-stages-empty">
+      <div class="tenant-educational-stages-empty-icon-wrap">
+        <mat-icon class="text-slate-500">hourglass_empty</mat-icon>
+      </div>
+      <h3 class="tenant-educational-stages-empty-title">Loading stages</h3>
+      <p class="tenant-educational-stages-empty-text">Please wait while educational stages load.</p>
+    </div>
+  } @else if (filteredStages().length > 0) {
+    <div class="tenant-educational-stages-table-shell">
+      <div class="tenant-educational-stages-table-scroll">
+        <table class="tenant-educational-stages-table">
+          <thead class="tenant-educational-stages-table-head">
+            <tr>
+              <th class="tenant-educational-stages-th">Stage Name</th>
+              <th class="tenant-educational-stages-th">Country</th>
+              <th class="tenant-educational-stages-th tenant-educational-stages-th--center">Grades</th>
+              <th class="tenant-educational-stages-th tenant-educational-stages-th--center">Classes</th>
+              <th class="tenant-educational-stages-th tenant-educational-stages-th--actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="tenant-educational-stages-tbody">
+            @for (stage of filteredStages(); track stage.id) {
+              <tr class="tenant-educational-stages-tr">
+                <td class="tenant-educational-stages-td">
+                  <div class="tenant-educational-stages-row-name-wrap">
+                    <div class="tenant-educational-stages-row-icon-wrap">
+                      <mat-icon class="text-sm block">account_tree</mat-icon>
+                    </div>
+                    <div>
+                      <span class="tenant-educational-stages-row-name">{{ stage.name }}</span>
+                      <p class="tenant-educational-stages-row-description">{{ stage.description }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="tenant-educational-stages-td">
+                  <span class="tenant-educational-stages-country">{{ stage.country }}</span>
+                </td>
+                <td class="tenant-educational-stages-td tenant-educational-stages-td--center">
+                  <div class="tenant-educational-stages-count">
+                    <mat-icon class="text-xs">school</mat-icon>
+                    <span>{{ stage.gradeCount }}</span>
+                  </div>
+                </td>
+                <td class="tenant-educational-stages-td tenant-educational-stages-td--center">
+                  <div class="tenant-educational-stages-count">
+                    <mat-icon class="text-xs">groups</mat-icon>
+                    <span>{{ stage.classCount }}</span>
+                  </div>
+                </td>
+                <td class="tenant-educational-stages-td tenant-educational-stages-td--actions">
+                  <div class="tenant-educational-stages-row-actions">
+                    <button type="button" (click)="openEditModal(stage)" class="tenant-educational-stages-row-btn tenant-educational-stages-row-btn--edit" title="Edit" [disabled]="saving() || deletingStageId() === stage.id">
+                      <mat-icon class="text-sm block">edit</mat-icon>
+                    </button>
+                    <button type="button" (click)="deleteStage(stage.id)" class="tenant-educational-stages-row-btn tenant-educational-stages-row-btn--delete" title="Delete" [disabled]="deletingStageId() === stage.id">
+                      <mat-icon class="text-sm block">{{ deletingStageId() === stage.id ? 'hourglass_empty' : 'delete' }}</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  } @else {
+    <div class="tenant-educational-stages-empty">
+      <div class="tenant-educational-stages-empty-icon-wrap">
+        <mat-icon class="text-slate-500">search_off</mat-icon>
+      </div>
+      <h3 class="tenant-educational-stages-empty-title">No stages found</h3>
+      <p class="tenant-educational-stages-empty-text">
+        {{ stages().length === 0 ? 'No educational stages have been created yet.' : 'No educational stages match the current search and filters.' }}
+      </p>
+      @if (stages().length > 0) {
+        <button type="button" (click)="clearAllFilters()" class="tenant-educational-stages-empty-btn">
+          Clear All Filters
+        </button>
+      }
+    </div>
+  }
+
+  @if (deleteError()) {
+    <p class="tenant-educational-stages-modal-error">{{ deleteError() }}</p>
+  }
+
+  @if (showCreateModal()) {
+    <div
+      class="tenant-educational-stages-modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="stage-create-title"
+    >
+      <form [formGroup]="createForm" (ngSubmit)="saveStage()" class="tenant-educational-stages-modal">
+        <div class="tenant-educational-stages-modal-head">
+          <div>
+            <h3 id="stage-create-title" class="tenant-educational-stages-modal-title">
+              {{ editingStage() ? 'Edit Stage' : 'Add New Stage' }}
+            </h3>
+          </div>
+          <button type="button" (click)="closeCreateModal()" class="tenant-educational-stages-modal-close" aria-label="Close" [disabled]="saving()">
+            <mat-icon class="text-sm block">close</mat-icon>
+          </button>
+        </div>
+
+        <div class="tenant-educational-stages-modal-body">
+          <div>
+            <label for="stage-name" class="tenant-educational-stages-modal-label">Stage name</label>
+            <input
+              id="stage-name"
+              type="text"
+              formControlName="name"
+              class="tenant-educational-stages-modal-input"
+              [attr.aria-invalid]="createForm.controls.name.invalid && createForm.controls.name.touched"
+            >
+            @if (
+              createForm.controls.name.touched &&
+              (createForm.controls.name.hasError('required') || createForm.controls.name.hasError('pattern'))
+            ) {
+              <p class="tenant-educational-stages-modal-error">Stage name is required.</p>
+            }
+          </div>
+
+          <div>
+            <label for="stage-description" class="tenant-educational-stages-modal-label">Description</label>
+            <textarea
+              id="stage-description"
+              formControlName="description"
+              rows="4"
+              class="tenant-educational-stages-modal-textarea"
+            ></textarea>
+          </div>
+
+          <div>
+            <label for="stage-country" class="tenant-educational-stages-modal-label">Country</label>
+            <select id="stage-country" formControlName="countryId" class="tenant-educational-stages-modal-select">
+              @for (country of countryOptions(); track country.value) {
+                <option [value]="country.value">{{ country.label }}</option>
+              } @empty {
+                <option value="">No countries available</option>
+              }
+            </select>
+            @if (countriesLoading()) {
+              <p class="tenant-educational-stages-modal-error">Loading countries...</p>
+            }
+            @if (countriesError()) {
+              <p class="tenant-educational-stages-modal-error">{{ countriesError() }}</p>
+            }
+            @if (createForm.controls.countryId.touched && createForm.controls.countryId.hasError('required')) {
+              <p class="tenant-educational-stages-modal-error">Country is required.</p>
+            }
+          </div>
+
+          @if (saveError()) {
+            <p class="tenant-educational-stages-modal-error">{{ saveError() }}</p>
+          }
+        </div>
+
+        <div class="tenant-educational-stages-modal-actions">
+          <button type="button" (click)="closeCreateModal()" class="tenant-educational-stages-modal-cancel" [disabled]="saving()">
+            Cancel
+          </button>
+          <button type="submit" class="tenant-educational-stages-modal-save" [disabled]="createForm.invalid || saving() || countriesLoading()">
+            {{ saving() ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</div>

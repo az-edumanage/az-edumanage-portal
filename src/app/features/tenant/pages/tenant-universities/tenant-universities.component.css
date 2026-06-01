@@ -1,0 +1,515 @@
+:host {
+  display: block;
+}
+
+.tenant-universities-page {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.tenant-universities-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.tenant-universities-title {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.tenant-universities-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.tenant-universities-add-btn {
+  height: 2.5rem;
+  padding-inline: var(--space-4);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-lg);
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  box-shadow: var(--shadow-lg, 0 10px 15px -3px rgb(79 70 229 / 0.2));
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.tenant-universities-add-btn:hover {
+  background: var(--color-action-primary-hover);
+}
+
+.tenant-universities-add-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-action-primary) 30%, transparent);
+}
+
+.tenant-universities-filter-shell {
+  padding: var(--space-4);
+  border-radius: var(--radius-2xl, 1rem);
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.tenant-universities-filter-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.tenant-universities-search {
+  width: 100%;
+  flex: 1;
+  position: relative;
+}
+
+.tenant-universities-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.tenant-universities-search-input {
+  width: 100%;
+  padding: var(--space-2) var(--space-4) var(--space-2) 2.5rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-muted);
+  font-size: var(--font-size-sm);
+  transition: box-shadow 0.2s ease;
+}
+
+.tenant-universities-search-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-action-primary) 30%, transparent);
+}
+
+.tenant-universities-filter-actions {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.tenant-universities-advanced-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  white-space: nowrap;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  transition: background-color 0.2s ease;
+}
+
+.tenant-universities-advanced-filter-btn:hover {
+  background: var(--color-bg-muted);
+}
+
+.tenant-universities-filter-count {
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding-inline: 0.25rem;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.625rem;
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action);
+  box-shadow: var(--shadow-sm);
+}
+
+.tenant-universities-filter-dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 50;
+  margin-top: var(--space-2);
+  width: 18rem;
+  padding: 1.25rem;
+  border-radius: var(--radius-2xl, 1rem);
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-xl, 0 20px 25px -5px rgb(15 23 42 / 0.12));
+  display: grid;
+  gap: 1.25rem;
+}
+
+.tenant-universities-filter-dropdown-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.tenant-universities-filter-dropdown-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.tenant-universities-filter-reset {
+  font-size: 0.625rem;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-danger);
+}
+
+.tenant-universities-filter-fields {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.tenant-universities-filter-label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 0.625rem;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.tenant-universities-filter-select {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-muted);
+  font-size: var(--font-size-sm);
+}
+
+.tenant-universities-filter-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-action-primary) 30%, transparent);
+}
+
+.tenant-universities-filter-select:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.tenant-universities-filter-apply {
+  width: 100%;
+  padding-block: var(--space-2);
+  border-radius: var(--radius-lg);
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+
+.tenant-universities-filter-apply:hover {
+  background: var(--color-action-primary-hover);
+}
+
+.tenant-universities-reset-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-xl);
+  white-space: nowrap;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-danger);
+}
+
+.tenant-universities-reset-all:hover {
+  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+}
+
+.tenant-universities-table-shell {
+  overflow: hidden;
+  border-radius: var(--radius-2xl, 1rem);
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.tenant-universities-table-scroll {
+  overflow-x: auto;
+}
+
+.tenant-universities-table {
+  width: 100%;
+  text-align: left;
+  font-size: var(--font-size-sm);
+}
+
+.tenant-universities-table-head {
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border-primary);
+  background: var(--color-bg-muted);
+}
+
+.tenant-universities-th {
+  padding: var(--space-4) var(--space-6);
+  font-size: 0.625rem;
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.tenant-universities-th--center {
+  text-align: center;
+}
+
+.tenant-universities-th--actions {
+  text-align: right;
+}
+
+.tenant-universities-tr {
+  border-top: 1px solid var(--color-border-primary);
+  transition: background-color 0.2s ease;
+}
+
+.tenant-universities-tr:hover {
+  background: var(--color-bg-muted);
+}
+
+.tenant-universities-td {
+  padding: var(--space-4) var(--space-6);
+  vertical-align: middle;
+}
+
+.tenant-universities-td--center {
+  text-align: center;
+}
+
+.tenant-universities-td--actions {
+  text-align: right;
+}
+
+.tenant-universities-row-name-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.tenant-universities-row-icon-wrap {
+  padding: 0.375rem;
+  border-radius: var(--radius-lg);
+  color: var(--color-action-primary);
+  background: color-mix(in srgb, var(--color-action-primary) 10%, transparent);
+}
+
+.tenant-universities-row-name {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.tenant-universities-row-description {
+  margin-top: 0.125rem;
+  max-width: 28rem;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.tenant-universities-country {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.tenant-universities-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--color-text-muted);
+}
+
+.tenant-universities-count span {
+  font-weight: var(--font-weight-medium);
+}
+
+.tenant-universities-row-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.tenant-universities-row-btn {
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-muted);
+  transition: color 0.2s ease, background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.tenant-universities-row-btn--view,
+.tenant-universities-row-btn--edit {
+  color: var(--color-action-primary);
+}
+
+.tenant-universities-row-btn--delete {
+  color: var(--color-danger);
+}
+
+.tenant-universities-row-btn--view:hover,
+.tenant-universities-row-btn--edit:hover {
+  background: color-mix(in srgb, var(--color-action-primary) 10%, transparent);
+}
+
+.tenant-universities-row-btn--delete:hover {
+  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+}
+
+.tenant-universities-row-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.tenant-universities-empty {
+  padding: 3rem;
+  text-align: center;
+  border-radius: var(--radius-2xl, 1rem);
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-card);
+}
+
+.tenant-universities-empty-icon-wrap {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto var(--space-4);
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-muted);
+}
+
+.tenant-universities-empty-title {
+  font-size: var(--font-size-xl, 1.125rem);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.tenant-universities-empty-text {
+  max-width: 20rem;
+  margin: 0.25rem auto 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.tenant-universities-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: var(--space-6);
+  background: rgb(15 23 42 / 0.45);
+}
+
+.tenant-universities-modal-panel {
+  width: min(100%, 32rem);
+}
+
+.tenant-universities-status-modal {
+  width: min(100%, 26rem);
+  padding: var(--space-6);
+  border-radius: var(--radius-2xl, 1rem);
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-xl, 0 24px 80px rgb(15 23 42 / 0.22));
+  text-align: center;
+}
+
+.tenant-universities-status-icon {
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto var(--space-4);
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-action-primary) 12%, transparent);
+  color: var(--color-action-primary);
+}
+
+.tenant-universities-status-title {
+  font-size: var(--font-size-xl, 1.125rem);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.tenant-universities-status-message {
+  max-width: 22rem;
+  margin: var(--space-2) auto 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.tenant-universities-status-action {
+  min-height: 2.5rem;
+  margin-top: var(--space-5);
+  padding-inline: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.tenant-universities-status-action:hover {
+  background: var(--color-action-primary-hover);
+}
+
+.tenant-universities-empty-btn {
+  margin-top: var(--space-6);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.tenant-universities-empty-btn:hover {
+  background: var(--color-action-primary-hover);
+}
+
+.tenant-universities-modal-error {
+  margin-top: 0.375rem;
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+}
+
+.dark .tenant-universities-filter-shell,
+.dark .tenant-universities-advanced-filter-btn,
+.dark .tenant-universities-table-shell,
+.dark .tenant-universities-table-head,
+.dark .tenant-universities-tr,
+.dark .tenant-universities-empty {
+  border-color: var(--color-border-primary);
+}
+
+@media (min-width: 768px) {
+  .tenant-universities-header,
+  .tenant-universities-filter-row {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .tenant-universities-filter-actions {
+    width: auto;
+  }
+}

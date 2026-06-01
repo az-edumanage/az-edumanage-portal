@@ -1,8 +1,10 @@
 import { Injectable, signal, inject, PLATFORM_ID } from '@angular/core';
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
+import { safeRedirect } from '../auth/auth-url.utils';
 
 export type UserRole = 'owner' | 'tenant' | 'teacher';
+export type WorkspaceRole = UserRole | null;
 export type TenantTheme = 'default' | 'ocean';
 
 @Injectable({
@@ -13,14 +15,32 @@ export class DashboardService {
   private router = inject(Router);
   private document = inject(DOCUMENT);
 
-  // State
-  readonly currentRole = signal<UserRole>('owner');
+  readonly currentRole = signal<WorkspaceRole>(this.resolveWorkspaceFromUrl(this.router.url));
   readonly sidebarCollapsed = signal<boolean>(false);
   readonly returnUrl = signal<string | null>(null);
   readonly theme = signal<'light' | 'dark'>(this.getInitialTheme());
   readonly tenantTheme = signal<TenantTheme>(this.getInitialTenantTheme());
   readonly criticalNotification = signal<{title: string, message: string} | null>(null);
   readonly pendingSubscriptionOrdersCount = signal<number>(3); // Mock initial value based on current mock data
+
+  resolveWorkspaceFromUrl(url: string | null | undefined): WorkspaceRole {
+    const path = (url ?? '').split('?')[0]?.split('#')[0] ?? '';
+    const firstSegment = path.split('/').filter(Boolean)[0];
+    if (firstSegment === 'owner' || firstSegment === 'tenant' || firstSegment === 'teacher') {
+      return firstSegment;
+    }
+    return null;
+  }
+
+  syncRoleFromUrl(url: string | null | undefined = this.router.url): WorkspaceRole {
+    const role = this.resolveWorkspaceFromUrl(url);
+    this.currentRole.set(role);
+    if (role === 'tenant') {
+      this.syncTenantThemeFromStorage();
+    }
+    this.applyTheme();
+    return role;
+  }
 
   private getInitialTheme(): 'light' | 'dark' {
     if (isPlatformBrowser(this.platformId)) {
@@ -50,33 +70,29 @@ export class DashboardService {
     }
   }
 
-  // Actions
   toggleSidebar() {
     this.sidebarCollapsed.update(v => !v);
   }
 
-  setRole(role: UserRole, navigate = true) {
+  setRole(role: WorkspaceRole, navigate = true): Promise<boolean> | void {
     this.currentRole.set(role);
     if (role === 'tenant') {
       this.syncTenantThemeFromStorage();
     }
     this.applyTheme();
 
-    if (!navigate) {
+    if (!navigate || role === null) {
       return;
     }
 
-    if (role === 'owner') {
-      const backUrl = this.returnUrl();
-      if (backUrl) {
-        this.router.navigateByUrl(backUrl);
-        this.returnUrl.set(null);
-      } else {
-        this.router.navigate(['/owner/overview']);
-      }
-    } else {
-      this.router.navigate([`/${role}/overview`]);
+    const backUrl = safeRedirect(this.returnUrl());
+    if (backUrl) {
+      const navigation = this.router.navigateByUrl(backUrl);
+      this.returnUrl.set(null);
+      return navigation;
     }
+
+    return this.router.navigate([`/${role}/overview`]);
   }
 
   toggleTheme() {
@@ -114,7 +130,6 @@ export class DashboardService {
     }
   }
 
-  // Initialize theme
   initTheme() {
     this.applyTheme();
   }

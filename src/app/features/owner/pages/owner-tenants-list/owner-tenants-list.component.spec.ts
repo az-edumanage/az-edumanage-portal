@@ -1,4 +1,5 @@
 import { signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { vi } from 'vitest';
@@ -8,6 +9,10 @@ import { I18nService } from '../../../../core/services/i18n.service';
 import { DashboardService } from '../../../../core/services/dashboard.service';
 import { OwnerTenantStatusesDataService } from '../../data-access/owner-tenant-statuses-data.service';
 import { OwnerTenantsDataService } from '../../data-access/owner-tenants-data.service';
+import { TenantImpersonationService } from '../../../../core/auth/tenant-impersonation.service';
+
+@Component({ standalone: true, template: '' })
+class DummyComponent {}
 
 describe('OwnerTenantsListComponent', () => {
   const mockTenant = {
@@ -51,15 +56,15 @@ describe('OwnerTenantsListComponent', () => {
     healths: ['Healthy', 'Degraded', 'Down'],
     activeFilterCount: signal(0),
     filteredTenants: signal([mockTenant]),
-    toggleFilter: () => {},
-    clearFilters: () => {},
-    requestStatusChange: () => {},
+    toggleFilter: vi.fn(),
+    clearFilters: vi.fn(),
+    requestStatusChange: vi.fn(),
     confirmStatusChange: vi.fn().mockResolvedValue(true),
-    cancelStatusChange: () => {},
+    cancelStatusChange: vi.fn(),
     isLifecycleStatusPending: (tenantId: string) => mockFacade.pendingLifecycleStatusTenantIds().has(tenantId),
-    requestPlanChange: () => {},
-    confirmPlanChange: () => {},
-    cancelPlanChange: () => {},
+    requestPlanChange: vi.fn(),
+    confirmPlanChange: vi.fn(),
+    cancelPlanChange: vi.fn(),
     canManualSettle: () => true,
     requestManualSettlement: vi.fn(),
     cancelManualSettlement: vi.fn(),
@@ -73,7 +78,7 @@ describe('OwnerTenantsListComponent', () => {
 
   const mockDashboardService = {
     returnUrl: signal(''),
-    setRole: () => {},
+    setRole: vi.fn(),
   };
 
   const mockStatusesData = {
@@ -84,18 +89,34 @@ describe('OwnerTenantsListComponent', () => {
     loadFromBackend: () => Promise.resolve(),
   };
 
+  const mockTenantImpersonationService = {
+    start: vi.fn().mockResolvedValue({
+      activeWorkspace: 'TENANT',
+      impersonatedTenantId: 'tenant-1',
+      impersonatedTenantName: 'Bright Center',
+      startedByRole: 'OWNER',
+      returnUrl: '/owner/tenants',
+      startedAt: '2026-05-25T10:00:00Z',
+    }),
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [OwnerTenantsListComponent],
       providers: [
-        provideRouter([]),
+        provideRouter([{ path: 'tenant/overview', component: DummyComponent }]),
         { provide: OwnerTenantsListFacade, useValue: mockFacade },
         { provide: I18nService, useValue: mockI18n },
         { provide: DashboardService, useValue: mockDashboardService },
         { provide: OwnerTenantStatusesDataService, useValue: mockStatusesData },
         { provide: OwnerTenantsDataService, useValue: mockTenantsData },
+        { provide: TenantImpersonationService, useValue: mockTenantImpersonationService },
       ],
     }).compileComponents();
+  });
+
+  beforeEach(() => {
+    mockTenantImpersonationService.start.mockClear();
   });
 
   it('renders the row status badge from the tenant row model', () => {
@@ -208,5 +229,18 @@ describe('OwnerTenantsListComponent', () => {
     expect(text).toContain('Tenant lifecycle status could not be updated.');
 
     mockFacade.lifecycleStatusSubmissionError.set(null);
+  });
+
+  it('starts tenant impersonation from the row action and navigates to tenant overview', async () => {
+    const fixture = TestBed.createComponent(OwnerTenantsListComponent);
+    fixture.detectChanges();
+
+    await fixture.componentInstance.impersonate(mockTenant as never);
+
+    expect(mockTenantImpersonationService.start).toHaveBeenCalledWith(
+      'tenant-1',
+      'Bright Center',
+      '/',
+    );
   });
 });

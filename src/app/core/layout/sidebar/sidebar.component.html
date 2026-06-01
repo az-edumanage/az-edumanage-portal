@@ -79,7 +79,7 @@
                 <button 
 	                  (click)="toggleAccordion(item.labelKey)"
 	                  class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 hover:text-white hover:bg-slate-800 transition-colors group relative"
-	                  [class.text-white]="isAccordionOpen(item.labelKey)"
+	                  [class.text-white]="isAccordionExpanded(item)"
 		                  [title]="collapsed() ? t(item.labelKey) : ''"
 		                >
 	                  <mat-icon class="shrink-0 text-[20px]">{{ item.icon }}</mat-icon>
@@ -104,7 +104,7 @@
                   }
                   
 	                  @if (!collapsed()) {
-	                    <mat-icon class="text-sm transition-transform duration-200" [class.rotate-180]="isAccordionOpen(item.labelKey)">
+	                    <mat-icon class="text-sm transition-transform duration-200" [class.rotate-180]="isAccordionExpanded(item)">
 	                      expand_more
 	                    </mat-icon>
 	                  }
@@ -122,7 +122,7 @@
 		                  }
 		                </button>
 
-	                @if (isAccordionOpen(item.labelKey) && !collapsed()) {
+	                @if (isAccordionExpanded(item) && !collapsed()) {
 	                  <div class="pl-10 space-y-1">
 	                    @for (child of item.children; track child.labelKey) {
 	                      <a 

@@ -14,8 +14,16 @@ export class TenantGradesFacade {
   readonly sortBy = this.store.sortBy;
 
   readonly grades = this.store.grades;
+  readonly loading = this.store.loading;
+  readonly loadError = this.store.loadError;
   readonly activeFiltersCount = this.store.activeFiltersCount;
   readonly filteredGrades = this.store.filteredGrades;
+  readonly levelOptions = this.store.levelOptions;
+  readonly deleteState = this.store.deleteState;
+
+  loadGrades(): Promise<void> {
+    return this.store.loadGrades();
+  }
 
   setFilters(level: string, minStudents: number | null, maxStudents: number | null, sortBy: string): void {
     this.levelFilter.set(level);
@@ -36,4 +44,12 @@ export class TenantGradesFacade {
   toggleFilterPanel(): void {
     this.showFilterPanel.update((value) => !value);
   }
+
+  openDeleteConfirmation = this.store.openDeleteConfirmation.bind(this.store);
+
+  cancelDelete = this.store.cancelDelete.bind(this.store);
+
+  closeDeleteModal = this.store.closeDeleteModal.bind(this.store);
+
+  confirmDelete = this.store.confirmDelete.bind(this.store);
 }

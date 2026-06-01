@@ -1,6 +1,7 @@
 export type OwnerSettingsTabId =
   | 'general'
   | 'subject'
+  | 'country'
   | 'presets'
   | 'security'
   | 'roles'

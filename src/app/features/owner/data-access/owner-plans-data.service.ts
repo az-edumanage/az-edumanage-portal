@@ -9,7 +9,7 @@ type PlanStatus = 'Active' | 'Archived' | 'Draft';
 type PlanVisibility = 'Public' | 'Private';
 type PlanCurrency = 'USD' | 'EUR' | 'EGP';
 
-type PlanResponse = {
+interface PlanResponse {
   id: string;
   name: string;
   description?: string;
@@ -30,7 +30,7 @@ type PlanResponse = {
   allowDowngrade?: boolean;
   isRecommended?: boolean;
   showAnnualPrice?: boolean;
-};
+}
 
 @Injectable({ providedIn: 'root' })
 export class OwnerPlansDataService {
@@ -59,6 +59,7 @@ export class OwnerPlansDataService {
       maxStorage: plan.maxStorage,
       trialDays: plan.trialDays,
       visibility: plan.visibility,
+      moduleIds: plan.moduleIds ?? [],
       isRecommended: !!plan.isRecommended,
       showAnnualPrice: !!plan.showAnnualPrice,
     })));

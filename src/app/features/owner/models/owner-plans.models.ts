@@ -10,6 +10,7 @@ export interface Plan {
   maxStorage: number;
   trialDays: number;
   visibility: 'Public' | 'Private';
+  moduleIds: string[];
   isRecommended: boolean;
   showAnnualPrice: boolean;
 }

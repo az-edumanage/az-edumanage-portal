@@ -3,22 +3,44 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthTokenService } from './auth-token.service';
-import { AuthIdentityService, AuthIdentity } from './auth-identity.service';
+import { AuthIdentityService } from './auth-identity.service';
+import type { AuthIdentity } from './auth-identity.service';
 
-interface LoginResponse {
+export type AuthWorkspace = 'owner' | 'tenant' | 'teacher';
+
+export interface TenantPlanContext {
+  tenantId: string;
+  planId: string;
+  planName: string;
+  isTrial: boolean;
+  subscriptionType: 'trial' | 'production';
+  moduleCodes: string[];
+}
+
+export interface LoginResponse {
   accessToken: string;
   username: string;
   roles?: string[];
   primaryRole?: string;
+  workspace?: AuthWorkspace;
   tenantId?: string | null;
+  tenantPlan?: TenantPlanContext | null;
+  passwordChangeRequired?: boolean;
 }
 
 export interface MeResponse {
   username: string;
   roles: string[];
   primaryRole: string;
+  workspace?: AuthWorkspace;
   tenantId: string | null;
   tenantAccess: TenantAccessContext | null;
+  tenantPlan: TenantPlanContext | null;
+  originalUsername?: string | null;
+  impersonating?: boolean;
+  impersonatedTenantId?: string | null;
+  impersonatedTenantName?: string | null;
+  passwordChangeRequired?: boolean;
 }
 
 export interface TenantAccessContext {
@@ -36,7 +58,7 @@ export class AuthApiService {
   private readonly tokenService = inject(AuthTokenService);
   private readonly identityService = inject(AuthIdentityService);
 
-  async login(username: string, password: string, workspace: 'owner' | 'tenant' | 'teacher'): Promise<string> {
+  async login(username: string, password: string, workspace: AuthWorkspace): Promise<LoginResponse> {
     const response = await firstValueFrom(
       this.http.post<LoginResponse>(`${environment.apiBaseUrl}/auth/login`, {
         username,
@@ -47,7 +69,7 @@ export class AuthApiService {
 
     this.tokenService.setToken(response.accessToken);
     this.identityService.setIdentity(this.toIdentity(response));
-    return response.accessToken;
+    return response;
   }
 
   async ensureLoggedIn(): Promise<string> {
@@ -61,6 +83,16 @@ export class AuthApiService {
   async me(): Promise<MeResponse> {
     const response = await firstValueFrom(this.http.get<MeResponse>(`${environment.apiBaseUrl}/auth/me`));
     this.identityService.setIdentity(this.toIdentity(response));
+    return response;
+  }
+
+  async changeInitialPassword(newPassword: string, confirmPassword: string): Promise<{ passwordChangeRequired: boolean }> {
+    const response = await firstValueFrom(
+      this.http.post<{ passwordChangeRequired: boolean }>(`${environment.apiBaseUrl}/auth/initial-password/change`, {
+        newPassword,
+        confirmPassword,
+      }),
+    );
     return response;
   }
 
@@ -81,11 +113,31 @@ export class AuthApiService {
   }
 
   private toIdentity(source: LoginResponse | MeResponse): AuthIdentity {
+    const primaryRole = source.primaryRole ?? source.roles?.[0] ?? 'OWNER';
+
     return {
       username: source.username,
       roles: source.roles ?? [],
-      primaryRole: source.primaryRole ?? source.roles?.[0] ?? 'OWNER',
+      primaryRole,
+      workspace: source.workspace ?? this.inferWorkspace(primaryRole, source.tenantId ?? null),
       tenantId: source.tenantId ?? null,
+      tenantPlan: source.tenantPlan ?? null,
+      passwordChangeRequired: source.passwordChangeRequired ?? false,
     };
+  }
+
+  private inferWorkspace(primaryRole: string, tenantId: string | null): AuthWorkspace {
+    const normalizedRole = primaryRole.trim().toUpperCase();
+
+    if (normalizedRole === 'SUPER_ADMIN' || normalizedRole === 'OWNER') {
+      return 'owner';
+    }
+    if (normalizedRole === 'TENANT_ADMIN' || (normalizedRole === 'WEB_USER' && tenantId)) {
+      return 'tenant';
+    }
+    if (normalizedRole === 'TEACHER') {
+      return 'teacher';
+    }
+    return 'owner';
   }
 }

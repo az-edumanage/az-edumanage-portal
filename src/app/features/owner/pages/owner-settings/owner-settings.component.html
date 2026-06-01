@@ -79,6 +79,10 @@
           ></app-owner-settings-subject-tab>
         }
 
+        @if (activeTab() === 'country') {
+          <app-owner-settings-country-tab [translate]="t"></app-owner-settings-country-tab>
+        }
+
         @if (activeTab() === 'presets') {
           <app-owner-settings-presets-tab
             [translate]="t"

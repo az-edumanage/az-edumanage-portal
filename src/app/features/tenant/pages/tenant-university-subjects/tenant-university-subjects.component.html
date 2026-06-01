@@ -1,0 +1,289 @@
+<div class="tenant-university-subjects-page">
+  <div class="tenant-university-subjects-header">
+    <div>
+      <h2 class="tenant-university-subjects-title">Subjects</h2>
+      <p class="tenant-university-subjects-subtitle">Manage university subjects and their university/college context.</p>
+    </div>
+    <div class="tenant-university-subjects-header-actions">
+      <div class="tenant-university-subjects-view-switch">
+        <button
+          type="button"
+          (click)="onViewMode('grid')"
+          [class.bg-indigo-600/10]="viewMode() === 'grid'"
+          [class.text-indigo-600]="viewMode() === 'grid'"
+          [class.text-slate-500]="viewMode() !== 'grid'"
+          class="tenant-university-subjects-view-btn"
+          title="Grid View"
+        >
+          <mat-icon class="text-sm block">grid_view</mat-icon>
+        </button>
+        <button
+          type="button"
+          (click)="onViewMode('list')"
+          [class.bg-indigo-600/10]="viewMode() === 'list'"
+          [class.text-indigo-600]="viewMode() === 'list'"
+          [class.text-slate-500]="viewMode() !== 'list'"
+          class="tenant-university-subjects-view-btn"
+          title="List View"
+        >
+          <mat-icon class="text-sm block">view_list</mat-icon>
+        </button>
+      </div>
+      <a routerLink="/tenant/university-subjects/create" class="tenant-university-subjects-add-btn">
+        <mat-icon class="text-sm">add</mat-icon>
+        Add Subject
+      </a>
+    </div>
+  </div>
+
+  <div class="tenant-university-subjects-filter-shell">
+    <div class="tenant-university-subjects-filter-row">
+      <div class="tenant-university-subjects-search">
+        <mat-icon class="tenant-university-subjects-search-icon">search</mat-icon>
+        <input
+          type="search"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearch($event)"
+          placeholder="Search subjects by name, university, or college..."
+          class="tenant-university-subjects-search-input"
+        >
+      </div>
+
+      <div class="tenant-university-subjects-filter-actions">
+        <div class="relative">
+          <button
+            type="button"
+            (click)="toggleFilterPanel()"
+            [class.bg-indigo-600/10]="showFilterPanel() || activeFiltersCount() > 0"
+            [class.text-indigo-600]="showFilterPanel() || activeFiltersCount() > 0"
+            [class.border-indigo-200]="showFilterPanel() || activeFiltersCount() > 0"
+            class="tenant-university-subjects-advanced-filter-btn"
+          >
+            <mat-icon class="text-sm">filter_list</mat-icon>
+            Filters
+            @if (activeFiltersCount() > 0) {
+              <span class="tenant-university-subjects-filter-count">
+                {{ activeFiltersCount() }}
+              </span>
+            }
+            <mat-icon class="text-xs transition-transform duration-200" [class.rotate-180]="showFilterPanel()">expand_more</mat-icon>
+          </button>
+
+          @if (showFilterPanel()) {
+            <div class="tenant-university-subjects-filter-dropdown">
+              <div class="tenant-university-subjects-filter-dropdown-head">
+                <h3 class="tenant-university-subjects-filter-dropdown-title">Filter Options</h3>
+                <button type="button" (click)="clearAdvancedFilters()" class="tenant-university-subjects-filter-reset">Reset</button>
+              </div>
+
+              <div class="tenant-university-subjects-filter-fields">
+                <div>
+                  <label for="subject-university-filter" class="tenant-university-subjects-filter-label">University</label>
+                  <select
+                    id="subject-university-filter"
+                    [ngModel]="universityFilter()"
+                    (ngModelChange)="onUniversityFilter($event)"
+                    [disabled]="optionsLoading()"
+                    class="tenant-university-subjects-filter-select"
+                  >
+                    <option value="">All Universities</option>
+                    @for (university of universityOptions(); track university.value) {
+                      <option [value]="university.value">{{ university.label }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div>
+                  <label for="subject-college-filter" class="tenant-university-subjects-filter-label">College</label>
+                  <select
+                    id="subject-college-filter"
+                    [ngModel]="collegeFilter()"
+                    (ngModelChange)="onCollegeFilter($event)"
+                    [disabled]="optionsLoading()"
+                    class="tenant-university-subjects-filter-select"
+                  >
+                    <option value="">All Colleges</option>
+                    @for (college of collegeOptions(); track college.value) {
+                      <option [value]="college.value">{{ college.label }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+
+              <div class="tenant-university-subjects-filter-apply-wrap">
+                <button type="button" (click)="toggleFilterPanel()" class="tenant-university-subjects-filter-apply">
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        @if (activeFiltersCount() > 0) {
+          <button
+            type="button"
+            (click)="clearAllFilters()"
+            class="tenant-university-subjects-reset-all"
+          >
+            <mat-icon class="text-sm">restart_alt</mat-icon>
+            Reset All
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="tenant-university-subjects-empty">
+      <div class="tenant-university-subjects-empty-icon-wrap">
+        <mat-icon class="text-slate-500 animate-spin">sync</mat-icon>
+      </div>
+      <h3 class="tenant-university-subjects-empty-title">Loading subjects</h3>
+      <p class="tenant-university-subjects-empty-text">Please wait while university subjects are loaded.</p>
+    </div>
+  } @else if (loadError()) {
+    <div class="tenant-university-subjects-empty">
+      <div class="tenant-university-subjects-empty-icon-wrap">
+        <mat-icon class="text-slate-500">error_outline</mat-icon>
+      </div>
+      <h3 class="tenant-university-subjects-empty-title">Unable to load subjects</h3>
+      <p class="tenant-university-subjects-empty-text">{{ loadError() }}</p>
+      <button type="button" (click)="clearAllFilters()" class="tenant-university-subjects-empty-btn">
+        Clear Filters
+      </button>
+    </div>
+  } @else if (deleteError()) {
+    <div class="tenant-university-subjects-empty">
+      <div class="tenant-university-subjects-empty-icon-wrap">
+        <mat-icon class="text-slate-500">error_outline</mat-icon>
+      </div>
+      <h3 class="tenant-university-subjects-empty-title">Unable to delete subject</h3>
+      <p class="tenant-university-subjects-empty-text">{{ deleteError() }}</p>
+    </div>
+  } @else if (subjects().length > 0) {
+    @if (viewMode() === 'grid') {
+      <div class="tenant-university-subjects-grid">
+        @for (subject of subjects(); track subject.id) {
+          <div class="tenant-university-subjects-card">
+            <div class="tenant-university-subjects-card-head">
+              <div class="tenant-university-subjects-card-icon-wrap">
+                <mat-icon class="tenant-university-subjects-card-icon">menu_book</mat-icon>
+              </div>
+              <div class="tenant-university-subjects-card-actions">
+                <a [routerLink]="['/tenant/university-subjects', subject.id, 'edit']" class="tenant-university-subjects-icon-btn" title="Edit">
+                  <mat-icon class="text-sm">edit</mat-icon>
+                </a>
+                <button type="button" (click)="deleteSubject(subject.id)" [disabled]="deletingId() === subject.id" class="tenant-university-subjects-icon-btn tenant-university-subjects-icon-btn--danger" title="Delete">
+                  <mat-icon class="text-sm">delete</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <h3 class="tenant-university-subjects-card-name">{{ subject.name }}</h3>
+            <p class="tenant-university-subjects-card-university">{{ subject.universityName }}</p>
+            <p class="tenant-university-subjects-card-college">{{ subject.collegeName }}</p>
+
+            <div class="tenant-university-subjects-card-footer">
+              <div class="tenant-university-subjects-card-metrics">
+                <span>
+                  <mat-icon class="text-sm">groups</mat-icon>
+                  {{ subject.groupCount }} Groups
+                </span>
+                <span>
+                  <mat-icon class="text-sm">school</mat-icon>
+                  {{ subject.studentCount }} Students
+                </span>
+              </div>
+              <a [routerLink]="['/tenant/university-subjects', subject.id]" class="tenant-university-subjects-view-link">
+                View Details
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="tenant-university-subjects-table-shell">
+        <div class="tenant-university-subjects-table-scroll">
+          <table class="tenant-university-subjects-table">
+            <thead class="tenant-university-subjects-table-head">
+              <tr>
+                <th class="tenant-university-subjects-th">Subject Name</th>
+                <th class="tenant-university-subjects-th">University</th>
+                <th class="tenant-university-subjects-th">College</th>
+                <th class="tenant-university-subjects-th tenant-university-subjects-th--center">Groups</th>
+                <th class="tenant-university-subjects-th tenant-university-subjects-th--center">Students</th>
+                <th class="tenant-university-subjects-th tenant-university-subjects-th--actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="tenant-university-subjects-tbody">
+              @for (subject of subjects(); track subject.id) {
+                <tr class="tenant-university-subjects-tr">
+                  <td class="tenant-university-subjects-td">
+                    <div class="tenant-university-subjects-row-name-wrap">
+                      <div class="tenant-university-subjects-row-icon-wrap">
+                        <mat-icon class="text-sm block">menu_book</mat-icon>
+                      </div>
+                      <span class="tenant-university-subjects-row-name">{{ subject.name }}</span>
+                    </div>
+                  </td>
+                  <td class="tenant-university-subjects-td">
+                    <span class="tenant-university-subjects-context-chip">
+                      {{ subject.universityName }}
+                    </span>
+                  </td>
+                  <td class="tenant-university-subjects-td">
+                    <span class="tenant-university-subjects-context-chip">
+                      {{ subject.collegeName }}
+                    </span>
+                  </td>
+                  <td class="tenant-university-subjects-td tenant-university-subjects-td--center">
+                    <div class="tenant-university-subjects-row-metric">
+                      <mat-icon class="text-xs">groups</mat-icon>
+                      <span>{{ subject.groupCount }}</span>
+                    </div>
+                  </td>
+                  <td class="tenant-university-subjects-td tenant-university-subjects-td--center">
+                    <div class="tenant-university-subjects-row-metric">
+                      <mat-icon class="text-xs">school</mat-icon>
+                      <span>{{ subject.studentCount }}</span>
+                    </div>
+                  </td>
+                  <td class="tenant-university-subjects-td tenant-university-subjects-td--actions">
+                    <div class="tenant-university-subjects-row-actions">
+                      <a [routerLink]="['/tenant/university-subjects', subject.id]" class="tenant-university-subjects-row-btn tenant-university-subjects-row-btn--view" title="View Details">
+                        <mat-icon class="text-sm block">visibility</mat-icon>
+                      </a>
+                      <a [routerLink]="['/tenant/university-subjects', subject.id, 'edit']" class="tenant-university-subjects-row-btn tenant-university-subjects-row-btn--edit" title="Edit">
+                        <mat-icon class="text-sm block">edit</mat-icon>
+                      </a>
+                      <button type="button" (click)="deleteSubject(subject.id)" [disabled]="deletingId() === subject.id" class="tenant-university-subjects-row-btn tenant-university-subjects-row-btn--delete" title="Delete">
+                        <mat-icon class="text-sm block">delete</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  } @else {
+    <div class="tenant-university-subjects-empty">
+      <div class="tenant-university-subjects-empty-icon-wrap">
+        <mat-icon class="text-slate-500">search_off</mat-icon>
+      </div>
+      <h3 class="tenant-university-subjects-empty-title">No subjects found</h3>
+      <p class="tenant-university-subjects-empty-text">
+        @if (allSubjects().length === 0) {
+          No university subjects have been created yet.
+        } @else {
+          We couldn't find any subjects matching your current search criteria.
+        }
+      </p>
+      <button type="button" (click)="clearAllFilters()" class="tenant-university-subjects-empty-btn">
+        Clear All Filters
+      </button>
+    </div>
+  }
+</div>

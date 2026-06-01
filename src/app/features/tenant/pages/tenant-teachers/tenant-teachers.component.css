@@ -74,6 +74,7 @@
 }
 
 .tenant-teachers-filter-shell {
+  min-height: 5.375rem;
   padding: var(--space-4);
   border-radius: var(--radius-2xl, 1rem);
   border: 1px solid var(--color-border-primary, #e2e8f0);
@@ -82,6 +83,7 @@
 }
 
 .tenant-teachers-filter-row {
+  min-height: 3.25rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -476,12 +478,19 @@
 }
 
 .tenant-teachers-tr {
+  cursor: pointer;
   border-top: 1px solid var(--color-border-primary, #e2e8f0);
   transition: background-color 0.2s ease;
 }
 
-.tenant-teachers-tr:hover {
+.tenant-teachers-tr:hover,
+.tenant-teachers-tr:focus-visible {
   background: var(--color-bg-muted, #f8fafc);
+}
+
+.tenant-teachers-tr:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-action-primary, #4f46e5) 40%, transparent);
+  outline-offset: -2px;
 }
 
 .tenant-teachers-td {
@@ -550,11 +559,6 @@
 .tenant-teachers-row-btn--edit:hover {
   background: var(--color-bg-muted, #f8fafc);
   color: #4f46e5;
-}
-
-.tenant-teachers-row-btn--deactivate:hover {
-  background: color-mix(in srgb, #ef4444 10%, transparent);
-  color: #dc2626;
 }
 
 .tenant-teachers-empty {
@@ -790,6 +794,7 @@
 .dark .tenant-teachers-filter-select,
 .dark .tenant-teachers-subject-chip,
 .dark .tenant-teachers-tr:hover,
+.dark .tenant-teachers-tr:focus-visible,
 .dark .tenant-teachers-empty-icon-wrap,
 .dark .tenant-teachers-chat-messages,
 .dark .tenant-teachers-chat-input {

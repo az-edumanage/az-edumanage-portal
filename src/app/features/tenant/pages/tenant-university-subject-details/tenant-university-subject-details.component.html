@@ -1,0 +1,167 @@
+<div class="space-y-6">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="space-y-1">
+      <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+        <a routerLink="/tenant/university-subjects" class="hover:text-indigo-600 transition-colors">Subjects</a>
+        <mat-icon class="text-[10px]">chevron_right</mat-icon>
+        <span>Subject Details</span>
+      </div>
+      <h2 class="text-2xl font-bold text-slate-900 dark:text-white">
+        @if (subject()) {
+          {{ subject()?.name }}
+        } @else {
+          Subject Details
+        }
+      </h2>
+      @if (subject()) {
+        <p class="text-slate-500 dark:text-slate-500 text-sm">{{ subject()?.universityName }} · {{ subject()?.collegeName }}</p>
+      }
+    </div>
+
+    @if (subject(); as selectedSubject) {
+      <div class="flex flex-col sm:flex-row gap-3">
+        <a
+          [routerLink]="['/tenant/university-subjects', selectedSubject.id, 'edit']"
+          class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors"
+        >
+          <mat-icon class="text-sm">edit</mat-icon>
+          Edit Subject
+        </a>
+        <button
+          type="button"
+          class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/30 dark:hover:bg-rose-950/50 dark:text-rose-300 rounded-lg text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+          (click)="deleteSubject()"
+          [disabled]="deletingId() === selectedSubject.id"
+        >
+          @if (deletingId() === selectedSubject.id) {
+            <mat-icon class="text-sm animate-spin">sync</mat-icon>
+            Deleting...
+          } @else {
+            <mat-icon class="text-sm">delete</mat-icon>
+            Delete
+          }
+        </button>
+      </div>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
+      <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+        <mat-icon class="text-slate-500 animate-spin">sync</mat-icon>
+      </div>
+      <h3 class="font-bold text-slate-900 dark:text-white">Loading subject details</h3>
+      <p class="text-sm text-slate-500 mt-1">Please wait while the subject is loaded.</p>
+    </div>
+  } @else if (loadError()) {
+    <div class="bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
+      <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+        <mat-icon class="text-slate-500">error_outline</mat-icon>
+      </div>
+      <h3 class="font-bold text-slate-900 dark:text-white">Unable to load subject</h3>
+      <p class="text-sm text-slate-500 mt-1">{{ loadError() }}</p>
+      <a routerLink="/tenant/university-subjects" class="inline-flex items-center gap-2 mt-5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors">
+        <mat-icon class="text-sm">arrow_back</mat-icon>
+        Back to Subjects
+      </a>
+    </div>
+  } @else if (subject(); as selectedSubject) {
+    @if (deleteError()) {
+      <div class="bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 p-4 rounded-xl text-sm flex items-center gap-2">
+        <mat-icon class="text-base">error_outline</mat-icon>
+        {{ deleteError() }}
+      </div>
+    }
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl bg-indigo-600/10 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600">
+          <mat-icon>account_balance</mat-icon>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">University</p>
+          <h4 class="text-xl font-bold text-slate-900 dark:text-white">{{ selectedSubject.universityName }}</h4>
+        </div>
+      </div>
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600">
+          <mat-icon>school</mat-icon>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Assigned Groups</p>
+          <h4 class="text-xl font-bold text-slate-900 dark:text-white">{{ selectedSubject.groupCount }}</h4>
+        </div>
+      </div>
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-amber-600">
+          <mat-icon>groups</mat-icon>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Students</p>
+          <h4 class="text-xl font-bold text-slate-900 dark:text-white">{{ selectedSubject.studentCount }}</h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Subject Information</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-500 leading-relaxed">
+            @if (selectedSubject.description) {
+              {{ selectedSubject.description }}
+            } @else {
+              {{ selectedSubject.name }} belongs to {{ selectedSubject.collegeName }} in {{ selectedSubject.universityName }}.
+            }
+          </p>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Assigned Groups</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead class="bg-slate-50 dark:bg-slate-800/50">
+                <tr>
+                  <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Group Name</th>
+                  <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Students</th>
+                  <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Teacher</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                <tr>
+                  <td colspan="3" class="px-6 py-8 text-center text-sm text-slate-500">
+                    No groups are assigned to this university subject.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Subject Metadata</h3>
+        <div class="space-y-4">
+          <div>
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">College</p>
+            <p class="text-sm font-medium text-slate-900 dark:text-white">{{ selectedSubject.collegeName }}</p>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">University</p>
+            <p class="text-sm font-medium text-slate-900 dark:text-white">{{ selectedSubject.universityName }}</p>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Created</p>
+            <p class="text-sm font-medium text-slate-900 dark:text-white">{{ selectedSubject.createdAt | date: 'medium' }}</p>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Last Updated</p>
+            <p class="text-sm font-medium text-slate-900 dark:text-white">{{ selectedSubject.updatedAt | date: 'medium' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

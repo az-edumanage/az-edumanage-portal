@@ -1,4 +1,4 @@
-import { Injectable, computed, inject } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -30,8 +30,6 @@ export class OwnerTenantCreateFacade {
   readonly isSubmitting = this.store.isSubmitting;
   readonly showTenantTypeDropdown = this.store.showTenantTypeDropdown;
   readonly tenantTypeSearchQuery = this.store.tenantTypeSearchQuery;
-  readonly showIndustryDropdown = this.store.showIndustryDropdown;
-  readonly industrySearchQuery = this.store.industrySearchQuery;
   readonly showPlanDropdown = this.store.showPlanDropdown;
   readonly planSearchQuery = this.store.planSearchQuery;
   readonly showDomainDropdown = this.store.showDomainDropdown;
@@ -40,23 +38,23 @@ export class OwnerTenantCreateFacade {
   readonly showCountryDropdown = this.store.showCountryDropdown;
   readonly countrySearchQuery = this.store.countrySearchQuery;
   readonly showCustomizationMenu = this.store.showCustomizationMenu;
+  readonly submitAttempted = signal(false);
+  readonly submitStatus = signal<{ success: boolean; message: string } | null>(null);
 
   readonly subscriptionTemplates = this.data.subscriptionTemplates;
+  readonly planLoadError = this.data.planLoadError;
   readonly tenantTypes = this.data.tenantTypes;
-  readonly industries = this.data.industries;
   readonly domains = this.data.domains;
-  readonly cities = this.data.cities;
-  readonly countries = this.data.countries;
+  readonly cities = this.data.cityDropdownOptions;
+  readonly countries = this.data.countryDropdownOptions;
+  readonly selectedCountryValue = signal('');
+  readonly selectedCityValue = signal('');
 
   readonly filteredTenantTypes = computed(() => {
     const query = this.tenantTypeSearchQuery().toLowerCase();
     return this.tenantTypes.filter((type) => type.toLowerCase().includes(query));
   });
 
-  readonly filteredIndustries = computed(() => {
-    const query = this.industrySearchQuery().toLowerCase();
-    return this.industries.filter((industry) => industry.toLowerCase().includes(query));
-  });
 
   readonly filteredPlans = computed(() => {
     const query = this.planSearchQuery().toLowerCase();
@@ -65,12 +63,12 @@ export class OwnerTenantCreateFacade {
 
   readonly filteredCities = computed(() => {
     const query = this.citySearchQuery().toLowerCase();
-    return this.cities.filter((city) => city.toLowerCase().includes(query));
+    return this.cities().filter((city) => city.label.toLowerCase().includes(query));
   });
 
   readonly filteredCountries = computed(() => {
     const query = this.countrySearchQuery().toLowerCase();
-    return this.countries.filter((country) => country.toLowerCase().includes(query));
+    return this.countries().filter((country) => country.label.toLowerCase().includes(query));
   });
 
   readonly selectedPlanName = computed(() => {
@@ -79,35 +77,44 @@ export class OwnerTenantCreateFacade {
     return template?.name ?? '';
   });
 
+  readonly selectedCountryName = computed(() =>
+    this.data.findCountryById(this.tenantForm.get('countryId')?.value)?.label ?? '',
+  );
+
+  readonly selectedCityName = computed(() =>
+    this.data.findCityById(this.tenantForm.get('cityId')?.value)?.label ?? '',
+  );
+
   readonly tenantForm = this.fb.group({
     centerName: [
-      '',
-      [Validators.required, Validators.minLength(3), this.checkExisting('name')],
+      "",
+      [Validators.required, Validators.minLength(3), this.checkExisting("name")],
     ],
-    tenantType: ['', Validators.required],
+    tenantType: ["", Validators.required],
+    tenantUsername: ["", [Validators.required, Validators.minLength(3), Validators.pattern("^[A-Za-z0-9._-]+$")]],
+    temporaryPassword: ["", [Validators.required, Validators.minLength(8)]],
     subdomain: [
-      '',
+      "",
       [
         Validators.required,
-        Validators.pattern('^[a-z0-9-]+$'),
-        this.checkExisting('subdomain'),
+        Validators.pattern("^[a-z0-9-]+$"),
+        this.checkExisting("subdomain"),
       ],
     ],
-    domain: ['.remix.com', Validators.required],
-    industry: ['', Validators.required],
-    contactName: [''],
-    contactEmail: ['', [Validators.email, this.checkExisting('email')]],
-    contactPhone: ['', [this.checkExisting('phone')]],
-    address: [''],
-    city: [''],
-    country: [''],
-    planId: ['', Validators.required],
+    domain: [".remix.com", Validators.required],
+    contactName: [""],
+    contactEmail: ["", [Validators.email, this.checkExisting("email")]],
+    contactPhone: ["", [this.checkExisting("phone")]],
+    address: [""],
+    countryId: [null as number | null, Validators.required],
+    cityId: [null as number | null, Validators.required],
+    planId: ["", Validators.required],
     isTrial: [true],
     trialDays: [
       14,
-      [Validators.required, Validators.min(1), Validators.pattern('^[0-9]*$')],
+      [Validators.required, Validators.min(1), Validators.pattern("^[0-9]*$")],
     ],
-    region: ['me-south-1'],
+    region: ["me-south-1"],
     autoProvision: [true],
     sendInvite: [true],
     onboardingLink: [false],
@@ -119,18 +126,39 @@ export class OwnerTenantCreateFacade {
     try {
       await this.data.loadBootstrapData();
     } catch {
-      // Keep page usable even if bootstrap data fails to load.
+      this.submitStatus.set({ success: false, message: "Tenant create data could not be loaded." });
     }
     const savedTask = this.taskService.getTask(this.taskId);
     if (savedTask && savedTask.data) {
-      const value = savedTask.data as Partial<TenantCreatePayload>;
-      this.tenantForm.patchValue(value);
+      const safeValue: Partial<TenantCreatePayload> = { ...(savedTask.data as Partial<TenantCreatePayload>) };
+      delete safeValue.temporaryPassword;
+      this.tenantForm.patchValue(safeValue);
+      this.syncSelectedLocationValues();
+      if (safeValue.countryId) {
+        await this.data.loadCities(safeValue.countryId);
+        if (!this.data.findCityById(safeValue.cityId)) {
+          this.tenantForm.patchValue({ cityId: null });
+          this.selectedCityValue.set("");
+        } else {
+          this.syncSelectedLocationValues();
+        }
+      } else {
+        this.tenantForm.patchValue({ cityId: null });
+        this.selectedCityValue.set("");
+        this.data.clearCities();
+      }
       this.taskService.removeTask(this.taskId);
     }
+    this.autoSelectDefaultPlan();
   }
 
   onDestroy(): void {
     const value = this.tenantForm.getRawValue();
+    const taskValue: Partial<typeof value> = { ...value };
+    delete taskValue.temporaryPassword;
+    if (!taskValue.countryId) {
+      delete taskValue.cityId;
+    }
     const hasData = value.centerName !== '' || value.subdomain !== '';
 
     if (hasData && !this.isSuccess && !this.isSubmitting()) {
@@ -139,7 +167,7 @@ export class OwnerTenantCreateFacade {
         type: 'form',
         label: `Provisioning: ${value.centerName || 'New Tenant'}`,
         route: '/owner/tenants/create',
-        data: value,
+        data: taskValue,
       });
     }
   }
@@ -152,7 +180,9 @@ export class OwnerTenantCreateFacade {
 
   onReset(): void {
     this.tenantForm.reset({
+      tenantUsername: '',
       domain: '.remix.com',
+      temporaryPassword: '',
       isTrial: true,
       trialDays: 14,
       region: 'me-south-1',
@@ -161,10 +191,14 @@ export class OwnerTenantCreateFacade {
       onboardingLink: false,
       sendOnboardingWhatsapp: false,
       sendOnboardingEmail: false,
+      countryId: null,
+      cityId: null,
     });
 
+    this.data.clearCities();
+    this.selectedCountryValue.set('');
+    this.selectedCityValue.set('');
     this.tenantTypeSearchQuery.set('');
-    this.industrySearchQuery.set('');
     this.planSearchQuery.set('');
     this.citySearchQuery.set('');
     this.countrySearchQuery.set('');
@@ -172,21 +206,33 @@ export class OwnerTenantCreateFacade {
   }
 
   onSubmit(): void {
+    this.submitAttempted.set(true);
+    this.submitStatus.set(null);
     if (this.tenantForm.invalid) {
       this.tenantForm.markAllAsTouched();
       return;
     }
 
     this.store.setSubmitting(true);
-    const payload = this.tenantForm.getRawValue() as TenantCreatePayload;
+    const rawValue = this.tenantForm.getRawValue();
+    const payload = {
+      ...rawValue,
+      tenantUsername: String(rawValue.tenantUsername ?? '').trim(),
+    } as TenantCreatePayload;
 
     this.data
       .createTenant(payload)
       .pipe(finalize(() => this.store.setSubmitting(false)))
-      .subscribe(() => {
-        this.isSuccess = true;
-        this.taskService.removeTask(this.taskId);
-        this.router.navigate(['/owner/tenants']);
+      .subscribe({
+        next: () => {
+          this.submitStatus.set({ success: true, message: 'Tenant provisioned successfully.' });
+          this.isSuccess = true;
+          this.taskService.removeTask(this.taskId);
+          this.router.navigate(['/owner/tenants']);
+        },
+        error: (error: unknown) => {
+          this.submitStatus.set({ success: false, message: this.extractErrorMessage(error) });
+        },
       });
   }
 
@@ -213,20 +259,6 @@ export class OwnerTenantCreateFacade {
     this.store.setDomainDropdownOpen(false);
   }
 
-  setIndustryDropdownOpen(value: boolean): void {
-    this.store.setIndustryDropdownOpen(value);
-  }
-
-  setIndustrySearchQuery(value: string): void {
-    this.industrySearchQuery.set(value);
-  }
-
-  selectIndustry(industry: string): void {
-    this.tenantForm.patchValue({ industry });
-    this.store.setIndustryDropdownOpen(false);
-    this.industrySearchQuery.set('');
-  }
-
   setCityDropdownOpen(value: boolean): void {
     this.store.setCityDropdownOpen(value);
   }
@@ -235,8 +267,10 @@ export class OwnerTenantCreateFacade {
     this.citySearchQuery.set(value);
   }
 
-  selectCity(city: string): void {
-    this.tenantForm.patchValue({ city });
+  selectCity(cityValue: string): void {
+    const selectedCity = this.data.findCityByValue(cityValue);
+    this.tenantForm.patchValue({ cityId: selectedCity?.id ?? null });
+    this.selectedCityValue.set(selectedCity?.value ?? '');
     this.store.setCityDropdownOpen(false);
     this.citySearchQuery.set('');
   }
@@ -249,10 +283,22 @@ export class OwnerTenantCreateFacade {
     this.countrySearchQuery.set(value);
   }
 
-  selectCountry(country: string): void {
-    this.tenantForm.patchValue({ country });
+  selectCountry(countryValue: string): void {
+    const selectedCountry = this.data.findCountryByValue(countryValue);
+    this.tenantForm.patchValue({
+      countryId: selectedCountry?.id ?? null,
+      cityId: null,
+    });
+    this.selectedCountryValue.set(selectedCountry?.value ?? '');
+    this.selectedCityValue.set('');
+    this.data.clearCities();
     this.store.setCountryDropdownOpen(false);
+    this.store.setCityDropdownOpen(false);
     this.countrySearchQuery.set('');
+    this.citySearchQuery.set('');
+    if (selectedCountry) {
+      void this.data.loadCities(selectedCountry.id);
+    }
   }
 
   setPlanDropdownOpen(value: boolean): void {
@@ -264,7 +310,11 @@ export class OwnerTenantCreateFacade {
   }
 
   selectPlan(planId: string): void {
-    this.tenantForm.patchValue({ planId });
+    const control = this.tenantForm.get('planId');
+    control?.setValue(planId);
+    control?.markAsDirty();
+    control?.markAsTouched();
+    control?.updateValueAndValidity();
     this.store.setPlanDropdownOpen(false);
     this.planSearchQuery.set('');
   }
@@ -279,13 +329,56 @@ export class OwnerTenantCreateFacade {
     this.store.setCustomizationMenuOpen(false);
   }
 
+  private syncSelectedLocationValues(): void {
+    const countryId = this.tenantForm.get('countryId')?.value;
+    const cityId = this.tenantForm.get('cityId')?.value;
+    this.selectedCountryValue.set(countryId == null ? '' : String(countryId));
+    this.selectedCityValue.set(cityId == null ? '' : String(cityId));
+  }
+
   private closeAllDropdowns(): void {
     this.store.setTenantTypeDropdownOpen(false);
-    this.store.setIndustryDropdownOpen(false);
     this.store.setPlanDropdownOpen(false);
     this.store.setDomainDropdownOpen(false);
     this.store.setCityDropdownOpen(false);
     this.store.setCountryDropdownOpen(false);
+  }
+
+  private autoSelectDefaultPlan(): void {
+    const currentPlanId = this.tenantForm.get('planId')?.value;
+    if (currentPlanId) {
+      return;
+    }
+
+    const plans = this.subscriptionTemplates();
+    const recommendedPlans = plans.filter((plan) => plan.popular);
+    const planToSelect = recommendedPlans.length === 1
+      ? recommendedPlans[0]
+      : plans.length === 1
+        ? plans[0]
+        : null;
+
+    if (planToSelect) {
+      const control = this.tenantForm.get('planId');
+      control?.setValue(planToSelect.id);
+      control?.updateValueAndValidity();
+    }
+  }
+
+  private extractErrorMessage(error: unknown): string {
+    if (typeof error === 'object' && error !== null) {
+      const maybeHttpError = error as { error?: { message?: unknown; details?: unknown }; message?: unknown };
+      const backendMessage = typeof maybeHttpError.error?.message === 'string' ? maybeHttpError.error.message.trim() : '';
+      const details = Array.isArray(maybeHttpError.error?.details) ? maybeHttpError.error.details.join(', ') : '';
+      if (backendMessage) {
+        return details ? backendMessage + ': ' + details : backendMessage;
+      }
+      if (typeof maybeHttpError.message === 'string' && maybeHttpError.message.trim()) {
+        return maybeHttpError.message;
+      }
+    }
+
+    return 'Tenant could not be provisioned.';
   }
 
   private checkExisting(field: TenantDuplicateField): ValidatorFn {

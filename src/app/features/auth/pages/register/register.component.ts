@@ -6,7 +6,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { AuthTokenService } from '../../../../core/auth/auth-token.service';
 import { AuthIdentityService } from '../../../../core/auth/auth-identity.service';
 import { DashboardService } from '../../../../core/services/dashboard.service';
-import { buildOAuthStartUrl, OAuthProvider } from '../../../../core/auth/oauth-endpoints';
 import {
   RegistrationFlowType,
   WebsiteRegistrationService,
@@ -69,7 +68,10 @@ export class RegisterComponent {
           username: payload.username,
           roles: ['TENANT_ADMIN'],
           primaryRole: 'TENANT_ADMIN',
+          workspace: 'tenant',
           tenantId: result.tenantId,
+          tenantPlan: null,
+      passwordChangeRequired: false,
         });
         this.successMessage.set('Free trial activated. Provisioning completed and dashboard is ready.');
         this.dashboardService.setRole('tenant');
@@ -86,19 +88,5 @@ export class RegisterComponent {
     } finally {
       this.submitting.set(false);
     }
-  }
-
-  signInWithGoogle(): void {
-    this.redirectToExternalAuth('google');
-  }
-
-  signInWithMicrosoft(): void {
-    this.redirectToExternalAuth('microsoft');
-  }
-
-  private redirectToExternalAuth(provider: OAuthProvider): void {
-    const callbackUrl = `${window.location.origin}/owner/login`;
-    const url = buildOAuthStartUrl(provider, callbackUrl);
-    window.location.assign(url);
   }
 }

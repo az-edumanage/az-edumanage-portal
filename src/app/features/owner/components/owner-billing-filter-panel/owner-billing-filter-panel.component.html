@@ -38,7 +38,7 @@
       [class.dark:hover:text-slate-300]="activeTab() !== 'failed'"
     >
       Failed Payments
-      <span class="px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-bold">12</span>
+      <span class="px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-bold">{{ failedPaymentCount() }}</span>
     </button>
     <button
       (click)="setTab('refunds')"

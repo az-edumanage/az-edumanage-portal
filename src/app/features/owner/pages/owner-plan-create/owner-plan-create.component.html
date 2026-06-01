@@ -12,7 +12,12 @@
       </div>
 
       <form [formGroup]="planForm" (ngSubmit)="onSubmit()" class="space-y-8">
-        
+        @if (isSystemTrialPlan()) {
+          <div class="rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900 dark:border-indigo-900/60 dark:bg-indigo-950/20 dark:text-indigo-200">
+            This is a protected system plan. Only trial duration, status, and modules can be changed.
+          </div>
+        }
+
         <!-- 1. Basic Info -->
         <div class="owner-plan-card">
           <h3 class="owner-plan-section-title mb-6 flex items-center gap-2">
@@ -42,6 +47,12 @@
                 <p class="mt-1 text-xs text-red-500 flex items-center gap-1">
                   <mat-icon class="text-[14px] w-[14px] h-[14px]">error_outline</mat-icon>
                   Plan name already exists in: {{ planForm.get('name')?.getError('alreadyExists').source }}
+                </p>
+              }
+              @if (planForm.get('name')?.hasError('systemPlanName') && (planForm.get('name')?.touched || planForm.get('name')?.dirty)) {
+                <p class="mt-1 text-xs text-red-500 flex items-center gap-1">
+                  <mat-icon class="text-[14px] w-[14px] h-[14px]">error_outline</mat-icon>
+                  SYSTEM_FREE_TRIAL is created by migration and cannot be created from this form.
                 </p>
               }
               @if (planForm.get('name')?.hasError('required') && (planForm.get('name')?.touched || planForm.get('name')?.dirty)) {

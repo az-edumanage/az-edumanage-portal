@@ -55,6 +55,7 @@ export class OwnerBillingStatusesDataService {
   private loadSeed(): TenantStatusItem[] {
     const seeded: TenantStatusItem[] = [
       { id: 'bill_paid', nameEn: 'Paid', nameAr: 'مدفوع', color: '#16a34a' },
+      { id: 'bill_open', nameEn: 'Open', nameAr: 'مفتوح', color: '#2563eb' },
       { id: 'bill_unpaid', nameEn: 'Unpaid', nameAr: 'غير مدفوع', color: '#2563eb' },
       { id: 'bill_overdue', nameEn: 'Overdue', nameAr: 'متأخر', color: '#d97706' },
       { id: 'bill_cancelled', nameEn: 'Cancelled', nameAr: 'ملغي', color: '#64748b' },
@@ -75,6 +76,8 @@ export class OwnerBillingStatusesDataService {
   private persist(statuses: TenantStatusItem[]): void {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(statuses));
-    } catch {}
+    } catch {
+      return;
+    }
   }
 }

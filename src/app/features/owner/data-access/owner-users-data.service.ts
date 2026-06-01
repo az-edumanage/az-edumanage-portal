@@ -151,69 +151,6 @@ export class OwnerUsersDataService {
     });
   }
 
-  upsertOAuthWebUser(payload: {
-    email: string;
-    username?: string;
-    fullName?: string;
-    avatar?: string;
-    status?: UserStatus;
-  }): PlatformUser {
-    const normalizedEmail = payload.email.trim().toLowerCase();
-    const normalizedUsername = (payload.username ?? '').trim().toLowerCase();
-    const now = 'Just now';
-
-    let resolved: PlatformUser | null = null;
-    this.users.update((allUsers) => {
-      const existingIndex = allUsers.findIndex((user) => {
-        const sameEmail = user.email.trim().toLowerCase() === normalizedEmail;
-        const sameUsername = normalizedUsername.length > 0
-          && (user.username ?? '').trim().toLowerCase() === normalizedUsername;
-        return user.portalType === 'web' && (sameEmail || sameUsername);
-      });
-
-      if (existingIndex >= 0) {
-        const existing = allUsers[existingIndex];
-        const updated: PlatformUser = {
-          ...existing,
-          fullName: (payload.fullName ?? existing.fullName).trim(),
-          email: normalizedEmail,
-          username: payload.username?.trim() || existing.username,
-          avatar: payload.avatar ?? existing.avatar,
-          status: payload.status ?? 'Active',
-          lastLogin: now,
-        };
-        resolved = updated;
-        return [
-          ...allUsers.slice(0, existingIndex),
-          updated,
-          ...allUsers.slice(existingIndex + 1),
-        ];
-      }
-
-      const updatedCreated: PlatformUser = {
-        id: `usr-${Date.now()}`,
-        fullName: (payload.fullName ?? this.deriveNameFromEmail(normalizedEmail)).trim(),
-        email: normalizedEmail,
-        username: payload.username?.trim() || normalizedEmail,
-        phoneNumber: '',
-        role: 'Web User',
-        status: payload.status ?? 'Active',
-        portalType: 'web',
-        lastLogin: now,
-        mfaEnabled: false,
-        createdDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        avatar: payload.avatar,
-      };
-      resolved = updatedCreated;
-      return [updatedCreated, ...allUsers];
-    });
-
-    if (!resolved) {
-      throw new Error('Failed to upsert OAuth web user');
-    }
-    return resolved;
-  }
-
   private deriveNameFromEmail(email: string): string {
     const localPart = email.split('@')[0] || 'User';
     return localPart

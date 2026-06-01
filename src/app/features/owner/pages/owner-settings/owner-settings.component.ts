@@ -8,6 +8,7 @@ import { I18nService } from '../../../../core/services/i18n.service';
 import { OwnerSettingsGeneralTabComponent } from '../../components/owner-settings-general-tab/owner-settings-general-tab.component';
 import { OwnerSettingsSubjectTabComponent } from '../../components/owner-settings-subject-tab/owner-settings-subject-tab.component';
 import { OwnerSettingsPresetsTabComponent } from '../../components/owner-settings-presets-tab/owner-settings-presets-tab.component';
+import { OwnerSettingsCountryTabComponent } from '../../components/owner-settings-country-tab/owner-settings-country-tab.component';
 import { OwnerSettingsSecurityTabComponent } from '../../components/owner-settings-security-tab/owner-settings-security-tab.component';
 import { OwnerSettingsRolesTabComponent } from '../../components/owner-settings-roles-tab/owner-settings-roles-tab.component';
 import { OwnerSettingsStatusTabComponent } from '../../components/owner-settings-status-tab/owner-settings-status-tab.component';
@@ -29,6 +30,7 @@ import { OwnerSettingsFacade } from '../../state/owner-settings.facade';
     OwnerSettingsGeneralTabComponent,
     OwnerSettingsSubjectTabComponent,
     OwnerSettingsPresetsTabComponent,
+    OwnerSettingsCountryTabComponent,
     OwnerSettingsSecurityTabComponent,
     OwnerSettingsRolesTabComponent,
     OwnerSettingsStatusTabComponent,

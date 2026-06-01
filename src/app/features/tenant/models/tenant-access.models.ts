@@ -8,3 +8,11 @@ export interface TenantAccessContextView {
   accessMessage: string | null;
   operationalStatusReason: string | null;
 }
+export interface TenantPlanContextView {
+  tenantId: string;
+  planId: string;
+  planName: string;
+  isTrial: boolean;
+  subscriptionType: 'trial' | 'production';
+  moduleCodes: string[];
+}

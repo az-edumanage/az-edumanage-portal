@@ -2,6 +2,8 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { tenantAccessStateGuard, tenantOperationalAccessGuard } from './tenant-operational-access.guard';
+import { AuthIdentityService } from '../auth/auth-identity.service';
+import { TenantImpersonationService } from '../auth/tenant-impersonation.service';
 import { TenantAccessContextService } from '../../features/tenant/data-access/tenant-access-context.service';
 import { TenantAccessContextView } from '../../features/tenant/models/tenant-access.models';
 
@@ -14,11 +16,23 @@ describe('tenantOperationalAccessGuard', () => {
     context: ReturnType<typeof signal<TenantAccessContextView | null>>;
     ensureContext: ReturnType<typeof vi.fn>;
   };
+  let authIdentityService: {
+    currentWorkspace: ReturnType<typeof vi.fn>;
+  };
+  let tenantImpersonationService: {
+    isActive: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     accessContextService = {
       context: signal<TenantAccessContextView | null>(null),
       ensureContext: vi.fn(),
+    };
+    authIdentityService = {
+      currentWorkspace: vi.fn().mockReturnValue('tenant'),
+    };
+    tenantImpersonationService = {
+      isActive: vi.fn().mockReturnValue(false),
     };
 
     TestBed.configureTestingModule({
@@ -30,8 +44,11 @@ describe('tenantOperationalAccessGuard', () => {
           { path: 'tenant/access/disabled', component: DummyComponent },
           { path: 'tenant/access/blocked', component: DummyComponent },
           { path: 'tenant/login', component: DummyComponent },
+          { path: 'forbidden', component: DummyComponent },
         ]),
         { provide: TenantAccessContextService, useValue: accessContextService },
+        { provide: AuthIdentityService, useValue: authIdentityService },
+        { provide: TenantImpersonationService, useValue: tenantImpersonationService },
       ],
     });
 
@@ -148,6 +165,17 @@ describe('tenantOperationalAccessGuard', () => {
     expect(router.serializeUrl(result as never)).toBe('/tenant/access/blocked?returnUrl=%2Ftenant%2Foverview');
     expect(accessContextService.ensureContext).toHaveBeenCalledWith(true);
   });
+
+  it('sends owner sessions without impersonation to forbidden instead of tenant login', async () => {
+    accessContextService.ensureContext.mockResolvedValue(null);
+    authIdentityService.currentWorkspace.mockReturnValue('owner');
+
+    const result = await TestBed.runInInjectionContext(() => tenantOperationalAccessGuard({} as never, {
+      url: '/tenant/overview',
+    } as never));
+
+    expect(router.serializeUrl(result as never)).toBe('/forbidden');
+  });
 });
 
 describe('tenantAccessStateGuard', () => {
@@ -156,11 +184,23 @@ describe('tenantAccessStateGuard', () => {
     context: ReturnType<typeof signal<TenantAccessContextView | null>>;
     ensureContext: ReturnType<typeof vi.fn>;
   };
+  let authIdentityService: {
+    currentWorkspace: ReturnType<typeof vi.fn>;
+  };
+  let tenantImpersonationService: {
+    isActive: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     accessContextService = {
       context: signal<TenantAccessContextView | null>(null),
       ensureContext: vi.fn(),
+    };
+    authIdentityService = {
+      currentWorkspace: vi.fn().mockReturnValue('tenant'),
+    };
+    tenantImpersonationService = {
+      isActive: vi.fn().mockReturnValue(false),
     };
 
     TestBed.configureTestingModule({
@@ -172,8 +212,11 @@ describe('tenantAccessStateGuard', () => {
           { path: 'tenant/access/disabled', component: DummyComponent },
           { path: 'tenant/access/blocked', component: DummyComponent },
           { path: 'tenant/login', component: DummyComponent },
+          { path: 'forbidden', component: DummyComponent },
         ]),
         { provide: TenantAccessContextService, useValue: accessContextService },
+        { provide: AuthIdentityService, useValue: authIdentityService },
+        { provide: TenantImpersonationService, useValue: tenantImpersonationService },
       ],
     });
 
@@ -212,5 +255,16 @@ describe('tenantAccessStateGuard', () => {
     } as never, {} as never));
 
     expect(router.serializeUrl(result as never)).toBe('/tenant/overview');
+  });
+
+  it('returns forbidden when an owner refreshes an access-state route without impersonation context', async () => {
+    accessContextService.ensureContext.mockResolvedValue(null);
+    authIdentityService.currentWorkspace.mockReturnValue('owner');
+
+    const result = await TestBed.runInInjectionContext(() => tenantAccessStateGuard({
+      data: { status: 'pending' },
+    } as never, {} as never));
+
+    expect(router.serializeUrl(result as never)).toBe('/forbidden');
   });
 });

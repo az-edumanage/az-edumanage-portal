@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -6,15 +6,16 @@ import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { startWith } from 'rxjs';
 import { TenantGradesFacade } from '../../state/tenant-grades.facade';
+import { Grade } from '../../models/tenant-grades.models';
 
 @Component({
   selector: 'app-tenant-grades',
-  standalone: true,
   imports: [CommonModule, RouterModule, MatIconModule, FormsModule, ReactiveFormsModule],
   templateUrl: './tenant-grades.component.html',
-    styleUrls: ['./tenant-grades.component.css']
+  styleUrls: ['./tenant-grades.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TenantGradesComponent {
+export class TenantGradesComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
   private readonly facade = inject(TenantGradesFacade);
@@ -23,8 +24,12 @@ export class TenantGradesComponent {
   readonly showFilterPanel = this.facade.showFilterPanel;
   readonly viewMode = this.facade.viewMode;
   readonly grades = this.facade.grades;
+  readonly loading = this.facade.loading;
+  readonly loadError = this.facade.loadError;
   readonly activeFiltersCount = this.facade.activeFiltersCount;
   readonly filteredGrades = this.facade.filteredGrades;
+  readonly levelOptions = this.facade.levelOptions;
+  readonly deleteState = this.facade.deleteState;
 
   readonly filterForm = this.fb.group({
     level: [''],
@@ -46,6 +51,10 @@ export class TenantGradesComponent {
       });
   }
 
+  ngOnInit(): void {
+    void this.facade.loadGrades();
+  }
+
   toggleFilterPanel(): void {
     this.facade.toggleFilterPanel();
   }
@@ -63,5 +72,21 @@ export class TenantGradesComponent {
       maxStudents: null,
       sortBy: 'name',
     });
+  }
+
+  openDeleteConfirmation(grade: Grade): void {
+    this.facade.openDeleteConfirmation(grade);
+  }
+
+  cancelDelete(): void {
+    this.facade.cancelDelete();
+  }
+
+  closeDeleteModal(): void {
+    this.facade.closeDeleteModal();
+  }
+
+  confirmDelete(): void {
+    void this.facade.confirmDelete();
   }
 }

@@ -14,18 +14,24 @@ export interface TenantPlanOption {
   popular: boolean;
 }
 
+export interface TenantLocationOption {
+  id: number;
+  value: string;
+  label: string;
+}
+
 export interface TenantCreatePayload {
   centerName: string;
   tenantType: string;
+  tenantUsername: string;
   subdomain: string;
   domain: string;
-  industry: string;
   contactName: string;
   contactEmail: string;
   contactPhone: string;
   address: string;
-  city: string;
-  country: string;
+  countryId: number;
+  cityId: number;
   planId: string;
   isTrial: boolean;
   trialDays: number;
@@ -35,4 +41,5 @@ export interface TenantCreatePayload {
   onboardingLink: boolean;
   sendOnboardingWhatsapp: boolean;
   sendOnboardingEmail: boolean;
+  temporaryPassword: string;
 }

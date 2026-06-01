@@ -1,0 +1,96 @@
+<div class="tenant-university-create-page" [class.tenant-university-create-page--modal]="modalMode()">
+  <form [formGroup]="form" (ngSubmit)="submit()" class="tenant-university-create-modal">
+    <div class="tenant-university-create-modal-head">
+      <div>
+        <h3 class="tenant-university-create-modal-title" [id]="titleId()">
+          {{ isEditMode() ? 'Edit University' : 'Add New University' }}
+        </h3>
+      </div>
+      <button
+        type="button"
+        (click)="cancel()"
+        class="tenant-university-create-modal-close"
+        aria-label="Close"
+        [disabled]="saving()"
+      >
+        <mat-icon class="text-sm block">close</mat-icon>
+      </button>
+    </div>
+
+    <div class="tenant-university-create-modal-body">
+      @if (loadError()) {
+        <p class="tenant-university-create-modal-error">{{ loadError() }}</p>
+      }
+
+      <div>
+        <label for="university-name" class="tenant-university-create-modal-label">University name</label>
+        <input
+          id="university-name"
+          type="text"
+          formControlName="name"
+          class="tenant-university-create-modal-input"
+          [attr.aria-invalid]="form.controls.name.invalid && form.controls.name.touched"
+        >
+        @if (
+          form.controls.name.touched &&
+          (form.controls.name.hasError('required') || form.controls.name.hasError('pattern'))
+        ) {
+          <p class="tenant-university-create-modal-error">University name is required.</p>
+        }
+      </div>
+
+      <div>
+        <label for="university-country" class="tenant-university-create-modal-label">Country</label>
+        <select
+          id="university-country"
+          formControlName="countryId"
+          class="tenant-university-create-modal-select"
+          [attr.aria-invalid]="form.controls.countryId.invalid && form.controls.countryId.touched"
+        >
+          @if (optionsLoading()) {
+            <option value="">Loading countries...</option>
+          } @else {
+            <option value="">Select country</option>
+            @for (country of countryOptions(); track country.id) {
+              <option [value]="country.id">{{ country.name }}</option>
+            }
+          }
+        </select>
+        @if (form.controls.countryId.touched && form.controls.countryId.hasError('required')) {
+          <p class="tenant-university-create-modal-error">Country is required.</p>
+        }
+        @if (optionsError()) {
+          <p class="tenant-university-create-modal-error">{{ optionsError() }}</p>
+        }
+      </div>
+
+      <div>
+        <label for="university-description" class="tenant-university-create-modal-label">Description</label>
+        <textarea
+          id="university-description"
+          formControlName="description"
+          rows="4"
+          class="tenant-university-create-modal-textarea"
+        ></textarea>
+      </div>
+
+      @if (saveError()) {
+        <p class="tenant-university-create-modal-error">{{ saveError() }}</p>
+      }
+    </div>
+
+    <div class="tenant-university-create-modal-actions">
+      <button type="button" (click)="cancel()" class="tenant-university-create-modal-cancel" [disabled]="saving()">
+        Cancel
+      </button>
+      <button type="submit" class="tenant-university-create-modal-save" [disabled]="form.invalid || saving() || optionsLoading()">
+        @if (saving()) {
+          <mat-icon class="tenant-university-create-modal-save-icon">hourglass_empty</mat-icon>
+          Saving...
+        } @else {
+          Save
+        }
+      </button>
+    </div>
+  </form>
+</div>

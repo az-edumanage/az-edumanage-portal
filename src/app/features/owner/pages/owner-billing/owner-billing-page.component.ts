@@ -43,8 +43,6 @@ export class OwnerBillingPageComponent {
 
   readonly activeTab = this.facade.activeTab;
   readonly showAdvancedFilters = this.facade.showAdvancedFilters;
-  readonly showProofModal = this.facade.showProofModal;
-  readonly selectedInvoice = this.facade.selectedInvoice;
   readonly showRefundModal = this.facade.showRefundModal;
   readonly invoiceToRefund = this.facade.invoiceToRefund;
 
@@ -54,14 +52,17 @@ export class OwnerBillingPageComponent {
   readonly filterMinAmount = this.facade.filterMinAmount;
   readonly filterMaxAmount = this.facade.filterMaxAmount;
 
+  readonly loading = this.facade.loading;
+  readonly loadError = this.facade.loadError;
   readonly isFiltered = this.facade.isFiltered;
   readonly maxRevenue = this.facade.maxRevenue;
   readonly monthlyReports = this.facade.monthlyReports;
-  readonly filteredInvoices = this.facade.filteredInvoices;
+  readonly invoices = this.facade.invoices;
   readonly filteredPayments = this.facade.filteredPayments;
   readonly filteredFailedPayments = this.facade.filteredFailedPayments;
   readonly filteredRefunds = this.facade.filteredRefunds;
   readonly billingStatusOptions = this.billingStatusesData.statusNames;
+  readonly manualPayPendingInvoiceId = this.facade.manualPayPendingInvoiceId;
 
   constructor() {
     this.route.queryParams
@@ -70,6 +71,7 @@ export class OwnerBillingPageComponent {
         if (params['tenant']) {
           this.facade.setTenantFilter(params['tenant']);
         }
+        void this.facade.loadInvoices();
       });
   }
 
@@ -113,16 +115,8 @@ export class OwnerBillingPageComponent {
     this.facade.copyToClipboard(value);
   }
 
-  viewProof(invoice: Parameters<OwnerBillingFacade['openProof']>[0]): void {
-    this.facade.openProof(invoice);
-  }
-
-  confirmPayment(): void {
-    this.facade.confirmPayment();
-  }
-
-  rejectProof(): void {
-    this.facade.rejectProof();
+  manualPayInvoice(invoice: Parameters<OwnerBillingFacade['manualPayInvoice']>[0]): void {
+    void this.facade.manualPayInvoice(invoice);
   }
 
   initiateRefund(invoice: Parameters<OwnerBillingFacade['openRefund']>[0]): void {
@@ -135,10 +129,6 @@ export class OwnerBillingPageComponent {
 
   closeRefundModal(): void {
     this.facade.closeRefund();
-  }
-
-  closeProofModal(): void {
-    this.facade.closeProof();
   }
 
   getInvoiceStatusColor(status: string): string {

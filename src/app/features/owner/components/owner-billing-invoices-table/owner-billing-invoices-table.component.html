@@ -5,6 +5,8 @@
         <th appTableHead>Invoice #</th>
         <th appTableHead>Tenant</th>
         <th appTableHead>Plan</th>
+        <th appTableHead>Cycle</th>
+        <th appTableHead>Period</th>
         <th appTableHead>Amount</th>
         <th appTableHead>Due Date</th>
         <th appTableHead>Payment Date</th>
@@ -17,24 +19,26 @@
         <tr appTableRow>
           <td appTableCell class="font-medium text-slate-900 dark:text-white">
             <button
-              (click)="copyValue.emit(inv.id)"
+              (click)="copyValue.emit(invoiceNumber(inv))"
               class="hover:text-indigo-600 transition-colors focus:outline-none focus:underline"
               title="Click to copy ID"
             >
-              {{ inv.id }}
+              {{ invoiceNumber(inv) }}
             </button>
           </td>
           <td appTableCell class="text-slate-500 dark:text-slate-500">
             <a [routerLink]="['/owner/tenants', inv.tenantId]" class="hover:text-indigo-600 transition-colors font-medium" title="View tenant details">
-              {{ inv.tenant }}
+              {{ inv.tenant || inv.tenantName }}
             </a>
           </td>
-          <td appTableCell class="text-slate-500 dark:text-slate-500">{{ inv.plan }}</td>
-          <td appTableCell class="font-medium text-slate-900 dark:text-white">\${{ inv.amount }}</td>
+          <td appTableCell class="text-slate-500 dark:text-slate-500">{{ inv.plan || inv.planName }}</td>
+          <td appTableCell class="text-slate-500 dark:text-slate-500">{{ cycleLabel(inv) }}</td>
+          <td appTableCell class="text-slate-500 dark:text-slate-500">{{ periodLabel(inv) }}</td>
+          <td appTableCell class="font-medium text-slate-900 dark:text-white">{{ inv.currency || 'EGP' }} {{ inv.amount }}</td>
           <td appTableCell class="text-slate-500">{{ inv.dueDate }}</td>
           <td appTableCell class="text-slate-500">
-            @if (inv.status === 'Paid' || inv.status === 'Refunded') {
-              {{ inv.issueDate }}
+            @if (displayStatus(inv) === 'Paid' || displayStatus(inv) === 'Refunded') {
+              {{ paymentDate(inv) }}
             } @else {
               <span class="text-slate-500 italic">Not yet</span>
             }
@@ -42,16 +46,35 @@
           <td appTableCell>
             <span
               class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
-              [style.color]="statusColorResolver()(inv.status)"
-              [style.backgroundColor]="statusColorResolver()(inv.status) + '1f'"
+              [style.color]="statusColorResolver()(displayStatus(inv))"
+              [style.backgroundColor]="statusColorResolver()(displayStatus(inv)) + '1f'"
             >
-              <span class="w-1.5 h-1.5 rounded-full" [style.backgroundColor]="statusColorResolver()(inv.status)"></span>
-              {{ inv.status }}
+              <span class="w-1.5 h-1.5 rounded-full" [style.backgroundColor]="statusColorResolver()(displayStatus(inv))"></span>
+              {{ displayStatus(inv) }}
             </span>
+            <div class="mt-1 flex flex-wrap gap-1 text-[10px] text-slate-500 dark:text-slate-500">
+              <span>{{ sourceLabel(inv) }}</span>
+              @if (settlementLabel(inv)) {
+                <span>- {{ settlementLabel(inv) }}</span>
+              }
+              @if (paymentSnapshotLabel(inv)) {
+                <span>- {{ paymentSnapshotLabel(inv) }}</span>
+              }
+            </div>
           </td>
           <td appTableCell class="text-right">
             <div class="flex items-center justify-end gap-1">
-              @if (inv.status === 'Paid') {
+              @if (isOpen(inv)) {
+                <button
+                  (click)="manualPay.emit(inv)"
+                  [disabled]="isManualPayPending(inv)"
+                  class="p-1.5 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition-colors disabled:cursor-not-allowed disabled:text-slate-400 disabled:hover:bg-transparent"
+                  title="Manual Pay"
+                >
+                  <mat-icon class="text-lg">paid</mat-icon>
+                </button>
+              }
+              @if (displayStatus(inv) === 'Paid') {
                 <button
                   (click)="initiateRefund.emit(inv)"
                   class="p-1.5 text-red-600 dark:text-red-400 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
@@ -60,27 +83,6 @@
                   <mat-icon class="text-lg">undo</mat-icon>
                 </button>
               }
-
-              <button
-                (click)="viewProof.emit(inv)"
-                class="p-1.5 rounded transition-colors"
-                [class.text-green-700]="inv.status === 'Paid'"
-                [class.dark:text-green-400]="inv.status === 'Paid'"
-                [class.hover:bg-green-50]="inv.status === 'Paid'"
-                [class.dark:hover:bg-green-900/30]="inv.status === 'Paid'"
-                [class.text-amber-700]="inv.status === 'Unpaid' || inv.status === 'Overdue'"
-                [class.dark:text-amber-400]="inv.status === 'Unpaid' || inv.status === 'Overdue'"
-                [class.hover:bg-amber-50]="inv.status === 'Unpaid' || inv.status === 'Overdue'"
-                [class.dark:hover:bg-amber-900/30]="inv.status === 'Unpaid' || inv.status === 'Overdue'"
-                [class.text-slate-700]="inv.status === 'Cancelled'"
-                [class.dark:text-slate-500]="inv.status === 'Cancelled'"
-                [class.hover:bg-slate-100]="inv.status === 'Cancelled'"
-                [class.dark:hover:bg-slate-800]="inv.status === 'Cancelled'"
-                [title]="inv.status === 'Paid' ? 'View Proof' : 'Review Payment Proof'"
-              >
-                <mat-icon class="text-lg">receipt_long</mat-icon>
-              </button>
-
               <button
                 [routerLink]="['/owner/billing/invoices', inv.id]"
                 class="p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors"
