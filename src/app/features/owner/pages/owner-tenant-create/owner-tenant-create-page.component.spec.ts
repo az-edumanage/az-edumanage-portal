@@ -13,15 +13,16 @@ describe('OwnerTenantCreatePageComponent', () => {
     tenantForm: fb.group({
       centerName: [''],
       tenantType: [''],
+      tenantUsername: [''],
+      temporaryPassword: [''],
       subdomain: [''],
       domain: ['.remix.com'],
-      industry: [''],
       contactName: [''],
       contactEmail: [''],
       contactPhone: [''],
       address: [''],
-      city: [''],
-      country: [''],
+      countryId: [null],
+      cityId: [null],
       planId: [''],
       isTrial: [true],
       trialDays: [14],
@@ -35,8 +36,6 @@ describe('OwnerTenantCreatePageComponent', () => {
     isSubmitting: signal(false),
     showTenantTypeDropdown: signal(false),
     tenantTypeSearchQuery: signal(''),
-    showIndustryDropdown: signal(false),
-    industrySearchQuery: signal(''),
     showPlanDropdown: signal(false),
     planSearchQuery: signal(''),
     showDomainDropdown: signal(false),
@@ -45,51 +44,58 @@ describe('OwnerTenantCreatePageComponent', () => {
     showCountryDropdown: signal(false),
     countrySearchQuery: signal(''),
     showCustomizationMenu: signal(false),
+    submitAttempted: signal(false),
+    submitStatus: signal(null),
     subscriptionTemplates: signal([]),
+    planLoadError: signal(null),
     tenantTypes: ['Center', 'Teacher'],
-    industries: [],
     domains: ['.remix.com', '.beedu.app'],
-    cities: [],
-    countries: [],
+    cities: signal([{ value: '10', label: 'Cairo' }]),
+    countries: signal([{ value: '1', label: 'Egypt' }]),
     selectedPlanName: signal(''),
-    initialize: () => Promise.resolve(),
-    onDestroy: () => {},
-    onCancel: () => {},
-    onReset: () => {},
-    onSubmit: () => {},
-    toggleTenantTypeDropdown: () => {},
-    closeTenantTypeDropdown: () => {},
-    selectTenantType: (_type: string) => {},
-    toggleIndustryDropdown: () => {},
-    closeIndustryDropdown: () => {},
-    selectIndustry: (_industry: string) => {},
-    toggleDomainDropdown: () => {},
-    closeDomainDropdown: () => {},
-    selectDomain: (_domain: string) => {},
-    toggleCityDropdown: () => {},
-    closeCityDropdown: () => {},
-    selectCity: (_city: string) => {},
-    toggleCountryDropdown: () => {},
-    closeCountryDropdown: () => {},
-    selectCountry: (_country: string) => {},
-    togglePlanDropdown: () => {},
-    closePlanDropdown: () => {},
-    selectPlan: (_planId: string) => {},
-    openCustomizationMenu: (_event: Event) => {},
-    closeCustomizationMenu: () => {},
-    setTenantTypeSearchQuery: (_value: string) => {},
-    setIndustrySearchQuery: (_value: string) => {},
-    setCitySearchQuery: (_value: string) => {},
-    setCountrySearchQuery: (_value: string) => {},
-    setPlanSearchQuery: (_value: string) => {},
+    selectedCountryName: signal(''),
+    selectedCityName: signal(''),
+    selectedCountryValue: signal(''),
+    selectedCityValue: signal(''),
+    initialize: vi.fn().mockResolvedValue(undefined),
+    onDestroy: vi.fn(),
+    onCancel: vi.fn(),
+    onReset: vi.fn(),
+    onSubmit: vi.fn(),
+    setTenantTypeDropdownOpen: vi.fn(),
+    setDomainDropdownOpen: vi.fn(),
+    setCityDropdownOpen: vi.fn(),
+    setCountryDropdownOpen: vi.fn(),
+    setPlanDropdownOpen: vi.fn(),
+    toggleTenantTypeDropdown: vi.fn(),
+    closeTenantTypeDropdown: vi.fn(),
+    selectTenantType: vi.fn(),
+    toggleDomainDropdown: vi.fn(),
+    closeDomainDropdown: vi.fn(),
+    selectDomain: vi.fn(),
+    toggleCityDropdown: vi.fn(),
+    closeCityDropdown: vi.fn(),
+    selectCity: vi.fn(),
+    toggleCountryDropdown: vi.fn(),
+    closeCountryDropdown: vi.fn(),
+    selectCountry: vi.fn(),
+    togglePlanDropdown: vi.fn(),
+    closePlanDropdown: vi.fn(),
+    selectPlan: vi.fn(),
+    openCustomizationMenu: vi.fn(),
+    closeCustomizationMenu: vi.fn(),
+    setTenantTypeSearchQuery: vi.fn(),
+    setCitySearchQuery: vi.fn(),
+    setCountrySearchQuery: vi.fn(),
+    setPlanSearchQuery: vi.fn(),
   };
 
   const mockI18nService = {
     t: (key: string) => key,
     isRtl: signal(false),
     language: signal('en'),
-    setLanguage: () => {},
-    initLanguage: () => {},
+    setLanguage: vi.fn(),
+    initLanguage: vi.fn(),
   };
 
   const mockActivatedRoute = {
@@ -125,6 +131,16 @@ describe('OwnerTenantCreatePageComponent', () => {
     const centerNameInput = fixture.nativeElement.querySelector('#centerName');
     expect(centerNameInput).toBeTruthy();
 
+    const tenantUsernameInput = fixture.nativeElement.querySelector('#tenantUsername') as HTMLInputElement;
+    expect(tenantUsernameInput).toBeTruthy();
+    expect(tenantUsernameInput.getAttribute('formControlName')).toBe('tenantUsername');
+
+    const temporaryPasswordInput = fixture.nativeElement.querySelector('#temporaryPassword') as HTMLInputElement;
+
+    expect(temporaryPasswordInput).toBeTruthy();
+    expect(temporaryPasswordInput.type).toBe('password');
+    expect(temporaryPasswordInput.getAttribute('formControlName')).toBe('temporaryPassword');
+
     const subdomainInput = fixture.nativeElement.querySelector('#subdomain');
     expect(subdomainInput).toBeTruthy();
 
@@ -137,4 +153,41 @@ describe('OwnerTenantCreatePageComponent', () => {
     const regionSelect = fixture.nativeElement.querySelector('#region');
     expect(regionSelect).toBeTruthy();
   });
+
+  it('binds country and city dropdowns to managed location controls', () => {
+    const fixture = TestBed.createComponent(OwnerTenantCreatePageComponent);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    expect(component.countries()).toEqual([{ value: '1', label: 'Egypt' }]);
+    expect(component.cities()).toEqual([{ value: '10', label: 'Cairo' }]);
+    expect(component.tenantForm.get('countryId')).toBeTruthy();
+    expect(component.tenantForm.get('cityId')).toBeTruthy();
+
+    component.toggleCityDropdown();
+    expect(mockFacade.setCityDropdownOpen).toHaveBeenCalledWith(false);
+
+    component.tenantForm.patchValue({ countryId: 1 });
+    component.selectCountry('1');
+    component.selectCity('10');
+    expect(mockFacade.selectCountry).toHaveBeenCalledWith('1');
+    expect(mockFacade.selectCity).toHaveBeenCalledWith('10');
+  });
+
+  it('renders the temporary password field inside tenant information before subdomain', () => {
+    const fixture = TestBed.createComponent(OwnerTenantCreatePageComponent);
+    fixture.detectChanges();
+
+    const temporaryPasswordInput = fixture.nativeElement.querySelector('#temporaryPassword') as HTMLInputElement;
+    const subdomainInput = fixture.nativeElement.querySelector('#subdomain') as HTMLInputElement;
+    const labels = Array.from(fixture.nativeElement.querySelectorAll('label') as NodeListOf<HTMLLabelElement>).map((label) => label.getAttribute('for'));
+
+    expect(temporaryPasswordInput).toBeTruthy();
+    expect(temporaryPasswordInput.type).toBe('password');
+    expect(temporaryPasswordInput.placeholder).toBe('owner.tenantCreate.placeholder.temporaryPassword');
+    expect(labels.indexOf('temporaryPassword')).toBeGreaterThan(-1);
+    expect(labels.indexOf('temporaryPassword')).toBeLessThan(labels.indexOf('subdomain'));
+    expect(temporaryPasswordInput.compareDocumentPosition(subdomainInput) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
 });

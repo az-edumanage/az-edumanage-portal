@@ -1,0 +1,141 @@
+<div class="tenant-college-details-page">
+  <div class="tenant-college-details-header">
+    <div class="tenant-college-details-heading">
+      <div class="tenant-college-details-breadcrumb">
+        <a routerLink="/tenant/colleges">Colleges</a>
+        <mat-icon>chevron_right</mat-icon>
+        <span>College Details</span>
+      </div>
+      <h2 class="tenant-college-details-title">
+        @if (college()) {
+          {{ college()?.name }}
+        } @else {
+          College Details
+        }
+      </h2>
+      @if (college()) {
+        <p class="tenant-college-details-subtitle">University Education</p>
+      }
+    </div>
+
+    @if (college(); as selectedCollege) {
+      <a [routerLink]="['/tenant/colleges', selectedCollege.id, 'edit']" class="tenant-college-details-edit">
+        <mat-icon>edit</mat-icon>
+        Edit College
+      </a>
+    }
+  </div>
+
+  @if (loadError()) {
+    <div class="tenant-college-details-empty">
+      <div class="tenant-college-details-empty-icon">
+        <mat-icon>error_outline</mat-icon>
+      </div>
+      <h3>Unable to load college</h3>
+      <p>{{ loadError() }}</p>
+      <a routerLink="/tenant/colleges" class="tenant-college-details-empty-action">
+        <mat-icon>arrow_back</mat-icon>
+        Back to Colleges
+      </a>
+    </div>
+  } @else if (loading()) {
+    <div class="tenant-college-details-empty">
+      <div class="tenant-college-details-empty-icon">
+        <mat-icon class="tenant-college-details-spin">sync</mat-icon>
+      </div>
+      <h3>Loading college details</h3>
+      <p>Please wait while the college is loaded.</p>
+    </div>
+  } @else if (college(); as selectedCollege) {
+    @if (deleteError()) {
+      <div class="tenant-college-details-error">
+        {{ deleteError() }}
+      </div>
+    }
+
+    <div class="tenant-college-details-stats">
+      <div class="tenant-college-details-stat">
+        <div class="tenant-college-details-stat-icon tenant-college-details-stat-icon--primary">
+          <mat-icon>account_balance</mat-icon>
+        </div>
+        <div>
+          <p>College</p>
+          <h4>{{ selectedCollege.name }}</h4>
+        </div>
+      </div>
+
+      <div class="tenant-college-details-stat">
+        <div class="tenant-college-details-stat-icon tenant-college-details-stat-icon--success">
+          <mat-icon>school</mat-icon>
+        </div>
+        <div>
+          <p>University</p>
+          <h4>{{ selectedCollege.universityName }}</h4>
+        </div>
+      </div>
+
+      <div class="tenant-college-details-stat">
+        <div class="tenant-college-details-stat-icon tenant-college-details-stat-icon--warning">
+          <mat-icon>menu_book</mat-icon>
+        </div>
+        <div>
+          <p>Subjects</p>
+          <h4>{{ selectedCollege.subjectCount }}</h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="tenant-college-details-content">
+      <div class="tenant-college-details-main">
+        <section class="tenant-college-details-panel">
+          <h3>Description</h3>
+          <p>{{ selectedCollege.description || 'No description has been added for this college.' }}</p>
+        </section>
+
+        <section class="tenant-college-details-panel tenant-college-details-structure">
+          <div class="tenant-college-details-panel-header">
+            <h3>Academic Structure</h3>
+          </div>
+          <div class="tenant-college-details-structure-grid">
+            <div>
+              <p>University</p>
+              <strong>{{ selectedCollege.universityName }}</strong>
+            </div>
+            <div>
+              <p>Subjects</p>
+              <strong>{{ selectedCollege.subjectCount }}</strong>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="tenant-college-details-side">
+        <h3>College Information</h3>
+        <dl class="tenant-college-details-list">
+          <div>
+            <dt>University</dt>
+            <dd>{{ selectedCollege.universityName }}</dd>
+          </div>
+          <div>
+            <dt>Created</dt>
+            <dd>{{ selectedCollege.createdAt | date: 'medium' }}</dd>
+          </div>
+          <div>
+            <dt>Last Updated</dt>
+            <dd>{{ selectedCollege.updatedAt | date: 'medium' }}</dd>
+          </div>
+        </dl>
+
+        <button
+          type="button"
+          class="tenant-college-details-delete"
+          (click)="deleteCollege()"
+          [disabled]="deletingId() === selectedCollege.id"
+        >
+          <mat-icon>{{ deletingId() === selectedCollege.id ? 'hourglass_empty' : 'delete' }}</mat-icon>
+          {{ deletingId() === selectedCollege.id ? 'Deleting...' : 'Delete College' }}
+        </button>
+      </aside>
+    </div>
+  }
+</div>

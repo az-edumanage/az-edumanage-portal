@@ -43,7 +43,8 @@
             <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</mat-icon>
             <input 
               type="text" 
-              [(ngModel)]="searchQuery"
+              [ngModel]="searchQuery()"
+              (ngModelChange)="setSearchQuery($event)"
               placeholder="Search students by name or email..."
               class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
             >
@@ -200,7 +201,7 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
-                  @for (student of filteredStudents(); track student.id) {
+                  @for (student of pagedStudents(); track student.id) {
                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
                       <td class="px-6 py-4">
                         <div class="flex items-center gap-3">
@@ -233,9 +234,9 @@
                       <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ student.enrollmentDate }}</td>
                       <td class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-2">
-                          <button class="p-2 text-indigo-600 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="View Details">
+                          <a [routerLink]="['/tenant/students', student.id]" class="p-2 text-indigo-600 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="View Details">
                             <mat-icon class="text-sm block">visibility</mat-icon>
-                          </button>
+                          </a>
                           <button class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Edit">
                             <mat-icon class="text-sm block">edit</mat-icon>
                           </button>
@@ -248,6 +249,48 @@
                   }
                 </tbody>
               </table>
+            </div>
+            <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="text-xs font-medium text-slate-500 dark:text-slate-500">
+                @if (totalFilteredStudents() > 0) {
+                  Showing {{ pageStart() }}-{{ pageEnd() }} of {{ totalFilteredStudents() }} students
+                } @else {
+                  No students to display
+                }
+              </div>
+              <div class="flex items-center gap-3">
+                <label class="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-500">
+                  Rows
+                  <select
+                    [ngModel]="pageSize()"
+                    (ngModelChange)="setPageSize($event)"
+                    class="h-8 px-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option [value]="5">5</option>
+                    <option [value]="10">10</option>
+                    <option [value]="20">20</option>
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  (click)="previousPage()"
+                  [disabled]="pageIndex() === 0"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                  title="Previous page"
+                >
+                  <mat-icon class="text-sm">chevron_left</mat-icon>
+                </button>
+                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Page {{ pageIndex() + 1 }} of {{ totalPages() }}</span>
+                <button
+                  type="button"
+                  (click)="nextPage()"
+                  [disabled]="pageIndex() >= totalPages() - 1"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                  title="Next page"
+                >
+                  <mat-icon class="text-sm">chevron_right</mat-icon>
+                </button>
+              </div>
             </div>
           </div>
         }

@@ -78,6 +78,7 @@
         [statusOptions]="billingStatusOptions()"
         [filterMinAmount]="filterMinAmount()"
         [filterMaxAmount]="filterMaxAmount()"
+        [failedPaymentCount]="filteredFailedPayments().length"
         (activeTabChange)="setActiveTab($event)"
         (resetFilters)="resetFilters()"
         (searchQueryChange)="setSearchQuery($event)"
@@ -105,13 +106,33 @@
 
         <!-- Invoices Tab -->
         @if (activeTab() === 'invoices') {
-          <app-owner-billing-invoices-table
-            [invoices]="filteredInvoices()"
-            [statusColorResolver]="getInvoiceStatusColor.bind(this)"
-            (copyValue)="copyToClipboard($event)"
-            (viewProof)="viewProof($event)"
-            (initiateRefund)="initiateRefund($event)"
-          />
+          @if (loading()) {
+            <div class="owner-billing-state px-6 py-16 te1. Academic Structurext-center text-slate-500 dark:text-slate-500">
+              <mat-icon class="text-3xl mb-3 animate-spin">progress_activity</mat-icon>
+              <div class="text-sm font-medium">Loading invoices</div>
+            </div>
+          } @else if (loadError()) {
+            <div class="owner-billing-state px-6 py-16 text-center text-slate-500 dark:text-slate-500">
+              <mat-icon class="text-3xl mb-3 text-amber-600">error_outline</mat-icon>
+              <div class="text-sm font-bold text-slate-900 dark:text-white">Invoices unavailable</div>
+              <p class="text-sm mt-1">{{ loadError() }}</p>
+            </div>
+          } @else if (invoices().length === 0) {
+            <div class="owner-billing-state px-6 py-16 text-center text-slate-500 dark:text-slate-500">
+              <mat-icon class="text-3xl mb-3">receipt_long</mat-icon>
+              <div class="text-sm font-bold text-slate-900 dark:text-white">No invoices found</div>
+              <p class="text-sm mt-1">No invoice obligations matched the current filters.</p>
+            </div>
+          } @else {
+            <app-owner-billing-invoices-table
+              [invoices]="invoices()"
+              [statusColorResolver]="getInvoiceStatusColor.bind(this)"
+              [manualPayPendingInvoiceId]="manualPayPendingInvoiceId()"
+              (copyValue)="copyToClipboard($event)"
+              (manualPay)="manualPayInvoice($event)"
+              (initiateRefund)="initiateRefund($event)"
+            />
+          }
         }
 
         <!-- Refund Confirmation Modal -->
@@ -149,80 +170,6 @@
             </div>
           </div>
         }
-
-        <!-- Proof Preview Modal -->
-        @if (showProofModal()) {
-          <div class="owner-billing-modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div class="bg-white dark:bg-slate-900 w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-              <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-lg bg-indigo-600/10 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600">
-                    <mat-icon>receipt_long</mat-icon>
-                  </div>
-                  <div>
-                    <h3 class="font-bold text-slate-900 dark:text-white">Payment Proof Review</h3>
-                    <p class="text-xs text-slate-500">Invoice: {{ selectedInvoice()?.id }} • {{ selectedInvoice()?.tenant }}</p>
-                  </div>
-                </div>
-                <button (click)="closeProofModal()" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
-                  <mat-icon>close</mat-icon>
-                </button>
-              </div>
-              <div class="p-8 bg-slate-100 dark:bg-slate-950 min-h-[400px] flex items-center justify-center">
-                <!-- Simulated Document Preview -->
-                <div class="w-full max-w-lg aspect-[1/1.414] bg-white shadow-xl p-12 space-y-8 relative">
-                  <div class="flex justify-between items-start">
-                    <div class="w-24 h-8 bg-slate-200"></div>
-                    <div class="w-32 h-4 bg-slate-100"></div>
-                  </div>
-                  <div class="space-y-4">
-                    <div class="w-full h-4 bg-slate-100"></div>
-                    <div class="w-3/4 h-4 bg-slate-100"></div>
-                  </div>
-                  <div class="pt-12 space-y-6">
-                    <div class="flex justify-between border-b border-slate-200 pb-4">
-                      <div class="w-32 h-4 bg-slate-200"></div>
-                      <div class="w-16 h-4 bg-slate-900"></div>
-                    </div>
-                    <div class="flex justify-between">
-                      <div class="w-32 h-4 bg-slate-200"></div>
-                      <div class="w-16 h-4 bg-slate-900"></div>
-                    </div>
-                  </div>
-                  <div class="absolute bottom-12 right-12 w-24 h-24 border-4 border-indigo-100 rounded-full flex items-center justify-center">
-                     <mat-icon class="text-indigo-200 text-4xl">verified</mat-icon>
-                  </div>
-                </div>
-              </div>
-              <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 flex justify-between items-center">
-                <div class="text-xs text-slate-500">
-                  Uploaded on: Jan 16, 2024 • 1.2 MB
-                </div>
-                <div class="flex gap-3">
-                  @if (selectedInvoice()?.status !== 'Paid') {
-                    <button 
-                      (click)="rejectProof()"
-                      class="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                    >
-                      Reject Proof
-                    </button>
-                    <button 
-                      (click)="confirmPayment()"
-                      class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-bold transition-colors shadow-lg shadow-green-500/20"
-                    >
-                      Confirm & Mark as Paid
-                    </button>
-                  } @else {
-	                    <button (click)="closeProofModal()" class="px-6 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-bold transition-colors">
-                      Close
-                    </button>
-                  }
-                </div>
-              </div>
-            </div>
-          </div>
-        }
-
         <!-- Payments Tab -->
         @if (activeTab() === 'payments') {
           <app-owner-billing-payments-table

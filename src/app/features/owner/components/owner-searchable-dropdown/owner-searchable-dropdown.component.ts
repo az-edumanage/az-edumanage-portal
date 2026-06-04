@@ -6,6 +6,13 @@ import {
   output,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+
+export interface OwnerSearchableDropdownOption {
+  value: string;
+  label: string;
+}
+
+type OwnerSearchableDropdownInput = string | OwnerSearchableDropdownOption;
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
@@ -19,7 +26,7 @@ export class OwnerSearchableDropdownComponent {
   readonly label = input.required<string>();
   readonly placeholder = input.required<string>();
   readonly searchPlaceholder = input('Search...');
-  readonly options = input<string[]>([]);
+  readonly options = input<OwnerSearchableDropdownInput[]>([]);
   readonly selectedValue = input('');
   readonly searchQuery = input('');
   readonly isOpen = input(false);
@@ -33,14 +40,24 @@ export class OwnerSearchableDropdownComponent {
   readonly searchQueryChange = output<string>();
   readonly optionSelected = output<string>();
 
+  readonly normalizedOptions = computed(() =>
+    this.options().map((option) =>
+      typeof option === 'string' ? { value: option, label: option } : option,
+    ),
+  );
+
+  readonly selectedLabel = computed(() =>
+    this.normalizedOptions().find((option) => option.value === this.selectedValue())?.label ?? '',
+  );
+
   readonly filteredOptions = computed(() => {
     const query = this.searchQuery().toLowerCase();
     if (!query) {
-      return this.options();
+      return this.normalizedOptions();
     }
 
-    return this.options().filter((option) =>
-      option.toLowerCase().includes(query),
+    return this.normalizedOptions().filter((option) =>
+      option.label.toLowerCase().includes(query),
     );
   });
 
@@ -63,10 +80,10 @@ export class OwnerSearchableDropdownComponent {
     this.searchQueryChange.emit(value);
   }
 
-  onSelect(option: string): void {
+  onSelect(option: OwnerSearchableDropdownOption): void {
     if (this.disabled()) {
       return;
     }
-    this.optionSelected.emit(option);
+    this.optionSelected.emit(option.value);
   }
 }

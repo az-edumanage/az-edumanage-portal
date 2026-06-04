@@ -1,46 +1,61 @@
-import { Injectable, signal } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable, catchError, throwError } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 import { Teacher, TeacherStatus } from '../models/tenant-teachers.models';
 
 @Injectable({ providedIn: 'root' })
 export class TenantTeachersDataService {
-  readonly teachers = signal<Teacher[]>([
-    {
-      id: '1',
-      name: 'Dr. Ahmed Zewail',
-      email: 'zewail@center.edu',
-      subject: 'Physics',
-      status: 'Active',
-      joinDate: 'Jan 2022',
-    },
-    {
-      id: '2',
-      name: 'Prof. Mona Helmy',
-      email: 'mona@center.edu',
-      subject: 'Mathematics',
-      status: 'Active',
-      joinDate: 'Mar 2022',
-    },
-    {
-      id: '3',
-      name: 'Mr. Khaled Said',
-      email: 'khaled@center.edu',
-      subject: 'Chemistry',
-      status: 'On Leave',
-      joinDate: 'Jun 2022',
-    },
-    {
-      id: '4',
-      name: 'Ms. Fatma Ali',
-      email: 'fatma@center.edu',
-      subject: 'Biology',
-      status: 'Active',
-      joinDate: 'Sep 2022',
-    },
-  ]);
+  private readonly http = inject(HttpClient);
+  private readonly teachersUrl = `${environment.apiBaseUrl}/tenant/teachers`;
 
-  updateStatus(id: string, status: TeacherStatus): void {
-    this.teachers.update((list) =>
-      list.map((teacher) => (teacher.id === id ? { ...teacher, status } : teacher)),
-    );
+  listTeachers(): Observable<Teacher[]> {
+    return this.http
+      .get<Teacher[]>(this.teachersUrl)
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load teachers')));
+  }
+
+  getTeacher(id: string): Observable<Teacher> {
+    return this.http
+      .get<Teacher>(`${this.teachersUrl}/${id}`)
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load teacher')));
+  }
+
+  updateStatus(teacher: Teacher, status: TeacherStatus): Observable<Teacher> {
+    return this.http
+      .put<Teacher>(`${this.teachersUrl}/${teacher.id}`, {
+        ...teacher,
+        fullName: teacher.fullName || teacher.name,
+        password: '',
+        status,
+      })
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to update teacher')));
+  }
+
+  changeTeacherPassword(teacherId: string, newPassword: string): Observable<void> {
+    return this.http
+      .post<void>(`${this.teachersUrl}/${teacherId}/password`, { newPassword })
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to change password')));
+  }
+
+  private handleError(error: HttpErrorResponse, fallback: string): Observable<never> {
+    const message = this.extractApiMessage(error.error) ?? fallback;
+    return throwError(() => new Error(message));
+  }
+
+  private extractApiMessage(error: unknown): string | null {
+    if (typeof error === 'string' && error.trim()) {
+      return error;
+    }
+    if (error && typeof error === 'object') {
+      const candidate = error as { message?: unknown; details?: unknown };
+      if (typeof candidate.message === 'string' && candidate.message.trim()) {
+        return candidate.message;
+      }
+      if (Array.isArray(candidate.details) && candidate.details.length > 0) {
+        return candidate.details.filter((item): item is string => typeof item === 'string').join(', ');
+      }
+    }
+    return null;
   }
 }

@@ -6,6 +6,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { startWith } from 'rxjs';
 import { TenantGroupsFacade } from '../../state/tenant-groups.facade';
+import { Group } from '../../models/tenant-groups.models';
 
 @Component({
   selector: 'app-tenant-groups',
@@ -21,8 +22,17 @@ export class TenantGroupsComponent {
   readonly showFilterPanel = this.facade.showFilterPanel;
   readonly viewMode = this.facade.viewMode;
   readonly groups = this.facade.groups;
+  readonly isLoading = this.facade.isLoading;
+  readonly errorMessage = this.facade.errorMessage;
   readonly activeFiltersCount = this.facade.activeFiltersCount;
   readonly filteredGroups = this.facade.filteredGroups;
+  readonly pagedGroups = this.facade.pagedGroups;
+  readonly totalFilteredGroups = this.facade.totalFilteredGroups;
+  readonly totalPages = this.facade.totalPages;
+  readonly pageIndex = this.facade.pageIndex;
+  readonly pageSize = this.facade.pageSize;
+  readonly pageStart = this.facade.pageStart;
+  readonly pageEnd = this.facade.pageEnd;
 
   readonly filterForm = this.fb.group({
     subject: [''],
@@ -31,6 +41,7 @@ export class TenantGroupsComponent {
   });
 
   constructor() {
+    this.facade.loadGroups();
     this.filterForm.valueChanges
       .pipe(startWith(this.filterForm.value), takeUntilDestroyed(this.destroyRef))
       .subscribe((value) => {
@@ -40,6 +51,10 @@ export class TenantGroupsComponent {
 
   toggleFilterPanel(): void {
     this.facade.toggleFilterPanel();
+  }
+
+  setSearchQuery(value: string): void {
+    this.facade.setSearchQuery(value);
   }
 
   clearAllFilters(): void {
@@ -54,5 +69,72 @@ export class TenantGroupsComponent {
       teacher: '',
       sortBy: 'name',
     });
+  }
+
+  previousPage(): void {
+    this.facade.previousPage();
+  }
+
+  nextPage(): void {
+    this.facade.nextPage();
+  }
+
+  setPageSize(value: string): void {
+    this.facade.setPageSize(Number(value));
+  }
+
+  formatStartAt(group: Group): string {
+    if (!group.startAt) {
+      return 'Not set';
+    }
+
+    const minutes = this.toMinutes(group.startAt);
+
+    if (minutes === null) {
+      return group.startAt;
+    }
+
+    return this.formatMinutes(minutes);
+  }
+
+  formatDuration(group: Group): string {
+    if (!group.duration) {
+      return 'Not set';
+    }
+
+    const hours = Math.floor(group.duration / 60);
+    const minutes = group.duration % 60;
+
+    if (hours > 0 && minutes > 0) {
+      return `${hours} hr ${minutes} min`;
+    }
+
+    if (hours > 0) {
+      return `${hours} hr`;
+    }
+
+    return `${minutes} min`;
+  }
+
+  private formatMinutes(totalMinutes: number): string {
+    const normalizedMinutes = ((totalMinutes % 1440) + 1440) % 1440;
+    const hour = Math.floor(normalizedMinutes / 60);
+    const minute = normalizedMinutes % 60;
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+
+    return `${displayHour}:${String(minute).padStart(2, '0')} ${period}`;
+  }
+
+  private toMinutes(time: string): number | null {
+    const [hourPart, minutePart = '0'] = time.split(':');
+    const hour = Number(hourPart);
+    const minute = Number(minutePart);
+
+    if (Number.isNaN(hour) || Number.isNaN(minute)) {
+      return null;
+    }
+
+    return hour * 60 + minute;
   }
 }

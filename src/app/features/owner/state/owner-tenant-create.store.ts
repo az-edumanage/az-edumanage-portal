@@ -5,8 +5,6 @@ export class OwnerTenantCreateStore {
   readonly isSubmitting = signal(false);
   readonly showTenantTypeDropdown = signal(false);
   readonly tenantTypeSearchQuery = signal('');
-  readonly showIndustryDropdown = signal(false);
-  readonly industrySearchQuery = signal('');
   readonly showPlanDropdown = signal(false);
   readonly planSearchQuery = signal('');
   readonly showDomainDropdown = signal(false);
@@ -22,10 +20,6 @@ export class OwnerTenantCreateStore {
 
   setTenantTypeDropdownOpen(value: boolean): void {
     this.showTenantTypeDropdown.set(value);
-  }
-
-  setIndustryDropdownOpen(value: boolean): void {
-    this.showIndustryDropdown.set(value);
   }
 
   setPlanDropdownOpen(value: boolean): void {

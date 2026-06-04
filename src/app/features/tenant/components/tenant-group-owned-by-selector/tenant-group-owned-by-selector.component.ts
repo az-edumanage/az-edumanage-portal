@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { TenantGroupSelectorOption } from '../../models/tenant-group-create.models';
 
 @Component({
   selector: 'app-tenant-group-owned-by-selector',
@@ -12,6 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
 export class TenantGroupOwnedBySelectorComponent {
   readonly selectedValue = input('');
   readonly isOpen = input(false);
+  readonly options = input<TenantGroupSelectorOption[]>([]);
 
   readonly toggled = output<void>();
   readonly selected = output<string>();

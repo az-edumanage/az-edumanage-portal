@@ -9,6 +9,12 @@ export class TenantGroupDetailsFacade {
   readonly group = this.store.group;
   readonly selectedStudent = this.store.selectedStudent;
   readonly students = this.store.students;
+  readonly isLoading = this.store.isLoading;
+  readonly error = this.store.error;
+  readonly avgAttendanceLabel = this.store.avgAttendanceLabel;
+  readonly absenceRateLabel = this.store.absenceRateLabel;
+  readonly monthlyRevenueLabel = this.store.monthlyRevenueLabel;
+  readonly capacityUsageLabel = this.store.capacityUsageLabel;
 
   loadGroup(id: string | null): void {
     this.store.loadGroup(id);

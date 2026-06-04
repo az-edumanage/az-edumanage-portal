@@ -41,8 +41,6 @@ export class OwnerTenantCreatePageComponent implements OnInit, OnDestroy {
   readonly isSubmitting = this.facade.isSubmitting;
   readonly showTenantTypeDropdown = this.facade.showTenantTypeDropdown;
   readonly tenantTypeSearchQuery = this.facade.tenantTypeSearchQuery;
-  readonly showIndustryDropdown = this.facade.showIndustryDropdown;
-  readonly industrySearchQuery = this.facade.industrySearchQuery;
   readonly showPlanDropdown = this.facade.showPlanDropdown;
   readonly planSearchQuery = this.facade.planSearchQuery;
   readonly showDomainDropdown = this.facade.showDomainDropdown;
@@ -51,14 +49,20 @@ export class OwnerTenantCreatePageComponent implements OnInit, OnDestroy {
   readonly showCountryDropdown = this.facade.showCountryDropdown;
   readonly countrySearchQuery = this.facade.countrySearchQuery;
   readonly showCustomizationMenu = this.facade.showCustomizationMenu;
+  readonly submitAttempted = this.facade.submitAttempted;
+  readonly submitStatus = this.facade.submitStatus;
 
   readonly subscriptionTemplates = this.facade.subscriptionTemplates;
+  readonly planLoadError = this.facade.planLoadError;
   readonly tenantTypes = this.facade.tenantTypes;
-  readonly industries = this.facade.industries;
   readonly domains = this.facade.domains;
   readonly cities = this.facade.cities;
   readonly countries = this.facade.countries;
   readonly selectedPlanName = this.facade.selectedPlanName;
+  readonly selectedCountryName = this.facade.selectedCountryName;
+  readonly selectedCityName = this.facade.selectedCityName;
+  readonly selectedCountryValue = this.facade.selectedCountryValue;
+  readonly selectedCityValue = this.facade.selectedCityValue;
   readonly isRtl = this.i18nService.isRtl;
 
   t(key: string): string {
@@ -115,18 +119,6 @@ export class OwnerTenantCreatePageComponent implements OnInit, OnDestroy {
     this.facade.selectTenantType(type);
   }
 
-  toggleIndustryDropdown(): void {
-    this.facade.setIndustryDropdownOpen(!this.showIndustryDropdown());
-  }
-
-  closeIndustryDropdown(): void {
-    this.facade.setIndustryDropdownOpen(false);
-  }
-
-  selectIndustry(industry: string): void {
-    this.facade.selectIndustry(industry);
-  }
-
   toggleDomainDropdown(): void {
     this.facade.setDomainDropdownOpen(!this.showDomainDropdown());
   }
@@ -140,7 +132,7 @@ export class OwnerTenantCreatePageComponent implements OnInit, OnDestroy {
   }
 
   toggleCityDropdown(): void {
-    if (!this.tenantForm.get('country')?.value) {
+    if (!this.tenantForm.get('countryId')?.value) {
       this.facade.setCityDropdownOpen(false);
       return;
     }
@@ -189,10 +181,6 @@ export class OwnerTenantCreatePageComponent implements OnInit, OnDestroy {
 
   setTenantTypeSearchQuery(value: string): void {
     this.facade.setTenantTypeSearchQuery(value);
-  }
-
-  setIndustrySearchQuery(value: string): void {
-    this.facade.setIndustrySearchQuery(value);
   }
 
   setCitySearchQuery(value: string): void {

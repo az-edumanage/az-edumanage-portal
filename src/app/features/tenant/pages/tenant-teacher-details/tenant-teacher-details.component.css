@@ -1,0 +1,241 @@
+:host {
+  display: block;
+}
+
+.tenant-teacher-details-page {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.tenant-teacher-details-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  justify-content: space-between;
+}
+
+.tenant-teacher-details-back,
+.tenant-teacher-details-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.tenant-teacher-details-back {
+  color: var(--color-text-muted, #64748b);
+}
+
+.tenant-teacher-details-edit {
+  height: 2.5rem;
+  padding-inline: var(--space-4);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-on-action, #ffffff);
+  background: var(--color-action-primary, #4f46e5);
+}
+
+.tenant-teacher-details-title {
+  margin-top: var(--space-2);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary, #0f172a);
+}
+
+.tenant-teacher-details-card,
+.tenant-teacher-details-empty {
+  border-radius: var(--radius-2xl, 1rem);
+  border: 1px solid var(--color-border-primary, #e2e8f0);
+  background: var(--color-bg-card, #ffffff);
+  box-shadow: var(--shadow-sm);
+}
+
+.tenant-teacher-details-card {
+  padding: var(--space-6);
+}
+
+.tenant-teacher-details-empty {
+  padding: 3rem;
+  text-align: center;
+}
+
+.tenant-teacher-details-spinner {
+  color: var(--color-text-muted, #64748b);
+  animation: spin 1s linear infinite;
+}
+
+.tenant-teacher-details-empty-title {
+  margin-top: var(--space-2);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary, #0f172a);
+}
+
+.tenant-teacher-details-profile {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.tenant-teacher-details-avatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-2xl, 1rem);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: #4f46e5;
+  background: color-mix(in srgb, #4f46e5 10%, transparent);
+}
+
+.tenant-teacher-details-name {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary, #0f172a);
+}
+
+.tenant-teacher-details-email {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted, #64748b);
+}
+
+.tenant-teacher-details-status {
+  margin-left: auto;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-full);
+  font-size: 0.625rem;
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  color: #64748b;
+  background: #f1f5f9;
+}
+
+.tenant-teacher-details-status--active {
+  color: #047857;
+  background: #d1fae5;
+}
+
+.tenant-teacher-details-grid {
+  margin-top: var(--space-6);
+  display: grid;
+  gap: var(--space-4);
+}
+
+.tenant-teacher-details-label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.625rem;
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  color: var(--color-text-muted, #64748b);
+}
+
+.tenant-teacher-details-value {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary, #334155);
+}
+
+.tenant-teacher-details-section-head {
+  margin-bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tenant-teacher-details-section-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary, #0f172a);
+}
+
+.tenant-teacher-details-count {
+  min-width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-action-primary, #4f46e5);
+  background: color-mix(in srgb, #4f46e5 10%, transparent);
+}
+
+.tenant-teacher-details-table-scroll {
+  overflow-x: auto;
+}
+
+.tenant-teacher-details-table {
+  width: 100%;
+  text-align: left;
+  font-size: var(--font-size-sm);
+}
+
+.tenant-teacher-details-table th,
+.tenant-teacher-details-table td {
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border-primary, #e2e8f0);
+}
+
+.tenant-teacher-details-table th {
+  font-size: 0.625rem;
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  color: var(--color-text-muted, #64748b);
+  background: var(--color-bg-muted, #f8fafc);
+}
+
+.tenant-teacher-details-table-empty {
+  text-align: center;
+  color: var(--color-text-muted, #64748b);
+}
+
+.dark .tenant-teacher-details-card,
+.dark .tenant-teacher-details-empty,
+.dark .tenant-teacher-details-table th,
+.dark .tenant-teacher-details-table td {
+  border-color: var(--color-border-primary, #334155);
+}
+
+.dark .tenant-teacher-details-card,
+.dark .tenant-teacher-details-empty {
+  background: var(--color-bg-card, #0f172a);
+}
+
+.dark .tenant-teacher-details-table th {
+  background: var(--color-bg-muted, #1e293b);
+}
+
+.dark .tenant-teacher-details-title,
+.dark .tenant-teacher-details-empty-title,
+.dark .tenant-teacher-details-name,
+.dark .tenant-teacher-details-section-title {
+  color: var(--color-text-primary, #e2e8f0);
+}
+
+@media (min-width: 40rem) {
+  .tenant-teacher-details-header {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .tenant-teacher-details-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .tenant-teacher-details-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

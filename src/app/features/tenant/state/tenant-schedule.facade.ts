@@ -23,7 +23,29 @@ export class TenantScheduleFacade {
     });
   }
 
+  loadSessions(): void {
+    this.store.loadSessions();
+  }
+
   getSessionsFor(day: string, time: string): ScheduleSession[] {
-    return this.filteredSessions().filter((session) => session.day === day && session.startTime === time);
+    const slotStart = this.toMinutes(time);
+
+    return this.filteredSessions().filter((session) => {
+      const sessionStart = this.toMinutes(session.startTime);
+
+      return session.day === day && Math.floor(sessionStart / 60) === Math.floor(slotStart / 60);
+    });
+  }
+
+  private toMinutes(time: string): number {
+    const [hourPart, minutePart = '0'] = time.split(':');
+    const hour = Number(hourPart);
+    const minute = Number(minutePart);
+
+    if (Number.isNaN(hour) || Number.isNaN(minute)) {
+      return 0;
+    }
+
+    return hour * 60 + minute;
   }
 }

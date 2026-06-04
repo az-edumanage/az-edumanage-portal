@@ -43,7 +43,8 @@
             <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</mat-icon>
             <input 
               type="text" 
-              [(ngModel)]="searchQuery"
+              [ngModel]="searchQuery()"
+              (ngModelChange)="setSearchQuery($event)"
               placeholder="Search groups by name, subject, teacher or room..."
               class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
             >
@@ -212,12 +213,14 @@
                     <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Subject</th>
                     <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Teacher</th>
                     <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Room</th>
+                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Start At</th>
+                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Duration</th>
                     <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px] text-center">Students</th>
                     <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px] text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
-                  @for (group of filteredGroups(); track group.id) {
+                  @for (group of pagedGroups(); track group.id) {
                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
                       <td class="px-6 py-4">
                         <span class="font-bold text-slate-900 dark:text-white">{{ group.name }}</span>
@@ -229,6 +232,8 @@
                       </td>
                       <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ group.teacher }}</td>
                       <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ group.room }}</td>
+                      <td class="px-6 py-4 text-slate-500 dark:text-slate-500 whitespace-nowrap">{{ formatStartAt(group) }}</td>
+                      <td class="px-6 py-4 text-slate-500 dark:text-slate-500 whitespace-nowrap">{{ formatDuration(group) }}</td>
                       <td class="px-6 py-4 text-center">
                         <span class="font-medium text-slate-900 dark:text-white">{{ group.studentsCount }}</span>
                       </td>
@@ -246,6 +251,48 @@
                   }
                 </tbody>
               </table>
+            </div>
+            <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="text-xs font-medium text-slate-500 dark:text-slate-500">
+                @if (totalFilteredGroups() > 0) {
+                  Showing {{ pageStart() }}-{{ pageEnd() }} of {{ totalFilteredGroups() }} groups
+                } @else {
+                  No groups to display
+                }
+              </div>
+              <div class="flex items-center gap-3">
+                <label class="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-500">
+                  Rows
+                  <select
+                    [ngModel]="pageSize()"
+                    (ngModelChange)="setPageSize($event)"
+                    class="h-8 px-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option [value]="5">5</option>
+                    <option [value]="10">10</option>
+                    <option [value]="20">20</option>
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  (click)="previousPage()"
+                  [disabled]="pageIndex() === 0"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                  title="Previous page"
+                >
+                  <mat-icon class="text-sm">chevron_left</mat-icon>
+                </button>
+                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Page {{ pageIndex() + 1 }} of {{ totalPages() }}</span>
+                <button
+                  type="button"
+                  (click)="nextPage()"
+                  [disabled]="pageIndex() >= totalPages() - 1"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                  title="Next page"
+                >
+                  <mat-icon class="text-sm">chevron_right</mat-icon>
+                </button>
+              </div>
             </div>
           </div>
         }

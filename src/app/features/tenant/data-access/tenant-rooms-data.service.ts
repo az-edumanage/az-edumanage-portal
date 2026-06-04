@@ -1,48 +1,37 @@
-import { Injectable, signal } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Injectable, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import { AuthApiService } from '../../../core/auth/auth-api.service';
 import { Room } from '../models/tenant-rooms.models';
 
 @Injectable({ providedIn: 'root' })
 export class TenantRoomsDataService {
-  readonly rooms = signal<Room[]>([
-    {
-      id: '1',
-      name: 'Room 101',
-      type: 'Classroom',
-      capacity: 30,
-      status: 'Available',
-      equipment: ['Projector', 'AC', 'Whiteboard'],
-    },
-    {
-      id: '2',
-      name: 'Physics Lab',
-      type: 'Laboratory',
-      capacity: 20,
-      status: 'Occupied',
-      equipment: ['Lab Kits', 'Projector', 'Safety Gear'],
-    },
-    {
-      id: '3',
-      name: 'Main Hall',
-      type: 'Auditorium',
-      capacity: 150,
-      status: 'Available',
-      equipment: ['Sound System', 'Stage', 'AC'],
-    },
-    {
-      id: '4',
-      name: 'Virtual Room A',
-      type: 'Virtual',
-      capacity: 500,
-      status: 'Available',
-      equipment: ['Zoom Integration', 'Recording'],
-    },
-    {
-      id: '5',
-      name: 'Room 204',
-      type: 'Classroom',
-      capacity: 25,
-      status: 'Maintenance',
-      equipment: ['Whiteboard'],
-    },
-  ]);
+  private readonly http = inject(HttpClient);
+  private readonly authApi = inject(AuthApiService);
+  private readonly roomsUrl = `${environment.apiBaseUrl}/tenant/rooms`;
+
+  readonly rooms = signal<Room[]>([]);
+
+  async loadRooms(): Promise<void> {
+    await this.authApi.ensureLoggedIn();
+    const response = await firstValueFrom(this.http.get<Room[]>(this.roomsUrl));
+    this.rooms.set(response ?? []);
+  }
+
+  async deleteRoom(roomId: string): Promise<void> {
+    await this.authApi.ensureLoggedIn();
+    await firstValueFrom(this.http.delete<void>(`${this.roomsUrl}/${roomId}`));
+    this.rooms.update((rooms) => rooms.filter((room) => room.id !== roomId));
+  }
+
+  toUserMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse && error.status === 409) {
+      return "Couldn't delete room because it is related with group";
+    }
+    if (error instanceof HttpErrorResponse && typeof error.error?.message === 'string') {
+      return error.error.message;
+    }
+    return 'Room could not be deleted. Please try again.';
+  }
 }

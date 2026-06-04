@@ -84,9 +84,9 @@
                     class="tenant-grades-filter-select"
                   >
                     <option value="">All Levels</option>
-                    <option value="Primary">Primary</option>
-                    <option value="Preparatory">Preparatory</option>
-                    <option value="Secondary">Secondary</option>
+                    @for (level of levelOptions(); track level) {
+                      <option [value]="level">{{ level }}</option>
+                    }
                   </select>
                 </div>
 
@@ -154,7 +154,26 @@
   </div>
 
   <!-- Results Grid/List -->
-  @if (filteredGrades().length > 0) {
+  @if (loading()) {
+    <div class="tenant-grades-empty">
+      <div class="tenant-grades-empty-icon-wrap">
+        <mat-icon class="text-slate-500 animate-spin">sync</mat-icon>
+      </div>
+      <h3 class="tenant-grades-empty-title">Loading grades</h3>
+      <p class="tenant-grades-empty-text">Please wait while grades are loaded.</p>
+    </div>
+  } @else if (loadError()) {
+    <div class="tenant-grades-empty">
+      <div class="tenant-grades-empty-icon-wrap">
+        <mat-icon class="text-slate-500">error_outline</mat-icon>
+      </div>
+      <h3 class="tenant-grades-empty-title">Unable to load grades</h3>
+      <p class="tenant-grades-empty-text">{{ loadError() }}</p>
+      <button (click)="clearAllFilters()" class="tenant-grades-empty-btn">
+        Clear Filters
+      </button>
+    </div>
+  } @else if (filteredGrades().length > 0) {
     @if (viewMode() === 'grid') {
       <div class="tenant-grades-grid">
         @for (grade of filteredGrades(); track grade.id) {
@@ -164,10 +183,10 @@
                 <mat-icon class="tenant-grades-card-icon">school</mat-icon>
               </div>
               <div class="tenant-grades-card-actions">
-                <button class="tenant-grades-icon-btn" title="Edit">
+                <a [routerLink]="['/tenant/grades', grade.id, 'edit']" class="tenant-grades-icon-btn" title="Edit">
                   <mat-icon class="text-sm">edit</mat-icon>
-                </button>
-                <button class="tenant-grades-icon-btn tenant-grades-icon-btn--danger" title="Delete">
+                </a>
+                <button type="button" (click)="openDeleteConfirmation(grade)" class="tenant-grades-icon-btn tenant-grades-icon-btn--danger" title="Delete">
                   <mat-icon class="text-sm">delete</mat-icon>
                 </button>
               </div>
@@ -227,10 +246,10 @@
                       <a [routerLink]="['/tenant/grades', grade.id]" class="tenant-grades-row-btn tenant-grades-row-btn--view" title="View Details">
                         <mat-icon class="text-sm block">visibility</mat-icon>
                       </a>
-                      <button class="tenant-grades-row-btn tenant-grades-row-btn--edit" title="Edit">
+                      <a [routerLink]="['/tenant/grades', grade.id, 'edit']" class="tenant-grades-row-btn tenant-grades-row-btn--edit" title="Edit">
                         <mat-icon class="text-sm block">edit</mat-icon>
-                      </button>
-                      <button class="tenant-grades-row-btn tenant-grades-row-btn--delete" title="Delete">
+                      </a>
+                      <button type="button" (click)="openDeleteConfirmation(grade)" class="tenant-grades-row-btn tenant-grades-row-btn--delete" title="Delete">
                         <mat-icon class="text-sm block">delete</mat-icon>
                       </button>
                     </div>
@@ -248,10 +267,87 @@
         <mat-icon class="text-slate-500">search_off</mat-icon>
       </div>
       <h3 class="tenant-grades-empty-title">No grades found</h3>
-      <p class="tenant-grades-empty-text">We couldn't find any grades matching your current search and filter criteria.</p>
+      <p class="tenant-grades-empty-text">
+        @if (grades().length === 0) {
+          No grades have been created yet.
+        } @else {
+          We couldn't find any grades matching your current search and filter criteria.
+        }
+      </p>
       <button (click)="clearAllFilters()" class="tenant-grades-empty-btn">
         Clear All Filters
       </button>
+    </div>
+  }
+
+  @if (deleteState().status !== 'closed') {
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/45" role="presentation">
+      <section
+        class="w-full max-w-md grid gap-4 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-grade-title"
+      >
+        <div class="w-12 h-12 inline-flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+          @if (deleteState().status === 'deleting') {
+            <mat-icon class="text-slate-500 animate-spin">sync</mat-icon>
+          } @else if (deleteState().status === 'success') {
+            <mat-icon class="text-emerald-600">check_circle</mat-icon>
+          } @else if (deleteState().status === 'failed') {
+            <mat-icon class="text-rose-600">error_outline</mat-icon>
+          } @else {
+            <mat-icon class="text-rose-600">delete</mat-icon>
+          }
+        </div>
+
+        <div class="grid gap-2">
+          <h3 id="delete-grade-title" class="text-xl font-bold text-slate-900 dark:text-slate-100">
+            @if (deleteState().status === 'success') {
+              Grade Deleted
+            } @else if (deleteState().status === 'failed') {
+              Delete Failed
+            } @else {
+              Delete Grade
+            }
+          </h3>
+
+          @if (deleteState().status === 'confirming' && deleteState().grade; as gradeToDelete) {
+            <p class="text-sm text-slate-500">
+              Are you sure you want to delete <strong>{{ gradeToDelete.name }}</strong>? This action cannot be undone.
+            </p>
+          } @else if (deleteState().status === 'deleting') {
+            <p class="text-sm text-slate-500">Deleting grade. Please wait.</p>
+          } @else {
+            <p class="text-sm text-slate-500">{{ deleteState().message }}</p>
+          }
+        </div>
+
+        <div class="flex justify-end gap-3">
+          @if (deleteState().status === 'confirming') {
+            <button type="button" (click)="cancelDelete()" class="min-h-10 px-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium text-slate-700 dark:text-slate-300">
+              Cancel
+            </button>
+            <button type="button" (click)="confirmDelete()" class="min-h-10 px-4 rounded-lg bg-rose-600 hover:bg-rose-700 text-sm font-medium text-white">
+              Delete
+            </button>
+          } @else if (deleteState().status === 'deleting') {
+            <button type="button" class="min-h-10 px-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-medium text-slate-700 dark:text-slate-300 opacity-60 cursor-not-allowed" disabled>
+              Deleting...
+            </button>
+          } @else if (deleteState().status === 'failed') {
+            <button type="button" (click)="cancelDelete()" class="min-h-10 px-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium text-slate-700 dark:text-slate-300">
+              Close
+            </button>
+            <button type="button" (click)="confirmDelete()" class="min-h-10 px-4 rounded-lg bg-rose-600 hover:bg-rose-700 text-sm font-medium text-white">
+              Try Again
+            </button>
+          } @else {
+            <button type="button" (click)="closeDeleteModal()" class="min-h-10 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-sm font-medium text-white">
+              Done
+            </button>
+          }
+        </div>
+      </section>
     </div>
   }
 </div>

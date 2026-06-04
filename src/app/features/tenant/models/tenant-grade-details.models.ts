@@ -1,17 +1,3 @@
-export interface GradeGroup {
-  id: string;
-  name: string;
-  teacher: string;
-  studentCount: number;
-  status: string;
-}
+import type { GradeDetail } from './tenant-grades.models';
 
-export interface GradeDetails {
-  id: string;
-  name: string;
-  level: string;
-  description: string;
-  totalStudents: number;
-  totalGroups: number;
-  totalTeachers: number;
-}
+export type GradeDetails = GradeDetail;

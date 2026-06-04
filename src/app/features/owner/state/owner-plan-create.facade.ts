@@ -1,4 +1,4 @@
-import { Injectable, computed, inject } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
   AbstractControl,
@@ -19,6 +19,7 @@ import {
   OwnerPlanVisibility,
 } from '../models/owner-plan-create.models';
 import { OwnerPlanCreateStore } from './owner-plan-create.store';
+import { SYSTEM_FREE_TRIAL_PLAN_NAME } from '../constants/system-plans.constants';
 
 @Injectable({ providedIn: 'root' })
 export class OwnerPlanCreateFacade {
@@ -97,6 +98,8 @@ export class OwnerPlanCreateFacade {
     showAnnualPrice: [false],
   });
 
+  readonly isSystemTrialPlan = signal(false);
+
   async initialize(planId: string | null): Promise<void> {
     this.store.setPlanId(planId);
     this.store.setActionStatus(null);
@@ -125,6 +128,7 @@ export class OwnerPlanCreateFacade {
     this.planForm.markAsPristine();
     this.planForm.markAsUntouched();
     this.selectedAudienceType.set('');
+    this.isSystemTrialPlan.set(false);
 
     this.store.existingPlans.set(await this.data.listPlans());
     this.store.moduleOptions.set(await this.data.listModuleOptions());
@@ -134,6 +138,7 @@ export class OwnerPlanCreateFacade {
       if (plan) {
         this.planForm.patchValue(plan);
         this.selectedAudienceType.set(plan.audienceType ?? '');
+        this.isSystemTrialPlan.set(plan.name === SYSTEM_FREE_TRIAL_PLAN_NAME);
       }
     }
 
@@ -199,6 +204,7 @@ export class OwnerPlanCreateFacade {
       trialDaysControl.updateValueAndValidity({ emitEvent: false });
     }
 
+    this.applySystemTrialProtection();
     this.configureAudienceTypeDependentLimits(this.planForm.get('audienceType')?.value === 'teacher');
   }
 
@@ -228,12 +234,14 @@ export class OwnerPlanCreateFacade {
   }
 
   selectVisibility(visibility: string): void {
+    if (this.isSystemTrialPlan()) return;
     this.planForm.patchValue({ visibility: visibility as OwnerPlanVisibility });
     this.showVisibilityDropdown.set(false);
     this.visibilitySearchQuery.set('');
   }
 
   selectCurrency(currency: string): void {
+    if (this.isSystemTrialPlan()) return;
     this.planForm.patchValue({ currency: currency as OwnerPlanCurrency });
     this.showCurrencyDropdown.set(false);
     this.currencySearchQuery.set('');
@@ -256,17 +264,18 @@ export class OwnerPlanCreateFacade {
     this.store.setActionStatus(null);
 
     const value = this.planForm.getRawValue();
+    const isSystemTrialPlan = this.isSystemTrialPlan();
     const payload: OwnerPlanCreatePayload = {
-      name: value.name ?? '',
+      name: isSystemTrialPlan ? SYSTEM_FREE_TRIAL_PLAN_NAME : (value.name ?? ''),
       description: value.description ?? '',
       status: (value.status || 'Draft') as OwnerPlanStatus,
-      visibility: (value.visibility || 'Private') as OwnerPlanVisibility,
+      visibility: isSystemTrialPlan ? 'Private' : (value.visibility || 'Private') as OwnerPlanVisibility,
       currency: (value.currency || 'USD') as OwnerPlanCurrency,
       audienceType: (value.audienceType || 'center') as OwnerPlanAudienceType,
-      monthlyPrice: value.monthlyPrice ?? 0,
-      yearlyPrice: value.yearlyPrice ?? 0,
-      hasTrial: value.hasTrial ?? false,
-      trialDays: value.hasTrial ? (value.trialDays ?? 14) : 0,
+      monthlyPrice: isSystemTrialPlan ? 0 : (value.monthlyPrice ?? 0),
+      yearlyPrice: isSystemTrialPlan ? 0 : (value.yearlyPrice ?? 0),
+      hasTrial: isSystemTrialPlan ? true : (value.hasTrial ?? false),
+      trialDays: isSystemTrialPlan || value.hasTrial ? (value.trialDays ?? 14) : 0,
       maxStudents: value.maxStudents ?? 0,
       maxTeachers: value.audienceType === 'teacher' ? 0 : (value.maxTeachers ?? 0),
       maxStorage: value.maxStorage ?? 0,
@@ -325,6 +334,10 @@ export class OwnerPlanCreateFacade {
         return null;
       }
 
+      if (!this.planId() && String(control.value).trim().toUpperCase() === SYSTEM_FREE_TRIAL_PLAN_NAME) {
+        return { systemPlanName: true };
+      }
+
       const duplicate = this.data.isPlanNameTaken(control.value, this.planId(), this.existingPlans());
       if (!duplicate) {
         return null;
@@ -332,6 +345,34 @@ export class OwnerPlanCreateFacade {
 
       return { alreadyExists: duplicate };
     };
+  }
+
+  private applySystemTrialProtection(): void {
+    if (!this.isSystemTrialPlan()) {
+      this.planForm.get('name')?.enable({ emitEvent: false });
+      this.planForm.get('visibility')?.enable({ emitEvent: false });
+      this.planForm.get('currency')?.enable({ emitEvent: false });
+      this.planForm.get('monthlyPrice')?.enable({ emitEvent: false });
+      this.planForm.get('yearlyPrice')?.enable({ emitEvent: false });
+      this.planForm.get('hasTrial')?.enable({ emitEvent: false });
+      return;
+    }
+
+    this.planForm.patchValue({
+      name: SYSTEM_FREE_TRIAL_PLAN_NAME,
+      visibility: 'Private',
+      monthlyPrice: 0,
+      yearlyPrice: 0,
+      hasTrial: true,
+    }, { emitEvent: false });
+
+    this.planForm.get('name')?.disable({ emitEvent: false });
+    this.planForm.get('visibility')?.disable({ emitEvent: false });
+    this.planForm.get('currency')?.disable({ emitEvent: false });
+    this.planForm.get('monthlyPrice')?.disable({ emitEvent: false });
+    this.planForm.get('yearlyPrice')?.disable({ emitEvent: false });
+    this.planForm.get('hasTrial')?.disable({ emitEvent: false });
+    this.planForm.get('trialDays')?.enable({ emitEvent: false });
   }
 
   private extractErrorMessage(error: unknown): string {

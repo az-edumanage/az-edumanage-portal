@@ -19,7 +19,11 @@ export class TenantGroupStudentAddComponent implements OnInit, OnDestroy {
 
   readonly groupId = this.facade.groupId;
   readonly isSubmitting = this.facade.isSubmitting;
+  readonly isLoadingCandidates = this.facade.isLoadingCandidates;
+  readonly candidateError = this.facade.candidateError;
   readonly selectedStudent = this.facade.selectedStudent;
+  readonly selectedStudents = this.facade.selectedStudents;
+  readonly hasSelectedStudents = this.facade.hasSelectedStudents;
   readonly filteredStudents = this.facade.filteredStudents;
   readonly enrollForm = this.facade.enrollForm;
 
@@ -38,6 +42,10 @@ export class TenantGroupStudentAddComponent implements OnInit, OnDestroy {
 
   selectStudent(student: TenantGroupStudent): void {
     this.facade.selectStudent(student);
+  }
+
+  isStudentSelected(studentId: string): boolean {
+    return this.facade.isStudentSelected(studentId);
   }
 
   onEnroll(): void {

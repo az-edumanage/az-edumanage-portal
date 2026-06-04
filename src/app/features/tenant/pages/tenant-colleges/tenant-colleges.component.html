@@ -1,0 +1,253 @@
+<div class="tenant-colleges-page">
+  <div class="tenant-colleges-header">
+    <div>
+      <h2 class="tenant-colleges-title">Colleges</h2>
+      <p class="tenant-colleges-subtitle">Manage university colleges and their subject coverage.</p>
+    </div>
+    <div class="tenant-colleges-header-actions">
+      <div class="tenant-colleges-view-switch">
+        <button
+          type="button"
+          (click)="viewMode.set('grid')"
+          [class.bg-indigo-600/10]="viewMode() === 'grid'"
+          [class.text-indigo-600]="viewMode() === 'grid'"
+          [class.text-slate-500]="viewMode() !== 'grid'"
+          class="tenant-colleges-view-btn"
+          title="Grid View"
+        >
+          <mat-icon class="text-sm block">grid_view</mat-icon>
+        </button>
+        <button
+          type="button"
+          (click)="viewMode.set('list')"
+          [class.bg-indigo-600/10]="viewMode() === 'list'"
+          [class.text-indigo-600]="viewMode() === 'list'"
+          [class.text-slate-500]="viewMode() !== 'list'"
+          class="tenant-colleges-view-btn"
+          title="List View"
+        >
+          <mat-icon class="text-sm block">view_list</mat-icon>
+        </button>
+      </div>
+      <a routerLink="/tenant/colleges/create" class="tenant-colleges-add-btn">
+        <mat-icon class="text-sm">add</mat-icon>
+        Add College
+      </a>
+    </div>
+  </div>
+
+  <div class="tenant-colleges-filter-shell">
+    <div class="tenant-colleges-filter-row">
+      <div class="tenant-colleges-search">
+        <mat-icon class="tenant-colleges-search-icon">search</mat-icon>
+        <input
+          type="search"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearch($event)"
+          placeholder="Search colleges by name or university..."
+          class="tenant-colleges-search-input"
+        >
+      </div>
+
+      <div class="tenant-colleges-filter-actions">
+        <div class="relative">
+          <button
+            type="button"
+            (click)="toggleFilterPanel()"
+            [class.bg-indigo-600/10]="showFilterPanel() || activeFiltersCount() > 0"
+            [class.text-indigo-600]="showFilterPanel() || activeFiltersCount() > 0"
+            [class.border-indigo-200]="showFilterPanel() || activeFiltersCount() > 0"
+            class="tenant-colleges-advanced-filter-btn"
+          >
+            <mat-icon class="text-sm">filter_list</mat-icon>
+            Filters
+            @if (activeFiltersCount() > 0) {
+              <span class="tenant-colleges-filter-count">
+                {{ activeFiltersCount() }}
+              </span>
+            }
+            <mat-icon class="text-xs transition-transform duration-200" [class.rotate-180]="showFilterPanel()">expand_more</mat-icon>
+          </button>
+
+          @if (showFilterPanel()) {
+            <div class="tenant-colleges-filter-dropdown">
+              <div class="tenant-colleges-filter-dropdown-head">
+                <h3 class="tenant-colleges-filter-dropdown-title">Filter Options</h3>
+                <button type="button" (click)="clearAdvancedFilters()" class="tenant-colleges-filter-reset">Reset</button>
+              </div>
+
+              <div class="tenant-colleges-filter-fields">
+                <div>
+                  <label for="college-university-filter" class="tenant-colleges-filter-label">University</label>
+                  <select
+                    id="college-university-filter"
+                    [ngModel]="universityFilter()"
+                    (ngModelChange)="onUniversityFilter($event)"
+                    [disabled]="optionsLoading()"
+                    class="tenant-colleges-filter-select"
+                  >
+                    <option value="">All Universities</option>
+                    @for (university of universityOptions(); track university.value) {
+                      <option [value]="university.value">{{ university.label }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+
+              <div class="tenant-colleges-filter-apply-wrap">
+                <button type="button" (click)="toggleFilterPanel()" class="tenant-colleges-filter-apply">
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        @if (activeFiltersCount() > 0) {
+          <button
+            type="button"
+            (click)="clearAllFilters()"
+            class="tenant-colleges-reset-all"
+          >
+            <mat-icon class="text-sm">restart_alt</mat-icon>
+            Reset All
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="tenant-colleges-empty">
+      <div class="tenant-colleges-empty-icon-wrap">
+        <mat-icon class="text-slate-500 animate-spin">sync</mat-icon>
+      </div>
+      <h3 class="tenant-colleges-empty-title">Loading colleges</h3>
+      <p class="tenant-colleges-empty-text">Please wait while colleges are loaded.</p>
+    </div>
+  } @else if (loadError()) {
+    <div class="tenant-colleges-empty">
+      <div class="tenant-colleges-empty-icon-wrap">
+        <mat-icon class="text-slate-500">error_outline</mat-icon>
+      </div>
+      <h3 class="tenant-colleges-empty-title">Unable to load colleges</h3>
+      <p class="tenant-colleges-empty-text">{{ loadError() }}</p>
+      <button type="button" (click)="clearAllFilters()" class="tenant-colleges-empty-btn">
+        Clear Filters
+      </button>
+    </div>
+  } @else if (deleteError()) {
+    <div class="tenant-colleges-empty">
+      <div class="tenant-colleges-empty-icon-wrap">
+        <mat-icon class="text-slate-500">error_outline</mat-icon>
+      </div>
+      <h3 class="tenant-colleges-empty-title">Unable to delete college</h3>
+      <p class="tenant-colleges-empty-text">{{ deleteError() }}</p>
+    </div>
+  } @else if (colleges().length > 0) {
+    @if (viewMode() === 'grid') {
+      <div class="tenant-colleges-grid">
+        @for (college of colleges(); track college.id) {
+          <div class="tenant-colleges-card">
+            <div class="tenant-colleges-card-head">
+              <div class="tenant-colleges-card-icon-wrap">
+                <mat-icon class="tenant-colleges-card-icon">account_balance</mat-icon>
+              </div>
+              <div class="tenant-colleges-card-actions">
+                <a [routerLink]="['/tenant/colleges', college.id, 'edit']" class="tenant-colleges-icon-btn" title="Edit">
+                  <mat-icon class="text-sm">edit</mat-icon>
+                </a>
+                <button type="button" (click)="deleteCollege(college.id)" [disabled]="deletingId() === college.id" class="tenant-colleges-icon-btn tenant-colleges-icon-btn--danger" title="Delete">
+                  <mat-icon class="text-sm">delete</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <h3 class="tenant-colleges-card-name">{{ college.name }}</h3>
+            <p class="tenant-colleges-card-university">{{ college.universityName }}</p>
+
+            <div class="tenant-colleges-card-footer">
+              <div class="tenant-colleges-card-subjects">
+                <mat-icon class="text-sm">menu_book</mat-icon>
+                <span>{{ college.subjectCount }} Subjects</span>
+              </div>
+              <a [routerLink]="['/tenant/colleges', college.id]" class="tenant-colleges-view-link">
+                View Details
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="tenant-colleges-table-shell">
+        <div class="tenant-colleges-table-scroll">
+          <table class="tenant-colleges-table">
+            <thead class="tenant-colleges-table-head">
+              <tr>
+                <th class="tenant-colleges-th">College Name</th>
+                <th class="tenant-colleges-th">University</th>
+                <th class="tenant-colleges-th tenant-colleges-th--center">Subjects</th>
+                <th class="tenant-colleges-th tenant-colleges-th--actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="tenant-colleges-tbody">
+              @for (college of colleges(); track college.id) {
+                <tr class="tenant-colleges-tr">
+                  <td class="tenant-colleges-td">
+                    <div class="tenant-colleges-row-name-wrap">
+                      <div class="tenant-colleges-row-icon-wrap">
+                        <mat-icon class="text-sm block">account_balance</mat-icon>
+                      </div>
+                      <span class="tenant-colleges-row-name">{{ college.name }}</span>
+                    </div>
+                  </td>
+                  <td class="tenant-colleges-td">
+                    <span class="tenant-colleges-university-chip">
+                      {{ college.universityName }}
+                    </span>
+                  </td>
+                  <td class="tenant-colleges-td tenant-colleges-td--center">
+                    <div class="tenant-colleges-row-subjects">
+                      <mat-icon class="text-xs">menu_book</mat-icon>
+                      <span>{{ college.subjectCount }}</span>
+                    </div>
+                  </td>
+                  <td class="tenant-colleges-td tenant-colleges-td--actions">
+                    <div class="tenant-colleges-row-actions">
+                      <a [routerLink]="['/tenant/colleges', college.id]" class="tenant-colleges-row-btn tenant-colleges-row-btn--view" title="View Details">
+                        <mat-icon class="text-sm block">visibility</mat-icon>
+                      </a>
+                      <a [routerLink]="['/tenant/colleges', college.id, 'edit']" class="tenant-colleges-row-btn tenant-colleges-row-btn--edit" title="Edit">
+                        <mat-icon class="text-sm block">edit</mat-icon>
+                      </a>
+                      <button type="button" (click)="deleteCollege(college.id)" [disabled]="deletingId() === college.id" class="tenant-colleges-row-btn tenant-colleges-row-btn--delete" title="Delete">
+                        <mat-icon class="text-sm block">delete</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  } @else {
+    <div class="tenant-colleges-empty">
+      <div class="tenant-colleges-empty-icon-wrap">
+        <mat-icon class="text-slate-500">search_off</mat-icon>
+      </div>
+      <h3 class="tenant-colleges-empty-title">No colleges found</h3>
+      <p class="tenant-colleges-empty-text">
+        @if (allColleges().length === 0) {
+          No colleges have been created yet.
+        } @else {
+          We couldn't find any colleges matching your current search criteria.
+        }
+      </p>
+      <button type="button" (click)="clearAllFilters()" class="tenant-colleges-empty-btn">
+        Clear All Filters
+      </button>
+    </div>
+  }
+</div>

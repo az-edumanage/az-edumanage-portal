@@ -122,6 +122,24 @@
 	      </div>
 
       <!-- Tenants Table -->
+      @if (lifecycleStatusSubmissionError()) {
+        <div
+          class="mx-4 mt-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-300"
+          role="alert"
+          aria-live="polite"
+        >
+          {{ lifecycleStatusSubmissionError() }}
+        </div>
+      }
+      @if (impersonationError()) {
+        <div
+          class="mx-4 mt-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-300"
+          role="alert"
+          aria-live="polite"
+        >
+          {{ impersonationError() }}
+        </div>
+      }
       <div class="owner-tenants-table-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
         <div class="owner-tenants-table-wrap overflow-x-auto">
 	          <table
@@ -145,7 +163,9 @@
             </thead>
             <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
               @for (tenant of pagedTenants(); track tenant.id; let i = $index) {
-                <tr class="owner-tenants-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                <tr class="owner-tenants-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+                  [attr.aria-busy]="isLifecycleStatusPending(tenant.id)"
+                >
                   <td class="px-6 py-4">
                     <button 
                       class="owner-tenants-name-btn font-medium text-slate-900 dark:text-white flex items-center gap-2 hover:text-indigo-600 transition-colors group/cell focus:outline-none" 
@@ -179,6 +199,12 @@
                       <span class="w-1.5 h-1.5 rounded-full" [style.backgroundColor]="getStatusColor(tenant.status)"></span>
                       {{ tenant.status }}
                     </span>
+                    <!-- <div class="mt-2 space-y-1 text-[11px] text-slate-500 dark:text-slate-400">
+                      <div>Subscription: {{ formatBackendStatus(tenant.subscriptionState) }}</div>
+                      <div>Payment: {{ formatBackendStatus(tenant.providerPaymentStatus) }}</div>
+                      <div>Settlement: {{ formatBackendStatus(tenant.settlementStatus) }}</div>
+                      <div>Operational: {{ formatBackendStatus(tenant.tenantOperationalStatus) }}</div>
+                    </div> -->
                   </td>
                   <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ tenant.plan }}</td>
                   <td class="px-6 py-4 text-slate-500 dark:text-slate-500">
@@ -206,12 +232,11 @@
                   </td>
                   <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ tenant.createdDate }}</td>
                   <td class="px-6 py-4">
-                    <span class="px-2 py-1 rounded-full text-xs font-semibold uppercase tracking-wide"
-                          [class.bg-amber-100]="tenant.subscriptionType === 'trial'"
-                          [class.text-amber-700]="tenant.subscriptionType === 'trial'"
-                          [class.bg-emerald-100]="tenant.subscriptionType === 'production'"
-                          [class.text-emerald-700]="tenant.subscriptionType === 'production'">
-                      {{ tenant.subscriptionType }}
+                    <span
+                      class="px-2 py-1 rounded-full text-xs font-semibold uppercase tracking-wide"
+                      [ngClass]="subscriptionBadgeClasses(tenant.subscriptionType)"
+                    >
+                      {{ formatBackendStatus(tenant.subscriptionType) }}
                     </span>
                   </td>
                   <td class="px-6 py-4">
@@ -236,22 +261,38 @@
                         (click)="impersonate(tenant)"
                         class="owner-tenants-icon-btn p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors" 
                         title="Impersonate"
+                        [attr.data-testid]="'impersonate-action-' + tenant.id"
                       >
                         <mat-icon class="text-lg">login</mat-icon>
                       </button>
+                      @if (canManualSettle(tenant)) {
+                        <button
+                          (click)="openManualSettlement(tenant)"
+                          class="owner-tenants-icon-btn p-1.5 text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-600/10 dark:hover:bg-emerald-900/30 rounded transition-colors"
+                          title="Record Manual Settlement"
+                          [attr.data-testid]="'manual-settlement-action-' + tenant.id"
+                        >
+                          <mat-icon class="text-lg">receipt_long</mat-icon>
+                        </button>
+                      }
                       
                       <div class="relative">
                         <button 
                           (click)="activeStatusDropdown.set(activeStatusDropdown() === tenant.id ? null : tenant.id)"
-                          class="owner-tenants-icon-btn p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors" 
+                          class="owner-tenants-icon-btn p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors"
+                          [class.opacity-60]="isLifecycleStatusPending(tenant.id)"
+                          [class.cursor-wait]="isLifecycleStatusPending(tenant.id)"
+                          [disabled]="isLifecycleStatusPending(tenant.id)"
                           [title]="'Change Status (Current: ' + tenant.status + ')'"
+                          [attr.data-testid]="'status-action-' + tenant.id"
                         >
                           <mat-icon class="text-lg">
                             {{ 
                               tenant.status === 'Active' ? 'check_circle' : 
                               tenant.status === 'Suspended' ? 'pause_circle' : 
-                              tenant.status === 'Trial' ? 'hourglass_empty' : 
-                              tenant.status === 'Past Due' ? 'priority_high' : 'cancel'
+                              tenant.status === 'Pending' ? 'hourglass_empty' :
+                              tenant.status === 'Disabled' ? 'block' :
+                              tenant.status === 'Blocked' ? 'gpp_bad' : 'help'
                             }}
                           </mat-icon>
                         </button>
@@ -270,6 +311,7 @@
                                 <button 
                                   (click)="requestStatusChange(tenant, status); activeStatusDropdown.set(null)"
                                   class="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md transition-colors"
+                                  [disabled]="isLifecycleStatusPending(tenant.id)"
                                   [class.bg-indigo-600/10]="tenant.status === status"
                                   [class.text-indigo-600]="tenant.status === status"
                                   [class.dark:bg-indigo-900/30]="tenant.status === status"
@@ -277,6 +319,7 @@
                                   [class.dark:text-slate-300]="tenant.status !== status"
                                   [class.hover:bg-slate-50]="tenant.status !== status"
                                   [class.dark:hover:bg-slate-700]="tenant.status !== status"
+                                  [attr.data-testid]="'status-option-' + tenant.id + '-' + status.toLowerCase()"
                                 >
                                   <span class="w-2 h-2 rounded-full" [style.backgroundColor]="getStatusColor(status)"></span>
                                   {{ status }}
@@ -450,6 +493,158 @@
                 Confirm Upgrade
               </button>
             </div>
+          </div>
+        </div>
+      }
+
+      @if (pendingManualSettlement()) {
+        <div class="owner-tenants-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div class="owner-tenants-modal bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <h3 class="text-xl font-bold text-slate-900 dark:text-white">Record Manual Settlement</h3>
+                  <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                    Record an offline settlement for <span class="font-semibold text-slate-900 dark:text-white">{{ pendingManualSettlement()?.name }}</span>.
+                    Provider payment status will remain {{ formatBackendStatus(pendingManualSettlement()?.providerPaymentStatus || 'unknown') }}.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  (click)="closeManualSettlement()"
+                  class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  aria-label="Close manual settlement dialog"
+                >
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <form class="p-6 space-y-4" [formGroup]="manualSettlementForm" (ngSubmit)="submitManualSettlement()">
+              @if (manualSettlementError()) {
+                <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                  {{ manualSettlementError() }}
+                </div>
+              }
+
+              <div class="grid gap-4 md:grid-cols-2">
+                <label class="block">
+                  <span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Payment Transaction Ref</span>
+                  <input
+                    type="text"
+                    formControlName="paymentTransactionRef"
+                    class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  >
+                </label>
+
+                <label class="block">
+                  <span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Manual Invoice Ref</span>
+                  <input
+                    type="text"
+                    formControlName="manualInvoiceRef"
+                    class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  >
+                  @if (hasManualSettlementFieldError('manualInvoiceRef')) {
+                    <span class="mt-1 block text-xs text-rose-600">Manual invoice reference is required and must be 120 characters or fewer.</span>
+                  }
+                </label>
+
+                <label class="block">
+                  <span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Manual Payment Ref</span>
+                  <input
+                    type="text"
+                    formControlName="manualPaymentRef"
+                    class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  >
+                  @if (hasManualSettlementFieldError('manualPaymentRef')) {
+                    <span class="mt-1 block text-xs text-rose-600">Manual payment reference is required and must be 120 characters or fewer.</span>
+                  }
+                </label>
+
+                <label class="block">
+                  <span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Amount</span>
+                  <input
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    formControlName="amount"
+                    class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  >
+                  @if (hasManualSettlementFieldError('amount')) {
+                    <span class="mt-1 block text-xs text-rose-600">Amount is required and must be greater than 0.</span>
+                  }
+                </label>
+
+                <label class="block">
+                  <span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Currency</span>
+                  <input
+                    type="text"
+                    formControlName="currency"
+                    class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  >
+                  @if (hasManualSettlementFieldError('currency')) {
+                    <span class="mt-1 block text-xs text-rose-600">Currency is required and must be 8 characters or fewer.</span>
+                  }
+                </label>
+
+                <label class="block">
+                  <span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Settled At</span>
+                  <input
+                    type="datetime-local"
+                    formControlName="settledAt"
+                    class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  >
+                  @if (hasManualSettlementFieldError('settledAt')) {
+                    <span class="mt-1 block text-xs text-rose-600">Settlement timestamp is required.</span>
+                  }
+                </label>
+
+                <label class="block">
+                  <span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Evidence Ref</span>
+                  <input
+                    type="text"
+                    formControlName="evidenceRef"
+                    class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  >
+                </label>
+              </div>
+
+              <label class="block">
+                <span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Evidence Note</span>
+                <textarea
+                  rows="2"
+                  formControlName="evidenceNote"
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                ></textarea>
+              </label>
+
+              <label class="block">
+                <span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Note</span>
+                <textarea
+                  rows="3"
+                  formControlName="note"
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                ></textarea>
+              </label>
+
+              <div class="flex gap-3 border-t border-slate-200 pt-4 dark:border-slate-800">
+                <button
+                  type="button"
+                  (click)="closeManualSettlement()"
+                  class="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  [disabled]="manualSettlementSubmitting()"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="flex-1 rounded-xl bg-emerald-600 px-4 py-2.5 font-medium text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  [disabled]="manualSettlementSubmitting()"
+                >
+                  {{ manualSettlementSubmitting() ? 'Recording...' : 'Record Settlement' }}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       }

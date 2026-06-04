@@ -1,0 +1,351 @@
+:host {
+  display: block;
+}
+
+.tenant-college-details-page {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.tenant-college-details-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.tenant-college-details-heading {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.tenant-college-details-breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted, #64748b);
+}
+
+.tenant-college-details-breadcrumb a {
+  transition: color 0.2s ease;
+}
+
+.tenant-college-details-breadcrumb a:hover {
+  color: var(--color-action-primary, #4f46e5);
+}
+
+.tenant-college-details-breadcrumb mat-icon {
+  font-size: 0.625rem;
+}
+
+.tenant-college-details-title {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary, #0f172a);
+}
+
+.tenant-college-details-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted, #64748b);
+}
+
+.tenant-college-details-edit,
+.tenant-college-details-empty-action {
+  min-height: 2.5rem;
+  padding-inline: var(--space-4);
+  border-radius: var(--radius-lg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  background: var(--color-action-primary, #4f46e5);
+  color: var(--color-text-on-action, #ffffff);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  box-shadow: var(--shadow-lg, 0 10px 15px -3px rgb(79 70 229 / 0.2));
+  transition: background-color 0.2s ease;
+}
+
+.tenant-college-details-edit:hover,
+.tenant-college-details-empty-action:hover {
+  background: var(--color-action-primary-hover, #4338ca);
+}
+
+.tenant-college-details-empty {
+  padding: var(--space-8, 2rem);
+  border-radius: var(--radius-2xl, 1rem);
+  border: 1px solid var(--color-border-primary, #e2e8f0);
+  background: var(--color-bg-card, #ffffff);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+
+.tenant-college-details-empty-icon {
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto var(--space-4);
+  border-radius: var(--radius-2xl, 1rem);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-muted, #f8fafc);
+  color: var(--color-text-muted, #64748b);
+}
+
+.tenant-college-details-empty h3 {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary, #0f172a);
+}
+
+.tenant-college-details-empty p {
+  margin-top: var(--space-1);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted, #64748b);
+}
+
+.tenant-college-details-empty-action {
+  margin-top: var(--space-5);
+}
+
+.tenant-college-details-spin {
+  animation: tenant-college-details-spin 1s linear infinite;
+}
+
+.tenant-college-details-error {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-xl);
+  border: 1px solid color-mix(in srgb, var(--color-danger, #dc2626) 24%, transparent);
+  background: color-mix(in srgb, var(--color-danger, #dc2626) 8%, transparent);
+  color: var(--color-danger, #dc2626);
+  font-size: var(--font-size-sm);
+}
+
+.tenant-college-details-stats {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+.tenant-college-details-stat {
+  padding: var(--space-5);
+  border-radius: var(--radius-2xl, 1rem);
+  border: 1px solid var(--color-border-primary, #e2e8f0);
+  background: var(--color-bg-card, #ffffff);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.tenant-college-details-stat-icon {
+  width: 3rem;
+  height: 3rem;
+  flex: 0 0 auto;
+  border-radius: var(--radius-2xl, 1rem);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tenant-college-details-stat-icon--primary {
+  background: color-mix(in srgb, var(--color-action-primary, #4f46e5) 10%, transparent);
+  color: var(--color-action-primary, #4f46e5);
+}
+
+.tenant-college-details-stat-icon--success {
+  background: color-mix(in srgb, #16a34a 12%, transparent);
+  color: #16a34a;
+}
+
+.tenant-college-details-stat-icon--warning {
+  background: color-mix(in srgb, #d97706 12%, transparent);
+  color: #d97706;
+}
+
+.tenant-college-details-stat p,
+.tenant-college-details-list dt,
+.tenant-college-details-structure p,
+.tenant-college-details-panel h3,
+.tenant-college-details-side h3 {
+  font-size: 0.625rem;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted, #64748b);
+}
+
+.tenant-college-details-stat h4 {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-size: var(--font-size-xl, 1.125rem);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary, #0f172a);
+}
+
+.tenant-college-details-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+}
+
+.tenant-college-details-main {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.tenant-college-details-panel,
+.tenant-college-details-side {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-primary, #e2e8f0);
+  background: var(--color-bg-card, #ffffff);
+  box-shadow: var(--shadow-sm);
+}
+
+.tenant-college-details-panel {
+  padding: var(--space-6);
+}
+
+.tenant-college-details-panel > p {
+  margin-top: var(--space-4);
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+  color: var(--color-text-muted, #64748b);
+}
+
+.tenant-college-details-panel-header {
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border-primary, #e2e8f0);
+}
+
+.tenant-college-details-structure {
+  padding: 0;
+  overflow: hidden;
+}
+
+.tenant-college-details-panel-header,
+.tenant-college-details-structure-grid > div {
+  padding: var(--space-6);
+}
+
+.tenant-college-details-structure-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.tenant-college-details-structure-grid > div + div {
+  border-top: 1px solid var(--color-border-primary, #e2e8f0);
+}
+
+.tenant-college-details-structure strong {
+  display: block;
+  margin-top: var(--space-2);
+  overflow-wrap: anywhere;
+  font-size: var(--font-size-2xl, 1.5rem);
+  color: var(--color-text-primary, #0f172a);
+}
+
+.tenant-college-details-side {
+  padding: var(--space-6);
+}
+
+.tenant-college-details-list {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.tenant-college-details-list dd {
+  margin-top: var(--space-1);
+  overflow-wrap: anywhere;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary, #0f172a);
+}
+
+.tenant-college-details-delete {
+  width: 100%;
+  min-height: 2.5rem;
+  margin-top: var(--space-6);
+  padding-inline: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--color-danger, #dc2626) 24%, transparent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  color: var(--color-danger, #dc2626);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.tenant-college-details-delete:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-danger, #dc2626) 8%, transparent);
+}
+
+.tenant-college-details-delete:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.dark .tenant-college-details-title,
+.dark .tenant-college-details-empty h3,
+.dark .tenant-college-details-stat h4,
+.dark .tenant-college-details-structure strong,
+.dark .tenant-college-details-list dd {
+  color: var(--color-text-primary, #e2e8f0);
+}
+
+.dark .tenant-college-details-empty,
+.dark .tenant-college-details-stat,
+.dark .tenant-college-details-panel,
+.dark .tenant-college-details-side {
+  border-color: var(--color-border-primary, #334155);
+  background: var(--color-bg-card, #0f172a);
+}
+
+.dark .tenant-college-details-empty-icon {
+  background: var(--color-bg-muted, #1e293b);
+}
+
+.dark .tenant-college-details-panel-header,
+.dark .tenant-college-details-structure-grid > div + div {
+  border-color: var(--color-border-primary, #334155);
+}
+
+@keyframes tenant-college-details-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (min-width: 40rem) {
+  .tenant-college-details-header {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .tenant-college-details-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .tenant-college-details-structure-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tenant-college-details-structure-grid > div + div {
+    border-top: 0;
+    border-left: 1px solid var(--color-border-primary, #e2e8f0);
+  }
+}
+
+@media (min-width: 64rem) {
+  .tenant-college-details-content {
+    grid-template-columns: minmax(0, 2fr) minmax(18rem, 1fr);
+  }
+}

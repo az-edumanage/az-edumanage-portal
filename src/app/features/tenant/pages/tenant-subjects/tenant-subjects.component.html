@@ -1,0 +1,244 @@
+<div class="tenant-grades-page">
+  <div class="tenant-grades-header">
+    <div>
+      <h2 class="tenant-grades-title">Subjects</h2>
+      <p class="tenant-grades-subtitle">Manage academic subjects by educational stage and grade.</p>
+    </div>
+    <div class="tenant-grades-header-actions">
+      <div class="tenant-grades-view-switch">
+        <button
+          type="button"
+          (click)="viewMode.set('grid')"
+          [class.bg-indigo-600/10]="viewMode() === 'grid'"
+          [class.text-indigo-600]="viewMode() === 'grid'"
+          [class.text-slate-500]="viewMode() !== 'grid'"
+          class="tenant-grades-view-btn"
+          title="Grid View"
+        >
+          <mat-icon class="text-sm block">grid_view</mat-icon>
+        </button>
+        <button
+          type="button"
+          (click)="viewMode.set('list')"
+          [class.bg-indigo-600/10]="viewMode() === 'list'"
+          [class.text-indigo-600]="viewMode() === 'list'"
+          [class.text-slate-500]="viewMode() !== 'list'"
+          class="tenant-grades-view-btn"
+          title="List View"
+        >
+          <mat-icon class="text-sm block">view_list</mat-icon>
+        </button>
+      </div>
+      <a routerLink="/tenant/subjects/create" class="tenant-grades-add-btn">
+        <mat-icon class="text-sm">add</mat-icon>
+        Add New Subject
+      </a>
+    </div>
+  </div>
+
+  <div class="tenant-grades-filter-shell">
+    <div class="tenant-grades-filter-row">
+      <div class="tenant-grades-search">
+        <mat-icon class="tenant-grades-search-icon">search</mat-icon>
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Search subjects by name, stage, or grade..."
+          class="tenant-grades-search-input"
+        >
+      </div>
+
+      <div class="tenant-grades-filter-actions">
+        <div class="relative">
+          <button
+            type="button"
+            (click)="toggleFilterPanel()"
+            [class.bg-indigo-600/10]="showFilterPanel() || activeFiltersCount() > 0"
+            [class.text-indigo-600]="showFilterPanel() || activeFiltersCount() > 0"
+            [class.border-indigo-200]="showFilterPanel() || activeFiltersCount() > 0"
+            class="tenant-grades-advanced-filter-btn"
+          >
+            <mat-icon class="text-sm">filter_list</mat-icon>
+            Advanced Filters
+            @if (activeFiltersCount() > 0) {
+              <span class="tenant-grades-filter-count">{{ activeFiltersCount() }}</span>
+            }
+            <mat-icon class="text-xs transition-transform duration-200" [class.rotate-180]="showFilterPanel()">expand_more</mat-icon>
+          </button>
+
+          @if (showFilterPanel()) {
+            <div class="tenant-grades-filter-dropdown">
+              <div class="tenant-grades-filter-dropdown-head">
+                <h3 class="tenant-grades-filter-dropdown-title">Filter Options</h3>
+                <button type="button" (click)="clearAdvancedFilters()" class="tenant-grades-filter-reset">Reset</button>
+              </div>
+
+              <div class="tenant-grades-filter-fields" [formGroup]="filterForm">
+                <div>
+                  <label for="filter-stage" class="tenant-grades-filter-label">Educational Stage</label>
+                  <select
+                    id="filter-stage"
+                    formControlName="stageId"
+                    (change)="onStageFilterChange()"
+                    class="tenant-grades-filter-select"
+                  >
+                    <option value="">All Stages</option>
+                    @for (stage of stageOptions(); track stage.value) {
+                      <option [value]="stage.value">{{ stage.label }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div>
+                  <label for="filter-grade" class="tenant-grades-filter-label">Grade</label>
+                  <select id="filter-grade" formControlName="gradeId" class="tenant-grades-filter-select">
+                    <option value="">All Grades</option>
+                    @for (grade of gradeOptions(); track grade.value) {
+                      <option [value]="grade.value">{{ grade.label }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div>
+                  <label for="filter-sort" class="tenant-grades-filter-label">Sort By</label>
+                  <select id="filter-sort" formControlName="sortBy" class="tenant-grades-filter-select">
+                    <option value="name">Name (A-Z)</option>
+                    <option value="groups-desc">Groups (High to Low)</option>
+                    <option value="students-desc">Students (High to Low)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="tenant-grades-filter-apply-wrap">
+                <button type="button" (click)="toggleFilterPanel()" class="tenant-grades-filter-apply">
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        @if (activeFiltersCount() > 0 || searchQuery()) {
+          <button type="button" (click)="clearAllFilters()" class="tenant-grades-reset-all">
+            <mat-icon class="text-sm">restart_alt</mat-icon>
+            Reset All
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="tenant-grades-empty">
+      <div class="tenant-grades-empty-icon-wrap">
+        <mat-icon class="text-slate-500 animate-spin">sync</mat-icon>
+      </div>
+      <h3 class="tenant-grades-empty-title">Loading subjects</h3>
+      <p class="tenant-grades-empty-text">Please wait while subjects are loaded.</p>
+    </div>
+  } @else if (loadError()) {
+    <div class="tenant-grades-empty">
+      <div class="tenant-grades-empty-icon-wrap">
+        <mat-icon class="text-slate-500">error_outline</mat-icon>
+      </div>
+      <h3 class="tenant-grades-empty-title">Unable to load subjects</h3>
+      <p class="tenant-grades-empty-text">{{ loadError() }}</p>
+    </div>
+  } @else if (filteredSubjects().length > 0) {
+    @if (viewMode() === 'grid') {
+      <div class="tenant-grades-grid">
+        @for (subject of filteredSubjects(); track subject.id) {
+          <div class="tenant-grades-card">
+            <div class="tenant-grades-card-head">
+              <div class="tenant-grades-card-icon-wrap">
+                <mat-icon class="tenant-grades-card-icon">menu_book</mat-icon>
+              </div>
+              <div class="tenant-grades-card-actions">
+                <a [routerLink]="['/tenant/subjects', subject.id]" class="tenant-grades-icon-btn" title="View Details">
+                  <mat-icon class="text-sm">visibility</mat-icon>
+                </a>
+              </div>
+            </div>
+
+            <h3 class="tenant-grades-card-name">{{ subject.name }}</h3>
+            <p class="tenant-grades-card-level">{{ subject.stageName }} · {{ subject.gradeName }}</p>
+
+            <div class="tenant-grades-card-footer">
+              <div class="tenant-grades-card-students">
+                <mat-icon class="text-sm">groups</mat-icon>
+                <span>{{ subject.assignedGroupsCount }} Groups</span>
+              </div>
+              <a [routerLink]="['/tenant/subjects', subject.id]" class="tenant-grades-view-link">
+                View Details
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="tenant-grades-table-shell">
+        <div class="tenant-grades-table-scroll">
+          <table class="tenant-grades-table">
+            <thead class="tenant-grades-table-head">
+              <tr>
+                <th class="tenant-grades-th">Subject Name</th>
+                <th class="tenant-grades-th">Stage</th>
+                <th class="tenant-grades-th">Grade</th>
+                <th class="tenant-grades-th tenant-grades-th--center">Groups</th>
+                <th class="tenant-grades-th tenant-grades-th--actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="tenant-grades-tbody">
+              @for (subject of filteredSubjects(); track subject.id) {
+                <tr class="tenant-grades-tr">
+                  <td class="tenant-grades-td">
+                    <div class="tenant-grades-row-name-wrap">
+                      <div class="tenant-grades-row-icon-wrap">
+                        <mat-icon class="text-sm block">menu_book</mat-icon>
+                      </div>
+                      <span class="tenant-grades-row-name">{{ subject.name }}</span>
+                    </div>
+                  </td>
+                  <td class="tenant-grades-td">
+                    <span class="tenant-grades-level-chip">{{ subject.stageName }}</span>
+                  </td>
+                  <td class="tenant-grades-td">{{ subject.gradeName }}</td>
+                  <td class="tenant-grades-td tenant-grades-td--center">
+                    <div class="tenant-grades-row-students">
+                      <mat-icon class="text-xs">groups</mat-icon>
+                      <span>{{ subject.assignedGroupsCount }}</span>
+                    </div>
+                  </td>
+                  <td class="tenant-grades-td tenant-grades-td--actions">
+                    <div class="tenant-grades-row-actions">
+                      <a [routerLink]="['/tenant/subjects', subject.id]" class="tenant-grades-row-btn tenant-grades-row-btn--view" title="View Details">
+                        <mat-icon class="text-sm block">visibility</mat-icon>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  } @else {
+    <div class="tenant-grades-empty">
+      <div class="tenant-grades-empty-icon-wrap">
+        <mat-icon class="text-slate-500">search_off</mat-icon>
+      </div>
+      <h3 class="tenant-grades-empty-title">No subjects found</h3>
+      <p class="tenant-grades-empty-text">
+        @if (subjects().length === 0) {
+          No subjects have been created yet.
+        } @else {
+          We couldn't find any subjects matching your current search and filter criteria.
+        }
+      </p>
+      <button type="button" (click)="clearAllFilters()" class="tenant-grades-empty-btn">
+        Clear All Filters
+      </button>
+    </div>
+  }
+</div>

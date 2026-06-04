@@ -1,9 +1,12 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TenantStudentCreateFacade } from '../../state/tenant-student-create.facade';
+
+type StudentEducationDropdown = 'stages' | 'grades' | 'universities' | 'colleges';
+type StudentEducationControl = 'stageIds' | 'gradeIds' | 'universityIds' | 'collegeIds';
 
 @Component({
   selector: 'app-tenant-student-create',
@@ -16,7 +19,14 @@ export class TenantStudentCreateComponent implements OnInit, OnDestroy {
   private readonly facade = inject(TenantStudentCreateFacade);
 
   readonly isSubmitting = this.facade.isSubmitting;
+  readonly isLoading = this.facade.isLoading;
+  readonly errorMessage = this.facade.errorMessage;
   readonly studentForm = this.facade.studentForm;
+  readonly stages = this.facade.stages;
+  readonly universities = this.facade.universities;
+  readonly availableGrades = this.facade.availableGrades;
+  readonly availableColleges = this.facade.availableColleges;
+  readonly openEducationDropdown = signal<StudentEducationDropdown | null>(null);
 
   ngOnInit(): void {
     this.facade.initialize();
@@ -39,5 +49,54 @@ export class TenantStudentCreateComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     this.facade.onSubmit();
+  }
+
+  toggleEducationDropdown(dropdown: StudentEducationDropdown): void {
+    this.openEducationDropdown.update((current) => (current === dropdown ? null : dropdown));
+  }
+
+  isEducationDropdownOpen(dropdown: StudentEducationDropdown): boolean {
+    return this.openEducationDropdown() === dropdown;
+  }
+
+  toggleMultiValue(controlName: StudentEducationControl, id: string): void {
+    const control = this.studentForm.controls[controlName];
+    const current = control.value ?? [];
+    control.setValue(current.includes(id) ? current.filter((value) => value !== id) : [...current, id]);
+    control.markAsDirty();
+    control.markAsTouched();
+  }
+
+  isSelected(controlName: StudentEducationControl, id: string): boolean {
+    return (this.studentForm.controls[controlName].value ?? []).includes(id);
+  }
+
+  selectedLabel(controlName: StudentEducationControl, fallback: string): string {
+    const selectedIds = this.studentForm.controls[controlName].value ?? [];
+    if (selectedIds.length === 0) {
+      return fallback;
+    }
+
+    const options = this.optionsForControl(controlName);
+    const selectedNames = options.filter((option) => selectedIds.includes(option.id)).map((option) => option.name);
+
+    if (selectedNames.length <= 2) {
+      return selectedNames.join(', ');
+    }
+
+    return `${selectedNames.slice(0, 2).join(', ')} +${selectedNames.length - 2}`;
+  }
+
+  private optionsForControl(controlName: StudentEducationControl): { id: string; name: string }[] {
+    switch (controlName) {
+      case 'stageIds':
+        return this.stages();
+      case 'gradeIds':
+        return this.availableGrades();
+      case 'universityIds':
+        return this.universities();
+      case 'collegeIds':
+        return this.availableColleges();
+    }
   }
 }
