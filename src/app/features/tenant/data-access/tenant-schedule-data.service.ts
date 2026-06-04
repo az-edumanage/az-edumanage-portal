@@ -1,16 +1,61 @@
-import { Injectable, signal } from '@angular/core';
-import { ScheduleSession } from '../models/tenant-schedule.models';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Injectable, inject, signal } from '@angular/core';
+import { Observable, catchError, map, tap, throwError } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import { BackendScheduleSession, ScheduleSession } from '../models/tenant-schedule.models';
 
 @Injectable({ providedIn: 'root' })
 export class TenantScheduleDataService {
-  readonly sessions = signal<ScheduleSession[]>([
-    { id: '1', groupName: 'Physics G12-A', teacherName: 'Dr. Ahmed Zewail', roomName: 'Lab 101', day: 'Monday', startTime: '10:00', duration: 90, color: 'bg-indigo-500 text-white' },
-    { id: '2', groupName: 'Math G11-B', teacherName: 'Prof. Mona Helmy', roomName: 'Room 204', day: 'Monday', startTime: '12:00', duration: 60, color: 'bg-emerald-500 text-white' },
-    { id: '3', groupName: 'Chemistry G12', teacherName: 'Mr. Khaled Said', roomName: 'Lab 101', day: 'Tuesday', startTime: '09:00', duration: 90, color: 'bg-amber-500 text-white' },
-    { id: '4', groupName: 'English G10', teacherName: 'Ms. Fatma Ali', roomName: 'Room 302', day: 'Wednesday', startTime: '14:00', duration: 60, color: 'bg-rose-500 text-white' },
-    { id: '5', groupName: 'Biology G11', teacherName: 'Dr. Mostafa El-Sayed', roomName: 'Lab 102', day: 'Thursday', startTime: '11:00', duration: 90, color: 'bg-purple-500 text-white' },
-    { id: '6', groupName: 'Physics G12-B', teacherName: 'Dr. Ahmed Zewail', roomName: 'Lab 101', day: 'Monday', startTime: '14:00', duration: 90, color: 'bg-indigo-500 text-white' },
-    { id: '7', groupName: 'Math G12-A', teacherName: 'Prof. Mona Helmy', roomName: 'Room 204', day: 'Sunday', startTime: '10:00', duration: 120, color: 'bg-emerald-500 text-white' },
-    { id: '8', groupName: 'Arabic G10', teacherName: 'Mr. Hassan Ali', roomName: 'Room 105', day: 'Saturday', startTime: '16:00', duration: 90, color: 'bg-sky-500 text-white' },
-  ]);
+  private readonly http = inject(HttpClient);
+  private readonly scheduleUrl = `${environment.apiBaseUrl}/tenant/groups/schedule`;
+  private readonly colors = [
+    'bg-indigo-500 text-white',
+    'bg-emerald-500 text-white',
+    'bg-amber-500 text-white',
+    'bg-rose-500 text-white',
+    'bg-purple-500 text-white',
+    'bg-sky-500 text-white',
+  ];
+
+  readonly sessions = signal<ScheduleSession[]>([]);
+
+  loadSessions(): Observable<ScheduleSession[]> {
+    return this.http.get<BackendScheduleSession[]>(this.scheduleUrl).pipe(
+      map((sessions) => sessions.map((session, index) => this.toScheduleSession(session, index))),
+      tap((sessions) => this.sessions.set(sessions)),
+      catchError((error: HttpErrorResponse) => this.handleError(error)),
+    );
+  }
+
+  private toScheduleSession(session: BackendScheduleSession, index: number): ScheduleSession {
+    return {
+      id: session.id,
+      groupId: session.groupId,
+      groupName: session.groupName,
+      teacherName: session.teacherName,
+      roomName: session.roomName,
+      day: session.day,
+      startTime: session.startTime,
+      duration: session.duration,
+      color: this.colors[index % this.colors.length],
+    };
+  }
+
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    const message = this.extractApiMessage(error.error) ?? 'Unable to load schedule';
+    return throwError(() => new Error(message));
+  }
+
+  private extractApiMessage(error: unknown): string | null {
+    if (typeof error === 'string' && error.trim()) {
+      return error;
+    }
+    if (error && typeof error === 'object') {
+      const candidate = error as { message?: unknown };
+      if (typeof candidate.message === 'string' && candidate.message.trim()) {
+        return candidate.message;
+      }
+    }
+    return null;
+  }
 }

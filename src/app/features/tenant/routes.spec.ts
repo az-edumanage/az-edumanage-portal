@@ -1,5 +1,7 @@
 import { TENANT_ROUTES } from './routes';
+import { TenantAttendanceComponent } from './pages/tenant-attendance/tenant-attendance.component';
 import { TenantPlatformSettingsComponent } from './pages/tenant-platform-settings/tenant-platform-settings.component';
+import { TenantStudentBarcodePrintComponent } from './pages/tenant-student-barcode-print/tenant-student-barcode-print.component';
 
 describe('TENANT_ROUTES', () => {
   it('does not include the standalone change-password route inside tenant layout routes', () => {
@@ -16,6 +18,8 @@ describe('TENANT_ROUTES', () => {
 
     expect(childPaths).toContain('overview');
     expect(childPaths).toContain('students');
+    expect(childPaths).toContain('students/:id');
+    expect(childPaths).toContain('students/:id/barcode/print');
     expect(childPaths).toContain('educational-stages');
     expect(childPaths).toContain('subjects');
     expect(childPaths).toContain('subjects/create');
@@ -41,5 +45,19 @@ describe('TENANT_ROUTES', () => {
     const settingsRoute = tenantShell?.children?.find((child) => child.path === 'settings');
 
     expect(settingsRoute?.component).toBe(TenantPlatformSettingsComponent);
+  });
+
+  it('routes tenant attendance to the dedicated attendance page', () => {
+    const tenantShell = TENANT_ROUTES.find((route) => route.path === '');
+    const attendanceRoute = tenantShell?.children?.find((child) => child.path === 'attendance');
+
+    expect(attendanceRoute?.component).toBe(TenantAttendanceComponent);
+  });
+
+  it('routes student barcode print to the dedicated print page', () => {
+    const tenantShell = TENANT_ROUTES.find((route) => route.path === '');
+    const printRoute = tenantShell?.children?.find((child) => child.path === 'students/:id/barcode/print');
+
+    expect(printRoute?.component).toBe(TenantStudentBarcodePrintComponent);
   });
 });

@@ -18,10 +18,16 @@ export class TenantGroupDetailsComponent implements OnInit {
   readonly group = this.facade.group;
   readonly selectedStudent = this.facade.selectedStudent;
   readonly students = this.facade.students;
+  readonly isLoading = this.facade.isLoading;
+  readonly error = this.facade.error;
+  readonly avgAttendanceLabel = this.facade.avgAttendanceLabel;
+  readonly absenceRateLabel = this.facade.absenceRateLabel;
+  readonly monthlyRevenueLabel = this.facade.monthlyRevenueLabel;
+  readonly capacityUsageLabel = this.facade.capacityUsageLabel;
+  readonly groupId = this.route.snapshot.paramMap.get('id');
 
-  ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id');
-    this.facade.loadGroup(id);
+  ngOnInit(): void {
+    this.facade.loadGroup(this.groupId);
   }
 
   selectStudent(student: GroupStudent): void {

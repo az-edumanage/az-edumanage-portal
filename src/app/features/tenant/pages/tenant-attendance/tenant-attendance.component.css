@@ -1,0 +1,1077 @@
+:host {
+  display: block;
+  --tenant-attendance-max-width: 85.5rem;
+}
+
+.tenant-attendance-page {
+  min-height: 100%;
+}
+
+.tenant-attendance-bar {
+  min-height: 4.5rem;
+  margin: -1.5rem -1.5rem 1.5rem;
+  padding-block: 0;
+  padding-inline: max(1.5rem, calc((100vw - var(--tenant-attendance-max-width)) / 2));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  background: rgb(248 250 252);
+  border-bottom: 1px solid rgb(226 232 240);
+}
+
+.tenant-attendance-brand {
+  min-width: 17rem;
+  margin-left: calc(1.5rem - max(1.5rem, calc((100vw - var(--tenant-attendance-max-width)) / 2)));
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+.tenant-attendance-brand-mark {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: .75rem;
+  display: grid;
+  place-items: center;
+  color: rgb(255 255 255);
+  background: rgb(124 22 238);
+  box-shadow: 0 .75rem 1.5rem rgb(124 22 238 / 24%);
+}
+
+.tenant-attendance-brand-mark mat-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 1.25rem;
+}
+
+.tenant-attendance-title-block {
+  min-width: 0;
+}
+
+.tenant-attendance-title-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.tenant-attendance-title-row h2 {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.25;
+  font-weight: 800;
+  color: rgb(15 23 42);
+  letter-spacing: 0;
+}
+
+.tenant-attendance-title-row span {
+  padding: .125rem .375rem;
+  border-radius: .375rem;
+  font-size: .5625rem;
+  line-height: 1;
+  font-weight: 800;
+  color: rgb(109 40 217);
+  background: rgb(124 58 237 / 10%);
+}
+
+.tenant-attendance-title-block p {
+  margin: .125rem 0 0;
+  font-size: .75rem;
+  line-height: 1.2;
+  font-weight: 500;
+  color: rgb(100 116 139);
+  white-space: nowrap;
+}
+
+.tenant-attendance-tabs {
+  height: 2.5rem;
+  padding: .25rem;
+  display: flex;
+  align-items: center;
+  gap: .125rem;
+  border: 1px solid rgb(226 232 240);
+  border-radius: .75rem;
+  background: rgb(241 245 249);
+}
+
+.tenant-attendance-tab {
+  height: 2rem;
+  padding: 0 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  border-radius: .5rem;
+  color: rgb(71 85 105);
+  font-size: .75rem;
+  line-height: 1;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 180ms ease-out, color 180ms ease-out, box-shadow 180ms ease-out;
+}
+
+.tenant-attendance-tab:hover,
+.tenant-attendance-tab:focus-visible {
+  color: rgb(15 23 42);
+  background: rgb(248 250 252);
+  outline: none;
+}
+
+.tenant-attendance-tab:focus-visible {
+  box-shadow: 0 0 0 2px rgb(124 58 237 / 28%);
+}
+
+.tenant-attendance-tab mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+}
+
+.tenant-attendance-tab-active {
+  color: rgb(98 0 238);
+  background: rgb(255 255 255);
+  box-shadow: 0 .125rem .5rem rgb(15 23 42 / 6%);
+}
+
+.tenant-attendance-content {
+  width: 100%;
+  max-width: var(--tenant-attendance-max-width);
+  margin: 0 auto;
+  padding-bottom: 2rem;
+}
+
+.attendance-command {
+  min-height: 10.375rem;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  color: oklch(98% .008 284);
+  background:
+    radial-gradient(circle at 16% 14%, oklch(31% .18 286 / 82%), transparent 36%),
+    linear-gradient(135deg, oklch(12% .04 274), oklch(23% .16 286) 50%, oklch(9% .025 266));
+  border-radius: .875rem;
+  box-shadow: 0 .875rem 1.5rem oklch(17% .05 266 / 20%);
+}
+
+.attendance-command-copy {
+  min-width: 0;
+}
+
+.attendance-command-kicker {
+  margin-bottom: .875rem;
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+}
+
+.attendance-command-kicker span {
+  height: 1.5rem;
+  padding: 0 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid oklch(72% .2 180 / 45%);
+  border-radius: 999px;
+  color: oklch(82% .18 174);
+  background: oklch(42% .13 190 / 48%);
+  font-size: .6875rem;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.attendance-command-kicker strong {
+  color: oklch(73% .04 270);
+  font-size: .75rem;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: .04em;
+}
+
+.attendance-command h1 {
+  margin: 0 0 .625rem;
+  color: oklch(98% .008 284);
+  font-size: clamp(1.5rem, 2.3vw, 2rem);
+  line-height: 1.05;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.attendance-command p {
+  max-width: 45rem;
+  margin: 0;
+  color: oklch(77% .055 277);
+  font-size: .875rem;
+  line-height: 1.6;
+  font-weight: 600;
+}
+
+.attendance-hour-card {
+  min-width: 25rem;
+  min-height: 4.75rem;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: .875rem;
+  border: 1px solid oklch(75% .045 276 / 24%);
+  border-radius: .75rem;
+  background: oklch(22% .105 286 / 72%);
+}
+
+.attendance-hour-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid oklch(65% .18 286 / 38%);
+  border-radius: 999px;
+  color: oklch(75% .18 286);
+  background: oklch(29% .16 286);
+}
+
+.attendance-hour-icon mat-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 1.25rem;
+}
+
+.attendance-hour-card > div:nth-child(2) {
+  min-width: 8.75rem;
+  padding-right: 1rem;
+  border-right: 1px solid oklch(75% .045 276 / 22%);
+}
+
+.attendance-hour-card span {
+  display: block;
+  color: oklch(75% .052 276);
+  font-size: .5625rem;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+
+.attendance-hour-card strong {
+  display: block;
+  margin-top: .5rem;
+  color: oklch(98% .008 284);
+  font-size: 1.125rem;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: .05em;
+}
+
+.attendance-hour-card button {
+  height: 2rem;
+  padding: 0 .875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  border: 1px solid oklch(64% .24 15 / 68%);
+  border-radius: .5rem;
+  color: oklch(79% .13 22);
+  background: oklch(27% .11 8 / 36%);
+  font-size: .75rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.attendance-hour-card button mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+}
+
+.attendance-workspace {
+  display: grid;
+  grid-template-columns: minmax(18rem, 31rem) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.attendance-side-stack,
+.attendance-main-stack {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.attendance-panel,
+.attendance-stat-card,
+.attendance-progress-card,
+.attendance-table-card {
+  border: 1px solid oklch(88% .027 262);
+  border-radius: .875rem;
+  background: oklch(99% .006 255);
+  box-shadow: 0 .375rem 1rem oklch(30% .04 265 / 7%);
+}
+
+.attendance-panel {
+  padding: 1.5rem;
+}
+
+.attendance-panel-header,
+.attendance-panel-header > div,
+.schedule-header {
+  display: flex;
+  align-items: center;
+}
+
+.attendance-panel-header,
+.schedule-header {
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.attendance-panel-header > div {
+  gap: .75rem;
+}
+
+.attendance-panel-header mat-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 1.25rem;
+  color: oklch(56% .27 286);
+}
+
+.attendance-panel h2,
+.attendance-progress-card h2,
+.class-title-block h2,
+.schedule-header h2 {
+  margin: 0;
+  color: oklch(18% .03 265);
+  font-size: 1rem;
+  line-height: 1.2;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.attendance-panel-header span {
+  color: oklch(52% .26 286);
+  font-size: .75rem;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.scanner-window {
+  position: relative;
+  min-height: 9rem;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  border: 1px solid oklch(66% .22 286);
+  border-radius: .625rem;
+  background: oklch(9% .035 266);
+}
+
+.scanner-corners::before,
+.scanner-corners::after,
+.scanner-window::before,
+.scanner-window::after {
+  content: '';
+  position: absolute;
+  width: .75rem;
+  height: .75rem;
+  border-color: oklch(74% .2 286);
+  border-style: solid;
+}
+
+.scanner-corners::before {
+  top: .5rem;
+  left: .5rem;
+  border-width: 1px 0 0 1px;
+}
+
+.scanner-corners::after {
+  top: .5rem;
+  right: .5rem;
+  border-width: 1px 1px 0 0;
+}
+
+.scanner-window::before {
+  bottom: .5rem;
+  left: .5rem;
+  border-width: 0 0 1px 1px;
+}
+
+.scanner-window::after {
+  right: .5rem;
+  bottom: .5rem;
+  border-width: 0 1px 1px 0;
+}
+
+.barcode-lines {
+  position: absolute;
+  inset: 2.75rem 0 auto;
+  width: 4rem;
+  height: 2.5rem;
+  margin: 0 auto;
+  background: repeating-linear-gradient(90deg, oklch(63% .03 266 / 42%) 0 .1875rem, transparent .1875rem .4375rem);
+}
+
+.scanner-beam {
+  position: absolute;
+  top: 4.25rem;
+  left: 0;
+  right: 0;
+  height: .125rem;
+  background: oklch(64% .26 347);
+  box-shadow: 0 0 1rem oklch(64% .26 347);
+}
+
+.scanner-window > p {
+  position: absolute;
+  inset: 5.6rem 0 auto;
+  margin: 0;
+  color: oklch(50% .035 265 / 54%);
+  font-size: .5rem;
+  font-weight: 900;
+  letter-spacing: .55em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.scanner-status {
+  position: absolute;
+  left: .875rem;
+  right: .875rem;
+  bottom: .75rem;
+  height: 1.625rem;
+  padding: 0 .625rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  border: 1px solid oklch(37% .075 266);
+  border-radius: .375rem;
+  color: oklch(81% .18 174);
+  background: oklch(16% .04 266);
+  font-size: .6875rem;
+  font-weight: 900;
+}
+
+.scanner-status span {
+  width: .375rem;
+  height: .375rem;
+  border-radius: 999px;
+  background: oklch(76% .2 168);
+}
+
+.barcode-input-label {
+  display: block;
+  margin-bottom: .5rem;
+  color: oklch(64% .055 262);
+  font-size: .75rem;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.barcode-input-row {
+  height: 3rem;
+  padding: .375rem .375rem .375rem .875rem;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  border: 1px solid oklch(87% .031 262);
+  border-radius: .5rem;
+  background: oklch(97% .01 255);
+  transition: border-color 160ms ease-out, box-shadow 160ms ease-out;
+}
+
+.barcode-input-row:focus-within {
+  border-color: oklch(54% .27 286);
+  box-shadow: 0 0 0 1px oklch(54% .27 286);
+}
+
+.barcode-input-row > mat-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  color: oklch(63% .055 262);
+  font-size: 1.125rem;
+}
+
+.barcode-input-row input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  color: oklch(18% .03 265);
+  background: transparent;
+  font-size: 1rem;
+  line-height: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+.barcode-input-row button {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: .5rem;
+  color: oklch(98% .008 284);
+  background: oklch(54% .27 286);
+  cursor: pointer;
+}
+
+.barcode-input-row button mat-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 1.25rem;
+}
+
+.scanner-help,
+.schedule-panel p {
+  margin: .625rem 0 0;
+  color: oklch(60% .055 262);
+  font-size: .75rem;
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+.schedule-header {
+  margin-bottom: 1.25rem;
+}
+
+.schedule-header h2 {
+  color: oklch(58% .06 262);
+  font-size: .875rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.schedule-header h2 span {
+  color: oklch(66% .045 262);
+  text-transform: none;
+}
+
+.schedule-header strong {
+  padding: .5rem .625rem;
+  border-radius: .375rem;
+  color: oklch(52% .27 286);
+  background: oklch(94% .018 262);
+  font-size: .6875rem;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.time-slot-grid {
+  margin-top: 1.125rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .5rem;
+}
+
+.time-slot-grid button {
+  min-height: 4rem;
+  display: grid;
+  place-items: center;
+  gap: .25rem;
+  border: 1px solid oklch(88% .027 262);
+  border-radius: .625rem;
+  color: oklch(18% .03 265);
+  background: oklch(98% .006 255);
+  cursor: pointer;
+  transition: border-color 180ms ease-out, background-color 180ms ease-out, color 180ms ease-out;
+}
+
+.time-slot-grid button:hover,
+.time-slot-grid button:focus-visible {
+  border-color: oklch(70% .18 286);
+  outline: none;
+}
+
+.time-slot-grid button:focus-visible {
+  box-shadow: 0 0 0 2px oklch(70% .18 286 / 28%);
+}
+
+.time-slot-grid button.time-slot-active {
+  border-color: oklch(56% .27 286);
+  color: oklch(52% .27 286);
+  background: oklch(95% .035 286);
+}
+
+.time-slot-grid button strong {
+  font-size: .8125rem;
+  line-height: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 900;
+}
+
+.time-slot-grid button span {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  color: oklch(64% .055 262);
+  font-size: .6875rem;
+  font-weight: 800;
+}
+
+.time-slot-grid mat-icon {
+  width: .875rem;
+  height: .875rem;
+  color: oklch(64% .2 286);
+  font-size: .875rem;
+}
+
+.attendance-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.attendance-stat-card {
+  min-height: 7rem;
+  padding: 1.125rem;
+}
+
+.attendance-stat-card > span {
+  display: block;
+  color: oklch(64% .055 262);
+  font-size: .6875rem;
+  line-height: 1;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.attendance-stat-card p {
+  margin: .5rem 0 1rem;
+  color: oklch(52% .26 286);
+  font-size: .75rem;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.attendance-stat-card div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.attendance-stat-card strong {
+  color: oklch(52% .27 286);
+  font-size: 1.5rem;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.attendance-stat-card small {
+  color: oklch(60% .055 262);
+  font-size: .6875rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.attendance-stat-card-green p,
+.attendance-stat-card-green strong {
+  color: oklch(62% .18 165);
+}
+
+.attendance-stat-card-green small {
+  padding: .3125rem .5rem;
+  border-radius: .3125rem;
+  color: oklch(62% .18 165);
+  background: oklch(94% .08 158);
+}
+
+.attendance-progress-card {
+  padding: 1rem;
+}
+
+.attendance-progress-card header,
+.attendance-progress-card header > div {
+  display: flex;
+  align-items: center;
+}
+
+.attendance-progress-card header {
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: .625rem;
+}
+
+.attendance-progress-card header > div {
+  gap: .375rem;
+}
+
+.attendance-progress-card mat-icon {
+  width: 1rem;
+  height: 1rem;
+  color: oklch(56% .27 286);
+  font-size: 1rem;
+}
+
+.attendance-progress-card h2 {
+  color: oklch(44% .06 262);
+  font-size: .875rem;
+  text-transform: uppercase;
+}
+
+.attendance-progress-card strong {
+  color: oklch(34% .055 262);
+  font-size: .8125rem;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.attendance-progress-track {
+  height: .8125rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: oklch(93% .018 255);
+}
+
+.attendance-progress-track span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, oklch(52% .27 286), oklch(56% .27 286) 58%, oklch(65% .19 175));
+  transition: width 180ms ease-out;
+}
+
+.attendance-table-card {
+  overflow: hidden;
+}
+
+.class-header {
+  min-height: 5.75rem;
+  padding: 1.25rem 1.5rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .875rem;
+  border-bottom: 1px solid oklch(88% .027 262);
+}
+
+.class-mark {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: .75rem;
+  color: oklch(52% .27 286);
+  background: oklch(90% .07 286);
+  font-weight: 900;
+}
+
+.class-title-block {
+  min-width: 0;
+}
+
+.class-title-block > div {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+}
+
+.class-title-block h2 {
+  text-transform: uppercase;
+}
+
+.class-title-block span {
+  padding: .3125rem .625rem;
+  border-radius: .25rem;
+  color: oklch(52% .27 286);
+  background: oklch(92% .035 286);
+  font-size: .5625rem;
+  line-height: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.class-title-block p {
+  margin: .25rem 0 0;
+  color: oklch(43% .055 262);
+  font-size: .75rem;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.class-status {
+  min-width: 15rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: .25rem 1rem;
+}
+
+.class-status span {
+  grid-column: 1 / -1;
+  color: oklch(64% .055 262);
+  font-size: .5625rem;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.class-status strong {
+  color: oklch(62% .18 165);
+  font-size: 1rem;
+  line-height: 1;
+  font-weight: 900;
+  text-align: right;
+}
+
+.class-status em {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: grid;
+  place-items: center;
+  border: .1875rem solid oklch(94% .018 255);
+  border-radius: 999px;
+  color: oklch(34% .055 262);
+  font-size: .6875rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.attendance-table-wrap {
+  overflow-x: auto;
+}
+
+.attendance-table-card table {
+  width: 100%;
+  min-width: 46rem;
+  border-collapse: collapse;
+}
+
+.attendance-table-card th {
+  height: 3.25rem;
+  padding: 0 1.5rem;
+  color: oklch(18% .03 265);
+  background: oklch(98% .006 255);
+  font-size: .75rem;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.attendance-table-card td {
+  height: 3.625rem;
+  padding: .625rem 1.5rem;
+  border-top: 1px solid oklch(90% .02 262);
+  color: oklch(18% .03 265);
+  font-size: .75rem;
+  vertical-align: middle;
+}
+
+.student-cell {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: .75rem;
+}
+
+.student-cell span {
+  width: 1.5rem;
+  height: 1.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: oklch(52% .055 262);
+  background: oklch(94% .018 255);
+  font-size: .6875rem;
+  font-weight: 900;
+}
+
+.student-row-present .student-cell span {
+  color: oklch(49% .18 165);
+  background: oklch(88% .12 160);
+}
+
+.student-cell div {
+  min-width: 0;
+}
+
+.student-cell strong {
+  color: oklch(18% .03 265);
+  font-size: .8125rem;
+  line-height: 1.2;
+  font-weight: 900;
+}
+
+.student-cell small,
+.scanned-time {
+  display: block;
+  margin-top: .1875rem;
+  color: oklch(64% .055 262);
+  font-size: .625rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.attendance-table-card code {
+  padding: .3125rem .75rem;
+  border-radius: .25rem;
+  color: oklch(47% .075 262);
+  background: oklch(93% .018 255);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: .8125rem;
+  font-weight: 900;
+  letter-spacing: .14em;
+}
+
+.absent-pill,
+.present-pill {
+  padding: .375rem .625rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  border-radius: 999px;
+  color: oklch(57% .24 20);
+  background: oklch(96% .04 20);
+  font-size: .75rem;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.absent-pill {
+  color: oklch(57% .24 20);
+  background: oklch(96% .04 20);
+}
+
+.present-pill {
+  color: oklch(51% .18 165);
+  background: oklch(91% .11 160);
+}
+
+.absent-pill i,
+.present-pill i {
+  width: .375rem;
+  height: .375rem;
+  border-radius: 999px;
+}
+
+.absent-pill i {
+  background: oklch(57% .24 20);
+}
+
+.present-pill i {
+  background: oklch(62% .18 165);
+}
+
+.attendance-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: .5rem;
+}
+
+.attendance-actions button {
+  height: 2rem;
+  padding: 0 .75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  border-radius: .5rem;
+  font-size: .6875rem;
+  line-height: 1;
+  font-weight: 900;
+  cursor: pointer;
+  transition: border-color 180ms ease-out, background-color 180ms ease-out, color 180ms ease-out;
+}
+
+.attendance-actions mat-icon {
+  width: .875rem;
+  height: .875rem;
+  font-size: .875rem;
+}
+
+.present-button {
+  border: 1px solid oklch(85% .04 262);
+  color: oklch(34% .055 262);
+  background: oklch(99% .006 255);
+}
+
+.absent-button {
+  border: 1px solid oklch(85% .04 262);
+  color: oklch(34% .055 262);
+  background: oklch(99% .006 255);
+}
+
+.present-button-active {
+  border-color: oklch(62% .18 165);
+  color: oklch(98% .008 165);
+  background: oklch(58% .18 165);
+}
+
+.absent-button-active {
+  border: 1px solid oklch(58% .24 20);
+  color: oklch(98% .008 20);
+  background: oklch(58% .24 20);
+}
+
+:host-context(.dark) .tenant-attendance-bar {
+  background: rgb(15 23 42);
+  border-bottom-color: rgb(30 41 59);
+}
+
+:host-context(.dark) .tenant-attendance-title-row h2 {
+  color: rgb(248 250 252);
+}
+
+:host-context(.dark) .tenant-attendance-title-block p {
+  color: rgb(148 163 184);
+}
+
+:host-context(.dark) .tenant-attendance-tabs {
+  border-color: rgb(30 41 59);
+  background: rgb(30 41 59);
+}
+
+:host-context(.dark) .tenant-attendance-tab {
+  color: rgb(203 213 225);
+}
+
+:host-context(.dark) .tenant-attendance-tab:hover,
+:host-context(.dark) .tenant-attendance-tab:focus-visible {
+  color: rgb(248 250 252);
+  background: rgb(51 65 85);
+}
+
+:host-context(.dark) .tenant-attendance-tab-active {
+  color: rgb(167 139 250);
+  background: rgb(15 23 42);
+}
+
+@media (max-width: 64rem) {
+  .tenant-attendance-bar {
+    align-items: flex-start;
+    padding-top: .75rem;
+    padding-bottom: .75rem;
+    flex-direction: column;
+  }
+
+  .tenant-attendance-tabs {
+    width: 100%;
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 40rem) {
+  .tenant-attendance-brand {
+    min-width: 0;
+  }
+
+  .tenant-attendance-title-block p {
+    white-space: normal;
+  }
+
+  .tenant-attendance-tab {
+    padding: 0 .75rem;
+  }
+}

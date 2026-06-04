@@ -1,5 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { TenantCountrySettingsService } from '../../data-access/tenant-country-settings.service';
+import { TenantEquipmentFacilitySettingsService } from '../../data-access/tenant-equipment-facility-settings.service';
+import { TenantRoomTypeSettingsService } from '../../data-access/tenant-room-type-settings.service';
 import { TenantPlatformSettingsComponent } from './tenant-platform-settings.component';
 
 describe('TenantPlatformSettingsComponent', () => {
@@ -8,6 +10,20 @@ describe('TenantPlatformSettingsComponent', () => {
     createCountry: ReturnType<typeof vi.fn>;
     updateCountry: ReturnType<typeof vi.fn>;
     deleteCountry: ReturnType<typeof vi.fn>;
+    toUserMessage: ReturnType<typeof vi.fn>;
+  };
+  let roomTypeSettings: {
+    listRoomTypes: ReturnType<typeof vi.fn>;
+    createRoomType: ReturnType<typeof vi.fn>;
+    updateRoomType: ReturnType<typeof vi.fn>;
+    deleteRoomType: ReturnType<typeof vi.fn>;
+    toUserMessage: ReturnType<typeof vi.fn>;
+  };
+  let equipmentFacilitySettings: {
+    listEquipmentFacilities: ReturnType<typeof vi.fn>;
+    createEquipmentFacility: ReturnType<typeof vi.fn>;
+    updateEquipmentFacility: ReturnType<typeof vi.fn>;
+    deleteEquipmentFacility: ReturnType<typeof vi.fn>;
     toUserMessage: ReturnType<typeof vi.fn>;
   };
 
@@ -33,11 +49,67 @@ describe('TenantPlatformSettingsComponent', () => {
       deleteCountry: vi.fn().mockResolvedValue(undefined),
       toUserMessage: vi.fn().mockReturnValue('Country name already exists'),
     };
+    roomTypeSettings = {
+      listRoomTypes: vi.fn().mockResolvedValue([
+        {
+          id: 'room-type-1',
+          name: 'Classroom',
+          description: 'Standard teaching room',
+          createdAt: '2026-01-01T00:00:00Z',
+          updatedAt: '2026-01-01T00:00:00Z',
+        },
+      ]),
+      createRoomType: vi.fn().mockResolvedValue({
+        id: 'room-type-2',
+        name: 'Laboratory',
+        description: 'Science room',
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      }),
+      updateRoomType: vi.fn().mockResolvedValue({
+        id: 'room-type-1',
+        name: 'Lecture Hall',
+        description: 'Large room',
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-02T00:00:00Z',
+      }),
+      deleteRoomType: vi.fn().mockResolvedValue(undefined),
+      toUserMessage: vi.fn().mockReturnValue('Room type already exists'),
+    };
+    equipmentFacilitySettings = {
+      listEquipmentFacilities: vi.fn().mockResolvedValue([
+        {
+          id: 'equipment-1',
+          name: 'Projector',
+          description: 'Ceiling projector',
+          createdAt: '2026-01-01T00:00:00Z',
+          updatedAt: '2026-01-01T00:00:00Z',
+        },
+      ]),
+      createEquipmentFacility: vi.fn().mockResolvedValue({
+        id: 'equipment-2',
+        name: 'Whiteboard',
+        description: 'Wall mounted board',
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      }),
+      updateEquipmentFacility: vi.fn().mockResolvedValue({
+        id: 'equipment-1',
+        name: 'Smart Projector',
+        description: 'Interactive projector',
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-02T00:00:00Z',
+      }),
+      deleteEquipmentFacility: vi.fn().mockResolvedValue(undefined),
+      toUserMessage: vi.fn().mockReturnValue('Equipment & Facilities already exists'),
+    };
 
     await TestBed.configureTestingModule({
       imports: [TenantPlatformSettingsComponent],
       providers: [
         { provide: TenantCountrySettingsService, useValue: countrySettings },
+        { provide: TenantRoomTypeSettingsService, useValue: roomTypeSettings },
+        { provide: TenantEquipmentFacilitySettingsService, useValue: equipmentFacilitySettings },
       ],
     }).compileComponents();
   });
@@ -138,5 +210,183 @@ describe('TenantPlatformSettingsComponent', () => {
 
     expect(countrySettings.deleteCountry).toHaveBeenCalledWith('country-1');
     expect(component.countries()).toEqual([]);
+  });
+
+  it('moves Users out of the side tabs and opens it from General', async () => {
+    const fixture = TestBed.createComponent(TenantPlatformSettingsComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    await component.selectTab('general');
+    fixture.detectChanges();
+
+    const nav = fixture.nativeElement.querySelector('nav');
+    expect(nav.textContent).not.toContain('Users');
+    expect(fixture.nativeElement.textContent).toContain('Users');
+
+    component.openUsersScreen();
+    fixture.detectChanges();
+
+    expect(component.activeTab()).toBe('users');
+    expect(fixture.nativeElement.textContent).toContain('Manage tenant users and workspace access.');
+    expect(fixture.nativeElement.textContent).toContain('Tenant Admin');
+  });
+
+  it('moves Country out of the side tabs and opens it from General', async () => {
+    const fixture = TestBed.createComponent(TenantPlatformSettingsComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    await component.selectTab('general');
+    fixture.detectChanges();
+
+    const nav = fixture.nativeElement.querySelector('nav');
+    expect(nav.textContent).not.toContain('Country');
+    expect(fixture.nativeElement.textContent).toContain('Country');
+
+    await component.openCountriesScreen();
+    fixture.detectChanges();
+
+    expect(component.activeTab()).toBe('country');
+    expect(countrySettings.listCountries).toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Manage countries available in tenant settings.');
+    expect(fixture.nativeElement.textContent).toContain('Brazil');
+  });
+
+  it('shows the Room Type card in General and opens the room types screen', async () => {
+    const fixture = TestBed.createComponent(TenantPlatformSettingsComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    await component.selectTab('general');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Room Type');
+
+    await component.openRoomTypesScreen();
+    fixture.detectChanges();
+
+    expect(roomTypeSettings.listRoomTypes).toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Room Types');
+    expect(fixture.nativeElement.textContent).toContain('Classroom');
+    expect(fixture.nativeElement.querySelector('[title="Edit room type"]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('[title="Delete room type"]')).toBeTruthy();
+  });
+
+  it('creates and updates room types through the backend service', async () => {
+    const fixture = TestBed.createComponent(TenantPlatformSettingsComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    await component.openRoomTypesScreen();
+    component.openRoomTypeModal();
+    component.roomTypeName.set(' Laboratory ');
+    component.roomTypeDescription.set(' Science room ');
+    await component.saveRoomType();
+
+    expect(roomTypeSettings.createRoomType).toHaveBeenCalledWith({ name: 'Laboratory', description: 'Science room' });
+    expect(component.showRoomTypeModal()).toBe(false);
+    expect(component.roomTypeStatusModal()?.title).toBe('Room type added');
+
+    component.closeRoomTypeStatusModal();
+    component.openEditRoomTypeModal(component.roomTypes()[0]);
+    component.roomTypeName.set(' Lecture Hall ');
+    component.roomTypeDescription.set(' Large room ');
+    await component.saveRoomType();
+
+    expect(roomTypeSettings.updateRoomType).toHaveBeenCalledWith('room-type-1', { name: 'Lecture Hall', description: 'Large room' });
+    expect(component.roomTypes().map((roomType) => roomType.name)).toContain('Lecture Hall');
+  });
+
+  it('confirms room type deletion and displays a status modal', async () => {
+    const fixture = TestBed.createComponent(TenantPlatformSettingsComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    await component.openRoomTypesScreen();
+    component.confirmDeleteRoomType(component.roomTypes()[0]);
+    fixture.detectChanges();
+
+    expect(component.roomTypePendingDelete()?.name).toBe('Classroom');
+    expect(fixture.nativeElement.textContent).toContain('Delete room type');
+
+    await component.deleteRoomType();
+    fixture.detectChanges();
+
+    expect(roomTypeSettings.deleteRoomType).toHaveBeenCalledWith('room-type-1');
+    expect(component.roomTypes()).toEqual([]);
+    expect(component.roomTypeStatusModal()?.title).toBe('Room type deleted');
+  });
+
+  it('shows the Equipment & Facilities card in General and opens the list screen', async () => {
+    const fixture = TestBed.createComponent(TenantPlatformSettingsComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    await component.selectTab('general');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Equipment & Facilities');
+
+    await component.openEquipmentFacilitiesScreen();
+    fixture.detectChanges();
+
+    expect(equipmentFacilitySettings.listEquipmentFacilities).toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Projector');
+    expect(fixture.nativeElement.querySelector('[title="Edit equipment and facilities"]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('[title="Delete equipment and facilities"]')).toBeTruthy();
+  });
+
+  it('creates and updates equipment and facilities through the backend service', async () => {
+    const fixture = TestBed.createComponent(TenantPlatformSettingsComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    await component.openEquipmentFacilitiesScreen();
+    component.openEquipmentFacilityModal();
+    component.equipmentFacilityName.set(' Whiteboard ');
+    component.equipmentFacilityDescription.set(' Wall mounted board ');
+    await component.saveEquipmentFacility();
+
+    expect(equipmentFacilitySettings.createEquipmentFacility).toHaveBeenCalledWith({ name: 'Whiteboard', description: 'Wall mounted board' });
+    expect(component.showEquipmentFacilityModal()).toBe(false);
+    expect(component.equipmentFacilityStatusModal()?.title).toBe('Equipment & Facilities added');
+
+    component.closeEquipmentFacilityStatusModal();
+    component.openEditEquipmentFacilityModal(component.equipmentFacilities()[0]);
+    component.equipmentFacilityName.set(' Smart Projector ');
+    component.equipmentFacilityDescription.set(' Interactive projector ');
+    await component.saveEquipmentFacility();
+
+    expect(equipmentFacilitySettings.updateEquipmentFacility).toHaveBeenCalledWith('equipment-1', { name: 'Smart Projector', description: 'Interactive projector' });
+    expect(component.equipmentFacilities().map((equipment) => equipment.name)).toContain('Smart Projector');
+  });
+
+  it('confirms equipment and facilities deletion and displays a status modal', async () => {
+    const fixture = TestBed.createComponent(TenantPlatformSettingsComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    await component.openEquipmentFacilitiesScreen();
+    component.confirmDeleteEquipmentFacility(component.equipmentFacilities()[0]);
+    fixture.detectChanges();
+
+    expect(component.equipmentFacilityPendingDelete()?.name).toBe('Projector');
+    expect(fixture.nativeElement.textContent).toContain('Delete equipment and facilities');
+
+    await component.deleteEquipmentFacility();
+    fixture.detectChanges();
+
+    expect(equipmentFacilitySettings.deleteEquipmentFacility).toHaveBeenCalledWith('equipment-1');
+    expect(component.equipmentFacilities()).toEqual([]);
+    expect(component.equipmentFacilityStatusModal()?.title).toBe('Equipment & Facilities deleted');
   });
 });

@@ -1,0 +1,248 @@
+<div class="tenant-attendance-page">
+  <section class="tenant-attendance-bar" aria-label="Attendance workspace">
+    <div class="tenant-attendance-brand">
+      <div class="tenant-attendance-brand-mark" aria-hidden="true">
+        <mat-icon>qr_code_2</mat-icon>
+      </div>
+
+      <div class="tenant-attendance-title-block">
+        <div class="tenant-attendance-title-row">
+          <h2>Academic Attendance</h2>
+          <span>TENANT_G2</span>
+        </div>
+        <p>Smart attendance for study centers and barcode workflows</p>
+      </div>
+    </div>
+
+    <nav class="tenant-attendance-tabs" aria-label="Attendance sections">
+      <a class="tenant-attendance-tab tenant-attendance-tab-active" routerLink="/tenant/attendance" aria-current="page">
+        <mat-icon>qr_code_2</mat-icon>
+        <span>Record Attendance</span>
+      </a>
+
+      <a class="tenant-attendance-tab" routerLink="/tenant/groups">
+        <mat-icon>menu_book</mat-icon>
+        <span>Groups Block</span>
+      </a>
+
+      <a class="tenant-attendance-tab" routerLink="/tenant/students">
+        <mat-icon>group</mat-icon>
+        <span>Student Roster</span>
+      </a>
+    </nav>
+  </section>
+
+  <div class="tenant-attendance-content">
+    <section class="attendance-command" aria-label="Attendance command center">
+      <div class="attendance-command-copy">
+        <div class="attendance-command-kicker">
+          <span>Active Terminal</span>
+          <strong>#ATTEND-02</strong>
+        </div>
+        <h1>Study Group Attendance Control Chamber</h1>
+        <p>Use the barcode scanner or manual control panel to confirm current group attendance by hour slot.</p>
+      </div>
+
+      <div class="attendance-hour-card" aria-label="Simulated hour slot">
+        <div class="attendance-hour-icon" aria-hidden="true">
+          <mat-icon>schedule</mat-icon>
+        </div>
+        <div>
+          <span>Simulated Hour Slot</span>
+          <strong>{{ selectedTimeSlot }}</strong>
+        </div>
+        <button type="button">
+          <mat-icon>sync</mat-icon>
+          Clear List
+        </button>
+      </div>
+    </section>
+
+    <section class="attendance-workspace" aria-label="Attendance scanner and student list">
+      <div class="attendance-side-stack">
+        <article class="attendance-panel scanner-panel">
+          <header class="attendance-panel-header">
+            <div>
+              <mat-icon>qr_code_scanner</mat-icon>
+              <h2>Student Barcode Reader</h2>
+            </div>
+            <span>Electronic Barcode Reader</span>
+          </header>
+
+          <div class="scanner-window" aria-label="Barcode scanner standby">
+            <div class="scanner-corners" aria-hidden="true"></div>
+            <div class="barcode-lines" aria-hidden="true"></div>
+            <div class="scanner-beam" aria-hidden="true"></div>
+            <p>Barcode Standby</p>
+            <div class="scanner-status">
+              <span aria-hidden="true"></span>
+              Scanner Active
+            </div>
+          </div>
+
+          <label class="barcode-input-label" for="attendance-barcode-input">Read Barcode Data Input</label>
+          <div class="barcode-input-row">
+            <mat-icon>qr_code_2</mat-icon>
+            <input id="attendance-barcode-input" value="10001" aria-label="Barcode data input" />
+            <button type="button" aria-label="Submit barcode">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+          <p class="scanner-help">Press Enter to route barcode reads, or use manual override below.</p>
+        </article>
+
+        <article class="attendance-panel schedule-panel">
+          <header class="schedule-header">
+            <h2>Time Slots Schedule <span>(Group Filter By Hour)</span></h2>
+            <strong>Hourly Filter</strong>
+          </header>
+          <p>Choose any hourly slot to view active classroom study schedules.</p>
+          <div class="time-slot-grid">
+            @for (slot of timeSlots; track slot) {
+              <button
+                type="button"
+                [class.time-slot-active]="slot.time === selectedTimeSlot"
+                [attr.aria-pressed]="slot.time === selectedTimeSlot"
+                (click)="selectTimeSlot(slot.time)"
+              >
+                <strong>{{ slot.time }}</strong>
+                <span>
+                  <mat-icon>menu_book</mat-icon>
+                  {{ slot.groups }} Groups
+                </span>
+              </button>
+            }
+          </div>
+        </article>
+      </div>
+
+      <div class="attendance-main-stack">
+        <div class="attendance-stats" aria-label="Attendance summary">
+          <article class="attendance-stat-card">
+            <span>Currently Academic Classes</span>
+            <p>Current lesson classes</p>
+            <div>
+              <strong>2</strong>
+              <small>Scheduled At {{ selectedTimeSlot }}</small>
+            </div>
+          </article>
+
+          <article class="attendance-stat-card">
+            <span>Total Expected Students</span>
+            <p>Total required attendance</p>
+            <div>
+              <strong>9</strong>
+              <small>Headcount Scheduled</small>
+            </div>
+          </article>
+
+          <article class="attendance-stat-card attendance-stat-card-green">
+            <span>Scanned Present Rate</span>
+            <p>Barcode attendance rate</p>
+            <div>
+              <strong>{{ presentCount }} / {{ totalExpectedStudents }}</strong>
+              <small>{{ attendancePercent }}%</small>
+            </div>
+          </article>
+        </div>
+
+        <article class="attendance-progress-card">
+          <header>
+            <div>
+              <mat-icon>trending_up</mat-icon>
+              <h2>Live Attendance Rate Progress Tracker</h2>
+            </div>
+            <strong>{{ attendancePercent }}%</strong>
+          </header>
+          <div class="attendance-progress-track" [attr.aria-label]="attendancePercent + ' percent attendance progress'">
+            <span [style.width.%]="attendancePercent"></span>
+          </div>
+        </article>
+
+        <article class="attendance-table-card">
+          <header class="class-header">
+            <div class="class-mark" aria-hidden="true">PH</div>
+            <div class="class-title-block">
+              <div>
+                <h2>Physics G12-A</h2>
+                <span>Room 201</span>
+              </div>
+              <p>Instructor: <strong>Dr. Ahmed Mansour</strong> · Subject: Physics</p>
+            </div>
+            <div class="class-status">
+              <span>Present Status</span>
+              <strong>{{ presentCount }} / {{ students.length }} Present</strong>
+              <em>{{ classAttendancePercent }}%</em>
+            </div>
+          </header>
+
+          <div class="attendance-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Student Name</th>
+                  <th>RFID Barcode ID</th>
+                  <th>Attendance State</th>
+                  <th>Manual Override Checks</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (student of students; track student.code) {
+                  <tr [class.student-row-present]="student.present">
+                    <td>
+                      <div class="student-cell">
+                        <span>{{ student.initial }}</span>
+                        <div>
+                          <strong>{{ student.name }}</strong>
+                          @if (student.present) {
+                            <small>Confirmed present</small>
+                          }
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <code>[||| {{ student.code }} |||]</code>
+                    </td>
+                    <td>
+                      <span [class]="student.present ? 'present-pill' : 'absent-pill'">
+                        <i aria-hidden="true"></i>
+                        {{ student.present ? 'Present' : 'Absent' }}
+                      </span>
+                      @if (student.present) {
+                        <small class="scanned-time">Scanned at: 11:27:55 PM</small>
+                      }
+                    </td>
+                    <td>
+                      <div class="attendance-actions">
+                        <button
+                          type="button"
+                          class="present-button"
+                          [class.present-button-active]="student.present"
+                          [attr.aria-pressed]="student.present"
+                          (click)="markStudentAttendance(student.code, true)"
+                        >
+                          <mat-icon>person_check</mat-icon>
+                          Present
+                        </button>
+                        <button
+                          type="button"
+                          class="absent-button"
+                          [class.absent-button-active]="!student.present"
+                          [attr.aria-pressed]="!student.present"
+                          (click)="markStudentAttendance(student.code, false)"
+                        >
+                          <mat-icon>person_cancel</mat-icon>
+                          Absent
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+</div>

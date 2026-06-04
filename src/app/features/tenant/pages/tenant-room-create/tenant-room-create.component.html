@@ -32,10 +32,9 @@
                 formControlName="type"
                 class="tenant-room-create-input"
               >
-                <option value="Classroom">Classroom</option>
-                <option value="Laboratory">Laboratory</option>
-                <option value="Virtual">Virtual</option>
-                <option value="Auditorium">Auditorium</option>
+                @for (type of availableRoomTypes(); track type) {
+                  <option [value]="type">{{ type }}</option>
+                }
               </select>
             </div>
 
@@ -53,7 +52,7 @@
             <div class="tenant-room-create-field tenant-room-create-field--full">
               <p class="tenant-room-create-label tenant-room-create-label--equipment">Equipment & Facilities</p>
               <div class="tenant-room-create-equipment-grid">
-                @for (item of availableEquipment; track item) {
+                @for (item of availableEquipment(); track item) {
                   <div class="tenant-room-create-equipment-item">
                     <input 
                       type="checkbox" 
@@ -82,6 +81,10 @@
           </div>
         </div>
 
+        @if (submitError()) {
+          <p class="text-sm font-medium text-rose-600">{{ submitError() }}</p>
+        }
+
         <div class="tenant-room-create-actions">
           <button 
             type="button"
@@ -92,7 +95,7 @@
           </button>
           <button 
             type="submit"
-            [disabled]="roomForm.invalid || isSubmitting()"
+            [disabled]="roomForm.invalid || isSubmitting() || isLoadingLookups()"
             class="tenant-room-create-btn tenant-room-create-btn--primary"
           >
             @if (isSubmitting()) {

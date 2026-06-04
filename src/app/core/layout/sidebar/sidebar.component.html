@@ -10,16 +10,21 @@
 	    >
       <!-- Logo Area -->
       <div class="h-16 flex items-center px-6 border-b border-slate-800 shrink-0">
-        <div class="flex items-center gap-3 overflow-hidden">
-          <div class="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center shrink-0">
-            <mat-icon class="text-white text-sm scale-75">description</mat-icon>
-          </div>
-	          <span class="font-bold text-xl tracking-tight whitespace-nowrap opacity-100 transition-opacity duration-300"
-	            [class.opacity-0]="collapsed()"
-	            [class.hidden]="collapsed()"
-		          >
-		            {{ t('sidebar.appName') }}
-	          </span>
+        <div class="flex items-center overflow-hidden">
+          <img
+            src="/az-edumanage-logo.svg"
+            alt="AZ-EduManage"
+            class="h-9 w-[196px] object-contain object-left transition-opacity duration-300"
+            [class.opacity-0]="collapsed()"
+            [class.hidden]="collapsed()"
+            [class.object-right]="isRtl()"
+          />
+          <img
+            src="/az-edumanage-logo-mark.svg"
+            alt="AZ-EduManage"
+            class="hidden h-8 w-8 object-contain"
+            [class.block]="collapsed()"
+          />
         </div>
       </div>
 

@@ -43,8 +43,8 @@
                   type="button"
                   (click)="selectStudent(student)"
                   class="w-full flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors text-left"
-                  [class.border-indigo-500]="selectedStudent()?.id === student.id"
-                  [class.bg-indigo-600/10]="selectedStudent()?.id === student.id"
+                  [class.border-indigo-500]="isStudentSelected(student.id)"
+                  [class.bg-indigo-600/10]="isStudentSelected(student.id)"
                 >
                   <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold">
@@ -55,14 +55,20 @@
                       <p class="text-[10px] text-slate-500">{{ student.email }} • {{ student.grade }}</p>
                     </div>
                   </div>
-                  @if (selectedStudent()?.id === student.id) {
+                  @if (isStudentSelected(student.id)) {
                     <mat-icon class="text-indigo-600 text-sm">check_circle</mat-icon>
                   }
                 </button>
               } @empty {
                 <div class="text-center py-8 text-slate-500">
                   <mat-icon class="text-4xl mb-2">person_search</mat-icon>
-                  <p class="text-sm">Search for a student to enroll</p>
+                  @if (isLoadingCandidates()) {
+                    <p class="text-sm">Loading students...</p>
+                  } @else if (candidateError()) {
+                    <p class="text-sm">{{ candidateError() }}</p>
+                  } @else {
+                    <p class="text-sm">Search for a student to enroll</p>
+                  }
                 </div>
               }
             </div>
@@ -111,7 +117,7 @@
             <div class="pt-6 border-t border-slate-200 dark:border-slate-800">
               <button 
                 (click)="onEnroll()"
-                [disabled]="!selectedStudent() || isSubmitting()"
+                [disabled]="!hasSelectedStudents() || isSubmitting()"
                 class="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2"
               >
                 @if (isSubmitting()) {
@@ -131,18 +137,22 @@
             </div>
           </div>
 
-          @if (selectedStudent(); as student) {
+          @if (hasSelectedStudents()) {
             <div class="bg-indigo-600/10 dark:bg-indigo-900/20 p-6 rounded-xl border border-indigo-100 dark:border-indigo-900/30 animate-in fade-in zoom-in duration-200">
               <h4 class="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-3">Selected Student</h4>
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">
-                  {{ student.name.charAt(0) }}
+              <div class="space-y-3">
+                @for (student of selectedStudents(); track student.id) {
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">
+                      {{ student.name.charAt(0) }}
+                    </div>
+                    <div>
+                      <p class="text-sm font-bold text-slate-900 dark:text-white">{{ student.name }}</p>
+                      <p class="text-xs text-slate-500">{{ student.grade }}</p>
+                    </div>
+                  </div>
+                }
                 </div>
-                <div>
-                  <p class="text-sm font-bold text-slate-900 dark:text-white">{{ student.name }}</p>
-                  <p class="text-xs text-slate-500">{{ student.grade }}</p>
-                </div>
-              </div>
             </div>
           }
         </div>

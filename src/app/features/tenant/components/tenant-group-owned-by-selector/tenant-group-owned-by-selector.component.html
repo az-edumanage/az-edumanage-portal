@@ -21,22 +21,16 @@
       >
         Select One ...
       </button>
-      <button
-        type="button"
-        class="w-full px-4 py-2 text-sm text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2"
-        (click)="onSelect('Teacher')"
-      >
-        <mat-icon class="text-sm text-indigo-600">person</mat-icon>
-        Teacher
-      </button>
-      <button
-        type="button"
-        class="w-full px-4 py-2 text-sm text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2"
-        (click)="onSelect('Center')"
-      >
-        <mat-icon class="text-sm text-amber-500">business</mat-icon>
-        Center
-      </button>
+      @for (option of options(); track option.id) {
+        <button
+          type="button"
+          class="w-full px-4 py-2 text-sm text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2"
+          (click)="onSelect(option.name)"
+        >
+          <mat-icon class="text-sm text-indigo-600">person</mat-icon>
+          {{ option.name }}
+        </button>
+      }
     </div>
   </div>
 }

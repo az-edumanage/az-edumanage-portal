@@ -3,6 +3,8 @@ import { Injectable, computed, signal } from '@angular/core';
 @Injectable({ providedIn: 'root' })
 export class TenantRoomCreateStore {
   readonly isSubmitting = signal(false);
+  readonly isLoadingLookups = signal(false);
+  readonly submitError = signal<string | null>(null);
   readonly roomId = signal<string | null>(null);
   readonly isEditMode = computed(() => !!this.roomId());
   readonly taskId = signal('create-room-task');
@@ -14,5 +16,13 @@ export class TenantRoomCreateStore {
 
   setSubmitting(value: boolean): void {
     this.isSubmitting.set(value);
+  }
+
+  setLoadingLookups(value: boolean): void {
+    this.isLoadingLookups.set(value);
+  }
+
+  setSubmitError(value: string | null): void {
+    this.submitError.set(value);
   }
 }

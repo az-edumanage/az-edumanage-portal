@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import { TenantDashboardComponent } from './pages/tenant-dashboard/tenant-dashboard.component';
 import { TenantStudentsComponent } from './pages/tenant-students/tenant-students.component';
 import { TenantStudentCreateComponent } from './pages/tenant-student-create/tenant-student-create.component';
+import { TenantStudentDetailsComponent } from './pages/tenant-student-details/tenant-student-details.component';
+import { TenantStudentBarcodePrintComponent } from './pages/tenant-student-barcode-print/tenant-student-barcode-print.component';
 import { TenantTeachersComponent } from './pages/tenant-teachers/tenant-teachers.component';
 import { TenantTeacherCreateComponent } from './pages/tenant-teacher-create/tenant-teacher-create.component';
 import { TenantTeacherDetailsComponent } from './pages/tenant-teacher-details/tenant-teacher-details.component';
@@ -12,6 +14,7 @@ import { TenantGroupStudentAddComponent } from './pages/tenant-group-student-add
 import { TenantGroupAttendanceComponent } from './pages/tenant-group-attendance/tenant-group-attendance.component';
 import { TenantGroupExamCreateComponent } from './pages/tenant-group-exam-create/tenant-group-exam-create.component';
 import { TenantGroupBroadcastComponent } from './pages/tenant-group-broadcast/tenant-group-broadcast.component';
+import { TenantAttendanceComponent } from './pages/tenant-attendance/tenant-attendance.component';
 import { TenantRoomsComponent } from './pages/tenant-rooms/tenant-rooms.component';
 import { TenantRoomCreateComponent } from './pages/tenant-room-create/tenant-room-create.component';
 import { TenantRoomDetailsComponent } from './pages/tenant-room-details/tenant-room-details.component';
@@ -73,6 +76,8 @@ export const TENANT_ROUTES: Routes = [
       { path: 'overview', component: TenantDashboardComponent },
       { path: 'students', component: TenantStudentsComponent },
       { path: 'students/create', component: TenantStudentCreateComponent },
+      { path: 'students/:id/barcode/print', component: TenantStudentBarcodePrintComponent },
+      { path: 'students/:id', component: TenantStudentDetailsComponent },
       { path: 'teachers', component: TenantTeachersComponent },
       { path: 'teachers/create', component: TenantTeacherCreateComponent },
       { path: 'teachers/:id/edit', component: TenantTeacherCreateComponent },
@@ -114,7 +119,7 @@ export const TENANT_ROUTES: Routes = [
       { path: 'users', component: TenantUsersComponent },
       { path: 'users/create', component: TenantUserCreateComponent },
       { path: 'schedule', component: TenantScheduleComponent },
-      { path: 'attendance', component: TenantDashboardComponent },
+      { path: 'attendance', component: TenantAttendanceComponent },
       { path: 'exams', component: TenantDashboardComponent },
       { path: 'billing', component: TenantDashboardComponent },
       { path: 'reports', component: TenantDashboardComponent },

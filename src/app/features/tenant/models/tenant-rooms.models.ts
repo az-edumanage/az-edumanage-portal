@@ -1,4 +1,4 @@
-export type RoomType = 'Classroom' | 'Laboratory' | 'Virtual' | 'Auditorium';
+export type RoomType = string;
 export type RoomStatus = 'Available' | 'Occupied' | 'Maintenance';
 
 export interface Room {
@@ -8,4 +8,13 @@ export interface Room {
   capacity: number;
   status: RoomStatus;
   equipment: string[];
+  relatedGroupsCount?: number;
+}
+
+export type RoomDeleteStatus = 'closed' | 'confirming' | 'deleting' | 'success' | 'failed';
+
+export interface RoomDeleteState {
+  status: RoomDeleteStatus;
+  room: Room | null;
+  message: string;
 }
