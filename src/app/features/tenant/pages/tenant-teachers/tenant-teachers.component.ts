@@ -1,8 +1,8 @@
-import { Component, DestroyRef, HostListener, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { startWith } from 'rxjs';
 import { TenantTeachersFacade } from '../../state/tenant-teachers.facade';
@@ -12,25 +12,48 @@ import { Teacher } from '../../models/tenant-teachers.models';
   selector: 'app-tenant-teachers',
   standalone: true,
   imports: [CommonModule, RouterModule, MatIconModule, FormsModule, ReactiveFormsModule],
-  templateUrl: './tenant-teachers.component.html'})
-export class TenantTeachersComponent {
+  templateUrl: './tenant-teachers.component.html',
+  styleUrl: './tenant-teachers.component.css',
+  host: {
+    '(document:click)': 'closeSettings()',
+  },
+})
+export class TenantTeachersComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
   private readonly facade = inject(TenantTeachersFacade);
+  private readonly router = inject(Router);
 
   readonly searchQuery = this.facade.searchQuery;
   readonly showFilterPanel = this.facade.showFilterPanel;
   readonly viewMode = this.facade.viewMode;
   readonly teachers = this.facade.teachers;
+  readonly isLoading = this.facade.isLoading;
+  readonly errorMessage = this.facade.errorMessage;
+  readonly subjectOptions = this.facade.subjectOptions;
   readonly activeSettingsId = this.facade.activeSettingsId;
   readonly activeChatTeacher = this.facade.activeChatTeacher;
   readonly activeFiltersCount = this.facade.activeFiltersCount;
   readonly filteredTeachers = this.facade.filteredTeachers;
+  readonly pagedTeachers = this.facade.pagedTeachers;
+  readonly totalFilteredTeachers = this.facade.totalFilteredTeachers;
+  readonly totalPages = this.facade.totalPages;
+  readonly pageIndex = this.facade.pageIndex;
+  readonly pageSize = this.facade.pageSize;
+  readonly pageStart = this.facade.pageStart;
+  readonly pageEnd = this.facade.pageEnd;
+  readonly passwordModalTeacher = this.facade.passwordModalTeacher;
+  readonly passwordSaving = this.facade.passwordSaving;
+  readonly passwordError = this.facade.passwordError;
+  readonly passwordSuccess = this.facade.passwordSuccess;
 
   readonly filterForm = this.fb.group({
     subject: [''],
     status: [''],
     sortBy: ['name'],
+  });
+  readonly passwordForm = this.fb.group({
+    newPassword: ['', [Validators.required, Validators.minLength(8)]],
   });
 
   constructor() {
@@ -41,8 +64,16 @@ export class TenantTeachersComponent {
       });
   }
 
+  ngOnInit(): void {
+    this.facade.loadTeachers();
+  }
+
   toggleFilterPanel(): void {
     this.facade.toggleFilterPanel();
+  }
+
+  setSearchQuery(value: string): void {
+    this.facade.setSearchQuery(value);
   }
 
   clearAllFilters(): void {
@@ -64,13 +95,57 @@ export class TenantTeachersComponent {
     this.facade.toggleSettings(id);
   }
 
-  @HostListener('document:click')
   closeSettings(): void {
     this.facade.closeSettings();
   }
 
   openChat(teacher: Teacher): void {
     this.facade.openChat(teacher);
+  }
+
+  openChatFromRow(event: Event, teacher: Teacher): void {
+    event.stopPropagation();
+    this.openChat(teacher);
+  }
+
+  openEdit(event: Event, teacher: Teacher): void {
+    event.stopPropagation();
+    void this.router.navigate(['/tenant/teachers', teacher.id, 'edit']);
+  }
+
+  openTeacherDetails(teacher: Teacher): void {
+    void this.router.navigate(['/tenant/teachers', teacher.id]);
+  }
+
+  previousPage(): void {
+    this.facade.previousPage();
+  }
+
+  nextPage(): void {
+    this.facade.nextPage();
+  }
+
+  setPageSize(value: string): void {
+    this.facade.setPageSize(Number(value));
+  }
+
+  openPasswordModal(event: Event, teacher: Teacher): void {
+    event.stopPropagation();
+    this.passwordForm.reset({ newPassword: '' });
+    this.facade.openPasswordModal(teacher);
+  }
+
+  closePasswordModal(): void {
+    this.passwordForm.reset({ newPassword: '' });
+    this.facade.closePasswordModal();
+  }
+
+  submitPassword(): void {
+    if (this.passwordForm.invalid || this.passwordSaving()) {
+      this.passwordForm.markAllAsTouched();
+      return;
+    }
+    this.facade.changePassword(this.passwordForm.controls.newPassword.value ?? '');
   }
 
   updateStatus(id: string, status: 'Active' | 'Inactive'): void {

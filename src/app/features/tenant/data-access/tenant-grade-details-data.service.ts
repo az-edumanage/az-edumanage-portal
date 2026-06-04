@@ -1,27 +1,33 @@
-import { Injectable } from '@angular/core';
-import { GradeDetails, GradeGroup } from '../models/tenant-grade-details.models';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import { AuthApiService } from '../../../core/auth/auth-api.service';
+import { GradeDetails } from '../models/tenant-grade-details.models';
+import { GradeGroupRow } from '../models/tenant-grades.models';
+import { TenantGradesDataService } from './tenant-grades-data.service';
+
+type GradeDetailsResponse = Omit<GradeDetails, 'groups'> & {
+  groups?: GradeGroupRow[] | null;
+};
 
 @Injectable({ providedIn: 'root' })
 export class TenantGradeDetailsDataService {
-  readonly groups: GradeGroup[] = [
-    { id: '101', name: 'Group A - Physics', teacher: 'Dr. Ahmed Zewail', studentCount: 30, status: 'Full' },
-    { id: '102', name: 'Group B - Math', teacher: 'Prof. Mona Helmy', studentCount: 28, status: 'Active' },
-    { id: '103', name: 'Group C - Chemistry', teacher: 'Mr. Khaled Said', studentCount: 25, status: 'Active' },
-    { id: '104', name: 'Group D - Biology', teacher: 'Dr. Sara Ahmed', studentCount: 32, status: 'Full' },
-  ];
+  private readonly http = inject(HttpClient);
+  private readonly authApi = inject(AuthApiService);
+  private readonly gradesData = inject(TenantGradesDataService);
+  private readonly gradesUrl = `${environment.apiBaseUrl}/tenant/platform-settings/grades`;
 
-  getGradeById(id: string | null): GradeDetails {
-    const gradeId = id || '1';
-
+  async getGradeById(id: string): Promise<GradeDetails> {
+    await this.authApi.ensureLoggedIn();
+    const response = await firstValueFrom(this.http.get<GradeDetailsResponse>(`${this.gradesUrl}/${id}`));
     return {
-      id: gradeId,
-      name: gradeId === '1' ? 'Grade 10' : gradeId === '2' ? 'Grade 11' : 'Grade 12',
-      level: 'Secondary',
-      description:
-        'This grade level focuses on advanced core subjects and preparation for university entrance exams. Students in this grade are expected to maintain high academic standards.',
-      totalStudents: 120,
-      totalGroups: 4,
-      totalTeachers: 8,
+      ...response,
+      groups: response.groups ?? [],
     };
+  }
+
+  toUserMessage(error: unknown): string {
+    return this.gradesData.toDetailUserMessage(error);
   }
 }

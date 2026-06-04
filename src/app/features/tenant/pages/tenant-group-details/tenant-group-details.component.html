@@ -9,23 +9,29 @@
             <span>Group Details</span>
           </div>
           <div class="flex items-center gap-3">
-            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ group()?.name }}</h2>
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ group()?.name || (isLoading() ? 'Loading...' : 'Group Details') }}</h2>
             <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase rounded-full">
-              {{ group()?.status }}
+              {{ group()?.status || (error() ? 'Error' : '') }}
             </span>
           </div>
-          <p class="text-slate-500 dark:text-slate-500 text-sm">{{ group()?.subject }} • {{ group()?.teacher }}</p>
+          <p class="text-slate-500 dark:text-slate-500 text-sm">
+            @if (error()) {
+              {{ error() }}
+            } @else {
+              {{ group()?.subject }} • {{ group()?.teacher }}
+            }
+          </p>
         </div>
         <div class="flex gap-2">
           <a 
-            [routerLink]="['/tenant/groups', group()?.id, 'edit']"
+            [routerLink]="['/tenant/groups', groupId, 'edit']"
             class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
           >
             <mat-icon class="text-sm">edit</mat-icon>
             Edit Group
           </a>
           <a 
-            [routerLink]="['/tenant/groups', group()?.id, 'enroll']"
+            [routerLink]="['/tenant/groups', groupId, 'enroll']"
             class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
           >
             <mat-icon class="text-sm">person_add</mat-icon>
@@ -42,36 +48,36 @@
             <h4 class="text-2xl font-bold text-slate-900 dark:text-white">{{ group()?.enrolled }} / {{ group()?.capacity }}</h4>
             <div class="text-emerald-500 flex items-center text-xs font-medium">
               <mat-icon class="text-xs">trending_up</mat-icon>
-              82%
+              {{ capacityUsageLabel() }}
             </div>
           </div>
         </div>
         <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Avg. Attendance</p>
           <div class="flex items-end justify-between">
-            <h4 class="text-2xl font-bold text-slate-900 dark:text-white">94.2%</h4>
+            <h4 class="text-2xl font-bold text-slate-900 dark:text-white">{{ avgAttendanceLabel() }}</h4>
             <div class="text-emerald-500 flex items-center text-xs font-medium">
               <mat-icon class="text-xs">trending_up</mat-icon>
-              2.4%
+              {{ avgAttendanceLabel() }}
             </div>
           </div>
         </div>
         <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Absence Rate</p>
           <div class="flex items-end justify-between">
-            <h4 class="text-2xl font-bold text-slate-900 dark:text-white">5.8%</h4>
+            <h4 class="text-2xl font-bold text-slate-900 dark:text-white">{{ absenceRateLabel() }}</h4>
             <div class="text-rose-500 flex items-center text-xs font-medium">
               <mat-icon class="text-xs">trending_down</mat-icon>
-              1.1%
+              {{ absenceRateLabel() }}
             </div>
           </div>
         </div>
         <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Monthly Revenue</p>
           <div class="flex items-end justify-between">
-            <h4 class="text-2xl font-bold text-slate-900 dark:text-white">{{ (group()?.enrolled || 0) * (group()?.fees || 0) }} EGP</h4>
+            <h4 class="text-2xl font-bold text-slate-900 dark:text-white">{{ monthlyRevenueLabel() }}</h4>
             <div class="text-slate-500 flex items-center text-xs font-medium">
-              Target Met
+              {{ group()?.currency || 'EGP' }}
             </div>
           </div>
         </div>
@@ -189,15 +195,15 @@
           <div class="bg-indigo-600 rounded-xl p-6 text-white space-y-4">
             <h3 class="font-bold">Quick Actions</h3>
             <div class="grid grid-cols-2 gap-2">
-              <a [routerLink]="['/tenant/groups', group()?.id, 'attendance']" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+              <a [routerLink]="['/tenant/groups', groupId, 'attendance']" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
                 <mat-icon>how_to_reg</mat-icon>
                 <span class="text-[10px] font-bold uppercase">Attendance</span>
               </a>
-              <a [routerLink]="['/tenant/groups', group()?.id, 'exam']" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+              <a [routerLink]="['/tenant/groups', groupId, 'exam']" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
                 <mat-icon>assignment</mat-icon>
                 <span class="text-[10px] font-bold uppercase">Exam</span>
               </a>
-              <a [routerLink]="['/tenant/groups', group()?.id, 'broadcast']" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+              <a [routerLink]="['/tenant/groups', groupId, 'broadcast']" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
                 <mat-icon>mail</mat-icon>
                 <span class="text-[10px] font-bold uppercase">Broadcast</span>
               </a>
@@ -241,9 +247,9 @@
                 <div class="p-4 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 rounded-xl">
                   <div class="flex justify-between items-center mb-2">
                     <span class="text-sm text-rose-700 dark:text-rose-400 font-medium">Outstanding Dues</span>
-                    <span class="text-lg font-bold text-rose-700 dark:text-rose-400">1,250 EGP</span>
+                    <span class="text-lg font-bold text-rose-700 dark:text-rose-400">{{ group()?.fees || 0 }} EGP</span>
                   </div>
-                  <p class="text-[10px] text-rose-600/80">Last payment: 500 EGP on Feb 10, 2026</p>
+                  <p class="text-[10px] text-rose-600/80">Last payment: Not available</p>
                   <button class="w-full mt-3 py-2 bg-rose-600 text-white rounded-lg text-xs font-bold hover:bg-rose-700 transition-colors">
                     Generate Payment Link
                   </button>
@@ -259,23 +265,19 @@
                 <div class="grid grid-cols-2 gap-3">
                   <div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
                     <p class="text-[10px] text-slate-500 font-bold uppercase">Present</p>
-                    <p class="text-xl font-bold text-emerald-600">18 Sessions</p>
+                    <p class="text-xl font-bold text-emerald-600">{{ student.attendanceRate }}%</p>
                   </div>
                   <div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
                     <p class="text-[10px] text-slate-500 font-bold uppercase">Absent</p>
-                    <p class="text-xl font-bold text-rose-600">2 Sessions</p>
+                    <p class="text-xl font-bold text-rose-600">{{ absenceRateLabel() }}</p>
                   </div>
                 </div>
                 <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
                   <p class="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">Recent Absences</p>
                   <ul class="space-y-2">
                     <li class="flex items-center justify-between text-[10px]">
-                      <span class="text-slate-500">Feb 15, 2026</span>
-                      <span class="px-2 py-0.5 bg-rose-100 text-rose-700 rounded-full font-bold">UNEXCUSED</span>
-                    </li>
-                    <li class="flex items-center justify-between text-[10px]">
-                      <span class="text-slate-500">Feb 08, 2026</span>
-                      <span class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-bold">EXCUSED</span>
+                      <span class="text-slate-500">{{ student.lastAttendance || 'Not available' }}</span>
+                      <span class="px-2 py-0.5 bg-rose-100 text-rose-700 rounded-full font-bold">UNAVAILABLE</span>
                     </li>
                   </ul>
                 </div>

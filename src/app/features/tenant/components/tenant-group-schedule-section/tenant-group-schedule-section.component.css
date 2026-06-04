@@ -1,1 +1,4 @@
-
+:host .teacher-unavailable-control {
+  border-color: rgb(244 63 94);
+  background-color: rgb(255 241 242);
+}

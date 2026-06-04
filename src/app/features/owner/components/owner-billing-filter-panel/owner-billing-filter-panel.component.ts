@@ -21,6 +21,7 @@ export class OwnerBillingFilterPanelComponent {
   statusOptions = input<string[]>([]);
   filterMinAmount = input<number | null>(null);
   filterMaxAmount = input<number | null>(null);
+  failedPaymentCount = input(0);
 
   activeTabChange = output<Tab>();
   resetFilters = output<void>();

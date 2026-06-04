@@ -18,6 +18,7 @@ export class OwnerPlanCreateComponent implements OnInit, OnDestroy {
 
   readonly isEditMode = this.facade.isEditMode;
   readonly planId = this.facade.planId;
+  readonly isSystemTrialPlan = this.facade.isSystemTrialPlan;
 
   readonly showStatusDropdown = this.facade.showStatusDropdown;
   readonly statusSearchQuery = this.facade.statusSearchQuery;

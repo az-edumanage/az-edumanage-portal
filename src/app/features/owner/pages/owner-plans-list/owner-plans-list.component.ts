@@ -14,12 +14,14 @@ import { TaskService } from '../../../../core/services/task.service';
   templateUrl: './owner-plans-list.component.html',
   styleUrl: './owner-plans-list.component.css'
 })
-export class OwnerPlansListComponent {
+export class OwnerPlansListComponent implements OnInit {
   private readonly facade = inject(OwnerPlansListFacade);
   private readonly router = inject(Router);
   private readonly taskService = inject(TaskService);
 
   readonly plans = this.facade.plans;
+  readonly systemTrialPlan = this.facade.systemTrialPlan;
+  readonly regularPlans = this.facade.regularPlans;
 
   ngOnInit(): void {
     void this.facade.refreshPlans();

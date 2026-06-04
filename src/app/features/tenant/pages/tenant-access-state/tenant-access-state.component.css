@@ -1,0 +1,102 @@
+.tenant-access-shell {
+  min-height: calc(100vh - 5rem);
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background:
+    radial-gradient(circle at top, rgba(14, 165, 233, 0.16), transparent 38%),
+    linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.tenant-access-card {
+  width: min(100%, 42rem);
+  padding: 2.5rem;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.12);
+  text-align: center;
+}
+
+.tenant-access-badge {
+  display: inline-flex;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tenant-access-icon {
+  width: 4rem;
+  height: 4rem;
+  margin: 1.5rem auto 1rem;
+  border-radius: 1.25rem;
+  display: grid;
+  place-items: center;
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+.tenant-access-icon mat-icon {
+  font-size: 2rem;
+  width: 2rem;
+  height: 2rem;
+}
+
+.tenant-access-card h1 {
+  margin: 0;
+  font-size: clamp(1.75rem, 2vw, 2.25rem);
+  line-height: 1.1;
+  color: #0f172a;
+}
+
+.tenant-access-card p {
+  margin: 1rem auto 0;
+  max-width: 34rem;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.tenant-access-reason,
+.tenant-access-meta {
+  margin-top: 1.5rem;
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.tenant-access-reason span {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.tenant-access-meta {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.tenant-access-link {
+  display: inline-flex;
+  margin-top: 1.75rem;
+  padding: 0.85rem 1.2rem;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #f8fafc;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .tenant-access-card {
+    padding: 1.5rem;
+  }
+}

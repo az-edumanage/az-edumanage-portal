@@ -18,13 +18,16 @@ export class TenantRoomCreateFacade {
   private isSuccess = false;
 
   readonly isSubmitting = this.store.isSubmitting;
+  readonly isLoadingLookups = this.store.isLoadingLookups;
+  readonly submitError = this.store.submitError;
   readonly roomId = this.store.roomId;
   readonly isEditMode = this.store.isEditMode;
+  readonly availableRoomTypes = this.data.availableRoomTypes;
   readonly availableEquipment = this.data.availableEquipment;
 
   readonly roomForm = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
-    type: ['Classroom', Validators.required],
+    type: ['', Validators.required],
     capacity: [30, [Validators.required, Validators.min(1)]],
     equipment: [[] as string[]],
     notes: [''],
@@ -35,15 +38,7 @@ export class TenantRoomCreateFacade {
   initialize(roomId: string | null): void {
     this.store.setRoomId(roomId);
 
-    if (roomId) {
-      this.roomForm.patchValue(this.data.getRoomForEdit(roomId));
-    }
-
-    const savedTask = this.taskService.getTask(this.taskId());
-    if (savedTask?.data) {
-      this.roomForm.patchValue(savedTask.data as Partial<TenantRoomCreatePayload>);
-      this.taskService.removeTask(this.taskId());
-    }
+    void this.initializeForm(roomId);
   }
 
   onDestroy(currentRoute: string): void {
@@ -91,8 +86,16 @@ export class TenantRoomCreateFacade {
   }
 
   onSubmit(): void {
+    this.store.setSubmitError(null);
     if (this.roomForm.invalid) {
       this.roomForm.markAllAsTouched();
+      return;
+    }
+
+    if (!this.hasAvailableRoomType()) {
+      this.roomForm.get('type')?.setErrors({ unavailable: true });
+      this.roomForm.get('type')?.markAsTouched();
+      this.store.setSubmitError('Select an available room type.');
       return;
     }
 
@@ -100,12 +103,54 @@ export class TenantRoomCreateFacade {
     const payload = this.roomForm.getRawValue() as TenantRoomCreatePayload;
 
     this.data
-      .createOrUpdateRoom(payload)
+      .createOrUpdateRoom(payload, this.roomId())
       .pipe(finalize(() => this.store.setSubmitting(false)))
-      .subscribe(() => {
-        this.isSuccess = true;
-        this.taskService.removeTask(this.taskId());
-        this.router.navigate(['/tenant/rooms']);
+      .subscribe({
+        next: () => {
+          this.isSuccess = true;
+          this.taskService.removeTask(this.taskId());
+          this.router.navigate(['/tenant/rooms']);
+        },
+        error: (error: Error) => {
+          this.store.setSubmitError(error.message || 'Unable to save room. Please try again.');
+        },
       });
+  }
+
+  private async initializeForm(roomId: string | null): Promise<void> {
+    this.store.setLoadingLookups(true);
+    this.store.setSubmitError(null);
+    try {
+      await this.data.loadLookups();
+
+      if (roomId) {
+        this.roomForm.patchValue(await this.data.getRoomForEdit(roomId));
+      } else {
+        const roomTypes = this.availableRoomTypes();
+        const currentType = this.roomForm.get('type')?.value;
+        if (roomTypes.length > 0 && (!currentType || !roomTypes.includes(currentType))) {
+          this.roomForm.patchValue({ type: roomTypes[0] });
+        }
+      }
+
+      const savedTask = this.taskService.getTask(this.taskId());
+      if (savedTask?.data) {
+        this.roomForm.patchValue(savedTask.data as Partial<TenantRoomCreatePayload>);
+        this.taskService.removeTask(this.taskId());
+      }
+
+      if (!this.hasAvailableRoomType()) {
+        this.roomForm.patchValue({ type: this.availableRoomTypes()[0] ?? '' });
+      }
+    } catch (error) {
+      this.store.setSubmitError(error instanceof Error ? error.message : 'Unable to load room settings.');
+    } finally {
+      this.store.setLoadingLookups(false);
+    }
+  }
+
+  private hasAvailableRoomType(): boolean {
+    const type = this.roomForm.get('type')?.value?.trim();
+    return !!type && this.availableRoomTypes().includes(type);
   }
 }

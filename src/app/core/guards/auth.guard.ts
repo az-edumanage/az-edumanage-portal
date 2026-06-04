@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { CanMatchFn, Router, UrlSegment } from '@angular/router';
+import { CanActivateFn, CanMatchFn, Router, UrlSegment } from '@angular/router';
 import { AuthTokenService } from '../auth/auth-token.service';
 import { UserRole } from '../services/dashboard.service';
 
@@ -20,6 +20,21 @@ export const authGuard: CanMatchFn = (route, segments) => {
   const returnUrl = buildReturnUrl(segments);
 
   return router.createUrlTree([`/${role}/login`], {
-    queryParams: { returnUrl },
+    queryParams: { redirect: returnUrl },
+  });
+};
+
+export const authActivateGuard: CanActivateFn = (route, state) => {
+  const tokenService = inject(AuthTokenService);
+  const router = inject(Router);
+
+  if (tokenService.getToken()) {
+    return true;
+  }
+
+  const role = (route.data?.['role'] as UserRole | undefined) ?? 'owner';
+
+  return router.createUrlTree([`/${role}/login`], {
+    queryParams: { redirect: state.url },
   });
 };

@@ -1,27 +1,40 @@
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { map, Observable } from 'rxjs';
-import { TenantApiService } from './tenant-api.service';
-import { TenantGroupStudent } from '../models/tenant-group-student-add.models';
+import { Observable, catchError, map, throwError } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import {
+  TenantGroupEligibleStudentsResponse,
+  TenantGroupStudent,
+  TenantGroupStudentEnrollmentPayload,
+  TenantGroupStudentEnrollmentResult,
+} from '../models/tenant-group-student-add.models';
 
 @Injectable({ providedIn: 'root' })
 export class TenantGroupStudentAddDataService {
-  private readonly tenantApi = inject(TenantApiService);
+  private readonly http = inject(HttpClient);
+  private readonly groupsUrl = `${environment.apiBaseUrl}/tenant/groups`;
 
-  readonly allStudents: TenantGroupStudent[] = [
-    { id: '101', name: 'Ahmed Ali', email: 'ahmed@example.com', grade: 'Grade 12' },
-    { id: '102', name: 'Sara Mohamed', email: 'sara@example.com', grade: 'Grade 12' },
-    { id: '103', name: 'Omar Hassan', email: 'omar@example.com', grade: 'Grade 11' },
-    { id: '104', name: 'Laila Mahmoud', email: 'laila@example.com', grade: 'Grade 12' },
-    { id: '105', name: 'Youssef Ibrahim', email: 'youssef@example.com', grade: 'Grade 10' },
-  ];
-
-  searchStudents(query: string): TenantGroupStudent[] {
-    const normalized = query.trim().toLowerCase();
-    if (!normalized) {
-      return [...this.allStudents];
+  loadEligibleStudents(groupId: string | null): Observable<TenantGroupStudent[]> {
+    const selectedGroupId = groupId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
     }
 
-    return this.allStudents.filter(
+    return this.http
+      .get<TenantGroupEligibleStudentsResponse>(`${this.groupUrl(selectedGroupId)}/eligible-students`)
+      .pipe(
+        map((response) => response.students ?? []),
+        catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load eligible students')),
+      );
+  }
+
+  searchStudents(query: string, students: TenantGroupStudent[]): TenantGroupStudent[] {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) {
+      return [...students];
+    }
+
+    return students.filter(
       (student) =>
         student.name.toLowerCase().includes(normalized) ||
         student.email.toLowerCase().includes(normalized) ||
@@ -29,7 +42,39 @@ export class TenantGroupStudentAddDataService {
     );
   }
 
-  enrollStudentToGroup(payload: Record<string, unknown>): Observable<void> {
-    return this.tenantApi.enrollStudentToGroup(payload).pipe(map(() => void 0));
+  enrollStudentsToGroup(
+    groupId: string | null,
+    payload: TenantGroupStudentEnrollmentPayload,
+  ): Observable<TenantGroupStudentEnrollmentResult> {
+    const selectedGroupId = groupId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+
+    return this.http
+      .post<TenantGroupStudentEnrollmentResult>(`${this.groupUrl(selectedGroupId)}/enrollments`, payload)
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to enroll students')));
+  }
+
+  private groupUrl(groupId: string): string {
+    return `${this.groupsUrl}/${encodeURIComponent(groupId)}`;
+  }
+
+  private handleError(error: HttpErrorResponse, fallback: string): Observable<never> {
+    const message = this.extractApiMessage(error.error) ?? fallback;
+    return throwError(() => new Error(message));
+  }
+
+  private extractApiMessage(error: unknown): string | null {
+    if (typeof error === 'string' && error.trim()) {
+      return error;
+    }
+    if (error && typeof error === 'object') {
+      const candidate = error as { message?: unknown; details?: unknown };
+      if (typeof candidate.message === 'string' && candidate.message.trim()) {
+        return candidate.message;
+      }
+    }
+    return null;
   }
 }

@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './core/layout/main-layout/main-layout.component';
-import { roleGuard } from './core/guards/role.guard';
-import { authGuard } from './core/guards/auth.guard';
+import { passwordChangeRequiredGuard, roleGuard } from './core/guards/role.guard';
+import { authActivateGuard, authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'owner/login', pathMatch: 'full' },
@@ -19,6 +19,23 @@ export const routes: Routes = [
     path: 'teacher/login',
     loadComponent: () =>
       import('./features/auth/pages/login/login.component').then((m) => m.LoginComponent),
+  },
+  {
+    path: 'tenant/change-password',
+    canActivate: [authActivateGuard, passwordChangeRequiredGuard],
+    loadComponent: () =>
+      import('./features/tenant/pages/tenant-change-password/tenant-change-password.component').then((m) => m.TenantChangePasswordComponent),
+    data: {
+      role: 'tenant',
+      workspace: 'tenant',
+      layout: 'auth',
+      fullScreen: true,
+    },
+  },
+  {
+    path: 'forbidden',
+    loadComponent: () =>
+      import('./features/auth/pages/forbidden/forbidden.component').then((m) => m.ForbiddenComponent),
   },
   {
     path: 'register',

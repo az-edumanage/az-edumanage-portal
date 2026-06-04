@@ -33,6 +33,7 @@
     "d3": "^7.9.0",
     "express": "^5.1.0",
     "html2canvas": "^1.4.1",
+    "jsbarcode": "^3.12.3",
     "jspdf": "^2.5.2",
     "jspdf-autotable": "^5.0.7",
     "motion": "^12.23.24",

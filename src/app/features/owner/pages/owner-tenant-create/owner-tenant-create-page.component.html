@@ -40,6 +40,20 @@
           </button>
         </div>
       </div>
+      @if (submitStatus(); as status) {
+        <div
+          class="rounded-lg border px-4 py-3 text-sm"
+          role="alert"
+          [class.border-emerald-200]="status.success"
+          [class.bg-emerald-50]="status.success"
+          [class.text-emerald-700]="status.success"
+          [class.border-red-200]="!status.success"
+          [class.bg-red-50]="!status.success"
+          [class.text-red-700]="!status.success"
+        >
+          {{ status.message }}
+        </div>
+      }
 
       <form [formGroup]="tenantForm" class="owner-tenant-create-form grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Main Form Section -->
@@ -96,6 +110,35 @@
                   (optionSelected)="selectTenantType($event)"
                 />
               </div>
+
+              <div class="md:col-span-2">
+                <label for="tenantUsername" class="owner-tenant-create-label">{{ t('owner.tenantCreate.field.tenantUsername') }}</label>
+                <input
+                  id="tenantUsername"
+                  type="text"
+                  formControlName="tenantUsername"
+                  autocomplete="username"
+                  [placeholder]="t('owner.tenantCreate.placeholder.tenantUsername')"
+                  class="owner-tenant-create-control"
+                >
+                @if (tenantForm.get('tenantUsername')?.hasError('required') && (tenantForm.get('tenantUsername')?.touched || submitAttempted())) {
+                  <p class="mt-1 text-xs text-red-500">{{ t('owner.tenantCreate.error.tenantUsernameRequired') }}</p>
+                }
+                @if ((tenantForm.get('tenantUsername')?.hasError('minlength') || tenantForm.get('tenantUsername')?.hasError('pattern')) && (tenantForm.get('tenantUsername')?.touched || submitAttempted())) {
+                  <p class="mt-1 text-xs text-red-500">{{ t('owner.tenantCreate.error.tenantUsernameInvalid') }}</p>
+                }
+              </div>
+
+              <div class="md:col-span-2">
+                <label for="temporaryPassword" class="owner-tenant-create-label">{{ t('owner.tenantCreate.field.temporaryPassword') }}</label>
+                <input
+                  id="temporaryPassword"
+                  type="password"
+                  formControlName="temporaryPassword"
+                  [placeholder]="t('owner.tenantCreate.placeholder.temporaryPassword')"
+                  class="owner-tenant-create-control"
+                >
+              </div>
               
               <div class="md:col-span-2">
                 <label for="subdomain" class="owner-tenant-create-label">{{ t('owner.tenantCreate.field.subdomain') }}</label>
@@ -144,24 +187,6 @@
                   </div>
                 }
               </div>
-
-              <!-- <div class="md:col-span-2 relative">
-                <app-owner-searchable-dropdown
-                  [label]="t('owner.tenantCreate.dropdown.industry.label')"
-                  [placeholder]="t('owner.tenantCreate.dropdown.industry.placeholder')"
-                  [searchPlaceholder]="t('owner.tenantCreate.dropdown.industry.search')"
-                  [emptyStateText]="t('owner.tenantCreate.dropdown.industry.empty')"
-                  dropdownId="industry-listbox"
-                  [options]="industries"
-                  [selectedValue]="tenantForm.get('industry')?.value || ''"
-                  [searchQuery]="industrySearchQuery()"
-                  [isOpen]="showIndustryDropdown()"
-                  (toggled)="toggleIndustryDropdown()"
-                  (closed)="closeIndustryDropdown()"
-                  (searchQueryChange)="setIndustrySearchQuery($event)"
-                  (optionSelected)="selectIndustry($event)"
-                />
-              </div> -->
             </div>
           </div>
 
@@ -257,8 +282,8 @@
                   [emptyStateText]="t('owner.tenantCreate.dropdown.country.empty')"
                   panelPosition="top"
                   dropdownId="country-listbox"
-                  [options]="countries"
-                  [selectedValue]="tenantForm.get('country')?.value || ''"
+                  [options]="countries()"
+                  [selectedValue]="selectedCountryValue()"
                   [searchQuery]="countrySearchQuery()"
                   [isOpen]="showCountryDropdown()"
                   (toggled)="toggleCountryDropdown()"
@@ -271,16 +296,16 @@
               <div class="relative">
                 <app-owner-searchable-dropdown
                   [label]="t('owner.tenantCreate.dropdown.city.label')"
-                  [placeholder]="tenantForm.get('country')?.value ? t('owner.tenantCreate.dropdown.city.placeholder') : t('owner.tenantCreate.dropdown.city.disabledPlaceholder')"
+                  [placeholder]="tenantForm.get('countryId')?.value ? t('owner.tenantCreate.dropdown.city.placeholder') : t('owner.tenantCreate.dropdown.city.disabledPlaceholder')"
                   [searchPlaceholder]="t('owner.tenantCreate.dropdown.city.search')"
-                  [emptyStateText]="t('owner.tenantCreate.dropdown.city.empty')"
+                  [emptyStateText]="tenantForm.get('countryId')?.value ? t('owner.tenantCreate.dropdown.city.empty') : t('owner.tenantCreate.dropdown.city.disabledEmpty')"
                   panelPosition="top"
                   dropdownId="city-listbox"
-                  [options]="cities"
-                  [selectedValue]="tenantForm.get('city')?.value || ''"
+                  [options]="cities()"
+                  [selectedValue]="selectedCityValue()"
                   [searchQuery]="citySearchQuery()"
                   [isOpen]="showCityDropdown()"
-                  [disabled]="!tenantForm.get('country')?.value"
+                  [disabled]="!tenantForm.get('countryId')?.value"
                   (toggled)="toggleCityDropdown()"
                   (closed)="closeCityDropdown()"
                   (searchQueryChange)="setCitySearchQuery($event)"
@@ -295,7 +320,10 @@
         <div class="space-y-6">
           <!-- Plan & Billing -->
           <div class="owner-tenant-create-card">
-            <h3 id="planLabel" class="owner-tenant-create-section-title">{{ t('owner.tenantCreate.section.subscriptionPlan') }}</h3>
+            <h3 id="planLabel" class="owner-tenant-create-section-title">
+              {{ t('owner.tenantCreate.section.subscriptionPlan') }}
+              <span class="text-red-500" aria-hidden="true">*</span>
+            </h3>
             
             <div class="relative">
               <app-owner-plan-dropdown
@@ -310,6 +338,12 @@
                 (planSelected)="selectPlan($event)"
               />
             </div>
+            @if (planLoadError(); as message) {
+              <p class="mt-2 text-xs text-red-500" role="alert">{{ message }}</p>
+            }
+            @if (tenantForm.get('planId')?.hasError('required') && (tenantForm.get('planId')?.touched || submitAttempted())) {
+              <p class="mt-2 text-xs text-red-500" role="alert">{{ t('owner.tenantCreate.error.planRequired') }}</p>
+            }
 
             @if (tenantForm.get('planId')?.value) {
               <div class="pt-2 animate-in fade-in slide-in-from-top-2 duration-200">

@@ -113,4 +113,31 @@ describe('DashboardService', () => {
     expect(router.navigateByUrlCalls).toContain('/owner/subscriptions/orders');
     expect(service.returnUrl()).toBeNull();
   });
+
+  it('should start unresolved when router URL is not a dashboard workspace', () => {
+    expect(service.currentRole()).toBeNull();
+  });
+
+  it('should resolve workspace from URL prefixes', () => {
+    expect(service.resolveWorkspaceFromUrl('/owner/overview')).toBe('owner');
+    expect(service.resolveWorkspaceFromUrl('/tenant/overview?x=1')).toBe('tenant');
+    expect(service.resolveWorkspaceFromUrl('/teacher/overview#top')).toBe('teacher');
+    expect(service.resolveWorkspaceFromUrl('/tenant/change-password')).toBe('tenant');
+    expect(service.resolveWorkspaceFromUrl('/forbidden')).toBeNull();
+  });
+
+  it('should sync role from URL without navigating', () => {
+    const role = service.syncRoleFromUrl('/tenant/overview');
+
+    expect(role).toBe('tenant');
+    expect(service.currentRole()).toBe('tenant');
+    expect(router.navigateCalls).toHaveLength(0);
+  });
+
+  it('should allow clearing current role without navigating', () => {
+    service.setRole(null);
+
+    expect(service.currentRole()).toBeNull();
+    expect(router.navigateCalls).toHaveLength(0);
+  });
 });

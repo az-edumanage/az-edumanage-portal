@@ -1,0 +1,213 @@
+<div class="space-y-6">
+  <div class="owner-settings-card owner-settings-card--shell">
+    <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">{{ translate()('owner.settings.country.title') }}</h3>
+      </div>
+      <button type="button" class="owner-settings-btn-chip owner-country-refresh-btn" (click)="loadCountries()" [disabled]="isLoading()">
+        <span class="material-icons owner-settings-icon-sm" [class.animate-spin]="isLoading()">refresh</span>
+        {{ translate()('owner.settings.country.refresh') }}
+      </button>
+    </div>
+
+    <div class="p-6 grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_24rem] gap-6">
+      <section class="owner-country-list" aria-labelledby="country-list-title">
+        <h4 id="country-list-title" class="owner-country-section-title">{{ translate()('owner.settings.country.listTitle') }}</h4>
+
+        @if (errorMessage(); as message) {
+          <div class="owner-country-alert" role="alert">{{ message }}</div>
+        }
+
+        @if (isLoading()) {
+          <div class="owner-country-empty">{{ translate()('owner.settings.country.loading') }}</div>
+        } @else if (countries().length === 0) {
+          <div class="owner-country-empty">{{ translate()('owner.settings.country.empty') }}</div>
+        } @else {
+          <div class="owner-country-table-wrap">
+            <table class="owner-country-table">
+              <thead>
+                <tr>
+                  <th>{{ translate()('owner.settings.country.code') }}</th>
+                  <th>{{ translate()('owner.settings.country.nameEn') }}</th>
+                  <th>{{ translate()('owner.settings.country.nameAr') }}</th>
+                  <th>{{ translate()('owner.settings.country.sortOrder') }}</th>
+                  <th>{{ translate()('owner.settings.country.status') }}</th>
+                  <th><span class="sr-only">{{ translate()('owner.settings.country.actions') }}</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (country of countries(); track country.id) {
+                  <tr
+                    class="owner-country-row"
+                    [class.owner-country-row--selected]="selectedCountryId() === country.id"
+                    (click)="selectCountry(country)"
+                  >
+                    <td class="font-semibold text-slate-900 dark:text-white">
+                      <button type="button" class="owner-country-select-btn" (click)="selectCountry(country); $event.stopPropagation()">
+                        {{ country.code }}
+                      </button>
+                    </td>
+                    <td>{{ country.nameEn }}</td>
+                    <td>{{ country.nameAr || '-' }}</td>
+                    <td>{{ country.sortOrder }}</td>
+                    <td>
+                      <span class="owner-country-status" [class.owner-country-status--inactive]="!country.active">
+                        {{ country.active ? translate()('owner.settings.country.active') : translate()('owner.settings.country.inactive') }}
+                      </span>
+                    </td>
+                    <td class="owner-country-actions">
+                      <button type="button" class="owner-settings-icon-btn p-2" (click)="editCountry(country); $event.stopPropagation()" [attr.aria-label]="translate()('owner.settings.country.edit') + ' ' + country.nameEn">
+                        <span class="material-icons owner-settings-icon-sm">edit</span>
+                      </button>
+                      <button type="button" class="owner-settings-icon-btn p-2" (click)="deleteCountry(country); $event.stopPropagation()" [attr.aria-label]="translate()('owner.settings.country.delete') + ' ' + country.nameEn">
+                        <span class="material-icons owner-settings-icon-sm">delete</span>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+      <form class="owner-country-form" [formGroup]="countryForm" (ngSubmit)="saveCountry()">
+        <h4 class="owner-country-section-title">{{ formTitle() }}</h4>
+
+        <div>
+          <label for="country-code" class="owner-settings-field-label">{{ translate()('owner.settings.country.code') }}</label>
+          <input id="country-code" type="text" class="owner-settings-input" formControlName="code">
+        </div>
+
+        <div>
+          <label for="country-name-en" class="owner-settings-field-label">{{ translate()('owner.settings.country.nameEn') }}</label>
+          <input id="country-name-en" type="text" class="owner-settings-input" formControlName="nameEn">
+        </div>
+
+        <div>
+          <label for="country-name-ar" class="owner-settings-field-label">{{ translate()('owner.settings.country.nameAr') }}</label>
+          <input id="country-name-ar" type="text" class="owner-settings-input" formControlName="nameAr">
+        </div>
+
+        <div>
+          <label for="country-sort-order" class="owner-settings-field-label">{{ translate()('owner.settings.country.sortOrder') }}</label>
+          <input id="country-sort-order" type="number" min="0" class="owner-settings-input" formControlName="sortOrder">
+        </div>
+
+        <label class="owner-country-toggle">
+          <input type="checkbox" formControlName="active">
+          <span>{{ translate()('owner.settings.country.active') }}</span>
+        </label>
+
+        <div class="owner-country-form-actions">
+          <button type="button" class="owner-country-secondary-btn" (click)="resetForm()">
+            {{ translate()('owner.settings.common.cancel') }}
+          </button>
+          <button type="submit" class="owner-settings-btn-primary px-4 py-2" [disabled]="countryForm.invalid || isSaving()">
+            {{ editingCountry() === null ? translate()('owner.settings.country.create') : translate()('owner.settings.country.update') }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="owner-country-city-panel">
+      @if (selectedCountry(); as country) {
+        <div class="owner-country-city-header">
+          <div>
+            <h4 class="owner-country-section-title">Cities in {{ country.nameEn }}</h4>
+          </div>
+          <button type="button" class="owner-settings-btn-chip owner-country-refresh-btn" (click)="loadCities()" [disabled]="isCityLoading()">
+            <span class="material-icons owner-settings-icon-sm" [class.animate-spin]="isCityLoading()">refresh</span>
+            {{ translate()('owner.settings.country.refreshCities') }}
+          </button>
+        </div>
+
+        @if (cityErrorMessage(); as message) {
+          <div class="owner-country-alert" role="alert">{{ message }}</div>
+        }
+
+        <div class="owner-country-city-grid">
+          <section aria-labelledby="city-list-title">
+            <h5 id="city-list-title" class="sr-only">{{ translate()('owner.settings.country.cityListTitle') }}</h5>
+            @if (isCityLoading()) {
+              <div class="owner-country-empty">{{ translate()('owner.settings.country.cityLoading') }}</div>
+            } @else if (cities().length === 0) {
+              <div class="owner-country-empty">{{ translate()('owner.settings.country.cityEmpty') }}</div>
+            } @else {
+              <div class="owner-country-table-wrap">
+                <table class="owner-country-table owner-country-city-table">
+                  <thead>
+                    <tr>
+                      <th>{{ translate()('owner.settings.country.nameEn') }}</th>
+                      <th>{{ translate()('owner.settings.country.nameAr') }}</th>
+                      <th>{{ translate()('owner.settings.country.sortOrder') }}</th>
+                      <th>{{ translate()('owner.settings.country.status') }}</th>
+                      <th><span class="sr-only">{{ translate()('owner.settings.country.actions') }}</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (city of cities(); track city.id) {
+                      <tr>
+                        <td class="font-semibold text-slate-900 dark:text-white">{{ city.nameEn }}</td>
+                        <td>{{ city.nameAr || '-' }}</td>
+                        <td>{{ city.sortOrder }}</td>
+                        <td>
+                          <span class="owner-country-status" [class.owner-country-status--inactive]="!city.active">
+                            {{ city.active ? translate()('owner.settings.country.active') : translate()('owner.settings.country.inactive') }}
+                          </span>
+                        </td>
+                        <td class="owner-country-actions">
+                          <button type="button" class="owner-settings-icon-btn p-2" (click)="editCity(city)" [attr.aria-label]="translate()('owner.settings.country.cityEdit') + ' ' + city.nameEn">
+                            <span class="material-icons owner-settings-icon-sm">edit</span>
+                          </button>
+                          <button type="button" class="owner-settings-icon-btn p-2" (click)="deleteCity(city)" [attr.aria-label]="translate()('owner.settings.country.cityDelete') + ' ' + city.nameEn">
+                            <span class="material-icons owner-settings-icon-sm">delete</span>
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </section>
+
+          <form class="owner-country-form" [formGroup]="cityForm" (ngSubmit)="saveCity()">
+            <h4 class="owner-country-section-title">{{ cityFormTitle() }}</h4>
+
+            <div>
+              <label for="city-name-en" class="owner-settings-field-label">{{ translate()('owner.settings.country.nameEn') }}</label>
+              <input id="city-name-en" type="text" class="owner-settings-input" formControlName="nameEn">
+            </div>
+
+            <div>
+              <label for="city-name-ar" class="owner-settings-field-label">{{ translate()('owner.settings.country.nameAr') }}</label>
+              <input id="city-name-ar" type="text" class="owner-settings-input" formControlName="nameAr">
+            </div>
+
+            <div>
+              <label for="city-sort-order" class="owner-settings-field-label">{{ translate()('owner.settings.country.sortOrder') }}</label>
+              <input id="city-sort-order" type="number" min="0" class="owner-settings-input" formControlName="sortOrder">
+            </div>
+
+            <label class="owner-country-toggle">
+              <input type="checkbox" formControlName="active">
+              <span>{{ translate()('owner.settings.country.active') }}</span>
+            </label>
+
+            <div class="owner-country-form-actions">
+              <button type="button" class="owner-country-secondary-btn" (click)="resetCityForm()">
+                {{ translate()('owner.settings.common.cancel') }}
+              </button>
+              <button type="submit" class="owner-settings-btn-primary px-4 py-2" [disabled]="cityForm.invalid || isSaving()">
+                {{ editingCity() === null ? translate()('owner.settings.country.cityCreate') : translate()('owner.settings.country.cityUpdate') }}
+              </button>
+            </div>
+          </form>
+        </div>
+      } @else {
+        <div class="owner-country-empty">{{ translate()('owner.settings.country.citySelectCountry') }}</div>
+      }
+    </div>
+  </div>
+</div>

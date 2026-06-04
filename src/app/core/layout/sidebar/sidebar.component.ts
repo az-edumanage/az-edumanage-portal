@@ -1,12 +1,13 @@
 import { Component, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, type IsActiveMatchOptions } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { DashboardService } from '../../services/dashboard.service';
 import { I18nService } from '../../services/i18n.service';
 import { AuthTokenService } from '../../auth/auth-token.service';
 import { AuthIdentityService } from '../../auth/auth-identity.service';
 import { AuthApiService } from '../../auth/auth-api.service';
+import { TenantImpersonationService } from '../../auth/tenant-impersonation.service';
 
 interface MenuItem {
   labelKey: string;
@@ -33,6 +34,7 @@ export class SidebarComponent {
   private readonly authTokenService = inject(AuthTokenService);
   private readonly authIdentityService = inject(AuthIdentityService);
   private readonly authApi = inject(AuthApiService);
+  private readonly tenantImpersonationService = inject(TenantImpersonationService);
   private readonly router = inject(Router);
   
   collapsed = this.dashboardService.sidebarCollapsed;
@@ -53,17 +55,43 @@ export class SidebarComponent {
     return !!this.openAccordions()[labelKey];
   }
 
+  isAccordionExpanded(item: MenuItem): boolean {
+    return this.isAccordionOpen(item.labelKey);
+  }
+
+  hasActiveChild(item: MenuItem): boolean {
+    return item.children?.some((child) => this.isRouteActive(child.route)) ?? false;
+  }
+
+  isRouteActive(route?: string): boolean {
+    if (!route) {
+      return false;
+    }
+
+    return this.router.isActive(route, this.routeActiveOptions(route));
+  }
+
+  private routeActiveOptions(route: string): IsActiveMatchOptions {
+    return {
+      paths: route === '/tenant/educational-stages' ? 'exact' : 'subset',
+      queryParams: 'ignored',
+      fragment: 'ignored',
+      matrixParams: 'ignored',
+    };
+  }
+
   userInitials = computed(() => {
     const username = this.authIdentityService.username()?.trim();
     if (username) {
       return username.slice(0, 2).toUpperCase();
     }
-    return this.currentRole().substring(0, 2).toUpperCase();
+    const role = this.currentRole();
+    return role ? role.substring(0, 2).toUpperCase() : 'U';
   });
 
   username = computed(() => this.authIdentityService.username() ?? 'Unknown');
   roleLabel = computed(() => {
-    const role = this.authIdentityService.primaryRole() ?? 'OWNER';
+    const role = this.authIdentityService.primaryRole() ?? 'UNKNOWN';
     const roleLabels: Record<string, string> = {
       SUPER_ADMIN: 'Superuser',
       OWNER: 'Owner',
@@ -80,11 +108,12 @@ export class SidebarComponent {
   }
 
   async logout(): Promise<void> {
-    const role = this.currentRole();
+    const role = this.currentRole() ?? this.dashboardService.resolveWorkspaceFromUrl(this.router.url) ?? 'owner';
     this.isUserPanelOpen.set(false);
     await this.authApi.logout();
     this.authTokenService.clearToken();
     this.authIdentityService.clearIdentity();
+    this.tenantImpersonationService.clear();
     this.dashboardService.returnUrl.set(null);
     this.router.navigate([`/${role}/login`]);
   }
@@ -169,6 +198,25 @@ export class SidebarComponent {
               { labelKey: 'sidebar.item.students', icon: 'school', route: '/tenant/students' },
               { labelKey: 'sidebar.item.teachers', icon: 'person_outline', route: '/tenant/teachers' },
               { labelKey: 'sidebar.item.groupsClasses', icon: 'groups', route: '/tenant/groups' },
+              { labelKey: 'sidebar.item.rooms', icon: 'rooms', route: '/tenant/rooms' },
+              {
+                labelKey: 'sidebar.item.basicEducation',
+                icon: 'account_tree',
+                children: [
+                  { labelKey: 'sidebar.item.educationalStages', icon: 'account_tree', route: '/tenant/educational-stages' },
+                  { labelKey: 'sidebar.item.grades', icon: 'grades', route: '/tenant/grades' },
+                  { labelKey: 'sidebar.item.subjects', icon: 'menu_book', route: '/tenant/subjects' },
+                ],
+              },
+              {
+                labelKey: 'sidebar.item.universityEducation',
+                icon: 'account_balance',
+                children: [
+                  { labelKey: 'sidebar.item.universities', icon: 'account_balance', route: '/tenant/universities' },
+                  { labelKey: 'sidebar.item.colleges', icon: 'school', route: '/tenant/colleges' },
+                  { labelKey: 'sidebar.item.universitySubjects', icon: 'menu_book', route: '/tenant/university-subjects' },
+                ],
+              },
             ]
           },
           {
@@ -184,7 +232,13 @@ export class SidebarComponent {
             items: [
               { labelKey: 'sidebar.item.billing', icon: 'receipt_long', route: '/tenant/billing' },
               { labelKey: 'sidebar.item.reports', icon: 'bar_chart', route: '/tenant/reports' },
-              { labelKey: 'sidebar.item.settings', icon: 'settings', route: '/tenant/settings' },
+            ]
+          },
+          {
+            titleKey: 'sidebar.section.settings',
+            items: [
+              { labelKey: 'sidebar.item.platformSettings', icon: 'settings', route: '/tenant/settings' },
+              { labelKey: 'sidebar.item.webSettings', icon: 'public', route: '/tenant/web-settings' },
             ]
           },
           {
@@ -192,7 +246,13 @@ export class SidebarComponent {
             items: [
               { labelKey: 'sidebar.item.designSystem', icon: 'palette', route: '/design-system' },
             ]
-          }
+          },
+            {
+                titleKey: 'sidebar.section.users',
+                items: [
+                    { labelKey: 'sidebar.item.users', icon: 'person', route: '/tenant/users' },
+                ]
+            }
         ];
       case 'teacher':
         return [

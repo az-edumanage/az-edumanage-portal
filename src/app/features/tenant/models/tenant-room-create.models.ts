@@ -1,4 +1,4 @@
-export type TenantRoomType = 'Classroom' | 'Laboratory' | 'Virtual' | 'Auditorium';
+export type TenantRoomType = string;
 
 export interface TenantRoomCreatePayload {
   name: string;

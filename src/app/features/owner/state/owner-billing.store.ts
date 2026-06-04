@@ -5,8 +5,6 @@ import { Tab, Invoice } from '../models/owner-billing.models';
 export class OwnerBillingStore {
   readonly activeTab = signal<Tab>('invoices');
   readonly showAdvancedFilters = signal(false);
-  readonly showProofModal = signal(false);
-  readonly selectedInvoice = signal<Invoice | null>(null);
   readonly showRefundModal = signal(false);
   readonly invoiceToRefund = signal<Invoice | null>(null);
 
@@ -20,16 +18,6 @@ export class OwnerBillingStore {
 
   toggleAdvancedFilters(): void {
     this.showAdvancedFilters.update((value) => !value);
-  }
-
-  openProof(invoice: Invoice): void {
-    this.selectedInvoice.set(invoice);
-    this.showProofModal.set(true);
-  }
-
-  closeProof(): void {
-    this.showProofModal.set(false);
-    this.selectedInvoice.set(null);
   }
 
   openRefund(invoice: Invoice): void {

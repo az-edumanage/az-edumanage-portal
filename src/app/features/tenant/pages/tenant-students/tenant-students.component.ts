@@ -21,8 +21,17 @@ export class TenantStudentsComponent {
   readonly showFilterPanel = this.facade.showFilterPanel;
   readonly viewMode = this.facade.viewMode;
   readonly students = this.facade.students;
+  readonly isLoading = this.facade.isLoading;
+  readonly errorMessage = this.facade.errorMessage;
   readonly activeFiltersCount = this.facade.activeFiltersCount;
   readonly filteredStudents = this.facade.filteredStudents;
+  readonly pagedStudents = this.facade.pagedStudents;
+  readonly totalFilteredStudents = this.facade.totalFilteredStudents;
+  readonly totalPages = this.facade.totalPages;
+  readonly pageIndex = this.facade.pageIndex;
+  readonly pageSize = this.facade.pageSize;
+  readonly pageStart = this.facade.pageStart;
+  readonly pageEnd = this.facade.pageEnd;
 
   readonly filterForm = this.fb.group({
     grade: [''],
@@ -31,6 +40,7 @@ export class TenantStudentsComponent {
   });
 
   constructor() {
+    this.facade.loadStudents();
     this.filterForm.valueChanges
       .pipe(startWith(this.filterForm.value), takeUntilDestroyed(this.destroyRef))
       .subscribe((value) => {
@@ -40,6 +50,10 @@ export class TenantStudentsComponent {
 
   toggleFilterPanel(): void {
     this.facade.toggleFilterPanel();
+  }
+
+  setSearchQuery(value: string): void {
+    this.facade.setSearchQuery(value);
   }
 
   clearAllFilters(): void {
@@ -54,5 +68,17 @@ export class TenantStudentsComponent {
       status: '',
       sortBy: 'name',
     });
+  }
+
+  previousPage(): void {
+    this.facade.previousPage();
+  }
+
+  nextPage(): void {
+    this.facade.nextPage();
+  }
+
+  setPageSize(value: string): void {
+    this.facade.setPageSize(Number(value));
   }
 }

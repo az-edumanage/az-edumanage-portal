@@ -13,8 +13,8 @@ export class TenantScheduleStore {
   });
   readonly sessions = this.data.sessions;
 
-  readonly teachers = computed(() => [...new Set(this.sessions().map((session) => session.teacherName))]);
-  readonly rooms = computed(() => [...new Set(this.sessions().map((session) => session.roomName))]);
+  readonly teachers = computed(() => [...new Set(this.sessions().map((session) => session.teacherName).filter(Boolean))]);
+  readonly rooms = computed(() => [...new Set(this.sessions().map((session) => session.roomName).filter(Boolean))]);
 
   readonly activeFiltersCount = computed(() => {
     let count = 0;
@@ -34,4 +34,8 @@ export class TenantScheduleStore {
       return matchesTeacher && matchesRoom && matchesDay;
     });
   });
+
+  loadSessions(): void {
+    this.data.loadSessions().subscribe({ error: () => undefined });
+  }
 }

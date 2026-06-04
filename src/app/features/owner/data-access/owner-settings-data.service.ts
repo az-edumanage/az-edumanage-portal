@@ -19,6 +19,7 @@ export class OwnerSettingsDataService {
   readonly tabs: OwnerSettingsTab[] = [
     { id: 'general', label: 'owner.settings.tab.general' },
     { id: 'subject', label: 'owner.settings.tab.subjectTemplate' },
+    { id: 'country', label: 'owner.settings.tab.country' },
     { id: 'presets', label: 'owner.settings.tab.presetsMethods' },
     { id: 'security', label: 'owner.settings.tab.security' },
     { id: 'roles', label: 'owner.settings.tab.roles' },

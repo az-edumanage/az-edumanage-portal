@@ -1,0 +1,172 @@
+:host {
+  display: block;
+}
+
+.tenant-university-create-page {
+  min-height: calc(100vh - 12rem);
+  display: grid;
+  place-items: start center;
+  padding: var(--space-6);
+}
+
+.tenant-university-create-page--modal {
+  min-height: auto;
+  padding: 0;
+}
+
+.tenant-university-create-modal {
+  width: min(100%, 32rem);
+  display: grid;
+  gap: var(--space-5);
+  border-radius: var(--radius-2xl, 1rem);
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-xl, 0 24px 80px rgb(15 23 42 / 0.22));
+}
+
+.tenant-university-create-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-6) var(--space-4);
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.tenant-university-create-modal-title {
+  font-size: var(--font-size-xl, 1.125rem);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.tenant-university-create-modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-muted);
+  transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+
+.tenant-university-create-modal-close:hover {
+  background: var(--color-bg-muted);
+  color: var(--color-text-primary);
+}
+
+.tenant-university-create-modal-close:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.tenant-university-create-modal-body {
+  display: grid;
+  gap: var(--space-4);
+  padding: 0 var(--space-6);
+}
+
+.tenant-university-create-modal-label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.tenant-university-create-modal-input,
+.tenant-university-create-modal-select,
+.tenant-university-create-modal-textarea {
+  width: 100%;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  background: var(--color-bg-muted);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  transition: box-shadow 0.2s ease;
+}
+
+.tenant-university-create-modal-textarea {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.tenant-university-create-modal-input:focus,
+.tenant-university-create-modal-select:focus,
+.tenant-university-create-modal-textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-action-primary) 30%, transparent);
+}
+
+.tenant-university-create-modal-error {
+  margin-top: 0.375rem;
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+}
+
+.tenant-university-create-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6) var(--space-6);
+}
+
+.tenant-university-create-modal-cancel,
+.tenant-university-create-modal-save {
+  min-height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding-inline: var(--space-4);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.tenant-university-create-modal-cancel {
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+}
+
+.tenant-university-create-modal-cancel:hover {
+  background: var(--color-bg-muted);
+}
+
+.tenant-university-create-modal-save {
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action);
+}
+
+.tenant-university-create-modal-save:hover {
+  background: var(--color-action-primary-hover);
+}
+
+.tenant-university-create-modal-save-icon {
+  font-size: var(--font-size-sm);
+}
+
+.tenant-university-create-modal-save:disabled,
+.tenant-university-create-modal-cancel:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.dark .tenant-university-create-modal,
+.dark .tenant-university-create-modal-head,
+.dark .tenant-university-create-modal-select,
+.dark .tenant-university-create-modal-cancel {
+  border-color: var(--color-border-primary);
+}
+
+@media (max-width: 640px) {
+  .tenant-university-create-page {
+    min-height: auto;
+    padding: 0;
+  }
+
+  .tenant-university-create-modal {
+    width: 100%;
+  }
+}

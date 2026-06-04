@@ -1,95 +1,106 @@
+<header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 transition-colors duration-300 shadow-sm">
+  <div class="flex items-center gap-4">
+    <app-button 
+      variant="ghost" 
+      size="icon" 
+      (click)="toggleSidebar()" 
+      class="!text-slate-500"
+    >
+      <mat-icon>menu</mat-icon>
+    </app-button>
+    
+    @if (pageTitle()) {
+      <h1 class="text-lg font-semibold text-slate-900 dark:text-white hidden sm:block">
+        {{ pageTitle() }}
+      </h1>
+    }
+  </div>
 
-    <header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 transition-colors duration-300 shadow-sm">
-      <!-- Left: Toggle & Title -->
-      <div class="flex items-center gap-4">
-        <app-button 
-          variant="ghost" 
-          size="icon" 
-          (click)="toggleSidebar()" 
-          class="!text-slate-500"
+  <div class="flex items-center gap-3">
+    @if (isImpersonating()) {
+      <div class="hidden xl:flex items-center gap-3 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-200">
+        <div class="flex items-center gap-2">
+          <mat-icon class="!text-base">admin_panel_settings</mat-icon>
+          <span class="font-semibold">Impersonating tenant: {{ impersonation()?.impersonatedTenantName }}</span>
+        </div>
+        <button
+          type="button"
+          class="rounded-full bg-white px-2.5 py-1 font-semibold text-amber-800 transition-colors hover:bg-amber-100 dark:bg-slate-900 dark:text-amber-100 dark:hover:bg-slate-800"
+          (click)="exitImpersonation()"
         >
-          <mat-icon>menu</mat-icon>
-        </app-button>
-        
-        <h1 class="text-lg font-semibold text-slate-900 dark:text-white hidden sm:block">
-          {{ pageTitle() }}
-        </h1>
+          Exit impersonation
+        </button>
       </div>
+    }
 
-	      <!-- Right: Actions -->
-	      <div class="flex items-center gap-3">
-	        <!-- Language Switcher -->
-	        <div class="topbar-language-switch hidden sm:flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
-	          <button
-	            (click)="setLanguage('en')"
-	            class="px-3 py-1 text-xs font-semibold rounded-md transition-all"
-	            [class.bg-white]="language() === 'en'"
-	            [class.text-indigo-600]="language() === 'en'"
-	            [class.shadow-sm]="language() === 'en'"
-	            [class.dark:bg-slate-700]="language() === 'en'"
-	            [class.dark:text-indigo-400]="language() === 'en'"
-	            [class.text-slate-500]="language() !== 'en'"
-	            title="English"
-	          >
-	            EN
-	          </button>
-	          <button
-	            (click)="setLanguage('ar')"
-	            class="px-3 py-1 text-xs font-semibold rounded-md transition-all"
-	            [class.bg-white]="language() === 'ar'"
-	            [class.text-indigo-600]="language() === 'ar'"
-	            [class.shadow-sm]="language() === 'ar'"
-	            [class.dark:bg-slate-700]="language() === 'ar'"
-	            [class.dark:text-indigo-400]="language() === 'ar'"
-	            [class.text-slate-500]="language() !== 'ar'"
-	            title="العربية"
-	          >
-	            AR
-	          </button>
-	        </div>
+    <div class="topbar-language-switch hidden sm:flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+      <button
+        (click)="setLanguage('en')"
+        class="px-3 py-1 text-xs font-semibold rounded-md transition-all"
+        [class.bg-white]="language() === 'en'"
+        [class.text-indigo-600]="language() === 'en'"
+        [class.shadow-sm]="language() === 'en'"
+        [class.dark:bg-slate-700]="language() === 'en'"
+        [class.dark:text-indigo-400]="language() === 'en'"
+        [class.text-slate-500]="language() !== 'en'"
+        title="English"
+      >
+        EN
+      </button>
+      <button
+        (click)="setLanguage('ar')"
+        class="px-3 py-1 text-xs font-semibold rounded-md transition-all"
+        [class.bg-white]="language() === 'ar'"
+        [class.text-indigo-600]="language() === 'ar'"
+        [class.shadow-sm]="language() === 'ar'"
+        [class.dark:bg-slate-700]="language() === 'ar'"
+        [class.dark:text-indigo-400]="language() === 'ar'"
+        [class.text-slate-500]="language() !== 'ar'"
+        title="العربية"
+      >
+        AR
+      </button>
+    </div>
 
-	        <!-- Role Switcher (Demo Only) -->
-	        <div class="hidden md:flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1 mr-4">
-	          @for (role of roles; track role) {
-	            <button 
-	              (click)="setRole(role)"
-	              class="px-3 py-1 text-xs font-medium rounded-md transition-all"
-	              [class.capitalize]="language() !== 'ar'"
-	              [class.bg-white]="currentRole() === role"
-	              [class.text-indigo-600]="currentRole() === role"
-	              [class.shadow-sm]="currentRole() === role"
-	              [class.dark:bg-slate-700]="currentRole() === role"
-	              [class.dark:text-indigo-400]="currentRole() === role"
-	              [class.text-slate-500]="currentRole() !== role"
-	            >
-	              {{ roleLabel(role) }}
-	            </button>
-	          }
-	        </div>
-
-        <!-- Theme Toggle -->
-	        <app-button 
-	          variant="ghost" 
-	          size="icon" 
-	          (click)="toggleTheme()" 
-	          class="!text-slate-500 rounded-full"
-	          [title]="theme() === 'dark' ? t('topbar.theme.switchToLight') : t('topbar.theme.switchToDark')"
-	        >
-          <mat-icon>{{ theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
-        </app-button>
-
-        <!-- Notifications -->
-        <div class="relative">
-          <app-button variant="ghost" size="icon" class="!text-slate-500 rounded-full">
-            <mat-icon>notifications</mat-icon>
-          </app-button>
-          <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
-        </div>
-
-        <!-- Profile -->
-        <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-sm border border-indigo-200 dark:border-indigo-800">
-          {{ currentRole().substring(0,1).toUpperCase() }}
-        </div>
+    @if (showWorkspaceSwitcher()) {
+      <div class="hidden md:flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1 mr-4">
+        @for (role of roles; track role) {
+          <button 
+            (click)="setRole(role)"
+            class="px-3 py-1 text-xs font-medium rounded-md transition-all"
+            [class.capitalize]="language() !== 'ar'"
+            [class.bg-white]="currentRole() === role"
+            [class.text-indigo-600]="currentRole() === role"
+            [class.shadow-sm]="currentRole() === role"
+            [class.dark:bg-slate-700]="currentRole() === role"
+            [class.dark:text-indigo-400]="currentRole() === role"
+            [class.text-slate-500]="currentRole() !== role"
+          >
+            {{ roleLabel(role) }}
+          </button>
+        }
       </div>
-    </header>
-  
+    }
+
+    <app-button 
+      variant="ghost" 
+      size="icon" 
+      (click)="toggleTheme()" 
+      class="!text-slate-500 rounded-full"
+      [title]="theme() === 'dark' ? t('topbar.theme.switchToLight') : t('topbar.theme.switchToDark')"
+    >
+      <mat-icon>{{ theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
+    </app-button>
+
+    <div class="relative">
+      <app-button variant="ghost" size="icon" class="!text-slate-500 rounded-full">
+        <mat-icon>notifications</mat-icon>
+      </app-button>
+      <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+    </div>
+
+    <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-sm border border-indigo-200 dark:border-indigo-800">
+      {{ profileInitial() }}
+    </div>
+  </div>
+</header>

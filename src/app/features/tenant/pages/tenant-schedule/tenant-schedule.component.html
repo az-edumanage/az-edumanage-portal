@@ -5,47 +5,219 @@
           <h2 class="tenant-schedule-title">Academic Schedule</h2>
           <p class="tenant-schedule-subtitle">Weekly timetable for all groups and facilities.</p>
         </div>
-        <div class="tenant-schedule-header-actions">
-          <button class="tenant-schedule-btn tenant-schedule-btn--secondary">
-            <mat-icon class="text-sm">print</mat-icon>
-            Print Schedule
-          </button>
-          <button class="tenant-schedule-btn tenant-schedule-btn--primary">
-            <mat-icon class="text-sm">add</mat-icon>
-            Add Session
-          </button>
-        </div>
       </div>
 
       <!-- Filters -->
       <div class="tenant-schedule-filters-shell">
+        <div class="tenant-schedule-filters-head">
+          <div class="tenant-schedule-filters-title-wrap">
+            <span class="tenant-schedule-filters-icon" aria-hidden="true">
+              <mat-icon>tune</mat-icon>
+            </span>
+            <div>
+              <h3 class="tenant-schedule-filters-title">Schedule Filters</h3>
+              <p class="tenant-schedule-filters-subtitle">Refine the timetable by teacher, room, or day.</p>
+            </div>
+          </div>
+          @if (activeFiltersCount() > 0) {
+            <span class="tenant-schedule-active-count">{{ activeFiltersCount() }} active</span>
+          }
+        </div>
         <div class="tenant-schedule-filters" [formGroup]="filterForm">
           <div class="tenant-schedule-filter-field">
-            <label for="filter-teacher" class="tenant-schedule-filter-label">Filter by Teacher</label>
-            <select id="filter-teacher" formControlName="teacher" class="tenant-schedule-filter-select">
-              <option value="">All Teachers</option>
-              @for (teacher of teachers(); track teacher) {
-                <option [value]="teacher">{{ teacher }}</option>
+            <label for="filter-teacher" class="tenant-schedule-filter-label">Teacher</label>
+            <div class="tenant-schedule-select-wrap" (click)="$event.stopPropagation()">
+              <mat-icon class="tenant-schedule-filter-leading-icon">person_outline</mat-icon>
+              <button
+                id="filter-teacher"
+                type="button"
+                class="tenant-schedule-filter-select tenant-schedule-filter-trigger"
+                [class.is-open]="openFilter === 'teacher'"
+                [attr.aria-expanded]="openFilter === 'teacher'"
+                aria-haspopup="listbox"
+                aria-controls="filter-teacher-panel"
+                (click)="toggleFilterPanel('teacher')"
+              >
+                <span>{{ getSelectedFilterLabel('teacher', 'All Teachers') }}</span>
+              </button>
+              <mat-icon class="tenant-schedule-filter-chevron">expand_more</mat-icon>
+              @if (openFilter === 'teacher') {
+                <div id="filter-teacher-panel" class="tenant-schedule-filter-panel" role="listbox" aria-label="Teacher filter">
+                  <div class="tenant-schedule-filter-search">
+                    <mat-icon>search</mat-icon>
+                    <input
+                      type="search"
+                      placeholder="Search teachers"
+                      [value]="filterSearch.teacher"
+                      (input)="updateFilterSearch('teacher', $any($event.target).value)"
+                      (click)="$event.stopPropagation()"
+                    />
+                  </div>
+                  <div class="tenant-schedule-filter-options">
+                    <button
+                      type="button"
+                      class="tenant-schedule-filter-option"
+                      [class.is-selected]="isFilterSelected('teacher', '')"
+                      role="option"
+                      [attr.aria-selected]="isFilterSelected('teacher', '')"
+                      (click)="selectFilterValue('teacher', '')"
+                    >
+                      <span>All Teachers</span>
+                      @if (isFilterSelected('teacher', '')) {
+                        <mat-icon>check</mat-icon>
+                      }
+                    </button>
+                    @for (teacher of filteredFilterOptions('teacher'); track teacher) {
+                      <button
+                        type="button"
+                        class="tenant-schedule-filter-option"
+                        [class.is-selected]="isFilterSelected('teacher', teacher)"
+                        role="option"
+                        [attr.aria-selected]="isFilterSelected('teacher', teacher)"
+                        (click)="selectFilterValue('teacher', teacher)"
+                      >
+                        <span>{{ teacher }}</span>
+                        @if (isFilterSelected('teacher', teacher)) {
+                          <mat-icon>check</mat-icon>
+                        }
+                      </button>
+                    } @empty {
+                      <div class="tenant-schedule-filter-empty">No teachers found.</div>
+                    }
+                  </div>
+                </div>
               }
-            </select>
+            </div>
           </div>
           <div class="tenant-schedule-filter-field">
-            <label for="filter-room" class="tenant-schedule-filter-label">Filter by Room</label>
-            <select id="filter-room" formControlName="room" class="tenant-schedule-filter-select">
-              <option value="">All Rooms</option>
-              @for (room of rooms(); track room) {
-                <option [value]="room">{{ room }}</option>
+            <label for="filter-room" class="tenant-schedule-filter-label">Room</label>
+            <div class="tenant-schedule-select-wrap" (click)="$event.stopPropagation()">
+              <mat-icon class="tenant-schedule-filter-leading-icon">meeting_room</mat-icon>
+              <button
+                id="filter-room"
+                type="button"
+                class="tenant-schedule-filter-select tenant-schedule-filter-trigger"
+                [class.is-open]="openFilter === 'room'"
+                [attr.aria-expanded]="openFilter === 'room'"
+                aria-haspopup="listbox"
+                aria-controls="filter-room-panel"
+                (click)="toggleFilterPanel('room')"
+              >
+                <span>{{ getSelectedFilterLabel('room', 'All Rooms') }}</span>
+              </button>
+              <mat-icon class="tenant-schedule-filter-chevron">expand_more</mat-icon>
+              @if (openFilter === 'room') {
+                <div id="filter-room-panel" class="tenant-schedule-filter-panel" role="listbox" aria-label="Room filter">
+                  <div class="tenant-schedule-filter-search">
+                    <mat-icon>search</mat-icon>
+                    <input
+                      type="search"
+                      placeholder="Search rooms"
+                      [value]="filterSearch.room"
+                      (input)="updateFilterSearch('room', $any($event.target).value)"
+                      (click)="$event.stopPropagation()"
+                    />
+                  </div>
+                  <div class="tenant-schedule-filter-options">
+                    <button
+                      type="button"
+                      class="tenant-schedule-filter-option"
+                      [class.is-selected]="isFilterSelected('room', '')"
+                      role="option"
+                      [attr.aria-selected]="isFilterSelected('room', '')"
+                      (click)="selectFilterValue('room', '')"
+                    >
+                      <span>All Rooms</span>
+                      @if (isFilterSelected('room', '')) {
+                        <mat-icon>check</mat-icon>
+                      }
+                    </button>
+                    @for (room of filteredFilterOptions('room'); track room) {
+                      <button
+                        type="button"
+                        class="tenant-schedule-filter-option"
+                        [class.is-selected]="isFilterSelected('room', room)"
+                        role="option"
+                        [attr.aria-selected]="isFilterSelected('room', room)"
+                        (click)="selectFilterValue('room', room)"
+                      >
+                        <span>{{ room }}</span>
+                        @if (isFilterSelected('room', room)) {
+                          <mat-icon>check</mat-icon>
+                        }
+                      </button>
+                    } @empty {
+                      <div class="tenant-schedule-filter-empty">No rooms found.</div>
+                    }
+                  </div>
+                </div>
               }
-            </select>
+            </div>
           </div>
           <div class="tenant-schedule-filter-field">
-            <label for="filter-day" class="tenant-schedule-filter-label">Filter by Day</label>
-            <select id="filter-day" formControlName="day" class="tenant-schedule-filter-select">
-              <option value="">Full Week</option>
-              @for (day of days; track day) {
-                <option [value]="day">{{ day }}</option>
+            <label for="filter-day" class="tenant-schedule-filter-label">Day</label>
+            <div class="tenant-schedule-select-wrap" (click)="$event.stopPropagation()">
+              <mat-icon class="tenant-schedule-filter-leading-icon">calendar_today</mat-icon>
+              <button
+                id="filter-day"
+                type="button"
+                class="tenant-schedule-filter-select tenant-schedule-filter-trigger"
+                [class.is-open]="openFilter === 'day'"
+                [attr.aria-expanded]="openFilter === 'day'"
+                aria-haspopup="listbox"
+                aria-controls="filter-day-panel"
+                (click)="toggleFilterPanel('day')"
+              >
+                <span>{{ getSelectedFilterLabel('day', 'Full Week') }}</span>
+              </button>
+              <mat-icon class="tenant-schedule-filter-chevron">expand_more</mat-icon>
+              @if (openFilter === 'day') {
+                <div id="filter-day-panel" class="tenant-schedule-filter-panel" role="listbox" aria-label="Day filter">
+                  <div class="tenant-schedule-filter-search">
+                    <mat-icon>search</mat-icon>
+                    <input
+                      type="search"
+                      placeholder="Search days"
+                      [value]="filterSearch.day"
+                      (input)="updateFilterSearch('day', $any($event.target).value)"
+                      (click)="$event.stopPropagation()"
+                    />
+                  </div>
+                  <div class="tenant-schedule-filter-options">
+                    <button
+                      type="button"
+                      class="tenant-schedule-filter-option"
+                      [class.is-selected]="isFilterSelected('day', '')"
+                      role="option"
+                      [attr.aria-selected]="isFilterSelected('day', '')"
+                      (click)="selectFilterValue('day', '')"
+                    >
+                      <span>Full Week</span>
+                      @if (isFilterSelected('day', '')) {
+                        <mat-icon>check</mat-icon>
+                      }
+                    </button>
+                    @for (day of filteredFilterOptions('day'); track day) {
+                      <button
+                        type="button"
+                        class="tenant-schedule-filter-option"
+                        [class.is-selected]="isFilterSelected('day', day)"
+                        role="option"
+                        [attr.aria-selected]="isFilterSelected('day', day)"
+                        (click)="selectFilterValue('day', day)"
+                      >
+                        <span>{{ day }}</span>
+                        @if (isFilterSelected('day', day)) {
+                          <mat-icon>check</mat-icon>
+                        }
+                      </button>
+                    } @empty {
+                      <div class="tenant-schedule-filter-empty">No days found.</div>
+                    }
+                  </div>
+                </div>
               }
-            </select>
+            </div>
           </div>
           @if (activeFiltersCount() > 0) {
             <button (click)="resetFilters()" class="tenant-schedule-reset-btn">
@@ -75,30 +247,71 @@
               @for (time of timeSlots; track time) {
                 <div class="tenant-schedule-grid-row">
                   <div class="tenant-schedule-grid-time">
-                    {{ time }}
+                    {{ formatScheduleTime(time) }}
                   </div>
                   @for (day of days; track day) {
-                    <div class="tenant-schedule-grid-cell">
-                      @for (session of getSessionsFor(day, time); track session.id) {
-                        <div 
-                          [class]="session.color"
-                          class="tenant-schedule-session group/session"
-                        >
-                          <div class="tenant-schedule-session-head">
-                            <span class="tenant-schedule-session-time">{{ session.startTime }}</span>
-                            <button class="tenant-schedule-session-menu">
-                              <mat-icon class="text-[10px]">more_vert</mat-icon>
-                            </button>
-                          </div>
-                          <div class="tenant-schedule-session-group">{{ session.groupName }}</div>
-                          <div class="tenant-schedule-session-meta">
-                            <mat-icon class="text-[10px]">person</mat-icon>
-                            {{ session.teacherName }}
-                          </div>
-                          <div class="tenant-schedule-session-meta">
-                            <mat-icon class="text-[10px]">location_on</mat-icon>
-                            {{ session.roomName }}
-                          </div>
+                    <div
+                      class="tenant-schedule-grid-cell"
+                      role="button"
+                      tabindex="0"
+                      [attr.aria-label]="'Open schedule for ' + day + ' at ' + formatScheduleTime(time)"
+                      (click)="openScheduleCell(day, time)"
+                      (keydown)="activateScheduleCell($event, day, time)"
+                    >
+                      @let sessions = getSessionsFor(day, time);
+                      @if (sessions.length > 0) {
+                        <div class="tenant-schedule-session-cluster" [attr.aria-label]="sessions.length + ' scheduled groups'">
+                          @for (session of sessions.slice(0, 3); track session.id; let chipIndex = $index) {
+                            <span class="tenant-schedule-session-chip-wrap">
+                              <span
+                                [class]="session.color"
+                                class="tenant-schedule-session-chip group/session"
+                                aria-hidden="true"
+                              >
+                                {{ getSessionChipLabel(session.groupName, chipIndex) }}
+                              </span>
+                              <div class="tenant-schedule-cell-hover-card tenant-schedule-cell-hover-card--single" role="presentation">
+                                <div class="tenant-schedule-cell-hover-head">
+                                  <div>
+                                    <div class="tenant-schedule-cell-hover-title">{{ session.groupName }}</div>
+                                    <div class="tenant-schedule-cell-hover-subtitle">Scheduled group</div>
+                                  </div>
+                                  <div class="tenant-schedule-cell-hover-meta">
+                                    <span>{{ formatSessionTimeRange(session) }}</span>
+                                    <strong>{{ day }}</strong>
+                                  </div>
+                                </div>
+                                <div class="tenant-schedule-cell-hover-stack tenant-schedule-cell-hover-stack--single">
+                                  <article [class]="session.color" class="tenant-schedule-detail-card tenant-schedule-detail-card--hover group/session">
+                                    <div class="tenant-schedule-detail-card-head">
+                                      <span class="tenant-schedule-detail-card-time">{{ formatSessionTimeRange(session) }}</span>
+                                    </div>
+                                    <div class="tenant-schedule-detail-card-group">{{ session.groupName }}</div>
+                                    <div class="tenant-schedule-detail-card-meta">
+                                      <mat-icon class="text-[10px]">person</mat-icon>
+                                      {{ session.teacherName }}
+                                    </div>
+                                    <div class="tenant-schedule-detail-card-meta">
+                                      <mat-icon class="text-[10px]">location_on</mat-icon>
+                                      {{ session.roomName }}
+                                    </div>
+                                    <div class="tenant-schedule-detail-card-meta">
+                                      <mat-icon class="text-[10px]">schedule</mat-icon>
+                                      {{ formatSessionDuration(session) }}
+                                    </div>
+                                  </article>
+                                </div>
+                              </div>
+                            </span>
+                          }
+                          @if (sessions.length > 3) {
+                            <span
+                              class="tenant-schedule-session-chip tenant-schedule-session-chip--more"
+                              aria-hidden="true"
+                            >
+                              +{{ sessions.length - 3 }}
+                            </span>
+                          }
                         </div>
                       }
                     </div>
@@ -109,5 +322,74 @@
           </div>
         </div>
       </div>
+
+      @if (selectedCellDay && selectedCellTime) {
+        <div class="tenant-schedule-cell-screen-backdrop" (click)="closeScheduleCell()">
+          <section
+            class="tenant-schedule-cell-screen"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="tenant-schedule-cell-title"
+            (click)="$event.stopPropagation()"
+          >
+            <div class="tenant-schedule-cell-screen-head">
+              <div>
+                <h3 id="tenant-schedule-cell-title" class="tenant-schedule-cell-screen-title">Schedule</h3>
+                <p class="tenant-schedule-cell-screen-subtitle">{{ selectedCellSessions().length }} groups scheduled</p>
+              </div>
+              <button type="button" class="tenant-schedule-cell-screen-close" (click)="closeScheduleCell()" aria-label="Close schedule">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <div class="tenant-schedule-cell-screen-meta">
+              <div class="tenant-schedule-cell-screen-meta-item">
+                <span>Hour</span>
+                <strong>{{ formatScheduleTime(selectedCellTime) }}</strong>
+              </div>
+              <div class="tenant-schedule-cell-screen-meta-item">
+                <span>Day</span>
+                <strong>{{ selectedCellDay }}</strong>
+              </div>
+            </div>
+
+            <div class="tenant-schedule-cell-card-stack">
+              @for (session of selectedCellSessions(); track session.id) {
+                <article
+                  [class]="session.color"
+                  class="tenant-schedule-detail-card group/session"
+                  role="button"
+                  tabindex="0"
+                  [attr.aria-label]="'Open group details for ' + session.groupName"
+                  (click)="openGroupDetails(session)"
+                  (keydown)="activateGroupDetails($event, session)"
+                >
+                  <div class="tenant-schedule-detail-card-head">
+                    <span class="tenant-schedule-detail-card-time">{{ formatSessionTimeRange(session) }}</span>
+                    <button type="button" class="tenant-schedule-detail-card-menu" aria-label="Group options" (click)="$event.stopPropagation()">
+                      <mat-icon class="text-[10px]">more_vert</mat-icon>
+                    </button>
+                  </div>
+                  <div class="tenant-schedule-detail-card-group">{{ session.groupName }}</div>
+                  <div class="tenant-schedule-detail-card-meta">
+                    <mat-icon class="text-[10px]">person</mat-icon>
+                    {{ session.teacherName }}
+                  </div>
+                  <div class="tenant-schedule-detail-card-meta">
+                    <mat-icon class="text-[10px]">location_on</mat-icon>
+                    {{ session.roomName }}
+                  </div>
+                  <div class="tenant-schedule-detail-card-meta">
+                    <mat-icon class="text-[10px]">schedule</mat-icon>
+                    {{ formatSessionDuration(session) }}
+                  </div>
+                </article>
+              } @empty {
+                <div class="tenant-schedule-cell-empty">No groups scheduled for this cell.</div>
+              }
+            </div>
+          </section>
+        </div>
+      }
 </div>
   

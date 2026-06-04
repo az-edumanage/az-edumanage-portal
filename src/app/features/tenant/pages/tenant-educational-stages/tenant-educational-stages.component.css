@@ -1,0 +1,537 @@
+:host {
+  display: block;
+}
+
+.tenant-educational-stages-page {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.tenant-educational-stages-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.tenant-educational-stages-title {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.tenant-educational-stages-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.tenant-educational-stages-add-btn {
+  height: 2.5rem;
+  padding-inline: var(--space-4);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-lg);
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  box-shadow: var(--shadow-lg, 0 10px 15px -3px rgb(79 70 229 / 0.2));
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.tenant-educational-stages-filter-shell {
+  padding: var(--space-4);
+  border-radius: var(--radius-2xl, 1rem);
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.tenant-educational-stages-filter-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.tenant-educational-stages-search {
+  width: 100%;
+  flex: 1;
+  position: relative;
+}
+
+.tenant-educational-stages-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.tenant-educational-stages-search-input {
+  width: 100%;
+  padding: var(--space-2) var(--space-4) var(--space-2) 2.5rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-muted);
+  font-size: var(--font-size-sm);
+  transition: box-shadow 0.2s ease;
+}
+
+.tenant-educational-stages-search-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-action-primary) 30%, transparent);
+}
+
+.tenant-educational-stages-filter-actions {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.tenant-educational-stages-advanced-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  white-space: nowrap;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  transition: background-color 0.2s ease;
+}
+
+.tenant-educational-stages-advanced-filter-btn:hover {
+  background: var(--color-bg-muted);
+}
+
+.tenant-educational-stages-filter-count {
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding-inline: 0.25rem;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.625rem;
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action);
+  box-shadow: var(--shadow-sm);
+}
+
+.tenant-educational-stages-filter-dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 50;
+  margin-top: var(--space-2);
+  width: 18rem;
+  padding: 1.25rem;
+  border-radius: var(--radius-2xl, 1rem);
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-xl, 0 20px 25px -5px rgb(15 23 42 / 0.12));
+  display: grid;
+  gap: 1.25rem;
+}
+
+.tenant-educational-stages-filter-dropdown-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.tenant-educational-stages-filter-dropdown-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.tenant-educational-stages-filter-reset {
+  font-size: 0.625rem;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-danger);
+}
+
+.tenant-educational-stages-filter-fields {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.tenant-educational-stages-filter-label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 0.625rem;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.tenant-educational-stages-filter-select {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-muted);
+  font-size: var(--font-size-sm);
+}
+
+.tenant-educational-stages-filter-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-action-primary) 30%, transparent);
+}
+
+.tenant-educational-stages-filter-apply {
+  width: 100%;
+  padding-block: var(--space-2);
+  border-radius: var(--radius-lg);
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+
+.tenant-educational-stages-filter-apply:hover {
+  background: var(--color-action-primary-hover);
+}
+
+.tenant-educational-stages-reset-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-xl);
+  white-space: nowrap;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-danger);
+}
+
+.tenant-educational-stages-table-shell {
+  overflow: hidden;
+  border-radius: var(--radius-2xl, 1rem);
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.tenant-educational-stages-table-scroll {
+  overflow-x: auto;
+}
+
+.tenant-educational-stages-table {
+  width: 100%;
+  text-align: left;
+  font-size: var(--font-size-sm);
+}
+
+.tenant-educational-stages-table-head {
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border-primary);
+  background: var(--color-bg-muted);
+}
+
+.tenant-educational-stages-th {
+  padding: var(--space-4) var(--space-6);
+  font-size: 0.625rem;
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.tenant-educational-stages-th--center {
+  text-align: center;
+}
+
+.tenant-educational-stages-th--actions {
+  text-align: right;
+}
+
+.tenant-educational-stages-tr {
+  border-top: 1px solid var(--color-border-primary);
+  transition: background-color 0.2s ease;
+}
+
+.tenant-educational-stages-tr:hover {
+  background: var(--color-bg-muted);
+}
+
+.tenant-educational-stages-td {
+  padding: var(--space-4) var(--space-6);
+  vertical-align: middle;
+}
+
+.tenant-educational-stages-td--center {
+  text-align: center;
+}
+
+.tenant-educational-stages-td--actions {
+  text-align: right;
+}
+
+.tenant-educational-stages-row-name-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.tenant-educational-stages-row-icon-wrap {
+  padding: 0.375rem;
+  border-radius: var(--radius-lg);
+  color: var(--color-action-primary);
+  background: color-mix(in srgb, var(--color-action-primary) 10%, transparent);
+}
+
+.tenant-educational-stages-row-name {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.tenant-educational-stages-row-description {
+  margin-top: 0.125rem;
+  max-width: 28rem;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.tenant-educational-stages-country {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.tenant-educational-stages-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--color-text-muted);
+}
+
+.tenant-educational-stages-count span {
+  font-weight: var(--font-weight-medium);
+}
+
+.tenant-educational-stages-row-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.tenant-educational-stages-row-btn {
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-muted);
+}
+
+.tenant-educational-stages-row-btn--edit {
+  color: var(--color-action-primary);
+}
+
+.tenant-educational-stages-row-btn--delete {
+  color: var(--color-danger);
+}
+
+.tenant-educational-stages-empty {
+  padding: 3rem;
+  text-align: center;
+  border-radius: var(--radius-2xl, 1rem);
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-card);
+}
+
+.tenant-educational-stages-empty-icon-wrap {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto var(--space-4);
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-muted);
+}
+
+.tenant-educational-stages-empty-title {
+  font-size: var(--font-size-xl, 1.125rem);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.tenant-educational-stages-empty-text {
+  max-width: 20rem;
+  margin: 0.25rem auto 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.tenant-educational-stages-empty-btn {
+  margin-top: var(--space-6);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.tenant-educational-stages-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: var(--space-6);
+  background: color-mix(in srgb, var(--color-text-primary) 58%, transparent);
+  backdrop-filter: blur(4px);
+}
+
+.tenant-educational-stages-modal {
+  width: min(100%, 32rem);
+  display: grid;
+  gap: var(--space-5);
+  border-radius: var(--radius-2xl, 1rem);
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-xl, 0 24px 80px rgb(15 23 42 / 0.22));
+}
+
+.tenant-educational-stages-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-6) var(--space-4);
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.tenant-educational-stages-modal-title {
+  font-size: var(--font-size-xl, 1.125rem);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.tenant-educational-stages-modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-muted);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.tenant-educational-stages-modal-body {
+  display: grid;
+  gap: var(--space-4);
+  padding: 0 var(--space-6);
+}
+
+.tenant-educational-stages-modal-label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.tenant-educational-stages-modal-input,
+.tenant-educational-stages-modal-textarea,
+.tenant-educational-stages-modal-select {
+  width: 100%;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  background: var(--color-bg-muted);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  transition: box-shadow 0.2s ease;
+}
+
+.tenant-educational-stages-modal-textarea {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.tenant-educational-stages-modal-input:focus,
+.tenant-educational-stages-modal-textarea:focus,
+.tenant-educational-stages-modal-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-action-primary) 30%, transparent);
+}
+
+.tenant-educational-stages-modal-error {
+  margin-top: 0.375rem;
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+}
+
+.tenant-educational-stages-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6) var(--space-6);
+}
+
+.tenant-educational-stages-modal-cancel,
+.tenant-educational-stages-modal-save {
+  min-height: 2.5rem;
+  padding-inline: var(--space-4);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.tenant-educational-stages-modal-cancel {
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+}
+
+.tenant-educational-stages-modal-save {
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action);
+}
+
+.tenant-educational-stages-modal-save:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.dark .tenant-educational-stages-filter-shell,
+.dark .tenant-educational-stages-advanced-filter-btn,
+.dark .tenant-educational-stages-filter-dropdown,
+.dark .tenant-educational-stages-filter-dropdown-head,
+.dark .tenant-educational-stages-filter-select,
+.dark .tenant-educational-stages-table-shell,
+.dark .tenant-educational-stages-table-head,
+.dark .tenant-educational-stages-tr,
+.dark .tenant-educational-stages-empty,
+.dark .tenant-educational-stages-modal,
+.dark .tenant-educational-stages-modal-head,
+.dark .tenant-educational-stages-modal-select,
+.dark .tenant-educational-stages-modal-cancel {
+  border-color: var(--color-border-primary);
+}
+
+@media (min-width: 768px) {
+  .tenant-educational-stages-header,
+  .tenant-educational-stages-filter-row {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .tenant-educational-stages-filter-actions {
+    width: auto;
+  }
+}

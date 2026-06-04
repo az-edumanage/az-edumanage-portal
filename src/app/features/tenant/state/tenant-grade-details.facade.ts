@@ -6,9 +6,10 @@ export class TenantGradeDetailsFacade {
   private readonly store = inject(TenantGradeDetailsStore);
 
   readonly grade = this.store.grade;
-  readonly groups = this.store.groups;
+  readonly loading = this.store.loading;
+  readonly loadError = this.store.loadError;
 
-  loadGrade(id: string | null): void {
-    this.store.loadGrade(id);
+  loadGrade(id: string | null): Promise<void> {
+    return this.store.loadGrade(id);
   }
 }

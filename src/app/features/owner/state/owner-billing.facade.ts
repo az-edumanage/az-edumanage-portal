@@ -1,33 +1,39 @@
 import { Injectable, inject } from '@angular/core';
 import { Invoice, Tab } from '../models/owner-billing.models';
 import { OwnerBillingStore } from './owner-billing.store';
-import { OwnerBillingDataService } from '../data-access/owner-billing-data.service';
+import { OwnerBillingService } from '../data-access/owner-billing.service';
 
 @Injectable({ providedIn: 'root' })
 export class OwnerBillingFacade {
   private readonly store = inject(OwnerBillingStore);
-  private readonly data = inject(OwnerBillingDataService);
+  private readonly billing = inject(OwnerBillingService);
 
   readonly activeTab = this.store.activeTab;
   readonly showAdvancedFilters = this.store.showAdvancedFilters;
-  readonly showProofModal = this.store.showProofModal;
-  readonly selectedInvoice = this.store.selectedInvoice;
   readonly showRefundModal = this.store.showRefundModal;
   readonly invoiceToRefund = this.store.invoiceToRefund;
 
-  readonly tenantFilter = this.data.tenantFilter;
-  readonly searchQuery = this.data.searchQuery;
-  readonly filterStatus = this.data.filterStatus;
-  readonly filterMinAmount = this.data.filterMinAmount;
-  readonly filterMaxAmount = this.data.filterMaxAmount;
+  readonly tenantFilter = this.billing.tenantFilter;
+  readonly searchQuery = this.billing.searchQuery;
+  readonly filterStatus = this.billing.filterStatus;
+  readonly filterMinAmount = this.billing.filterMinAmount;
+  readonly filterMaxAmount = this.billing.filterMaxAmount;
 
-  readonly isFiltered = this.data.isFiltered;
-  readonly maxRevenue = this.data.maxRevenue;
-  readonly monthlyReports = this.data.monthlyReports;
-  readonly filteredInvoices = this.data.filteredInvoices;
-  readonly filteredPayments = this.data.filteredPayments;
-  readonly filteredFailedPayments = this.data.filteredFailedPayments;
-  readonly filteredRefunds = this.data.filteredRefunds;
+  readonly loading = this.billing.loading;
+  readonly loadError = this.billing.loadError;
+  readonly isFiltered = this.billing.isFiltered;
+  readonly maxRevenue = this.billing.maxRevenue;
+  readonly monthlyReports = this.billing.monthlyReports;
+  readonly invoices = this.billing.filteredInvoices;
+  readonly filteredInvoices = this.billing.filteredInvoices;
+  readonly filteredPayments = this.billing.filteredPayments;
+  readonly filteredFailedPayments = this.billing.filteredFailedPayments;
+  readonly filteredRefunds = this.billing.filteredRefunds;
+  readonly manualPayPendingInvoiceId = this.billing.manualPayPendingInvoiceId;
+
+  loadInvoices(): Promise<void> {
+    return this.billing.loadInvoices();
+  }
 
   setActiveTab(tab: Tab): void {
     this.store.setActiveTab(tab);
@@ -42,55 +48,39 @@ export class OwnerBillingFacade {
   }
 
   setSearchQuery(query: string): void {
-    this.data.searchQuery.set(query);
+    this.billing.searchQuery.set(query);
   }
 
   setFilterStatus(status: string): void {
-    this.data.filterStatus.set(status);
+    this.billing.filterStatus.set(status);
   }
 
   setFilterMinAmount(value: number | null): void {
-    this.data.filterMinAmount.set(value);
+    this.billing.filterMinAmount.set(value);
   }
 
   setFilterMaxAmount(value: number | null): void {
-    this.data.filterMaxAmount.set(value);
+    this.billing.filterMaxAmount.set(value);
   }
 
   clearTenantFilter(): void {
-    this.data.setTenantFilter(null);
+    this.billing.setTenantFilter(null);
   }
 
   setTenantFilter(tenantId: string | null): void {
-    this.data.setTenantFilter(tenantId);
+    this.billing.setTenantFilter(tenantId);
   }
 
   resetFilters(): void {
-    this.data.resetFilters();
+    this.billing.resetFilters();
   }
 
   generateReport(): void {
-    this.data.generateReport();
+    this.billing.generateReport();
   }
 
-  openProof(invoice: Invoice): void {
-    this.store.openProof(invoice);
-  }
-
-  closeProof(): void {
-    this.store.closeProof();
-  }
-
-  confirmPayment(): void {
-    const invoice = this.store.selectedInvoice();
-    if (invoice) {
-      this.data.confirmPayment(invoice.id);
-    }
-    this.store.closeProof();
-  }
-
-  rejectProof(): void {
-    this.store.closeProof();
+  manualPayInvoice(invoice: Invoice): Promise<void> {
+    return this.billing.manualPayInvoice(invoice);
   }
 
   openRefund(invoice: Invoice): void {
@@ -104,7 +94,7 @@ export class OwnerBillingFacade {
   confirmRefund(): void {
     const invoice = this.store.invoiceToRefund();
     if (invoice) {
-      this.data.processRefund(invoice);
+      this.billing.processRefund(invoice);
     }
     this.store.closeRefund();
   }
