@@ -43,13 +43,13 @@
         <p>Use the barcode scanner or manual control panel to confirm current group attendance by hour slot.</p>
       </div>
 
-      <div class="attendance-hour-card" aria-label="Simulated hour slot">
+      <div class="attendance-hour-card" aria-label="Current Egypt attendance clock">
         <div class="attendance-hour-icon" aria-hidden="true">
           <mat-icon>schedule</mat-icon>
         </div>
         <div>
-          <span>Simulated Hour Slot</span>
-          <strong>{{ selectedTimeSlot }}</strong>
+          <span>Egypt Attendance Clock</span>
+          <strong>{{ attendanceClock.displayTime }}</strong>
         </div>
         <button type="button">
           <mat-icon>sync</mat-icon>
@@ -98,7 +98,7 @@
           </header>
           <p>Choose any hourly slot to view active classroom study schedules.</p>
           <div class="time-slot-grid">
-            @for (slot of timeSlots; track slot) {
+            @for (slot of timeSlots; track slot.time) {
               <button
                 type="button"
                 [class.time-slot-active]="slot.time === selectedTimeSlot"
@@ -122,8 +122,8 @@
             <span>Currently Academic Classes</span>
             <p>Current lesson classes</p>
             <div>
-              <strong>2</strong>
-              <small>Scheduled At {{ selectedTimeSlot }}</small>
+              <strong>{{ selectedTimeSlotGroupCount }}</strong>
+              <small>Scheduled At {{ selectedTimeSlotLabel }}</small>
             </div>
           </article>
 
