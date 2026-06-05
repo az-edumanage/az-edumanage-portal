@@ -12,6 +12,8 @@ export class TenantGroupDetailsStore {
   readonly students = signal<GroupStudent[]>([]);
   readonly isLoading = signal(false);
   readonly error = signal<string | null>(null);
+  readonly exitStudentError = signal<string | null>(null);
+  readonly exitingStudentId = signal<string | null>(null);
   readonly avgAttendanceLabel = computed(() => this.formatRate(this.group()?.avgAttendanceRate));
   readonly absenceRateLabel = computed(() => this.formatRate(this.group()?.absenceRate));
   readonly monthlyRevenueLabel = computed(() => {
@@ -31,6 +33,7 @@ export class TenantGroupDetailsStore {
   loadGroup(id: string | null): void {
     this.isLoading.set(true);
     this.error.set(null);
+    this.exitStudentError.set(null);
     this.group.set(null);
     this.students.set([]);
     this.selectedStudent.set(null);
@@ -49,10 +52,44 @@ export class TenantGroupDetailsStore {
     });
   }
 
+  removeStudentFromGroup(groupId: string | null, student: GroupStudent): void {
+    if (this.exitingStudentId()) {
+      return;
+    }
+    this.exitingStudentId.set(student.id);
+    this.exitStudentError.set(null);
+    this.data.removeStudentFromGroup(groupId, student.id).pipe(take(1)).subscribe({
+      next: () => {
+        this.students.update((students) => students.filter((currentStudent) => currentStudent.id !== student.id));
+        this.group.update((group) => {
+          if (!group) {
+            return group;
+          }
+          const enrolled = Math.max(0, group.enrolled - 1);
+          const monthlyRevenue = Math.max(0, (group.monthlyRevenue ?? 0) - (group.pricePerStudent ?? group.fees ?? 0));
+          return {
+            ...group,
+            enrolled,
+            monthlyRevenue,
+            students: (group.students ?? []).filter((currentStudent) => currentStudent.id !== student.id),
+          };
+        });
+        if (this.selectedStudent()?.id === student.id) {
+          this.selectedStudent.set(null);
+        }
+        this.exitingStudentId.set(null);
+      },
+      error: (error: Error) => {
+        this.exitStudentError.set(error.message);
+        this.exitingStudentId.set(null);
+      },
+    });
+  }
+
   private formatRate(value: number | null | undefined): string {
     if (typeof value !== 'number' || !Number.isFinite(value)) {
       return '0%';
     }
-    return `${value}%`;
+    return `${Number(value.toFixed(3))}%`;
   }
 }

@@ -17,12 +17,24 @@ export class TenantGroupDetailsDataService {
 
     return this.http.get<TenantGroupDetailsResponse>(this.groupDetailsUrl(groupId)).pipe(
       map((response) => this.toGroupDetails(response)),
-      catchError((error: HttpErrorResponse) => this.handleError(error)),
+      catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load group details')),
     );
   }
 
   groupDetailsUrl(id: string): string {
     return `${this.groupsUrl}/${encodeURIComponent(id)}`;
+  }
+
+  removeStudentFromGroup(groupId: string | null, studentId: string): Observable<void> {
+    const selectedGroupId = groupId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    return this.http
+      .delete<void>(
+        `${this.groupDetailsUrl(selectedGroupId)}/enrollments/${encodeURIComponent(studentId)}`,
+      )
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to exit group')));
   }
 
   private toGroupDetails(response: TenantGroupDetailsResponse): GroupDetails {
@@ -47,14 +59,15 @@ export class TenantGroupDetailsDataService {
         id: student.id,
         name: student.name,
         email: student.email,
+        barcodeNumber: student.barcodeNumber ?? student.barcode_number ?? null,
         attendanceRate: student.attendanceRate ?? 0,
         lastAttendance: student.lastAttendance,
       })),
     };
   }
 
-  private handleError(error: HttpErrorResponse): Observable<never> {
-    const message = this.extractApiMessage(error.error) ?? 'Unable to load group details';
+  private handleError(error: HttpErrorResponse, fallback: string): Observable<never> {
+    const message = this.extractApiMessage(error.error) ?? fallback;
     return throwError(() => new Error(message));
   }
 

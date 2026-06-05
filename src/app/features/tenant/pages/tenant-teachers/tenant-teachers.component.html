@@ -1,18 +1,18 @@
 <div class="tenant-teachers-page">
       <!-- Header -->
-      <div class="tenant-teachers-header">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 class="tenant-teachers-title">Teachers Faculty</h2>
-          <p class="tenant-teachers-subtitle">Manage teaching staff and department assignments.</p>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Teachers Faculty</h2>
+          <p class="text-slate-500 dark:text-slate-500 text-sm">Manage teaching staff and department assignments.</p>
         </div>
-        <div class="tenant-teachers-header-actions">
-          <div class="tenant-teachers-view-switch">
+        <div class="flex items-center gap-2">
+          <div class="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-1 shadow-sm h-10">
             <button 
               (click)="viewMode.set('grid')"
               [class.bg-indigo-600/10]="viewMode() === 'grid'"
               [class.text-indigo-600]="viewMode() === 'grid'"
               [class.text-slate-500]="viewMode() !== 'grid'"
-              class="tenant-teachers-view-btn"
+              class="h-full px-2 rounded-md transition-all flex items-center justify-center"
               title="Grid View"
             >
               <mat-icon class="text-sm block">grid_view</mat-icon>
@@ -22,13 +22,13 @@
               [class.bg-indigo-600/10]="viewMode() === 'list'"
               [class.text-indigo-600]="viewMode() === 'list'"
               [class.text-slate-500]="viewMode() !== 'list'"
-              class="tenant-teachers-view-btn"
+              class="h-full px-2 rounded-md transition-all flex items-center justify-center"
               title="List View"
             >
               <mat-icon class="text-sm block">view_list</mat-icon>
             </button>
           </div>
-          <a routerLink="/tenant/teachers/create" class="tenant-teachers-add-btn">
+          <a routerLink="/tenant/teachers/create" class="flex items-center gap-2 px-4 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20">
             <mat-icon class="text-sm">person_add</mat-icon>
             Add Teacher
           </a>
@@ -36,32 +36,32 @@
       </div>
 
       <!-- Search & Filter Bar -->
-      <div class="tenant-teachers-filter-shell">
-        <div class="tenant-teachers-filter-row">
-          <div class="tenant-teachers-search">
-            <mat-icon class="tenant-teachers-search-icon">search</mat-icon>
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex flex-col md:flex-row gap-4 items-center">
+          <div class="flex-1 w-full relative">
+            <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</mat-icon>
             <input 
               type="text" 
               [ngModel]="searchQuery()"
               (ngModelChange)="setSearchQuery($event)"
               placeholder="Search teachers by name, subject or email..."
-              class="tenant-teachers-search-input"
+              class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
             >
           </div>
           
-          <div class="tenant-teachers-filter-actions">
+          <div class="flex items-center gap-3 w-full md:w-auto relative">
             <div class="relative">
               <button 
                 (click)="toggleFilterPanel()"
                 [class.bg-indigo-600/10]="showFilterPanel() || activeFiltersCount() > 0"
                 [class.text-indigo-600]="showFilterPanel() || activeFiltersCount() > 0"
                 [class.border-indigo-200]="showFilterPanel() || activeFiltersCount() > 0"
-                class="tenant-teachers-advanced-filter-btn"
+                class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all whitespace-nowrap"
               >
                 <mat-icon class="text-sm">filter_list</mat-icon>
                 Advanced Filters
                 @if (activeFiltersCount() > 0) {
-                  <span class="tenant-teachers-filter-count">
+                  <span class="flex items-center justify-center min-w-[20px] h-5 px-1 bg-indigo-600 text-white text-[10px] rounded-full shadow-sm shadow-indigo-500/40">
                     {{ activeFiltersCount() }}
                   </span>
                 }
@@ -70,19 +70,19 @@
 
               <!-- Dropdown Panel -->
               @if (showFilterPanel()) {
-                <div class="tenant-teachers-filter-dropdown">
-                  <div class="tenant-teachers-filter-dropdown-head">
-                    <h3 class="tenant-teachers-filter-dropdown-title">Filter Options</h3>
-                    <button (click)="clearAdvancedFilters()" class="tenant-teachers-filter-reset">Reset</button>
+                <div class="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50 p-5 space-y-5 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                  <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                    <h3 class="font-bold text-slate-900 dark:text-white text-sm">Filter Options</h3>
+                    <button (click)="clearAdvancedFilters()" class="text-[10px] font-bold text-red-600 hover:text-red-700 uppercase tracking-wider">Reset</button>
                   </div>
 
-                  <div class="tenant-teachers-filter-fields">
+                  <div class="space-y-4">
                     <div [formGroup]="filterForm">
-                      <label for="filter-subject" class="tenant-teachers-filter-label">Subject</label>
+                      <label for="filter-subject" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Subject</label>
                       <select 
                         id="filter-subject"
                         formControlName="subject"
-                        class="tenant-teachers-filter-select"
+                        class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
                       >
                         <option value="">All Subjects</option>
                         @for (subject of subjectOptions(); track subject) {
@@ -92,11 +92,11 @@
                     </div>
 
                     <div [formGroup]="filterForm">
-                      <label for="filter-status" class="tenant-teachers-filter-label">Status</label>
+                      <label for="filter-status" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Status</label>
                       <select 
                         id="filter-status"
                         formControlName="status"
-                        class="tenant-teachers-filter-select"
+                        class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
                       >
                         <option value="">All Statuses</option>
                         <option value="Active">Active</option>
@@ -105,11 +105,11 @@
                     </div>
 
                     <div [formGroup]="filterForm">
-                      <label for="filter-sort" class="tenant-teachers-filter-label">Sort By</label>
+                      <label for="filter-sort" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Sort By</label>
                       <select 
                         id="filter-sort"
                         formControlName="sortBy"
-                        class="tenant-teachers-filter-select"
+                        class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
                       >
                         <option value="name">Name (A-Z)</option>
                         <option value="date-desc">Newest First</option>
@@ -118,10 +118,10 @@
                     </div>
                   </div>
 
-                  <div class="tenant-teachers-filter-apply-wrap">
+                  <div class="pt-2">
                     <button 
                       (click)="toggleFilterPanel()"
-                      class="tenant-teachers-filter-apply"
+                      class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-lg shadow-indigo-500/20"
                     >
                       Apply Filters
                     </button>
@@ -133,7 +133,7 @@
             @if (activeFiltersCount() > 0 || searchQuery()) {
               <button 
                 (click)="clearAllFilters()"
-                class="tenant-teachers-reset-all"
+                class="flex items-center gap-1.5 px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl text-xs font-bold transition-all whitespace-nowrap"
               >
                 <mat-icon class="text-sm">restart_alt</mat-icon>
                 Reset All
@@ -233,65 +233,70 @@
             }
           </div>
         } @else {
-          <div class="tenant-teachers-table-shell">
-            <div class="tenant-teachers-table-scroll">
-              <table class="tenant-teachers-table">
-                <thead class="tenant-teachers-table-head">
+          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden animate-in fade-in duration-300">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
                   <tr>
-                    <th class="tenant-teachers-th">Teacher</th>
-                    <th class="tenant-teachers-th">Subject</th>
-                    <th class="tenant-teachers-th">Status</th>
-                    <th class="tenant-teachers-th">Joined</th>
-                    <th class="tenant-teachers-th tenant-teachers-th--actions">Actions</th>
+                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Teacher</th>
+                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Subject</th>
+                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Status</th>
+                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Joined</th>
+                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px] text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody class="tenant-teachers-tbody">
+                <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
                   @for (teacher of pagedTeachers(); track teacher.id) {
                     <tr
-                      class="tenant-teachers-tr"
+                      class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 focus-visible:outline-offset-[-2px]"
                       (click)="openTeacherDetails(teacher)"
                       (keydown.enter)="openTeacherDetails(teacher)"
                       (keydown.space)="openTeacherDetails(teacher)"
                       tabindex="0"
                       role="button"
                     >
-                      <td class="tenant-teachers-td">
-                        <div class="tenant-teachers-row-user">
-                          <div class="tenant-teachers-row-avatar">
+                      <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                          <div class="w-8 h-8 rounded-full bg-indigo-600/10 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 font-bold text-xs">
                             {{ teacher.name.charAt(0) }}
                           </div>
                           <div>
-                            <div class="tenant-teachers-row-name">{{ teacher.name }}</div>
-                            <div class="tenant-teachers-row-email">{{ teacher.email }}</div>
+                            <div class="font-bold text-slate-900 dark:text-white">{{ teacher.name }}</div>
+                            <div class="text-xs text-slate-500 dark:text-slate-500">{{ teacher.email }}</div>
                           </div>
                         </div>
                       </td>
-                      <td class="tenant-teachers-td">
-                        <span class="tenant-teachers-subject-chip tenant-teachers-subject-chip--list">
+                      <td class="px-6 py-4">
+                        <span class="px-2 py-1 bg-indigo-600/10 dark:bg-indigo-900/20 text-indigo-600 rounded text-[10px] font-bold uppercase tracking-wider">
                           {{ teacher.subject }}
                         </span>
                       </td>
-                      <td class="tenant-teachers-td">
-                        <span class="tenant-teachers-status-chip tenant-teachers-status-chip--list"
+                      <td class="px-6 py-4">
+                        <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
                           [class.bg-emerald-100]="teacher.status === 'Active'"
                           [class.text-emerald-700]="teacher.status === 'Active'"
+                          [class.dark:bg-emerald-900/20]="teacher.status === 'Active'"
                           [class.bg-slate-100]="teacher.status === 'Inactive'"
+                          [class.dark:bg-slate-800]="teacher.status === 'Inactive'"
                           [class.text-slate-500]="teacher.status === 'Inactive'"
                         >
                           {{ teacher.status }}
                         </span>
                       </td>
-                      <td class="tenant-teachers-td tenant-teachers-joined-date">{{ teacher.joinDate }}</td>
-                      <td class="tenant-teachers-td tenant-teachers-td--actions">
-                        <div class="tenant-teachers-row-actions">
-                          <button (click)="openChatFromRow($event, teacher)" class="tenant-teachers-row-btn tenant-teachers-row-btn--message" title="Message">
+                      <td class="px-6 py-4 text-slate-500 dark:text-slate-500 whitespace-nowrap">{{ teacher.joinDate }}</td>
+                      <td class="px-6 py-4 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                          <button (click)="openChatFromRow($event, teacher)" class="p-2 text-indigo-600 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="Message">
                             <mat-icon class="text-sm block">mail</mat-icon>
                           </button>
-                          <button (click)="openPasswordModal($event, teacher)" class="tenant-teachers-row-btn tenant-teachers-row-btn--password" title="Change Password">
+                          <button (click)="openPasswordModal($event, teacher)" class="p-2 text-slate-500 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-colors" title="Change Password">
                             <mat-icon class="text-sm block">password</mat-icon>
                           </button>
-                          <button (click)="openEdit($event, teacher)" class="tenant-teachers-row-btn tenant-teachers-row-btn--edit" title="Edit">
+                          <button (click)="openEdit($event, teacher)" class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Edit">
                             <mat-icon class="text-sm block">edit</mat-icon>
+                          </button>
+                          <button (click)="requestDelete($event, teacher)" class="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors" title="Delete teacher" aria-label="Delete teacher">
+                            <mat-icon class="text-sm block">delete</mat-icon>
                           </button>
                         </div>
                       </td>
@@ -300,18 +305,22 @@
                 </tbody>
               </table>
             </div>
-            <div class="tenant-teachers-pagination">
-              <div class="tenant-teachers-pagination-summary">
+            <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="text-xs font-medium text-slate-500 dark:text-slate-500">
                 @if (totalFilteredTeachers() > 0) {
                   Showing {{ pageStart() }}-{{ pageEnd() }} of {{ totalFilteredTeachers() }} teachers
                 } @else {
                   No teachers to display
                 }
               </div>
-              <div class="tenant-teachers-pagination-actions">
-                <label class="tenant-teachers-page-size">
+              <div class="flex items-center gap-3">
+                <label class="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-500">
                   Rows
-                  <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)" class="tenant-teachers-page-size-select">
+                  <select
+                    [ngModel]="pageSize()"
+                    (ngModelChange)="setPageSize($event)"
+                    class="h-8 px-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
                     <option [value]="5">5</option>
                     <option [value]="10">10</option>
                     <option [value]="20">20</option>
@@ -321,17 +330,17 @@
                   type="button"
                   (click)="previousPage()"
                   [disabled]="pageIndex() === 0"
-                  class="tenant-teachers-page-btn"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-colors"
                   title="Previous page"
                 >
                   <mat-icon class="text-sm">chevron_left</mat-icon>
                 </button>
-                <span class="tenant-teachers-page-current">Page {{ pageIndex() + 1 }} of {{ totalPages() }}</span>
+                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Page {{ pageIndex() + 1 }} of {{ totalPages() }}</span>
                 <button
                   type="button"
                   (click)="nextPage()"
                   [disabled]="pageIndex() >= totalPages() - 1"
-                  class="tenant-teachers-page-btn"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-colors"
                   title="Next page"
                 >
                   <mat-icon class="text-sm">chevron_right</mat-icon>
@@ -448,6 +457,57 @@
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      }
+
+      @if (deleteState().status !== 'closed') {
+        <div class="tenant-teachers-modal-backdrop" (click)="closeDeleteModal()">
+          <div class="tenant-teachers-delete-modal" (click)="$event.stopPropagation()">
+            @if (deleteState().status === 'confirming') {
+              @if (deleteState().teacher; as teacher) {
+                <div class="tenant-teachers-password-head">
+                  <div>
+                    <h3 class="tenant-teachers-card-name">Delete Teacher</h3>
+                    <p class="tenant-teachers-card-email">{{ teacher.name }}</p>
+                  </div>
+                  <button type="button" (click)="closeDeleteModal()" class="tenant-teachers-icon-btn" title="Close">
+                    <mat-icon class="text-sm">close</mat-icon>
+                  </button>
+                </div>
+                <p class="tenant-teachers-delete-text">
+                  Delete {{ teacher.name }}? This is only allowed when the teacher is not assigned to any group.
+                </p>
+                <div class="tenant-teachers-password-actions">
+                  <button type="button" (click)="closeDeleteModal()" class="tenant-teachers-reset-all">
+                    Cancel
+                  </button>
+                  <button type="button" (click)="confirmDelete()" class="tenant-teachers-delete-confirm">
+                    <mat-icon class="text-sm">delete</mat-icon>
+                    Delete Teacher
+                  </button>
+                </div>
+              }
+            } @else {
+              <div class="tenant-teachers-delete-status">
+                @if (deleteState().status === 'deleting') {
+                  <mat-icon class="tenant-teachers-delete-status-icon animate-spin">sync</mat-icon>
+                  <h3 class="tenant-teachers-card-name">Deleting Teacher</h3>
+                } @else if (deleteState().status === 'success') {
+                  <mat-icon class="tenant-teachers-delete-status-icon tenant-teachers-delete-status-icon--success">check_circle</mat-icon>
+                  <h3 class="tenant-teachers-card-name">Teacher Deleted</h3>
+                } @else {
+                  <mat-icon class="tenant-teachers-delete-status-icon tenant-teachers-delete-status-icon--danger">error</mat-icon>
+                  <h3 class="tenant-teachers-card-name">Couldn't Delete Teacher</h3>
+                }
+                <p class="tenant-teachers-delete-text">{{ deleteState().message }}</p>
+                @if (deleteState().status !== 'deleting') {
+                  <button type="button" (click)="closeDeleteModal()" class="tenant-teachers-filter-apply tenant-teachers-delete-close">
+                    Close
+                  </button>
+                }
+              </div>
+            }
           </div>
         </div>
       }

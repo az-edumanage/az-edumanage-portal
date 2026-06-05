@@ -94,6 +94,11 @@
                 <button class="p-1.5 text-slate-500 hover:text-indigo-600 transition-colors"><mat-icon class="text-sm">filter_list</mat-icon></button>
               </div>
             </div>
+            @if (exitStudentError()) {
+              <div class="mx-4 mt-4 rounded-lg bg-rose-50 px-4 py-3 text-sm font-bold text-rose-700 dark:bg-rose-900/20 dark:text-rose-200" role="alert">
+                {{ exitStudentError() }}
+              </div>
+            }
             <div class="overflow-x-auto">
               <table class="w-full text-left text-sm">
                 <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
@@ -132,7 +137,17 @@
                       </td>
                       <td class="px-6 py-4 text-slate-500 dark:text-slate-500 text-xs">{{ student.lastAttendance }}</td>
                       <td class="px-6 py-4 text-right">
-                        <button class="p-1 text-slate-500 hover:text-indigo-600 transition-colors"><mat-icon class="text-sm">more_vert</mat-icon></button>
+                        <button
+                          type="button"
+                          class="inline-flex min-h-9 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-700 transition-colors hover:border-rose-600 hover:bg-rose-600 hover:text-white disabled:cursor-wait disabled:opacity-70 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200"
+                          [disabled]="exitingStudentId() === student.id"
+                          (click)="exitGroup($event, student)"
+                        >
+                          <mat-icon class="text-sm" [class.animate-spin]="exitingStudentId() === student.id">
+                            {{ exitingStudentId() === student.id ? 'sync' : 'logout' }}
+                          </mat-icon>
+                          {{ exitingStudentId() === student.id ? 'Exiting' : 'Exit group' }}
+                        </button>
                       </td>
                     </tr>
                   }

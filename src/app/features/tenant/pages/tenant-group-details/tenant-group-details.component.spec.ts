@@ -44,12 +44,16 @@ describe('TenantGroupDetailsComponent', () => {
     },
   ];
   const students = signal<GroupStudent[]>(initialStudents);
+  const exitStudentError = signal<string | null>(null);
+  const exitingStudentId = signal<string | null>(null);
   const facade = {
     group,
     selectedStudent,
     students,
     isLoading: signal(false),
     error: signal<string | null>(null),
+    exitStudentError,
+    exitingStudentId,
     avgAttendanceLabel: signal('0%'),
     absenceRateLabel: signal('0%'),
     monthlyRevenueLabel: signal('1500 EGP'),
@@ -57,15 +61,19 @@ describe('TenantGroupDetailsComponent', () => {
     loadGroup: vi.fn(),
     selectStudent: vi.fn((student: GroupStudent) => selectedStudent.set(student)),
     clearSelectedStudent: vi.fn(() => selectedStudent.set(null)),
+    removeStudentFromGroup: vi.fn(),
   };
 
   beforeEach(async () => {
     facade.loadGroup.mockClear();
     facade.selectStudent.mockClear();
     facade.clearSelectedStudent.mockClear();
+    facade.removeStudentFromGroup.mockClear();
     group.set(initialGroup);
     students.set(initialStudents);
     selectedStudent.set(null);
+    exitStudentError.set(null);
+    exitingStudentId.set(null);
     facade.isLoading.set(false);
     facade.error.set(null);
     await TestBed.configureTestingModule({
@@ -137,6 +145,25 @@ describe('TenantGroupDetailsComponent', () => {
     expect(text).toContain('Sara Mohamed');
     expect(text).toContain('sara@example.com');
     expect(text).not.toContain('Omar Hassan');
+  });
+
+  it('renders exit group actions for enrolled students', () => {
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll('tbody button'),
+      (button) => ((button as HTMLButtonElement).textContent ?? '').replace(/\s+/g, ' ').trim(),
+    );
+
+    expect(buttons).toEqual(['logout Exit group', 'logout Exit group']);
+  });
+
+  it('exits a student from the group without selecting the row', () => {
+    const button = fixture.nativeElement.querySelector('tbody button') as HTMLButtonElement;
+
+    button.click();
+    fixture.detectChanges();
+
+    expect(facade.removeStudentFromGroup).toHaveBeenCalledWith('group-123', initialStudents[0]);
+    expect(facade.selectStudent).not.toHaveBeenCalled();
   });
 
   it('renders newly enrolled backend rows through the existing Enrolled Students columns', () => {

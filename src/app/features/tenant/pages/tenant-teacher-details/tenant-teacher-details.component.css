@@ -165,6 +165,16 @@
   background: color-mix(in srgb, #4f46e5 10%, transparent);
 }
 
+.tenant-teacher-details-alert {
+  margin-bottom: var(--space-4);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: #991b1b;
+  background: #fee2e2;
+}
+
 .tenant-teacher-details-table-scroll {
   overflow-x: auto;
 }
@@ -189,6 +199,58 @@
   background: var(--color-bg-muted, #f8fafc);
 }
 
+.tenant-teacher-details-table th:last-child,
+.tenant-teacher-details-table td:last-child {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.tenant-teacher-details-group-link {
+  display: inline-flex;
+  align-items: center;
+  max-width: min(28rem, 70vw);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-action-primary, #4f46e5);
+  text-decoration: none;
+}
+
+.tenant-teacher-details-group-link:hover,
+.tenant-teacher-details-group-link:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.tenant-teacher-details-exit-btn {
+  min-height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid #fecaca;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: #b91c1c;
+  background: #fff1f2;
+}
+
+.tenant-teacher-details-exit-btn:hover:not(:disabled),
+.tenant-teacher-details-exit-btn:focus-visible {
+  color: #ffffff;
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.tenant-teacher-details-exit-btn:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.tenant-teacher-details-exit-btn:disabled mat-icon {
+  animation: spin 1s linear infinite;
+}
+
 .tenant-teacher-details-table-empty {
   text-align: center;
   color: var(--color-text-muted, #64748b);
@@ -208,6 +270,17 @@
 
 .dark .tenant-teacher-details-table th {
   background: var(--color-bg-muted, #1e293b);
+}
+
+.dark .tenant-teacher-details-alert {
+  color: #fecaca;
+  background: color-mix(in srgb, #dc2626 20%, transparent);
+}
+
+.dark .tenant-teacher-details-exit-btn {
+  color: #fecaca;
+  border-color: color-mix(in srgb, #ef4444 40%, transparent);
+  background: color-mix(in srgb, #ef4444 14%, transparent);
 }
 
 .dark .tenant-teacher-details-title,

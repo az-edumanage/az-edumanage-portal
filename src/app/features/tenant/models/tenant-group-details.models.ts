@@ -2,8 +2,11 @@ export interface GroupStudent {
   id: string;
   name: string;
   email: string;
+  barcodeNumber?: string | null;
   attendanceRate: number;
   lastAttendance: string;
+  attendanceState?: 'Present' | 'Absent' | null;
+  attendanceSource?: 'Manual' | 'Auto' | null;
 }
 
 export interface GroupDetails {
@@ -30,8 +33,12 @@ export interface TenantGroupStudentResponse {
   id: string;
   name: string;
   email: string;
+  barcodeNumber?: string | null;
+  barcode_number?: string | null;
   attendanceRate: number | null;
   lastAttendance: string;
+  attendanceState?: 'Present' | 'Absent' | null;
+  attendanceSource?: 'Manual' | 'Auto' | null;
 }
 
 export interface TenantGroupDetailsResponse {
