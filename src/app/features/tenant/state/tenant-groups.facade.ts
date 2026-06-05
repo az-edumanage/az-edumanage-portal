@@ -24,6 +24,7 @@ export class TenantGroupsFacade {
   readonly pageSize = this.store.pageSize;
   readonly pageStart = this.store.pageStart;
   readonly pageEnd = this.store.pageEnd;
+  readonly deleteState = this.store.deleteState;
 
   loadGroups(): void {
     this.store.loadGroups();
@@ -64,5 +65,22 @@ export class TenantGroupsFacade {
 
   toggleFilterPanel(): void {
     this.showFilterPanel.update((value) => !value);
+  }
+
+  requestDelete(groupId: string): void {
+    const group = this.store.groups().find((candidate) => candidate.id === groupId);
+    if (!group) {
+      return;
+    }
+
+    this.store.requestDelete(group);
+  }
+
+  closeDeleteModal(): void {
+    this.store.closeDeleteModal();
+  }
+
+  confirmDelete(): void {
+    this.store.confirmDelete();
   }
 }

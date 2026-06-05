@@ -65,6 +65,7 @@ describe('TenantGroupDetailsDataService', () => {
           id: 'student-1',
           name: 'Ahmed Ali',
           email: 'ahmed@example.com',
+          barcodeNumber: null,
           attendanceRate: 0,
           lastAttendance: '',
         },
@@ -72,6 +73,7 @@ describe('TenantGroupDetailsDataService', () => {
           id: 'student-2',
           name: 'Sara Mohamed',
           email: 'sara@example.com',
+          barcodeNumber: null,
           attendanceRate: 87,
           lastAttendance: '2026-05-31',
         },
@@ -101,6 +103,7 @@ describe('TenantGroupDetailsDataService', () => {
           id: 'student-1',
           name: 'Ahmed Ali',
           email: 'ahmed@example.com',
+          barcodeNumber: null,
           attendanceRate: null,
           lastAttendance: '',
         },
@@ -108,6 +111,7 @@ describe('TenantGroupDetailsDataService', () => {
           id: 'student-2',
           name: 'Sara Mohamed',
           email: 'sara@example.com',
+          barcodeNumber: null,
           attendanceRate: 87,
           lastAttendance: '2026-05-31',
         },
@@ -149,6 +153,7 @@ describe('TenantGroupDetailsDataService', () => {
           id: 'student-1',
           name: 'Ahmed Ali',
           email: 'ahmed@example.com',
+          barcodeNumber: null,
           attendanceRate: null,
           lastAttendance: '',
         },
@@ -236,6 +241,18 @@ describe('TenantGroupDetailsDataService', () => {
     const request = httpTesting.expectOne(`${environment.apiBaseUrl}/tenant/groups/missing-group`);
     expect(request.request.method).toBe('GET');
     request.flush({ message: 'Group not found' }, { status: 404, statusText: 'Not Found' });
+
+    actual.unsubscribe();
+  });
+
+  it('sends remove student from group requests', () => {
+    const actual = service.removeStudentFromGroup('group-123', 'student-1').subscribe((result) => {
+      expect(result).toBeNull();
+    });
+
+    const request = httpTesting.expectOne(`${environment.apiBaseUrl}/tenant/groups/group-123/enrollments/student-1`);
+    expect(request.request.method).toBe('DELETE');
+    request.flush(null);
 
     actual.unsubscribe();
   });

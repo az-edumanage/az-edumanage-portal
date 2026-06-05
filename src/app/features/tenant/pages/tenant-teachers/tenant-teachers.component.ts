@@ -46,6 +46,7 @@ export class TenantTeachersComponent implements OnInit {
   readonly passwordSaving = this.facade.passwordSaving;
   readonly passwordError = this.facade.passwordError;
   readonly passwordSuccess = this.facade.passwordSuccess;
+  readonly deleteState = this.facade.deleteState;
 
   readonly filterForm = this.fb.group({
     subject: [''],
@@ -150,5 +151,18 @@ export class TenantTeachersComponent implements OnInit {
 
   updateStatus(id: string, status: 'Active' | 'Inactive'): void {
     this.facade.updateStatus(id, status);
+  }
+
+  requestDelete(event: Event, teacher: Teacher): void {
+    event.stopPropagation();
+    this.facade.requestDelete(teacher);
+  }
+
+  closeDeleteModal(): void {
+    this.facade.closeDeleteModal();
+  }
+
+  confirmDelete(): void {
+    this.facade.confirmDelete();
   }
 }

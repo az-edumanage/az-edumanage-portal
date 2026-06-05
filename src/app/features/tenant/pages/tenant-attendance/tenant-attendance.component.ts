@@ -1,18 +1,34 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-
-interface AttendanceStudent {
-  initial: string;
-  name: string;
-  code: string;
-  present: boolean;
-}
+import { Subscription } from 'rxjs';
+import { TenantGroupAttendanceDataService } from '../../data-access/tenant-group-attendance-data.service';
+import { TenantScheduleDataService } from '../../data-access/tenant-schedule-data.service';
+import { TenantAttendanceStudent, TenantBarcodeAttendanceScanResponse } from '../../models/tenant-group-attendance.models';
+import { ScheduleSession } from '../../models/tenant-schedule.models';
 
 interface AttendanceTimeSlot {
   time: string;
+  hourSlot: string;
   groups: number;
   sortOrder: number;
+  groupIds: Set<string>;
+}
+
+interface AttendanceGroupSummary {
+  groupId: string;
+  groupName: string;
+  teacherName: string;
+  roomName: string;
+  startTime: string;
+  locationTime: string;
+  duration: number | null;
+  days: string[];
+  color: string;
+  students: TenantAttendanceStudent[];
+  studentCount: number;
+  presentCount: number;
+  attendancePercent: number;
 }
 
 interface AttendanceClockState {
@@ -20,12 +36,6 @@ interface AttendanceClockState {
   hourSlot: string;
   timeZone: string;
   lastUpdatedAt: Date;
-}
-
-interface AttendanceGroupScheduleEntry {
-  id: string;
-  name: string;
-  startTime: string;
 }
 
 @Component({
@@ -37,66 +47,84 @@ interface AttendanceGroupScheduleEntry {
 })
 export class TenantAttendanceComponent implements OnInit, OnDestroy {
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
+  private readonly scheduleDataService = inject(TenantScheduleDataService);
+  private readonly groupAttendanceDataService = inject(TenantGroupAttendanceDataService);
   private readonly egyptTimeZone = 'Africa/Cairo';
   private clockTimer: ReturnType<typeof setInterval> | null = null;
+  private scheduleLoadSubscription: Subscription | null = null;
   private autoSelectedTimeSlot: string | null = null;
+  private readonly attendanceStudentsByGroupId = new Map<string, TenantAttendanceStudent[]>();
+  private readonly attendanceStudentLoadSubscriptions = new Map<string, Subscription>();
 
-  readonly totalExpectedStudents = 9;
+  @ViewChild('barcodeInput') private barcodeInput?: ElementRef<HTMLInputElement>;
 
   nowFactory = (): Date => new Date();
 
   attendanceClock: AttendanceClockState = this.formatEgyptClock(this.nowFactory());
 
-  attendanceGroupScheduleEntries: AttendanceGroupScheduleEntry[] = [
-    { id: 'physics-g12-a', name: 'Physics G12-A', startTime: '10:00 AM' },
-    { id: 'chemistry-g11-b', name: 'Chemistry G11-B', startTime: '11:00 AM' },
-    { id: 'math-g10-a', name: 'Math G10-A', startTime: '01:00 PM' },
-    { id: 'biology-g12-b', name: 'Biology G12-B', startTime: '02:00 PM' },
-    { id: 'english-g9-a', name: 'English G9-A', startTime: '11:00 PM' },
-    { id: 'physics-g11-c', name: 'Physics G11-C', startTime: '11:00 PM' },
-  ];
-
+  scheduleSessions: ScheduleSession[] = [];
+  scheduleLoading = false;
+  scheduleLoadError: string | null = null;
   selectedTimeSlot: string | null = null;
+  activeFilterApplied = false;
+  activeFilterEmpty = false;
+  barcodeInputValue = '';
+  barcodeScanInProgress = false;
+  barcodeScanNotification: { message: string; state: 'success' | 'error' | 'info' } | null = null;
 
-  students: AttendanceStudent[] = [
-    { initial: 'A', name: 'Ahmed Ali', code: '10001', present: false },
-    { initial: 'S', name: 'Sara Mohamed', code: '10002', present: false },
-    { initial: 'O', name: 'Omar Hassan', code: '10003', present: false },
-    { initial: 'L', name: 'Laila Mahmoud', code: '10004', present: false },
-    { initial: 'Y', name: 'Youssef Ibrahim', code: '10005', present: false },
-  ];
+  get selectedStudents(): TenantAttendanceStudent[] {
+    return this.selectedTimeSlotGroups.flatMap((group) => group.students);
+  }
+
+  get totalExpectedStudents(): number {
+    return this.selectedStudents.length;
+  }
 
   get presentCount(): number {
-    return this.students.filter((student) => student.present).length;
+    return this.selectedStudents.filter((student) => student.isPresent).length;
   }
 
   get attendancePercent(): number {
+    if (this.totalExpectedStudents === 0) {
+      return 0;
+    }
+
     return Math.round((this.presentCount / this.totalExpectedStudents) * 100);
   }
 
   get classAttendancePercent(): number {
-    return Math.round((this.presentCount / this.students.length) * 100);
+    if (this.selectedStudents.length === 0) {
+      return 0;
+    }
+
+    return Math.round((this.presentCount / this.selectedStudents.length) * 100);
   }
 
   get timeSlots(): AttendanceTimeSlot[] {
     const slotsByTime = new Map<string, AttendanceTimeSlot>();
 
-    for (const group of this.attendanceGroupScheduleEntries) {
-      const normalizedSlot = this.normalizeTimeSlot(group.startTime);
+    for (const session of this.scheduleSessions) {
+      const normalizedSlot = this.normalizeTimeSlot(session.startTime);
 
       if (!normalizedSlot) {
         continue;
       }
 
+      const groupKey = session.groupId || session.id;
       const currentSlot = slotsByTime.get(normalizedSlot.time);
       if (currentSlot) {
-        currentSlot.groups += 1;
+        currentSlot.groupIds.add(groupKey);
+        currentSlot.groups = currentSlot.groupIds.size;
       } else {
-        slotsByTime.set(normalizedSlot.time, { ...normalizedSlot, groups: 1 });
+        slotsByTime.set(normalizedSlot.time, { ...normalizedSlot, groups: 1, groupIds: new Set([groupKey]) });
       }
     }
 
     return Array.from(slotsByTime.values()).sort((first, second) => first.sortOrder - second.sortOrder);
+  }
+
+  get hasTimeSlots(): boolean {
+    return this.timeSlots.length > 0;
   }
 
   get selectedTimeSlotLabel(): string {
@@ -107,8 +135,63 @@ export class TenantAttendanceComponent implements OnInit, OnDestroy {
     return this.timeSlots.find((slot) => slot.time === this.selectedTimeSlot)?.groups ?? 0;
   }
 
+  get selectedTimeSlotGroups(): AttendanceGroupSummary[] {
+    if (!this.selectedTimeSlot) {
+      return [];
+    }
+
+    const groupsById = new Map<string, AttendanceGroupSummary>();
+
+    for (const session of this.scheduleSessions) {
+      const normalizedSlot = this.normalizeTimeSlot(session.startTime);
+
+      if (!normalizedSlot || normalizedSlot.time !== this.selectedTimeSlot) {
+        continue;
+      }
+
+      const groupId = session.groupId || session.id;
+      const existingGroup = groupsById.get(groupId);
+
+      if (existingGroup) {
+        if (!existingGroup.days.includes(session.day)) {
+          existingGroup.days = [...existingGroup.days, session.day];
+        }
+        continue;
+      }
+
+      const students = this.getStudentsForGroup(groupId);
+      const presentCount = this.getGroupPresentCount(students);
+      const studentCount = students.length;
+
+      groupsById.set(groupId, {
+        groupId,
+        groupName: session.groupName,
+        teacherName: session.teacherName,
+        roomName: session.roomName,
+        startTime: normalizedSlot.time,
+        locationTime: normalizedSlot.time,
+        duration: session.duration,
+        days: [session.day],
+        color: session.color,
+        students,
+        studentCount,
+        presentCount,
+        attendancePercent: this.getGroupAttendancePercent(presentCount, studentCount),
+      });
+    }
+
+    return Array.from(groupsById.values()).sort((first, second) => first.groupName.localeCompare(second.groupName));
+  }
+
+  get selectedTimeSlotGroupsLabel(): string {
+    const count = this.selectedTimeSlotGroups.length;
+
+    return `${count} ${count === 1 ? 'Group' : 'Groups'}`;
+  }
+
   ngOnInit(): void {
     this.refreshAttendanceClock();
+    this.loadScheduleSessions();
     this.clockTimer = setInterval(() => this.refreshAttendanceClock(), 60000);
   }
 
@@ -116,51 +199,325 @@ export class TenantAttendanceComponent implements OnInit, OnDestroy {
     if (this.clockTimer) {
       clearInterval(this.clockTimer);
     }
+    this.scheduleLoadSubscription?.unsubscribe();
+    this.attendanceStudentLoadSubscriptions.forEach((subscription) => subscription.unsubscribe());
+    this.attendanceStudentLoadSubscriptions.clear();
   }
 
-  markStudentAttendance(code: string, present: boolean): void {
-    this.students = this.students.map((student) => (student.code === code ? { ...student, present } : student));
+  onBarcodeInput(value: string): void {
+    this.barcodeInputValue = value;
+  }
+
+  submitBarcodeScan(): void {
+    const barcodeNumber = this.barcodeInputValue.trim();
+    if (!barcodeNumber) {
+      this.barcodeScanNotification = { message: 'Barcode number is required', state: 'error' };
+      this.focusBarcodeInput();
+      this.changeDetectorRef.markForCheck();
+      return;
+    }
+
+    this.barcodeScanInProgress = true;
+    this.barcodeScanNotification = null;
+    this.groupAttendanceDataService
+      .scanBarcode({ barcodeNumber, selectedGroupId: this.selectedGroupHint() })
+      .subscribe({
+        next: (response) => this.handleBarcodeScanResponse(response),
+        error: (error: Error) => {
+          this.barcodeScanInProgress = false;
+          this.barcodeScanNotification = {
+            message: error.message || 'Unable to record barcode attendance',
+            state: 'error',
+          };
+          this.focusBarcodeInput();
+          this.changeDetectorRef.markForCheck();
+        },
+      });
+  }
+
+  markStudentAttendance(groupId: string, studentId: string, isPresent: boolean): void {
+    const attendanceState = isPresent ? 'Present' : 'Absent';
+    this.groupAttendanceDataService.saveManualAttendance({ groupId, studentId, attendanceState }).subscribe({
+      next: (response) => {
+        this.applyManualAttendanceResponse(response.groupId, response.studentId, response.attendanceState);
+        this.reloadStudentsForGroup(response.groupId);
+        this.barcodeScanNotification = { message: response.message, state: 'success' };
+        this.changeDetectorRef.markForCheck();
+      },
+      error: (error: Error) => {
+        this.barcodeScanNotification = {
+          message: error.message || 'Unable to save manual attendance',
+          state: 'error',
+        };
+        this.changeDetectorRef.markForCheck();
+      },
+    });
   }
 
   selectTimeSlot(time: string): void {
     this.selectedTimeSlot = time;
     this.autoSelectedTimeSlot = null;
+    this.activeFilterApplied = false;
+    this.activeFilterEmpty = false;
+    this.changeDetectorRef.markForCheck();
   }
 
-  refreshAttendanceClock(): void {
-    const previousHourSlot = this.attendanceClock.hourSlot;
-    this.attendanceClock = this.formatEgyptClock(this.nowFactory());
+  filterGroupsByCurrentTime(): void {
+    const currentMinute = this.getCurrentAttendanceMinute(this.nowFactory());
+    const matchingSlot = this.findLatestActiveTimeSlot(currentMinute);
 
-    if (
-      previousHourSlot !== this.attendanceClock.hourSlot ||
-      this.selectedTimeSlot === null ||
-      this.selectedTimeSlot === this.autoSelectedTimeSlot
-    ) {
-      this.applyAutomaticTimeSlotSelection();
+    this.activeFilterApplied = true;
+
+    if (matchingSlot) {
+      this.selectedTimeSlot = matchingSlot.time;
+      this.autoSelectedTimeSlot = matchingSlot.time;
+      this.activeFilterEmpty = false;
+    } else {
+      this.selectedTimeSlot = null;
+      this.autoSelectedTimeSlot = null;
+      this.activeFilterEmpty = true;
     }
 
     this.changeDetectorRef.markForCheck();
   }
 
-  private applyAutomaticTimeSlotSelection(): void {
-    const matchingSlot = this.timeSlots.find((slot) => slot.time === this.attendanceClock.hourSlot);
+  getGroupMark(groupName: string): string {
+    const letters = groupName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join('');
 
-    if (matchingSlot) {
-      this.selectedTimeSlot = matchingSlot.time;
-      this.autoSelectedTimeSlot = matchingSlot.time;
-      return;
+    return letters || 'GR';
+  }
+
+  formatGroupDays(days: string[]): string {
+    return days.join(', ');
+  }
+
+  formatGroupDuration(duration: number | null): string {
+    return duration === null ? 'Duration not set' : `${duration} min`;
+  }
+
+  getStudentInitial(name: string): string {
+    return name.trim()[0]?.toUpperCase() ?? 'S';
+  }
+
+  formatUnavailableValue(value: string | null): string {
+    return value?.trim() || 'Unavailable';
+  }
+
+  private applyManualAttendanceResponse(groupId: string, studentId: string, attendanceState: 'Present' | 'Absent'): void {
+    const isPresent = attendanceState === 'Present';
+    const students = this.getStudentsForGroup(groupId);
+
+    this.attendanceStudentsByGroupId.set(
+      groupId,
+      students.map((student) =>
+        student.id === studentId
+          ? {
+              ...student,
+              isPresent,
+              attendanceState,
+              manualStatus: 'Manual',
+              overrideChecks: 'Manual override saved',
+            }
+          : student,
+      ),
+    );
+  }
+
+  private selectedGroupHint(): string | null {
+    const selectedGroups = this.selectedTimeSlotGroups;
+    return selectedGroups.length === 1 ? selectedGroups[0].groupId : null;
+  }
+
+  private handleBarcodeScanResponse(response: TenantBarcodeAttendanceScanResponse): void {
+    this.barcodeScanInProgress = false;
+    this.barcodeScanNotification = {
+      message: response.message,
+      state: response.result === 'PRESENT_RECORDED' || response.result === 'ALREADY_PRESENT' ? 'success' : 'error',
+    };
+
+    if ((response.result === 'PRESENT_RECORDED' || response.result === 'ALREADY_PRESENT') && response.student && response.group && response.attendance) {
+      const updatedGroupId = this.applySavedBarcodeAttendance(response);
+      this.reloadStudentsForGroup(updatedGroupId);
+      this.barcodeInputValue = '';
+      if (this.barcodeInput?.nativeElement) {
+        this.barcodeInput.nativeElement.value = '';
+      }
     }
 
-    if (this.selectedTimeSlot === null || this.selectedTimeSlot === this.autoSelectedTimeSlot) {
-      this.selectedTimeSlot = null;
-      this.autoSelectedTimeSlot = null;
+    this.focusBarcodeInput();
+    this.changeDetectorRef.markForCheck();
+  }
+
+  private applySavedBarcodeAttendance(response: TenantBarcodeAttendanceScanResponse): string {
+    if (!response.student || !response.group || !response.attendance) {
+      return response.group?.id ?? '';
     }
+
+    const groupId = this.resolveBarcodeAttendanceGroupId(response);
+    const currentStudents = this.attendanceStudentsByGroupId.get(groupId) ?? this.groupAttendanceDataService.getStudentsByGroupId(groupId);
+    const existingIndex = currentStudents.findIndex(
+      (student) =>
+        student.id === response.student?.id ||
+        this.normalizeBarcodeValue(student.barcode) === this.normalizeBarcodeValue(response.student?.barcodeNumber),
+    );
+    const scannedStudent: TenantAttendanceStudent = {
+      id: response.student.id,
+      name: response.student.name,
+      rfid: null,
+      barcode: response.student.barcodeNumber,
+      isPresent: true,
+      attendanceState: 'Present',
+      manualStatus: response.attendance.source,
+      overrideChecks: 'Auto barcode scan saved',
+      attendanceRate: 0,
+      totalSessions: 0,
+      attendedSessions: 0,
+    };
+
+    const updatedStudents = currentStudents.map((student, index) =>
+      index === existingIndex
+        ? {
+            ...student,
+            name: response.student?.name ?? student.name,
+            barcode: response.student?.barcodeNumber ?? student.barcode,
+            isPresent: true,
+            attendanceState: 'Present' as const,
+            manualStatus: 'Auto' as const,
+            overrideChecks: 'Auto barcode scan saved',
+          }
+        : student,
+    );
+
+    if (existingIndex === -1) {
+      updatedStudents.push(scannedStudent);
+    }
+
+    this.attendanceStudentsByGroupId.set(groupId, updatedStudents);
+    return groupId;
+  }
+
+  private resolveBarcodeAttendanceGroupId(response: TenantBarcodeAttendanceScanResponse): string {
+    const responseGroupId = response.group?.id;
+    if (!responseGroupId) {
+      return '';
+    }
+
+    if (this.attendanceStudentsByGroupId.has(responseGroupId)) {
+      return responseGroupId;
+    }
+
+    const selectedGroups = this.selectedTimeSlotGroups;
+    const sameIdGroup = selectedGroups.find((group) => group.groupId === responseGroupId);
+    if (sameIdGroup) {
+      return sameIdGroup.groupId;
+    }
+
+    const sameGroupDetails = selectedGroups.find(
+      (group) =>
+        group.groupName === response.group?.name &&
+        this.normalizeTimeSlot(group.startTime)?.time === this.normalizeTimeSlot(response.group?.startTime ?? '')?.time,
+    );
+    if (sameGroupDetails) {
+      return sameGroupDetails.groupId;
+    }
+
+    const studentBarcode = this.normalizeBarcodeValue(response.student?.barcodeNumber);
+    const groupWithStudent = selectedGroups.find((group) =>
+      group.students.some(
+        (student) => student.id === response.student?.id || this.normalizeBarcodeValue(student.barcode) === studentBarcode,
+      ),
+    );
+    if (groupWithStudent) {
+      return groupWithStudent.groupId;
+    }
+
+    return responseGroupId;
+  }
+
+  private focusBarcodeInput(): void {
+    setTimeout(() => this.barcodeInput?.nativeElement.focus(), 0);
+  }
+
+  private getGroupPresentCount(students: TenantAttendanceStudent[]): number {
+    return students.filter((student) => student.isPresent).length;
+  }
+
+  private getGroupAttendancePercent(presentCount: number, studentCount: number): number {
+    if (studentCount === 0) {
+      return 0;
+    }
+
+    return Math.round((presentCount / studentCount) * 100);
+  }
+
+  refreshAttendanceClock(): void {
+    this.attendanceClock = this.formatEgyptClock(this.nowFactory());
+    this.changeDetectorRef.markForCheck();
+  }
+
+  private findLatestActiveTimeSlot(currentMinute: number): Pick<AttendanceTimeSlot, 'time' | 'sortOrder'> | null {
+    let latestActiveSlot: Pick<AttendanceTimeSlot, 'time' | 'sortOrder'> | null = null;
+
+    for (const session of this.scheduleSessions) {
+      const normalizedSlot = this.normalizeTimeSlot(session.startTime);
+      const duration = session.duration;
+
+      if (!normalizedSlot || !this.isValidActiveFilterDuration(duration)) {
+        continue;
+      }
+
+      const startMinute = normalizedSlot.sortOrder;
+      const endMinute = startMinute + duration;
+      const active = startMinute <= currentMinute && currentMinute < endMinute;
+
+      if (!active) {
+        continue;
+      }
+
+      if (!latestActiveSlot || startMinute > latestActiveSlot.sortOrder) {
+        latestActiveSlot = { time: normalizedSlot.time, sortOrder: startMinute };
+      }
+    }
+
+    return latestActiveSlot;
+  }
+
+  private getCurrentAttendanceMinute(date: Date): number {
+    return this.normalizeTimeSlot(this.formatEgyptClock(date).displayTime)?.sortOrder ?? -1;
+  }
+
+  private isValidActiveFilterDuration(duration: number | null): duration is number {
+    return typeof duration === 'number' && Number.isFinite(duration) && duration > 0;
+  }
+
+  private loadScheduleSessions(): void {
+    this.scheduleLoading = true;
+    this.scheduleLoadError = null;
+    this.scheduleLoadSubscription?.unsubscribe();
+    this.scheduleLoadSubscription = this.scheduleDataService.loadSessions().subscribe({
+      next: (sessions) => {
+        this.scheduleSessions = sessions;
+        this.scheduleLoading = false;
+        this.changeDetectorRef.markForCheck();
+      },
+      error: (error: Error) => {
+        this.scheduleSessions = [];
+        this.scheduleLoading = false;
+        this.scheduleLoadError = error.message || 'Unable to load schedule';
+        this.changeDetectorRef.markForCheck();
+      },
+    });
   }
 
   private formatEgyptClock(date: Date): AttendanceClockState {
     const parts = new Intl.DateTimeFormat('en-US', {
       timeZone: this.egyptTimeZone,
-      hour: '2-digit',
+      hour: 'numeric',
       minute: '2-digit',
       hour12: true,
     }).formatToParts(date);
@@ -177,31 +534,136 @@ export class TenantAttendanceComponent implements OnInit, OnDestroy {
     };
   }
 
-  private normalizeTimeSlot(time: string): Pick<AttendanceTimeSlot, 'time' | 'sortOrder'> | null {
-    const match = time.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/i);
+  private normalizeTimeSlot(time: string): Pick<AttendanceTimeSlot, 'time' | 'hourSlot' | 'sortOrder'> | null {
+    const trimmedTime = time.trim();
+    const periodMatch = trimmedTime.match(/^(\d{1,2})(?::(\d{2}))?(?::(\d{2}))?\s*(AM|PM)$/i);
 
-    if (!match) {
+    if (periodMatch) {
+      const hour = Number(periodMatch[1]);
+      const minute = periodMatch[2] ? Number(periodMatch[2]) : 0;
+      const second = periodMatch[3] ? Number(periodMatch[3]) : 0;
+      const dayPeriod = periodMatch[4].toUpperCase();
+
+      if (hour < 1 || hour > 12 || minute < 0 || minute > 59 || second < 0 || second > 59) {
+        return null;
+      }
+
+      const hourInDay = dayPeriod === 'AM' ? hour % 12 : (hour % 12) + 12;
+      const displayHour = hour.toString();
+      const displayMinute = String(minute).padStart(2, '0');
+
+      return {
+        time: `${displayHour}:${displayMinute} ${dayPeriod}`,
+        hourSlot: `${displayHour}:00 ${dayPeriod}`,
+        sortOrder: hourInDay * 60 + minute,
+      };
+    }
+
+    const twentyFourHourMatch = trimmedTime.match(/^(\d{1,2})(?::(\d{2}))(?::(\d{2}))?$/);
+
+    if (!twentyFourHourMatch) {
       return null;
     }
 
-    const hour = Number(match[1]);
-    const minute = match[2] ? Number(match[2]) : 0;
-    const dayPeriod = match[3].toUpperCase();
+    const hour = Number(twentyFourHourMatch[1]);
+    const minute = Number(twentyFourHourMatch[2]);
+    const second = twentyFourHourMatch[3] ? Number(twentyFourHourMatch[3]) : 0;
 
-    if (hour < 1 || hour > 12 || minute < 0 || minute > 59) {
+    if (hour < 0 || hour > 23 || minute < 0 || minute > 59 || second < 0 || second > 59) {
       return null;
     }
 
-    const hourInDay = dayPeriod === 'AM' ? hour % 12 : (hour % 12) + 12;
-    const displayHour = hour.toString().padStart(2, '0');
+    const dayPeriod = hour < 12 ? 'AM' : 'PM';
+    const displayHour = hour % 12 === 0 ? 12 : hour % 12;
+    const displayMinute = String(minute).padStart(2, '0');
 
     return {
-      time: `${displayHour}:00 ${dayPeriod}`,
-      sortOrder: hourInDay * 60,
+      time: `${displayHour}:${displayMinute} ${dayPeriod}`,
+      hourSlot: `${displayHour}:00 ${dayPeriod}`,
+      sortOrder: hour * 60 + minute,
     };
   }
 
   private getDatePart(parts: Intl.DateTimeFormatPart[], type: Intl.DateTimeFormatPartTypes): string {
     return parts.find((part) => part.type === type)?.value ?? '';
+  }
+
+  private getStudentsForGroup(groupId: string): TenantAttendanceStudent[] {
+    const existingStudents = this.attendanceStudentsByGroupId.get(groupId);
+
+    if (existingStudents) {
+      return existingStudents;
+    }
+
+    const students = this.groupAttendanceDataService.getStudentsByGroupId(groupId);
+    this.attendanceStudentsByGroupId.set(groupId, students);
+    if (students.length === 0) {
+      this.loadStudentsForGroup(groupId);
+    }
+
+    return students;
+  }
+
+  private reloadStudentsForGroup(groupId: string): void {
+    if (!groupId) {
+      return;
+    }
+
+    this.attendanceStudentLoadSubscriptions.get(groupId)?.unsubscribe();
+    this.attendanceStudentLoadSubscriptions.delete(groupId);
+    this.loadStudentsForGroup(groupId, true);
+  }
+
+  private loadStudentsForGroup(groupId: string, forceReload = false): void {
+    if (!forceReload && this.attendanceStudentLoadSubscriptions.has(groupId)) {
+      return;
+    }
+
+    const subscription = this.groupAttendanceDataService.loadStudentsByGroupId(groupId).subscribe({
+      next: (students) => {
+        this.attendanceStudentsByGroupId.set(groupId, this.mergeConfirmedPresentStudents(groupId, students));
+        this.attendanceStudentLoadSubscriptions.delete(groupId);
+        this.changeDetectorRef.markForCheck();
+      },
+      error: () => {
+        this.attendanceStudentLoadSubscriptions.delete(groupId);
+        this.changeDetectorRef.markForCheck();
+      },
+    });
+
+    this.attendanceStudentLoadSubscriptions.set(groupId, subscription);
+  }
+
+  private mergeConfirmedPresentStudents(groupId: string, students: TenantAttendanceStudent[]): TenantAttendanceStudent[] {
+    const currentStudents = this.attendanceStudentsByGroupId.get(groupId) ?? [];
+    const confirmedPresentStudents = currentStudents.filter((student) => student.isPresent);
+
+    if (confirmedPresentStudents.length === 0) {
+      return students;
+    }
+
+    return students.map((student) => {
+      const matchingConfirmedStudent = confirmedPresentStudents.find(
+        (confirmedStudent) =>
+          confirmedStudent.id === student.id ||
+          this.normalizeBarcodeValue(confirmedStudent.barcode) === this.normalizeBarcodeValue(student.barcode),
+      );
+
+      if (!matchingConfirmedStudent || student.isPresent) {
+        return student;
+      }
+
+      return {
+        ...student,
+        isPresent: true,
+        attendanceState: 'Present',
+        manualStatus: matchingConfirmedStudent.manualStatus,
+        overrideChecks: matchingConfirmedStudent.overrideChecks,
+      };
+    });
+  }
+
+  private normalizeBarcodeValue(value: string | null | undefined): string {
+    return value?.trim() ?? '';
   }
 }

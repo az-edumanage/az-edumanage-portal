@@ -15,6 +15,12 @@ export class TenantGroupsDataService {
       .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load groups')));
   }
 
+  deleteGroup(groupId: string): Observable<void> {
+    return this.http
+      .delete<void>(`${this.groupsUrl}/${encodeURIComponent(groupId)}`)
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to delete group')));
+  }
+
   private handleError(error: HttpErrorResponse, fallback: string): Observable<never> {
     const message = this.extractApiMessage(error.error) ?? fallback;
     return throwError(() => new Error(message));

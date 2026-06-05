@@ -11,7 +11,9 @@ import { TenantStudentsFacade } from '../../state/tenant-students.facade';
   selector: 'app-tenant-students',
   standalone: true,
   imports: [CommonModule, RouterModule, MatIconModule, FormsModule, ReactiveFormsModule],
-  templateUrl: './tenant-students.component.html'})
+  templateUrl: './tenant-students.component.html',
+  styleUrl: './tenant-students.component.css',
+})
 export class TenantStudentsComponent {
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);

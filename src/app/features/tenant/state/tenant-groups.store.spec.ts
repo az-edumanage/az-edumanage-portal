@@ -1,11 +1,24 @@
 import { TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
+import { TenantGroupsDataService } from '../data-access/tenant-groups-data.service';
 import { TenantGroupsStore } from './tenant-groups.store';
 
 describe('TenantGroupsStore', () => {
   let store: TenantGroupsStore;
+  let dataService: {
+    loadGroups: ReturnType<typeof vi.fn>;
+    deleteGroup: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    dataService = {
+      loadGroups: vi.fn(() => of([])),
+      deleteGroup: vi.fn(() => of(void 0)),
+    };
+
+    TestBed.configureTestingModule({
+      providers: [{ provide: TenantGroupsDataService, useValue: dataService }],
+    });
     store = TestBed.inject(TenantGroupsStore);
     store.groups.set([
       {
@@ -71,5 +84,40 @@ describe('TenantGroupsStore', () => {
     expect(store.pageStart()).toBe(3);
     expect(store.pageEnd()).toBe(3);
     expect(store.pagedGroups().length).toBe(1);
+  });
+
+  it('opens delete confirmation for groups without students', () => {
+    const emptyGroup = { ...store.groups()[0], studentsCount: 0 };
+
+    store.requestDelete(emptyGroup);
+
+    expect(store.deleteState()).toEqual({
+      status: 'confirming',
+      group: emptyGroup,
+      message: '',
+    });
+  });
+
+  it('blocks delete confirmation for groups with students', () => {
+    const groupWithStudents = store.groups()[0];
+
+    store.requestDelete(groupWithStudents);
+
+    expect(store.deleteState().status).toBe('failed');
+    expect(store.deleteState().message).toBe('Group cannot be deleted while students are linked');
+    expect(dataService.deleteGroup).not.toHaveBeenCalled();
+  });
+
+  it('deletes empty groups and removes them from the table rows', () => {
+    const emptyGroup = { ...store.groups()[0], studentsCount: 0 };
+    store.groups.update((groups) => groups.map((group) => (group.id === emptyGroup.id ? emptyGroup : group)));
+    store.requestDelete(emptyGroup);
+
+    store.confirmDelete();
+
+    expect(dataService.deleteGroup).toHaveBeenCalledWith('1');
+    expect(store.groups().some((group) => group.id === '1')).toBe(false);
+    expect(store.deleteState().status).toBe('success');
+    expect(store.deleteState().message).toBe('Group deleted successfully.');
   });
 });

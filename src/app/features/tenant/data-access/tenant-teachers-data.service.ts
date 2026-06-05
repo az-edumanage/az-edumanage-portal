@@ -38,6 +38,20 @@ export class TenantTeachersDataService {
       .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to change password')));
   }
 
+  deleteTeacher(teacherId: string): Observable<void> {
+    return this.http
+      .delete<void>(`${this.teachersUrl}/${encodeURIComponent(teacherId)}`)
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to delete teacher')));
+  }
+
+  exitTeacherGroup(teacherId: string, groupId: string): Observable<void> {
+    return this.http
+      .delete<void>(
+        `${this.teachersUrl}/${encodeURIComponent(teacherId)}/groups/${encodeURIComponent(groupId)}`,
+      )
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to exit group')));
+  }
+
   private handleError(error: HttpErrorResponse, fallback: string): Observable<never> {
     const message = this.extractApiMessage(error.error) ?? fallback;
     return throwError(() => new Error(message));

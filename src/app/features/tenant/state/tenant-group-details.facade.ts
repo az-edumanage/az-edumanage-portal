@@ -11,6 +11,8 @@ export class TenantGroupDetailsFacade {
   readonly students = this.store.students;
   readonly isLoading = this.store.isLoading;
   readonly error = this.store.error;
+  readonly exitStudentError = this.store.exitStudentError;
+  readonly exitingStudentId = this.store.exitingStudentId;
   readonly avgAttendanceLabel = this.store.avgAttendanceLabel;
   readonly absenceRateLabel = this.store.absenceRateLabel;
   readonly monthlyRevenueLabel = this.store.monthlyRevenueLabel;
@@ -26,5 +28,9 @@ export class TenantGroupDetailsFacade {
 
   clearSelectedStudent(): void {
     this.selectedStudent.set(null);
+  }
+
+  removeStudentFromGroup(groupId: string | null, student: GroupStudent): void {
+    this.store.removeStudentFromGroup(groupId, student);
   }
 }

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { TenantTeachersDataService } from '../../data-access/tenant-teachers-data.service';
-import { Teacher } from '../../models/tenant-teachers.models';
+import { Teacher, TeacherGroup } from '../../models/tenant-teachers.models';
 
 @Component({
   selector: 'app-tenant-teacher-details',
@@ -19,6 +19,8 @@ export class TenantTeacherDetailsComponent implements OnInit {
   readonly teacher = signal<Teacher | null>(null);
   readonly isLoading = signal(false);
   readonly errorMessage = signal<string | null>(null);
+  readonly exitGroupError = signal<string | null>(null);
+  readonly exitingGroupId = signal<string | null>(null);
   readonly groups = computed(() => this.teacher()?.groups ?? []);
 
   ngOnInit(): void {
@@ -37,6 +39,28 @@ export class TenantTeacherDetailsComponent implements OnInit {
       error: (error: Error) => {
         this.errorMessage.set(error.message);
         this.isLoading.set(false);
+      },
+    });
+  }
+
+  exitGroup(group: TeacherGroup): void {
+    const currentTeacher = this.teacher();
+    if (!currentTeacher || this.exitingGroupId()) {
+      return;
+    }
+    this.exitingGroupId.set(group.id);
+    this.exitGroupError.set(null);
+    this.data.exitTeacherGroup(currentTeacher.id, group.id).subscribe({
+      next: () => {
+        this.teacher.update((teacher) => teacher ? {
+          ...teacher,
+          groups: (teacher.groups ?? []).filter((assignedGroup) => assignedGroup.id !== group.id),
+        } : teacher);
+        this.exitingGroupId.set(null);
+      },
+      error: (error: Error) => {
+        this.exitGroupError.set(error.message);
+        this.exitingGroupId.set(null);
       },
     });
   }

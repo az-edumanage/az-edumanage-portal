@@ -2,6 +2,14 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { TenantGroupsDataService } from '../data-access/tenant-groups-data.service';
 import { Group } from '../models/tenant-groups.models';
 
+type GroupDeleteStatus = 'closed' | 'confirming' | 'deleting' | 'success' | 'failed';
+
+export interface GroupDeleteState {
+  status: GroupDeleteStatus;
+  group: Group | null;
+  message: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class TenantGroupsStore {
   private readonly data = inject(TenantGroupsDataService);
@@ -19,6 +27,11 @@ export class TenantGroupsStore {
   readonly pageSize = signal(10);
 
   readonly groups = signal<Group[]>([]);
+  readonly deleteState = signal<GroupDeleteState>({
+    status: 'closed',
+    group: null,
+    message: '',
+  });
 
   readonly activeFiltersCount = computed(() => {
     let count = 0;
@@ -88,6 +101,63 @@ export class TenantGroupsStore {
       error: (error: Error) => {
         this.errorMessage.set(error.message);
         this.isLoading.set(false);
+      },
+    });
+  }
+
+  requestDelete(group: Group): void {
+    if (group.studentsCount > 0) {
+      this.deleteState.set({
+        status: 'failed',
+        group,
+        message: 'Group cannot be deleted while students are linked',
+      });
+      return;
+    }
+
+    this.deleteState.set({
+      status: 'confirming',
+      group,
+      message: '',
+    });
+  }
+
+  closeDeleteModal(): void {
+    this.deleteState.set({
+      status: 'closed',
+      group: null,
+      message: '',
+    });
+  }
+
+  confirmDelete(): void {
+    const group = this.deleteState().group;
+    if (!group) {
+      return;
+    }
+
+    this.deleteState.set({
+      status: 'deleting',
+      group,
+      message: 'Deleting group...',
+    });
+
+    this.data.deleteGroup(group.id).subscribe({
+      next: () => {
+        this.groups.update((groups) => groups.filter((currentGroup) => currentGroup.id !== group.id));
+        this.clampPage();
+        this.deleteState.set({
+          status: 'success',
+          group,
+          message: 'Group deleted successfully.',
+        });
+      },
+      error: (error: Error) => {
+        this.deleteState.set({
+          status: 'failed',
+          group,
+          message: error.message || 'Unable to delete group',
+        });
       },
     });
   }
