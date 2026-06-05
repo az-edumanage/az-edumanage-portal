@@ -33,6 +33,7 @@ export class TenantGroupsComponent {
   readonly pageSize = this.facade.pageSize;
   readonly pageStart = this.facade.pageStart;
   readonly pageEnd = this.facade.pageEnd;
+  readonly deleteState = this.facade.deleteState;
 
   readonly filterForm = this.fb.group({
     subject: [''],
@@ -81,6 +82,18 @@ export class TenantGroupsComponent {
 
   setPageSize(value: string): void {
     this.facade.setPageSize(Number(value));
+  }
+
+  requestDelete(groupId: string): void {
+    this.facade.requestDelete(groupId);
+  }
+
+  closeDeleteModal(): void {
+    this.facade.closeDeleteModal();
+  }
+
+  confirmDelete(): void {
+    this.facade.confirmDelete();
   }
 
   formatStartAt(group: Group): string {

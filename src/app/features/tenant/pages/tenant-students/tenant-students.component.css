@@ -1,0 +1,46 @@
+:host .tenant-students-table {
+  text-align: left;
+}
+
+:host .tenant-students-table thead th {
+  text-align: left;
+}
+
+:host .tenant-students-table thead th.tenant-students-actions-header {
+  text-align: right;
+}
+
+:host-context(.rtl) .tenant-students-table thead th:not(.tenant-students-actions-header),
+:host-context([dir='rtl']) .tenant-students-table thead th:not(.tenant-students-actions-header) {
+  text-align: right !important;
+}
+
+:host-context(.rtl) .tenant-students-student-header,
+:host-context([dir='rtl']) .tenant-students-student-header {
+  padding-right: 4.75rem !important;
+}
+
+:host-context(.rtl) .tenant-students-actions-header,
+:host-context([dir='rtl']) .tenant-students-actions-header {
+  text-align: left !important;
+}
+
+:host-context(.rtl) .tenant-students-table tbody td:not(.tenant-students-actions-cell),
+:host-context([dir='rtl']) .tenant-students-table tbody td:not(.tenant-students-actions-cell) {
+  text-align: right !important;
+}
+
+:host-context(.rtl) .tenant-students-student-cell,
+:host-context([dir='rtl']) .tenant-students-student-cell {
+  justify-content: flex-start;
+}
+
+:host-context(.rtl) .tenant-students-actions-cell,
+:host-context([dir='rtl']) .tenant-students-actions-cell {
+  text-align: left !important;
+}
+
+:host-context(.rtl) .tenant-students-actions,
+:host-context([dir='rtl']) .tenant-students-actions {
+  justify-content: flex-end !important;
+}

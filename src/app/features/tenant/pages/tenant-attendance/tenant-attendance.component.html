@@ -51,9 +51,9 @@
           <span>Egypt Attendance Clock</span>
           <strong>{{ attendanceClock.displayTime }}</strong>
         </div>
-        <button type="button">
+        <button type="button" (click)="filterGroupsByCurrentTime()">
           <mat-icon>sync</mat-icon>
-          Clear List
+          Filter Groups
         </button>
       </div>
     </section>
@@ -81,14 +81,38 @@
           </div>
 
           <label class="barcode-input-label" for="attendance-barcode-input">Read Barcode Data Input</label>
-          <div class="barcode-input-row">
+          <div class="barcode-input-row" [class.barcode-input-row-loading]="barcodeScanInProgress">
             <mat-icon>qr_code_2</mat-icon>
-            <input id="attendance-barcode-input" value="10001" aria-label="Barcode data input" />
-            <button type="button" aria-label="Submit barcode">
-              <mat-icon>chevron_right</mat-icon>
+            <input
+              #barcodeInput
+              id="attendance-barcode-input"
+              [value]="barcodeInputValue"
+              [disabled]="barcodeScanInProgress"
+              aria-label="Barcode data input"
+              aria-describedby="attendance-barcode-help attendance-barcode-notification"
+              autocomplete="off"
+              inputmode="numeric"
+              (input)="onBarcodeInput($any($event.target).value)"
+              (keydown.enter)="submitBarcodeScan()"
+            />
+            <button type="button" aria-label="Submit barcode" [disabled]="barcodeScanInProgress" (click)="submitBarcodeScan()">
+              <mat-icon>{{ barcodeScanInProgress ? 'sync' : 'chevron_right' }}</mat-icon>
             </button>
           </div>
-          <p class="scanner-help">Press Enter to route barcode reads, or use manual override below.</p>
+          @if (barcodeScanNotification) {
+            <div
+              id="attendance-barcode-notification"
+              class="barcode-scan-notification"
+              [class.barcode-scan-notification-success]="barcodeScanNotification.state === 'success'"
+              [class.barcode-scan-notification-error]="barcodeScanNotification.state === 'error'"
+              role="status"
+              aria-live="polite"
+            >
+              <mat-icon>{{ barcodeScanNotification.state === 'success' ? 'check_circle' : 'error' }}</mat-icon>
+              <span>{{ barcodeScanNotification.message }}</span>
+            </div>
+          }
+          <p id="attendance-barcode-help" class="scanner-help">Press Enter to route barcode reads, or use manual override below.</p>
         </article>
 
         <article class="attendance-panel schedule-panel">
@@ -97,22 +121,38 @@
             <strong>Hourly Filter</strong>
           </header>
           <p>Choose any hourly slot to view active classroom study schedules.</p>
-          <div class="time-slot-grid">
-            @for (slot of timeSlots; track slot.time) {
-              <button
-                type="button"
-                [class.time-slot-active]="slot.time === selectedTimeSlot"
-                [attr.aria-pressed]="slot.time === selectedTimeSlot"
-                (click)="selectTimeSlot(slot.time)"
-              >
-                <strong>{{ slot.time }}</strong>
-                <span>
-                  <mat-icon>menu_book</mat-icon>
-                  {{ slot.groups }} Groups
-                </span>
-              </button>
-            }
-          </div>
+          @if (hasTimeSlots) {
+            <div class="time-slot-grid">
+              @for (slot of timeSlots; track slot.time) {
+                <button
+                  type="button"
+                  [class.time-slot-active]="slot.time === selectedTimeSlot"
+                  [attr.aria-pressed]="slot.time === selectedTimeSlot"
+                  (click)="selectTimeSlot(slot.time)"
+                >
+                  <strong>{{ slot.time }}</strong>
+                  <span>
+                    <mat-icon>menu_book</mat-icon>
+                    {{ slot.groups }} {{ slot.groups === 1 ? 'Group' : 'Groups' }}
+                  </span>
+                </button>
+              }
+            </div>
+          } @else {
+            <div class="time-slot-empty">
+              <mat-icon>event_busy</mat-icon>
+              <strong>No group time slots available</strong>
+              <span>
+                @if (scheduleLoadError) {
+                  {{ scheduleLoadError }}
+                } @else if (scheduleLoading) {
+                  Loading group start times
+                } @else {
+                  No scheduled group start times are available for attendance.
+                }
+              </span>
+            </div>
+          }
         </article>
       </div>
 
@@ -131,7 +171,7 @@
             <span>Total Expected Students</span>
             <p>Total required attendance</p>
             <div>
-              <strong>9</strong>
+              <strong>{{ totalExpectedStudents }}</strong>
               <small>Headcount Scheduled</small>
             </div>
           </article>
@@ -159,89 +199,128 @@
           </div>
         </article>
 
-        <article class="attendance-table-card">
-          <header class="class-header">
-            <div class="class-mark" aria-hidden="true">PH</div>
+        <section class="selected-groups-section" aria-label="Selected time slot groups">
+          <header class="selected-groups-summary">
+            <div class="class-mark" aria-hidden="true">TS</div>
             <div class="class-title-block">
               <div>
-                <h2>Physics G12-A</h2>
-                <span>Room 201</span>
+                <h2>{{ selectedTimeSlotLabel }} Groups</h2>
+                <span>{{ selectedTimeSlotGroupsLabel }}</span>
               </div>
-              <p>Instructor: <strong>Dr. Ahmed Mansour</strong> · Subject: Physics</p>
-            </div>
-            <div class="class-status">
-              <span>Present Status</span>
-              <strong>{{ presentCount }} / {{ students.length }} Present</strong>
-              <em>{{ classAttendancePercent }}%</em>
+              <p>Showing scheduled groups related to the selected time slot</p>
             </div>
           </header>
 
-          <div class="attendance-table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Student Name</th>
-                  <th>RFID Barcode ID</th>
-                  <th>Attendance State</th>
-                  <th>Manual Override Checks</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (student of students; track student.code) {
-                  <tr [class.student-row-present]="student.present">
-                    <td>
-                      <div class="student-cell">
-                        <span>{{ student.initial }}</span>
-                        <div>
-                          <strong>{{ student.name }}</strong>
-                          @if (student.present) {
-                            <small>Confirmed present</small>
+          @if (selectedTimeSlotGroups.length > 0) {
+            <div class="selected-group-list" aria-label="Groups related to selected time slot">
+              @for (group of selectedTimeSlotGroups; track group.groupId) {
+                <article class="selected-group-item">
+                  <header class="selected-group-card-header">
+                    <div class="class-mark" aria-hidden="true">{{ getGroupMark(group.groupName) }}</div>
+                    <div class="selected-group-copy">
+                      <div>
+                        <h3>{{ group.groupName }}</h3>
+                        <span>{{ group.startTime }}</span>
+                      </div>
+                      <p>Instructor: <strong>{{ group.teacherName }}</strong></p>
+                      <p>Room: <strong>{{ group.roomName }}</strong></p>
+                      <small>{{ group.studentCount }} {{ group.studentCount === 1 ? 'Student' : 'Students' }}</small>
+                      <small>{{ formatGroupDays(group.days) }} · {{ formatGroupDuration(group.duration) }}</small>
+                      <small>Location: {{ group.locationTime }}</small>
+                    </div>
+                    <div class="class-status">
+                      <span>Present Status</span>
+                      <strong>{{ group.presentCount }} / {{ group.studentCount }} Present</strong>
+                      <em>{{ group.attendancePercent }}%</em>
+                    </div>
+                  </header>
+
+                  @if (group.studentCount > 0) {
+                    <div class="attendance-table-wrap">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Student Name</th>
+                            <th>RFID BARCODE ID</th>
+                            <th>Attendance State</th>
+                            <th>MANUAL OVERRIDE CHECK</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (student of group.students; track student.id) {
+                            <tr [class.student-row-present]="student.isPresent">
+                              <td>
+                                <div class="student-cell">
+                                  <span>{{ getStudentInitial(student.name) }}</span>
+                                  <div>
+                                    <strong>{{ student.name }}</strong>
+                                    @if (student.isPresent) {
+                                      <small>Confirmed present</small>
+                                    }
+                                  </div>
+                                </div>
+                              </td>
+                              <td>
+                                <code>{{ formatUnavailableValue(student.barcode) }}</code>
+                              </td>
+                              <td>
+                                <span [class]="student.isPresent ? 'present-pill' : 'absent-pill'">
+                                  <i aria-hidden="true"></i>
+                                  {{ student.attendanceState }}
+                                </span>
+                              </td>
+                              <td>
+                                <div class="attendance-actions">
+                                  <button
+                                    type="button"
+                                    class="present-button"
+                                    [class.present-button-active]="student.isPresent"
+                                    [attr.aria-pressed]="student.isPresent"
+                                    (click)="markStudentAttendance(group.groupId, student.id, true)"
+                                  >
+                                    <mat-icon>person_check</mat-icon>
+                                    Present
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="absent-button"
+                                    [class.absent-button-active]="!student.isPresent"
+                                    [attr.aria-pressed]="!student.isPresent"
+                                    (click)="markStudentAttendance(group.groupId, student.id, false)"
+                                  >
+                                    <mat-icon>person_cancel</mat-icon>
+                                    Absent
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
                           }
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <code>[||| {{ student.code }} |||]</code>
-                    </td>
-                    <td>
-                      <span [class]="student.present ? 'present-pill' : 'absent-pill'">
-                        <i aria-hidden="true"></i>
-                        {{ student.present ? 'Present' : 'Absent' }}
-                      </span>
-                      @if (student.present) {
-                        <small class="scanned-time">Scanned at: 11:27:55 PM</small>
-                      }
-                    </td>
-                    <td>
-                      <div class="attendance-actions">
-                        <button
-                          type="button"
-                          class="present-button"
-                          [class.present-button-active]="student.present"
-                          [attr.aria-pressed]="student.present"
-                          (click)="markStudentAttendance(student.code, true)"
-                        >
-                          <mat-icon>person_check</mat-icon>
-                          Present
-                        </button>
-                        <button
-                          type="button"
-                          class="absent-button"
-                          [class.absent-button-active]="!student.present"
-                          [attr.aria-pressed]="!student.present"
-                          (click)="markStudentAttendance(student.code, false)"
-                        >
-                          <mat-icon>person_cancel</mat-icon>
-                          Absent
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </article>
+                        </tbody>
+                      </table>
+                    </div>
+                  } @else {
+                    <div class="selected-group-zero-students">
+                      <mat-icon>group_off</mat-icon>
+                      <strong>0 Students</strong>
+                      <span>No students are assigned to this selected group.</span>
+                    </div>
+                  }
+                </article>
+              }
+            </div>
+          } @else {
+            <div class="selected-group-empty">
+              <mat-icon>event_busy</mat-icon>
+              @if (activeFilterEmpty) {
+                <strong>No groups start at this time</strong>
+                <span>Select another time card to view its related groups.</span>
+              } @else {
+                <strong>No groups match {{ selectedTimeSlotLabel }}</strong>
+                <span>Select another time card to view its related groups.</span>
+              }
+            </div>
+          }
+        </section>
       </div>
     </section>
   </div>

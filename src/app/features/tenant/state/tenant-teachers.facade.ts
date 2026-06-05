@@ -35,6 +35,7 @@ export class TenantTeachersFacade {
   readonly passwordSaving = this.store.passwordSaving;
   readonly passwordError = this.store.passwordError;
   readonly passwordSuccess = this.store.passwordSuccess;
+  readonly deleteState = this.store.deleteState;
 
   loadTeachers(): void {
     this.store.setLoading(true);
@@ -147,5 +148,28 @@ export class TenantTeachersFacade {
         },
         error: (error: Error) => this.store.setPasswordError(error.message),
       });
+  }
+
+  requestDelete(teacher: Teacher): void {
+    this.store.requestDelete(teacher);
+  }
+
+  closeDeleteModal(): void {
+    this.store.closeDeleteModal();
+  }
+
+  confirmDelete(): void {
+    const teacher = this.deleteState().teacher;
+    if (!teacher || this.deleteState().status === 'deleting') {
+      return;
+    }
+    this.store.setDeleteDeleting();
+    this.data.deleteTeacher(teacher.id).subscribe({
+      next: () => {
+        this.store.removeTeacher(teacher.id);
+        this.store.setDeleteSuccess('Teacher deleted successfully.');
+      },
+      error: (error: Error) => this.store.setDeleteFailed(error.message),
+    });
   }
 }

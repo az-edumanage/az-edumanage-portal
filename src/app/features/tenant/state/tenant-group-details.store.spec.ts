@@ -39,10 +39,12 @@ describe('TenantGroupDetailsStore', () => {
   };
   const dataService = {
     loadGroupById: vi.fn(() => of(group)),
+    removeStudentFromGroup: vi.fn(() => of(null)),
   };
 
   beforeEach(() => {
     dataService.loadGroupById.mockReturnValue(of(group));
+    dataService.removeStudentFromGroup.mockReturnValue(of(null));
     TestBed.configureTestingModule({
       providers: [
         {
@@ -70,6 +72,19 @@ describe('TenantGroupDetailsStore', () => {
     expect(store.students()).toEqual([]);
   });
 
+  it('formats real decimal attendance and absence rates from group details', () => {
+    dataService.loadGroupById.mockReturnValue(of({
+      ...group,
+      avgAttendanceRate: 66.666,
+      absenceRate: 33.333,
+    }));
+
+    store.loadGroup('group-123');
+
+    expect(store.avgAttendanceLabel()).toBe('66.666%');
+    expect(store.absenceRateLabel()).toBe('33.333%');
+  });
+
   it('clears stale group data and exposes the existing error signal when loading fails', () => {
     store.loadGroup('group-123');
     expect(store.group()?.id).toBe('group-123');
@@ -82,5 +97,27 @@ describe('TenantGroupDetailsStore', () => {
     expect(store.selectedStudent()).toBeNull();
     expect(store.error()).toBe('Group not found');
     expect(store.isLoading()).toBe(false);
+  });
+
+  it('removes an enrolled student from the current group', () => {
+    store.loadGroup('group-123');
+
+    store.removeStudentFromGroup('group-123', group.students![0]);
+
+    expect(dataService.removeStudentFromGroup).toHaveBeenCalledWith('group-123', 'student-1');
+    expect(store.students().map((student) => student.id)).toEqual(['student-2']);
+    expect(store.group()?.enrolled).toBe(1);
+    expect(store.group()?.monthlyRevenue).toBe(500);
+  });
+
+  it('keeps students visible and exposes the exit error when removal fails', () => {
+    dataService.removeStudentFromGroup.mockReturnValue(throwError(() => new Error('Student is not enrolled in this group')));
+    store.loadGroup('group-123');
+
+    store.removeStudentFromGroup('group-123', group.students![0]);
+
+    expect(store.students().map((student) => student.id)).toEqual(['student-1', 'student-2']);
+    expect(store.exitStudentError()).toBe('Student is not enrolled in this group');
+    expect(store.exitingStudentId()).toBeNull();
   });
 });

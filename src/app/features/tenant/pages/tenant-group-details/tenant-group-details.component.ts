@@ -20,6 +20,8 @@ export class TenantGroupDetailsComponent implements OnInit {
   readonly students = this.facade.students;
   readonly isLoading = this.facade.isLoading;
   readonly error = this.facade.error;
+  readonly exitStudentError = this.facade.exitStudentError;
+  readonly exitingStudentId = this.facade.exitingStudentId;
   readonly avgAttendanceLabel = this.facade.avgAttendanceLabel;
   readonly absenceRateLabel = this.facade.absenceRateLabel;
   readonly monthlyRevenueLabel = this.facade.monthlyRevenueLabel;
@@ -36,5 +38,10 @@ export class TenantGroupDetailsComponent implements OnInit {
 
   clearSelectedStudent(): void {
     this.facade.clearSelectedStudent();
+  }
+
+  exitGroup(event: Event, student: GroupStudent): void {
+    event.stopPropagation();
+    this.facade.removeStudentFromGroup(this.groupId, student);
   }
 }

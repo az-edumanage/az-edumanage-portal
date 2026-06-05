@@ -1,6 +1,14 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { Teacher } from '../models/tenant-teachers.models';
 
+export type TeacherDeleteStatus = 'closed' | 'confirming' | 'deleting' | 'success' | 'failed';
+
+export interface TeacherDeleteState {
+  status: TeacherDeleteStatus;
+  teacher: Teacher | null;
+  message: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class TenantTeachersStore {
   readonly searchQuery = signal('');
@@ -19,6 +27,7 @@ export class TenantTeachersStore {
   readonly passwordSaving = signal(false);
   readonly passwordError = signal<string | null>(null);
   readonly passwordSuccess = signal<string | null>(null);
+  readonly deleteState = signal<TeacherDeleteState>({ status: 'closed', teacher: null, message: '' });
   readonly teachers = signal<Teacher[]>([]);
   readonly isLoading = signal(false);
   readonly errorMessage = signal<string | null>(null);
@@ -96,6 +105,11 @@ export class TenantTeachersStore {
     this.clampPage();
   }
 
+  removeTeacher(id: string): void {
+    this.teachers.update((teachers) => teachers.filter((teacher) => teacher.id !== id));
+    this.clampPage();
+  }
+
   setLoading(value: boolean): void {
     this.isLoading.set(value);
   }
@@ -134,6 +148,28 @@ export class TenantTeachersStore {
     this.passwordError.set(null);
     this.passwordSuccess.set(null);
     this.passwordSaving.set(false);
+  }
+
+  requestDelete(teacher: Teacher): void {
+    this.deleteState.set({ status: 'confirming', teacher, message: '' });
+  }
+
+  setDeleteDeleting(): void {
+    const current = this.deleteState();
+    this.deleteState.set({ ...current, status: 'deleting', message: 'Deleting teacher...' });
+  }
+
+  setDeleteSuccess(message: string): void {
+    this.deleteState.set({ status: 'success', teacher: null, message });
+  }
+
+  setDeleteFailed(message: string): void {
+    const current = this.deleteState();
+    this.deleteState.set({ ...current, status: 'failed', message });
+  }
+
+  closeDeleteModal(): void {
+    this.deleteState.set({ status: 'closed', teacher: null, message: '' });
   }
 
   setPasswordSaving(value: boolean): void {

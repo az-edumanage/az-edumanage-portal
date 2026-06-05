@@ -245,6 +245,15 @@
                           <button class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Edit">
                             <mat-icon class="text-sm block">edit</mat-icon>
                           </button>
+                          <button
+                            type="button"
+                            (click)="requestDelete(group.id)"
+                            class="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
+                            title="Delete group"
+                            aria-label="Delete group"
+                          >
+                            <mat-icon class="text-sm block">delete</mat-icon>
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -306,6 +315,82 @@
           <button (click)="clearAllFilters()" class="mt-6 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-all">
             Clear All Filters
           </button>
+        </div>
+      }
+
+      @if (deleteState().status !== 'closed') {
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4" role="presentation">
+          <div class="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl" role="dialog" aria-modal="true" aria-labelledby="delete-group-title">
+            <div class="p-6">
+              @if (deleteState().status === 'confirming' && deleteState().group; as groupToDelete) {
+                <div class="flex items-start gap-4">
+                  <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-50 dark:bg-rose-900/20">
+                    <mat-icon class="text-rose-600">delete</mat-icon>
+                  </div>
+                  <div>
+                    <h3 id="delete-group-title" class="text-lg font-bold text-slate-900 dark:text-white">Delete Group</h3>
+                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Delete {{ groupToDelete.name }}? This action cannot be undone.</p>
+                  </div>
+                </div>
+              } @else if (deleteState().status === 'deleting') {
+                <div class="text-center">
+                  <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-900/20">
+                    <mat-icon class="animate-spin text-indigo-600">progress_activity</mat-icon>
+                  </div>
+                  <h3 id="delete-group-title" class="mt-4 text-lg font-bold text-slate-900 dark:text-white">Deleting Group</h3>
+                  <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">{{ deleteState().message }}</p>
+                </div>
+              } @else {
+                <div class="text-center">
+                  <div
+                    class="mx-auto flex h-12 w-12 items-center justify-center rounded-full"
+                    [class.bg-emerald-50]="deleteState().status === 'success'"
+                    [class.dark:bg-emerald-900/20]="deleteState().status === 'success'"
+                    [class.bg-rose-50]="deleteState().status === 'failed'"
+                    [class.dark:bg-rose-900/20]="deleteState().status === 'failed'"
+                  >
+                    <mat-icon
+                      [class.text-emerald-600]="deleteState().status === 'success'"
+                      [class.text-rose-600]="deleteState().status === 'failed'"
+                    >
+                      {{ deleteState().status === 'success' ? 'check_circle' : 'error' }}
+                    </mat-icon>
+                  </div>
+                  <h3 id="delete-group-title" class="mt-4 text-lg font-bold text-slate-900 dark:text-white">
+                    {{ deleteState().status === 'success' ? 'Group Deleted' : "Couldn't Delete Group" }}
+                  </h3>
+                  <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">{{ deleteState().message }}</p>
+                </div>
+              }
+            </div>
+
+            <div class="flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-800 px-6 py-4">
+              @if (deleteState().status === 'confirming') {
+                <button
+                  type="button"
+                  (click)="closeDeleteModal()"
+                  class="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  (click)="confirmDelete()"
+                  class="px-4 py-2 text-sm font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors"
+                >
+                  Delete
+                </button>
+              } @else if (deleteState().status !== 'deleting') {
+                <button
+                  type="button"
+                  (click)="closeDeleteModal()"
+                  class="px-4 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
+                >
+                  Close
+                </button>
+              }
+            </div>
+          </div>
         </div>
       }
     </div>

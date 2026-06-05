@@ -55,4 +55,14 @@ describe('TenantGroupsDataService', () => {
       },
     ]);
   });
+
+  it('deletes a tenant group through the backend', () => {
+    service.deleteGroup('group-1').subscribe((response) => {
+      expect(response).toBeNull();
+    });
+
+    const request = httpTesting.expectOne((req) => req.url.endsWith('/tenant/groups/group-1'));
+    expect(request.request.method).toBe('DELETE');
+    request.flush(null);
+  });
 });
