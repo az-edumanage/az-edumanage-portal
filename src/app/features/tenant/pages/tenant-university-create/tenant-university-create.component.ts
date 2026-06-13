@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { TenantUniversitiesFacade } from '../../state/tenant-universities.facade';
 
@@ -15,6 +15,7 @@ import { TenantUniversitiesFacade } from '../../state/tenant-universities.facade
 export class TenantUniversityCreateComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly facade = inject(TenantUniversitiesFacade);
 
   readonly modalMode = input(false);
@@ -55,6 +56,39 @@ export class TenantUniversityCreateComponent implements OnInit {
     }
   }
 
+  private groupReturnUrl(): string | null {
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    return returnUrl === '/tenant/groups/create' ? returnUrl : null;
+  }
+
+  private async goAfterCreate(): Promise<void> {
+    const returnUrl = this.groupReturnUrl();
+    if (returnUrl) {
+      await this.router.navigateByUrl(returnUrl);
+      return;
+    }
+
+    await this.facade.goToList();
+  }
+
+  private async goAfterCancel(): Promise<void> {
+    const returnUrl = this.groupReturnUrl();
+    if (returnUrl) {
+      await this.router.navigateByUrl(returnUrl);
+      return;
+    }
+
+    await this.facade.goToList();
+  }
+
+  resetForm(): void {
+    this.form.reset({
+      name: '',
+      countryId: this.countryOptions()[0]?.id ?? '',
+      description: '',
+    });
+  }
+
   async submit(): Promise<void> {
     if (this.form.invalid || this.saving()) {
       this.form.markAllAsTouched();
@@ -71,7 +105,7 @@ export class TenantUniversityCreateComponent implements OnInit {
         this.saved.emit();
         return;
       }
-      await this.facade.goToList();
+      await this.goAfterCreate();
     }
   }
 
@@ -80,6 +114,6 @@ export class TenantUniversityCreateComponent implements OnInit {
       this.closed.emit();
       return;
     }
-    void this.facade.goToList();
+    void this.goAfterCancel();
   }
 }

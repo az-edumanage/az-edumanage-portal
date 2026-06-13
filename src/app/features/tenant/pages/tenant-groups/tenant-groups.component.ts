@@ -96,27 +96,69 @@ export class TenantGroupsComponent {
     this.facade.confirmDelete();
   }
 
+  formatRooms(group: Group): string {
+    const rooms = new Set<string>();
+    if (group.room?.trim()) {
+      rooms.add(group.room.trim());
+    }
+
+    Object.values(group.daySchedules ?? {}).forEach((schedule) => {
+      const room = schedule.room?.trim();
+      if (room) {
+        rooms.add(room);
+      }
+    });
+
+    return [...rooms].join(', ') || 'Not set';
+  }
+
   formatStartAt(group: Group): string {
+    const dayStartTimes = Object.values(group.daySchedules ?? {})
+      .map((schedule) => schedule.startTime?.trim())
+      .filter((value): value is string => !!value);
+
+    if (dayStartTimes.length > 0) {
+      const formattedTimes = new Set(dayStartTimes.map((time) => this.formatTimeValue(time)));
+      return [...formattedTimes].join(', ');
+    }
+
     if (!group.startAt) {
       return 'Not set';
     }
 
-    const minutes = this.toMinutes(group.startAt);
+    return this.formatTimeValue(group.startAt);
+  }
+
+  private formatTimeValue(time: string): string {
+    const minutes = this.toMinutes(time);
 
     if (minutes === null) {
-      return group.startAt;
+      return time;
     }
 
     return this.formatMinutes(minutes);
   }
 
   formatDuration(group: Group): string {
+    const dayDurations = Object.values(group.daySchedules ?? {})
+      .map((schedule) => this.durationBetween(schedule.startTime ?? '', schedule.endTime ?? ''))
+      .filter((value): value is number => value !== null);
+
+    if (dayDurations.length > 0) {
+      const formattedDurations = new Set(dayDurations.map((duration) => this.formatDurationValue(duration)));
+      return [...formattedDurations].join(', ');
+    }
+
     if (!group.duration) {
       return 'Not set';
     }
 
-    const hours = Math.floor(group.duration / 60);
-    const minutes = group.duration % 60;
+    return this.formatDurationValue(group.duration);
+  }
+
+  private formatDurationValue(duration: number): string {
+    const hours = Math.floor(duration / 60);
+    const minutes = duration % 60;
 
     if (hours > 0 && minutes > 0) {
       return `${hours} hr ${minutes} min`;
@@ -127,6 +169,18 @@ export class TenantGroupsComponent {
     }
 
     return `${minutes} min`;
+  }
+
+  private durationBetween(startTime: string, endTime: string): number | null {
+    const startMinutes = this.toMinutes(startTime);
+    const endMinutes = this.toMinutes(endTime);
+
+    if (startMinutes === null || endMinutes === null) {
+      return null;
+    }
+
+    const duration = endMinutes - startMinutes;
+    return duration > 0 ? duration : null;
   }
 
   private formatMinutes(totalMinutes: number): string {

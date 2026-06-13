@@ -9,12 +9,16 @@ export class TenantGroupAttendanceFacade {
   readonly today = this.store.today;
   readonly students = this.store.students;
   readonly isSaving = this.store.isSaving;
+  readonly isLoading = this.store.isLoading;
+  readonly error = this.store.error;
+  readonly attendanceAvailable = this.store.attendanceAvailable;
+  readonly attendanceBlockedMessage = this.store.attendanceBlockedMessage;
   readonly presentCount = this.store.presentCount;
   readonly absentCount = this.store.absentCount;
   readonly attendanceRate = this.store.attendanceRate;
 
-  loadGroup(id: string | null): void {
-    this.store.loadGroup(id);
+  async loadGroup(id: string | null): Promise<void> {
+    await this.store.loadGroup(id);
   }
 
   toggleAttendance(id: string, isPresent: boolean): void {

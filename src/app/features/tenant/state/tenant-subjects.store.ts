@@ -16,6 +16,8 @@ export class TenantSubjectsStore {
   readonly subjects = signal<TenantSubject[]>([]);
   readonly loading = signal(false);
   readonly loadError = signal<string | null>(null);
+  readonly deleteError = signal<string | null>(null);
+  readonly deletingId = signal<string | null>(null);
 
   readonly activeFiltersCount = computed(() => {
     let count = 0;
@@ -87,6 +89,21 @@ export class TenantSubjectsStore {
       this.loadError.set(this.data.toUserMessage(error));
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  async deleteSubject(id: string): Promise<boolean> {
+    this.deletingId.set(id);
+    this.deleteError.set(null);
+    try {
+      await this.data.deleteSubject(id);
+      this.subjects.update((subjects) => subjects.filter((subject) => subject.id !== id));
+      return true;
+    } catch (error) {
+      this.deleteError.set(this.data.toUserMessage(error, 'Unable to delete subject. Please try again.'));
+      return false;
+    } finally {
+      this.deletingId.set(null);
     }
   }
 }

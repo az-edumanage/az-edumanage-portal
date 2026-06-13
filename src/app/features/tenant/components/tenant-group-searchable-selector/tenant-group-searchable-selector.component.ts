@@ -6,6 +6,7 @@ import { TenantGroupSelectorOption } from '../../models/tenant-group-create.mode
 
 @Component({
   selector: 'app-tenant-group-searchable-selector',
+  host: { '(click)': '$event.stopPropagation()' },
   imports: [CommonModule, RouterModule, MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './tenant-group-searchable-selector.component.html',
@@ -17,6 +18,8 @@ export class TenantGroupSearchableSelectorComponent {
   readonly placeholder = input.required<string>();
   readonly selectedValue = input('');
   readonly isOpen = input(false);
+  readonly disabled = input(false);
+  readonly hideLabel = input(false);
 
   readonly options = input<TenantGroupSelectorOption[]>([]);
   readonly searchQuery = input('');
@@ -24,6 +27,7 @@ export class TenantGroupSearchableSelectorComponent {
   readonly emptyText = input('No items found');
 
   readonly footerRouterLink = input<string | null>(null);
+  readonly footerQueryParams = input<Record<string, string> | null>(null);
   readonly footerIcon = input('add');
   readonly footerLabel = input<string | null>(null);
   readonly footerButton = input<string | null>(null);
@@ -32,6 +36,14 @@ export class TenantGroupSearchableSelectorComponent {
   readonly searchQueryChanged = output<string>();
   readonly selected = output<string>();
   readonly footerClicked = output<void>();
+
+  onToggle(): void {
+    if (this.disabled()) {
+      return;
+    }
+
+    this.toggled.emit();
+  }
 
   onSearchInput(event: Event): void {
     const value = (event.target as HTMLInputElement).value;

@@ -1,3 +1,5 @@
+import { TenantSubjectTeacherRow } from './tenant-subjects.models';
+
 export interface TenantUniversitySubject {
   id: string;
   universityId: string;
@@ -8,8 +10,10 @@ export interface TenantUniversitySubject {
   description: string | null;
   groupCount: number;
   studentCount: number;
+  assignedTeachersCount: number;
   createdAt: string;
   updatedAt: string;
+  teachers: TenantSubjectTeacherRow[];
 }
 
 export interface TenantUniversitySubjectPayload {

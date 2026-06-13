@@ -5,11 +5,17 @@ export interface TenantAttendanceStudent {
   barcode: string | null;
   isPresent: boolean;
   attendanceState: 'Present' | 'Absent';
+  attendanceTime: string;
   manualStatus: 'Manual' | 'Auto';
   overrideChecks: string;
   attendanceRate: number;
   totalSessions: number;
   attendedSessions: number;
+}
+
+export interface TenantGroupAttendanceDetails {
+  attendanceAvailable: boolean;
+  students: TenantAttendanceStudent[];
 }
 
 export interface TenantBarcodeAttendanceScanRequest {

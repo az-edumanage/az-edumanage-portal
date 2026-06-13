@@ -1,0 +1,664 @@
+<div class="tenant-group-session-details">
+  <div class="tenant-group-session-details-header">
+    <div class="tenant-group-session-details-title">
+      <div class="tenant-group-session-details-breadcrumb">
+        <a routerLink="/tenant/groups">Groups</a>
+        <mat-icon>chevron_right</mat-icon>
+        <a [routerLink]="['/tenant/groups', groupId]">{{ group()?.name || 'Group' }}</a>
+        <mat-icon>chevron_right</mat-icon>
+        <span>Session Details</span>
+      </div>
+      <h2>{{ session()?.day || (isLoading() ? 'Loading session...' : 'Session Details') }}</h2>
+      <p>{{ group()?.subject || 'Group session' }}</p>
+    </div>
+    <div class="tenant-group-session-details-actions">
+      <a [routerLink]="['/tenant/groups', groupId]" [queryParams]="{ tab: 'sessions' }" class="tenant-group-session-details-secondary">
+        <mat-icon>arrow_back</mat-icon>
+        Back to sessions
+      </a>
+      <a [routerLink]="['/tenant/groups', groupId, 'attendance']" class="tenant-group-session-details-primary">
+        <mat-icon>how_to_reg</mat-icon>
+        Open attendance
+      </a>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <section class="tenant-group-session-details-state">
+      <mat-icon class="animate-spin">sync</mat-icon>
+      <p>Loading session details...</p>
+    </section>
+  } @else if (error()) {
+    <section class="tenant-group-session-details-state tenant-group-session-details-state--error">
+      <mat-icon>error</mat-icon>
+      <p>{{ error() }}</p>
+    </section>
+  } @else if (session(); as selectedSession) {
+    <section class="tenant-group-session-stats" aria-label="Session statistics">
+      <div class="tenant-group-session-stat-card">
+        <p>Total Students</p>
+        <div>
+          <h4>{{ sessionStudents().length }}</h4>
+          <span>
+            <mat-icon>trending_up</mat-icon>
+            {{ sessionCapacityLabel(group()) }}
+          </span>
+        </div>
+      </div>
+      <div class="tenant-group-session-stat-card">
+        <p>Absent</p>
+        <div>
+          <h4>{{ absentStudentCount() }}</h4>
+          <span class="tenant-group-session-stat-meta--danger">
+            <mat-icon>person_cancel</mat-icon>
+            Students
+          </span>
+        </div>
+      </div>
+      <div class="tenant-group-session-stat-card">
+        <p>Present</p>
+        <div>
+          <h4>{{ presentStudentCount() }}</h4>
+          <span>
+            <mat-icon>person_check</mat-icon>
+            Students
+          </span>
+        </div>
+      </div>
+      <div class="tenant-group-session-stat-card tenant-group-session-stat-card--wide">
+        <p>Time</p>
+        <div>
+          <h4>{{ currentTimeLabel() }}</h4>
+          <span>
+            <mat-icon>schedule</mat-icon>
+            {{ sessionTimeWindowLabel(selectedSession) }}
+          </span>
+        </div>
+      </div>
+      <div class="tenant-group-session-stat-card">
+        <p>Status</p>
+        <div>
+          <h4>{{ sessionStopwatchLabel(selectedSession) }}</h4>
+          <span [class]="sessionLiveStatusClass(selectedSession)">
+            <mat-icon>timer</mat-icon>
+            {{ sessionLiveStatusLabel(selectedSession) }}
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <aside class="tenant-group-session-sidebar" aria-label="Session side panel">
+      <section class="tenant-group-session-quick-actions" aria-label="Quick actions">
+        <h3>Quick Actions</h3>
+        <div>
+          <a [routerLink]="['/tenant/groups', groupId, 'attendance']">
+            <mat-icon>how_to_reg</mat-icon>
+            <span>Attendance</span>
+          </a>
+          <a [routerLink]="['/tenant/groups', groupId, 'exam']">
+            <mat-icon>assignment</mat-icon>
+            <span>Exam</span>
+          </a>
+          <a [routerLink]="['/tenant/groups', groupId, 'broadcast']">
+            <mat-icon>mail</mat-icon>
+            <span>Broadcast</span>
+          </a>
+          <a [routerLink]="['/tenant/groups', groupId]" [queryParams]="{ tab: 'sessions' }">
+            <mat-icon>calendar_month</mat-icon>
+            <span>Calendar</span>
+          </a>
+          <a [routerLink]="['/tenant/groups', groupId]" [queryParams]="{ tab: 'overview' }">
+            <mat-icon>analytics</mat-icon>
+            <span>Report</span>
+          </a>
+        </div>
+      </section>
+
+      <section class="tenant-group-session-details-card tenant-group-session-overview-card">
+        <div class="tenant-group-session-settings-section">
+          <div class="tenant-group-session-settings-head">
+            <h3>{{ sessionKindLabel(selectedSession) }}</h3>
+            <span class="tenant-group-session-status" [ngClass]="'tenant-group-session-status--' + sessionStatusTone(selectedSession)">
+              {{ sessionStatusLabel(selectedSession) }}
+            </span>
+          </div>
+          <div class="tenant-group-session-settings-list">
+            <div class="tenant-group-session-settings-row">
+              <div>
+                <mat-icon>event_available</mat-icon>
+                <span>Session</span>
+              </div>
+              <strong>Session {{ sessionIndex(selectedSession) }}</strong>
+            </div>
+            <div class="tenant-group-session-settings-row">
+              <div>
+                <mat-icon>calendar_today</mat-icon>
+                <span>Date</span>
+              </div>
+              <strong>{{ sessionDateLabel(selectedSession) }}</strong>
+            </div>
+            <div class="tenant-group-session-settings-row">
+              <div>
+                <mat-icon>schedule</mat-icon>
+                <span>Time</span>
+              </div>
+              <strong>{{ selectedSession.timeRange }}</strong>
+            </div>
+            <div class="tenant-group-session-settings-row">
+              <div>
+                <mat-icon>hourglass_bottom</mat-icon>
+                <span>Duration</span>
+              </div>
+              <strong>{{ sessionDurationLabel(selectedSession) }}</strong>
+            </div>
+            <div class="tenant-group-session-settings-row">
+              <div>
+                <mat-icon>meeting_room</mat-icon>
+                <span>Room</span>
+              </div>
+              <strong>{{ selectedSession.room }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="tenant-group-session-settings-section">
+          <h3>Group Details</h3>
+          <div class="tenant-group-session-settings-list">
+            <div class="tenant-group-session-settings-row">
+              <div>
+                <mat-icon>person</mat-icon>
+                <span>Teacher</span>
+              </div>
+              <strong>{{ group()?.teacher || 'Not assigned' }}</strong>
+            </div>
+            <div class="tenant-group-session-settings-row">
+              <div>
+                <mat-icon>school</mat-icon>
+                <span>Education Stage</span>
+              </div>
+              <strong>{{ group()?.stageName || 'Not set' }}</strong>
+            </div>
+            <div class="tenant-group-session-settings-row">
+              <div>
+                <mat-icon>workspace_premium</mat-icon>
+                <span>Grade</span>
+              </div>
+              <strong>{{ group()?.gradeName || 'Not set' }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="tenant-group-session-settings-actions">
+          <p>Use this dated session window to mark attendance for the enrolled students in this group.</p>
+          <a [routerLink]="['/tenant/groups', groupId, 'attendance']" class="tenant-group-session-attendance-link">
+            <mat-icon>how_to_reg</mat-icon>
+            Open attendance
+          </a>
+        </div>
+      </section>
+    </aside>
+
+    <section class="tenant-group-session-tables" aria-label="Session students and lessons">
+      <div class="tenant-group-session-table-card">
+        <div class="tenant-group-session-table-head">
+          <div>
+            <h3>Student</h3>
+            <p>{{ filteredSessionStudents().length }} of {{ sessionStudents().length }} enrolled students</p>
+          </div>
+          <span>{{ selectedSession.day }}</span>
+        </div>
+
+        <div class="tenant-group-session-student-tools">
+          <div>
+            <label class="tenant-group-session-barcode-label" for="session-barcode-input">Read Barcode Data Input</label>
+            <div class="tenant-group-session-barcode-row" [class.tenant-group-session-barcode-row--loading]="barcodeScanInProgress()">
+              <mat-icon>qr_code_2</mat-icon>
+              <input
+                #sessionBarcodeInput
+                id="session-barcode-input"
+                [value]="barcodeInputValue()"
+                [disabled]="barcodeScanInProgress()"
+                aria-label="Barcode data input"
+                aria-describedby="session-barcode-notification"
+                autocomplete="off"
+                inputmode="numeric"
+                (input)="onBarcodeInput($any($event.target).value)"
+                (keydown.enter)="submitBarcodeScan()"
+              />
+              <button type="button" aria-label="Submit barcode" [disabled]="barcodeScanInProgress()" (click)="submitBarcodeScan()">
+                <mat-icon>{{ barcodeScanInProgress() ? 'sync' : 'chevron_right' }}</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <div class="tenant-group-session-student-filters">
+            <label>
+              <span>Search</span>
+              <input
+                type="search"
+                [value]="studentSearch()"
+                placeholder="Name, email, or barcode"
+                (input)="onStudentSearch($any($event.target).value)"
+              />
+            </label>
+            <label>
+              <span>Filter</span>
+              <select [value]="studentStatusFilter()" (change)="onStudentStatusFilter($any($event.target).value)">
+                <option value="all">All statuses</option>
+                <option value="present">Present</option>
+                <option value="absent">Absent</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        @if (barcodeScanNotification(); as notification) {
+          <div
+            id="session-barcode-notification"
+            class="tenant-group-session-barcode-notification"
+            [class.tenant-group-session-barcode-notification--success]="notification.state === 'success'"
+            [class.tenant-group-session-barcode-notification--error]="notification.state === 'error'"
+            role="status"
+            aria-live="polite"
+          >
+            <mat-icon>{{ notification.state === 'success' ? 'check_circle' : 'error' }}</mat-icon>
+            <span>{{ notification.message }}</span>
+          </div>
+        }
+
+        @if (visibleSessionStudents().length) {
+          <div class="tenant-group-session-table-shell">
+            <table class="tenant-group-session-table">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Barcode</th>
+                  <th>Status</th>
+                  <th>Attendance time</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (student of visibleSessionStudents(); track student.id) {
+                  <tr>
+                    <td>
+                      <div class="tenant-group-session-person-cell">
+                        <span>{{ student.name.charAt(0) || '?' }}</span>
+                        <div>
+                          <strong>{{ student.name }}</strong>
+                          <small>{{ student.email }}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <code>{{ studentBarcodeLabel(student) }}</code>
+                    </td>
+                    <td>
+                      <span [class]="studentStatusClass(student)">{{ studentStatusLabel(student) }}</span>
+                    </td>
+                    <td>{{ studentAttendanceTimeLabel(student) }}</td>
+                    <td>
+                      <a [routerLink]="['/tenant/groups', groupId, 'attendance']" class="tenant-group-session-row-action">
+                        <mat-icon>how_to_reg</mat-icon>
+                        Attendance
+                      </a>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="tenant-group-session-table-pagination">
+            <span>Page {{ studentPageIndex() + 1 }} of {{ studentTotalPages() }}</span>
+            <label>
+              Rows
+              <select [value]="studentPageSize()" (change)="onStudentPageSize($any($event.target).value)">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+              </select>
+            </label>
+            <button type="button" [disabled]="studentPageIndex() === 0" (click)="previousStudentPage()">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            <button type="button" [disabled]="studentPageIndex() + 1 >= studentTotalPages()" (click)="nextStudentPage()">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+        } @else {
+          <div class="tenant-group-session-table-empty">
+            <mat-icon>groups</mat-icon>
+            <p>No students match the current table filters.</p>
+          </div>
+        }
+      </div>
+
+      <div class="tenant-group-session-table-card">
+        <div class="tenant-group-session-table-head">
+          <div>
+            <h3>Lessons</h3>
+            <p>{{ lessons().length }} inserted lessons linked to this session</p>
+          </div>
+          <button type="button" class="tenant-group-session-insert-lesson-btn" (click)="openLessonPicker()">
+            <mat-icon>add</mat-icon>
+            Insert lesson
+          </button>
+        </div>
+
+        @if (lessonsLoading()) {
+          <div class="tenant-group-session-table-empty">
+            <mat-icon class="animate-spin">sync</mat-icon>
+            <p>Loading lessons...</p>
+          </div>
+        } @else if (lessonsError()) {
+          <div class="tenant-group-session-table-empty tenant-group-session-table-empty--error">
+            <mat-icon>error</mat-icon>
+            <p>{{ lessonsError() }}</p>
+          </div>
+        } @else if (visibleSessionLessons().length) {
+          <div class="tenant-group-session-table-shell">
+            <table class="tenant-group-session-table tenant-group-session-lessons-table">
+              <thead>
+                <tr>
+                  <th class="tenant-group-session-expand-column"></th>
+                  <th>Lesson</th>
+                  <th>Description</th>
+                  <th>Path</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (lesson of visibleSessionLessons(); track lesson.id) {
+                  <tr class="tenant-group-session-expansion-row" [class.tenant-group-session-expansion-row--open]="isLessonExpanded(lesson)">
+                    <td>
+                      <button
+                        type="button"
+                        class="tenant-group-session-row-toggler"
+                        [attr.aria-expanded]="isLessonExpanded(lesson)"
+                        [attr.aria-label]="'Toggle ' + lesson.title + ' details'"
+                        (click)="toggleLessonExpansion(lesson)"
+                      >
+                        <mat-icon>{{ isLessonExpanded(lesson) ? 'keyboard_arrow_down' : 'keyboard_arrow_right' }}</mat-icon>
+                      </button>
+                    </td>
+                    <td>
+                      <div class="tenant-group-session-lesson-cell">
+                        <mat-icon>menu_book</mat-icon>
+                        <div>
+                          <strong>{{ lesson.title }}</strong>
+                          <small>{{ lesson.curriculumNodeId }}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{{ lesson.description || 'No description' }}</td>
+                    <td>{{ lesson.path }}</td>
+                    <td>
+                      <div class="tenant-group-session-row-actions">
+                        <button
+                          type="button"
+                          class="tenant-group-session-icon-action tenant-group-session-icon-action--complete"
+                          [class.tenant-group-session-icon-action--active]="lesson.completed"
+                          [disabled]="updatingLessonCompletionId() === lesson.id"
+                          [attr.aria-label]="lesson.completed ? 'Mark lesson as incomplete' : 'Mark lesson as complete'"
+                          [attr.title]="lesson.completed ? 'Mark as incomplete' : 'Mark as complete'"
+                          (click)="toggleLessonCompletion(lesson)"
+                        >
+                          <mat-icon>{{ updatingLessonCompletionId() === lesson.id ? 'sync' : lesson.completed ? 'task_alt' : 'radio_button_unchecked' }}</mat-icon>
+                        </button>
+                        <button
+                          type="button"
+                          class="tenant-group-session-icon-action tenant-group-session-icon-action--danger"
+                          [disabled]="removingLessonId() === lesson.id || lesson.completed"
+                          aria-label="Remove lesson"
+                          title="Remove lesson"
+                          (click)="removeLessonFromSession(lesson)"
+                        >
+                          <mat-icon>{{ removingLessonId() === lesson.id ? 'sync' : 'delete' }}</mat-icon>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  @if (isLessonExpanded(lesson)) {
+                    <tr class="tenant-group-session-expanded-content-row">
+                      <td colspan="5">
+                        <div class="tenant-group-session-expanded-content">
+                          <div class="tenant-group-session-expanded-content-head">
+                            <div>
+                              <span>Lesson Material</span>
+                              <strong>{{ lesson.title }}</strong>
+                            </div>
+                            <small>{{ lessonContent(lesson).length }} items</small>
+                          </div>
+
+                          @if (isLessonContentLoading(lesson)) {
+                            <div class="tenant-group-session-material-state">
+                              <mat-icon class="animate-spin">sync</mat-icon>
+                              <p>Loading material...</p>
+                            </div>
+                          } @else if (lessonContentError(lesson)) {
+                            <div class="tenant-group-session-material-state tenant-group-session-material-state--error">
+                              <mat-icon>error</mat-icon>
+                              <p>{{ lessonContentError(lesson) }}</p>
+                            </div>
+                          } @else if (lessonContent(lesson).length) {
+                            <div class="tenant-group-session-material-list">
+                              @for (content of lessonContent(lesson); track content.id) {
+                                <button
+                                  type="button"
+                                  class="tenant-group-session-material-item"
+                                  [class.tenant-group-session-material-item--active]="isSelectedLessonContent(lesson, content)"
+                                  (click)="openLessonContentPreview(lesson, content)"
+                                >
+                                  <mat-icon>{{ materialIcon(content) }}</mat-icon>
+                                  <span>
+                                    <strong>{{ content.title }}</strong>
+                                    <small>
+                                      {{ materialTypeLabel(content.contentType) }}
+                                      @if (formatBytes(content.sizeBytes)) {
+                                        <span>{{ formatBytes(content.sizeBytes) }}</span>
+                                      }
+                                    </small>
+                                  </span>
+                                  <em>{{ content.folderName }}</em>
+                                </button>
+                              }
+                            </div>
+                          } @else {
+                            <div class="tenant-group-session-material-state">
+                              <mat-icon>inventory_2</mat-icon>
+                              <p>No material inserted for this lesson yet.</p>
+                            </div>
+                          }
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="tenant-group-session-table-pagination">
+            <span>Showing {{ lessonPageStart() }}-{{ lessonPageEnd() }} of {{ lessons().length }} lessons</span>
+            <label>
+              Rows
+              <select [value]="lessonPageSize()" (change)="onLessonPageSize($any($event.target).value)">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+              </select>
+            </label>
+            <button type="button" aria-label="Previous lessons page" [disabled]="lessonPageIndex() === 0" (click)="previousLessonPage()">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            <strong>Page {{ lessonPageIndex() + 1 }} of {{ lessonTotalPages() }}</strong>
+            <button type="button" aria-label="Next lessons page" [disabled]="lessonPageIndex() + 1 >= lessonTotalPages()" (click)="nextLessonPage()">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+        } @else {
+          <div class="tenant-group-session-table-empty">
+            <mat-icon>menu_book</mat-icon>
+            <p>No lessons are inserted yet.</p>
+            <button type="button" class="tenant-group-session-empty-action" (click)="openLessonPicker()">Insert lesson</button>
+          </div>
+        }
+      </div>
+    </section>
+  } @else {
+    <section class="tenant-group-session-details-state">
+      <mat-icon>event_busy</mat-icon>
+      <p>Session was not found for this group.</p>
+    </section>
+  }
+</div>
+
+@if (previewContent(); as preview) {
+  <section class="tenant-group-session-preview-overlay" role="dialog" aria-modal="true" [attr.aria-label]="'Preview ' + preview.title">
+    <button type="button" class="tenant-group-session-preview-backdrop" aria-label="Close preview" (click)="closeLessonContentPreview()"></button>
+    <div class="tenant-group-session-preview-drawer">
+      <header class="tenant-group-session-preview-header">
+        <div>
+          <span>{{ materialTypeLabel(preview.contentType) }}</span>
+          <h3>{{ preview.title }}</h3>
+          <p>{{ preview.folderName }}</p>
+        </div>
+        <div>
+          @if (preview.url) {
+            <a [href]="preview.url" target="_blank" rel="noopener">
+              <mat-icon>open_in_new</mat-icon>
+              Open
+            </a>
+          }
+          <button type="button" aria-label="Close preview" (click)="closeLessonContentPreview()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </header>
+
+      <div class="tenant-group-session-preview-body">
+        @if (previewLoading()) {
+          <div class="tenant-group-session-preview-empty" aria-live="polite">
+            <mat-icon class="animate-spin">sync</mat-icon>
+            <p>Loading content...</p>
+          </div>
+        } @else if (previewError()) {
+          <div class="tenant-group-session-preview-empty tenant-group-session-preview-empty--error">
+            <mat-icon>error</mat-icon>
+            <p>{{ previewError() }}</p>
+          </div>
+        } @else if (preview.contentType === 'NOTE') {
+          <article class="tenant-group-session-note-preview">
+            @for (line of notePreviewBlocks(previewNote()); track $index) {
+              <p>{{ line }}</p>
+            }
+          </article>
+        } @else if (previewObjectUrl() && isImageContent(preview)) {
+          <img class="tenant-group-session-drawer-file-preview" [src]="previewObjectUrl()" [alt]="preview.title" />
+        } @else if (previewObjectUrl() && isVideoContent(preview)) {
+          <video class="tenant-group-session-drawer-file-preview" [src]="previewObjectUrl()" controls playsinline preload="metadata" [attr.title]="preview.title"></video>
+        } @else if (previewSafeObjectUrl() && isPdfContent(preview)) {
+          <iframe class="tenant-group-session-drawer-file-frame" [src]="previewSafeObjectUrl()" [title]="preview.title"></iframe>
+        } @else {
+          <div class="tenant-group-session-preview-empty">
+            <mat-icon>{{ preview.url ? 'open_in_new' : 'visibility_off' }}</mat-icon>
+            <p>{{ preview.url ? 'Preview is not available for this file type. Use Open to view it.' : 'This material does not have a file preview.' }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}
+
+@if (lessonPickerOpen()) {
+  <section class="tenant-group-session-modal-overlay" role="dialog" aria-modal="true" aria-label="Insert lesson">
+    <button type="button" class="tenant-group-session-modal-backdrop" aria-label="Close insert lesson" (click)="closeLessonPicker()"></button>
+    <div class="tenant-group-session-modal">
+      <header class="tenant-group-session-modal-head">
+        <div>
+          <span>Curriculum</span>
+          <h3>Insert lesson</h3>
+          <p>Choose a curriculum lesson to add to this session table.</p>
+        </div>
+        <button type="button" aria-label="Close insert lesson" (click)="closeLessonPicker()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </header>
+
+      <div class="tenant-group-session-modal-body">
+        @if (lessonPickerLoading()) {
+          <div class="tenant-group-session-material-state">
+            <mat-icon class="animate-spin">sync</mat-icon>
+            <p>Loading curriculum lessons...</p>
+          </div>
+        } @else if (lessonPickerError()) {
+          <div class="tenant-group-session-material-state tenant-group-session-material-state--error">
+            <mat-icon>error</mat-icon>
+            <p>{{ lessonPickerError() }}</p>
+          </div>
+        } @else if (curriculumLessonOptions().length) {
+          <div class="tenant-group-session-lesson-picker-tools">
+            <label>
+              <span>Search</span>
+              <input
+                type="search"
+                placeholder="Search lessons by title, path, or description"
+                [value]="lessonPickerSearch()"
+                (input)="onLessonPickerSearch($any($event.target).value)"
+              />
+            </label>
+            <label>
+              <span>Filter</span>
+              <select [value]="lessonPickerStatusFilter()" (change)="onLessonPickerStatusFilter($any($event.target).value)">
+                <option value="all">All lessons</option>
+                <option value="available">Available only</option>
+                <option value="inserted">Inserted only</option>
+              </select>
+            </label>
+          </div>
+
+          @if (filteredCurriculumLessonOptions().length) {
+            <div class="tenant-group-session-lesson-picker-list">
+              @for (lesson of filteredCurriculumLessonOptions(); track lesson.id) {
+                <button
+                  type="button"
+                  class="tenant-group-session-lesson-picker-option"
+                  [class.tenant-group-session-lesson-picker-option--inserted]="isCurriculumLessonInserted(lesson)"
+                  [disabled]="isCurriculumLessonInserted(lesson) || savingLessonNodeId() === lesson.id"
+                  (click)="addLessonFromCurriculum(lesson)"
+                >
+                  <mat-icon>{{ isCurriculumLessonInserted(lesson) ? 'check_circle' : 'menu_book' }}</mat-icon>
+                  <span>
+                    <strong>{{ lesson.title }}</strong>
+                    <small>{{ lesson.path }}</small>
+                    @if (lesson.description) {
+                      <em>{{ lesson.description }}</em>
+                    }
+                  </span>
+                  <b>
+                    @if (savingLessonNodeId() === lesson.id) {
+                      Adding
+                    } @else if (isCurriculumLessonInserted(lesson)) {
+                      Inserted
+                    } @else {
+                      Insert
+                    }
+                  </b>
+                </button>
+              }
+            </div>
+          } @else {
+            <div class="tenant-group-session-material-state">
+              <mat-icon>filter_alt_off</mat-icon>
+              <p>No lessons match the current search and filter.</p>
+            </div>
+          }
+        } @else {
+          <div class="tenant-group-session-material-state">
+            <mat-icon>inventory_2</mat-icon>
+            <p>No curriculum lessons were found.</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}

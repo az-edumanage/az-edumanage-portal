@@ -1,0 +1,299 @@
+<div class="space-y-6" [attr.dir]="pageDirection()">
+  <div class="space-y-1">
+    <div class="curriculum-page-breadcrumb flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+      <a [routerLink]="subjectsListLink()" class="hover:text-indigo-600 transition-colors">{{ breadcrumbLabel('subject') }}</a>
+      <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+      <a
+        [routerLink]="subjectDetailsLink()"
+        class="hover:text-indigo-600 transition-colors"
+      >
+        {{ breadcrumbLabel('subjectDetails') }}
+      </a>
+      <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+      <span>{{ curriculumTitle() }}</span>
+    </div>
+    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">
+      {{ curriculumTitle() }}
+    </h2>
+    @if (subject(); as selectedSubject) {
+      <p class="text-slate-500 dark:text-slate-500 text-sm">{{ selectedSubject.stageName }} · {{ selectedSubject.gradeName }}</p>
+    }
+  </div>
+
+  @if (loading() || curriculumLoading()) {
+    <div class="bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
+      <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+        <mat-icon class="text-slate-500 animate-spin">sync</mat-icon>
+      </div>
+      <h3 class="font-bold text-slate-900 dark:text-white">Loading curriculum</h3>
+      <p class="text-sm text-slate-500 mt-1">Please wait while the subject is loaded.</p>
+    </div>
+  } @else if (loadError() || curriculumError()) {
+    <div class="bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
+      <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+        <mat-icon class="text-slate-500">error_outline</mat-icon>
+      </div>
+      <h3 class="font-bold text-slate-900 dark:text-white">Unable to load curriculum</h3>
+      <p class="text-sm text-slate-500 mt-1">{{ loadError() || curriculumError() }}</p>
+      <a [routerLink]="subjectsListLink()" class="inline-flex items-center gap-2 mt-5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors">
+        <mat-icon class="text-sm">arrow_back</mat-icon>
+        Back to Subjects
+      </a>
+    </div>
+  } @else if (subject()) {
+    <div class="curriculum-content-grid">
+      <div class="curriculum-tree-panel bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="curriculum-tree-header border-b border-slate-200 dark:border-slate-800">
+          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">{{ curriculumTreeTitle() }}</h3>
+        </div>
+
+        <div class="curriculum-tree" role="tree" [attr.dir]="pageDirection()" aria-label="Curriculum tree">
+          <ng-container *ngTemplateOutlet="treeNodes; context: { nodes: curriculumTree() }"></ng-container>
+        </div>
+      </div>
+
+      <div class="curriculum-students-table bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden" [attr.dir]="pageDirection()">
+        <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <h3 class="curriculum-panel-breadcrumb font-bold text-slate-900 dark:text-white" aria-label="Selected curriculum path">
+            @for (item of selectedCurriculumPath(); track item.id; let last = $last) {
+              <button
+                type="button"
+                class="curriculum-panel-breadcrumb-button"
+                [class.curriculum-panel-breadcrumb-current]="last"
+                (click)="selectTreeNode(item.id)"
+              >
+                {{ nodeDisplayLabel(item) }}
+              </button>
+              @if (!last) {
+                <mat-icon>{{ breadcrumbSeparatorIcon() }}</mat-icon>
+              }
+            }
+          </h3>
+          <div class="flex gap-2">
+            <button type="button" class="p-1.5 text-slate-500 hover:text-indigo-600 transition-colors" aria-label="Search students">
+              <mat-icon class="text-sm">search</mat-icon>
+            </button>
+            <button type="button" class="p-1.5 text-slate-500 hover:text-indigo-600 transition-colors" aria-label="Filter students">
+              <mat-icon class="text-sm">filter_list</mat-icon>
+            </button>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm curriculum-content-table" [attr.dir]="pageDirection()">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
+              <tr>
+                <th class="px-6 py-3 font-medium">{{ tableHeaderLabel('content') }}</th>
+                <th class="px-6 py-3 font-medium">{{ tableHeaderLabel('description') }}</th>
+                <th class="px-6 py-3 font-medium curriculum-content-table-actions-cell">{{ tableHeaderLabel('actions') }}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+              @for (item of selectedCurriculumChildren(); track item.id) {
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <td class="px-6 py-4">
+                    <button
+                      type="button"
+                      class="curriculum-content-link"
+                      (click)="selectTreeNode(item.id)"
+                    >
+                      <mat-icon [class.curriculum-content-icon--leaf]="!item.children.length">{{ item.icon }}</mat-icon>
+                      <span>{{ item.label }}</span>
+                    </button>
+                  </td>
+                  <td class="px-6 py-4 text-slate-500 dark:text-slate-500 text-xs">
+                    {{ item.description || 'No description' }}
+                  </td>
+                  <td class="px-6 py-4 curriculum-content-table-actions-cell">
+                    <div class="curriculum-table-actions">
+                      <button type="button" class="curriculum-table-action" [attr.aria-label]="'Add sub under ' + item.label" (click)="openAddNode(item.id)">
+                        <mat-icon>add</mat-icon>
+                        <span class="curriculum-action-tooltip" role="tooltip">{{ actionTooltipLabel('add') }}</span>
+                      </button>
+                      <a class="curriculum-table-action" [routerLink]="curriculumNodeDetailsLink(item.id)" [attr.aria-label]="'Show details for ' + item.label">
+                        <mat-icon>visibility</mat-icon>
+                        <span class="curriculum-action-tooltip" role="tooltip">{{ actionTooltipLabel('details') }}</span>
+                      </a>
+                      <button type="button" class="curriculum-table-action" [attr.aria-label]="'Edit ' + item.label" (click)="openEditNode(item.id)">
+                        <mat-icon>edit</mat-icon>
+                        <span class="curriculum-action-tooltip" role="tooltip">{{ actionTooltipLabel('edit') }}</span>
+                      </button>
+                      <a class="curriculum-table-action" [routerLink]="curriculumNodeMaterialLink(item.id)" [queryParams]="{ tab: 'material' }" [attr.aria-label]="'Open materials for ' + item.label">
+                        <mat-icon>menu_book</mat-icon>
+                        <span class="curriculum-action-tooltip" role="tooltip">{{ actionTooltipLabel('materials') }}</span>
+                      </a>
+                      <a class="curriculum-table-action" [routerLink]="curriculumNodeQuestionsLink(item.id)" [attr.aria-label]="'Open questions for ' + item.label">
+                        <mat-icon>quiz</mat-icon>
+                        <span class="curriculum-action-tooltip" role="tooltip">{{ actionTooltipLabel('questions') }}</span>
+                      </a>
+                      <button type="button" class="curriculum-table-action curriculum-table-action--danger" [attr.aria-label]="'Delete ' + item.label" (click)="openDeleteNode(item.id)">
+                        <mat-icon>delete</mat-icon>
+                        <span class="curriculum-action-tooltip curriculum-action-tooltip--danger" role="tooltip">{{ actionTooltipLabel('delete') }}</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="3" class="px-6 py-8 text-center text-sm text-slate-500 dark:text-slate-500">
+                    No content yet.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+<ng-template #treeNodes let-nodes="nodes">
+  @for (node of nodes; track node.id) {
+    <div
+      class="curriculum-tree-node"
+      role="treeitem"
+      [attr.aria-expanded]="node.children?.length ? isExpanded(node.id) : null"
+      [attr.aria-selected]="selectedNodeId() === node.id"
+    >
+      <div class="curriculum-tree-row" [class.curriculum-tree-row--selected]="selectedNodeId() === node.id">
+        <button
+          type="button"
+          class="curriculum-tree-toggle"
+          [class.curriculum-tree-toggle--hidden]="!node.children?.length"
+          [attr.aria-label]="isExpanded(node.id) ? 'Collapse ' + node.label : 'Expand ' + node.label"
+          [disabled]="!node.children?.length"
+          (click)="toggleNode(node.id)"
+        >
+          <mat-icon>{{ treeToggleIcon(node.id) }}</mat-icon>
+        </button>
+        <mat-icon class="curriculum-tree-icon" [class.curriculum-tree-icon--leaf]="!node.children?.length">{{ node.icon }}</mat-icon>
+        <button
+          type="button"
+          class="curriculum-tree-label"
+          (click)="selectTreeNode(node.id)"
+        >
+          {{ nodeDisplayLabel(node) }}
+        </button>
+        <div class="curriculum-tree-actions">
+          <button
+            type="button"
+            class="curriculum-tree-action"
+            [attr.aria-label]="'Add sub under ' + node.label"
+            (click)="openAddNode(node.id)"
+          >
+            <mat-icon>add</mat-icon>
+          </button>
+          @if (node.id !== 'curriculum') {
+            <button
+              type="button"
+              class="curriculum-tree-action"
+              [attr.aria-label]="'Edit ' + node.label"
+              (click)="openEditNode(node.id)"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (node.children?.length && isExpanded(node.id)) {
+        <div class="curriculum-tree-children" role="group">
+          <ng-container *ngTemplateOutlet="treeNodes; context: { nodes: node.children }"></ng-container>
+        </div>
+      }
+    </div>
+  }
+</ng-template>
+
+@if (deleteNodeModal(); as node) {
+  <div class="curriculum-modal-backdrop" role="presentation" [attr.dir]="pageDirection()" (click)="closeDeleteNodeModal()">
+    <div
+      class="curriculum-modal bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="curriculum-delete-modal-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="curriculum-modal-header border-b border-slate-200 dark:border-slate-800">
+        <div>
+          <h3 id="curriculum-delete-modal-title" class="text-base font-bold text-slate-900 dark:text-white">{{ deleteNodeModalTitle() }}</h3>
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ deleteNodeModalMessage(node) }}</p>
+        </div>
+        <button type="button" class="curriculum-modal-icon-btn" [attr.aria-label]="nodeModalLabel('close')" (click)="closeDeleteNodeModal()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="curriculum-modal-body">
+        @if (canDeletePendingNode()) {
+          <p class="curriculum-delete-message">{{ deleteNodeHelpMessage() }}</p>
+        } @else {
+          <div class="curriculum-delete-warning">
+            <mat-icon>lock</mat-icon>
+            <span>{{ deleteNodeBlockedMessage() }}</span>
+          </div>
+        }
+        @if (deleteNodeError()) {
+          <div class="curriculum-modal-error">{{ deleteNodeError() }}</div>
+        }
+      </div>
+
+      <div class="curriculum-modal-footer border-t border-slate-200 dark:border-slate-800">
+        <button type="button" class="curriculum-modal-secondary" [disabled]="!!deletingNodeId()" (click)="closeDeleteNodeModal()">{{ nodeModalLabel('cancel') }}</button>
+        <button type="button" class="curriculum-modal-danger" [disabled]="!canDeletePendingNode() || !!deletingNodeId()" (click)="deleteNode(node.nodeId)">
+          {{ deleteNodeConfirmLabel() }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (nodeModal(); as modal) {
+  <div class="curriculum-modal-backdrop" role="presentation" [attr.dir]="pageDirection()" (click)="closeNodeModal()">
+    <div
+      class="curriculum-modal bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="curriculum-node-modal-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="curriculum-modal-header border-b border-slate-200 dark:border-slate-800">
+        <div>
+          <h3 id="curriculum-node-modal-title" class="text-base font-bold text-slate-900 dark:text-white">{{ nodeModalTitle(modal) }}</h3>
+          <p class="mt-1 text-xs text-slate-500">{{ nodeModalLabel('description') }}</p>
+        </div>
+        <button type="button" class="curriculum-modal-icon-btn" [attr.aria-label]="nodeModalLabel('close')" (click)="closeNodeModal()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="curriculum-modal-body">
+        <label class="curriculum-field">
+          <span>{{ nodeModalLabel('name') }}</span>
+          <input
+            type="text"
+            [ngModel]="nodeName()"
+            (ngModelChange)="nodeName.set($event)"
+            [placeholder]="nodeModalLabel('namePlaceholder')"
+            autocomplete="off"
+          />
+        </label>
+
+        <label class="curriculum-field">
+          <span>{{ nodeModalLabel('nodeDescription') }}</span>
+          <textarea
+            rows="4"
+            [ngModel]="nodeDescription()"
+            (ngModelChange)="nodeDescription.set($event)"
+            [placeholder]="nodeModalLabel('descriptionPlaceholder')"
+          ></textarea>
+        </label>
+      </div>
+
+      <div class="curriculum-modal-footer border-t border-slate-200 dark:border-slate-800">
+        <button type="button" class="curriculum-modal-secondary" (click)="closeNodeModal()">{{ nodeModalLabel('cancel') }}</button>
+        <button type="button" class="curriculum-modal-primary" [disabled]="!nodeName().trim() || savingNode()" (click)="saveNodeModal()">{{ nodeModalLabel('save') }}</button>
+      </div>
+    </div>
+  </div>
+}

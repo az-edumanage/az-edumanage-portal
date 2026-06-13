@@ -200,4 +200,27 @@ describe('LoginComponent', () => {
     expect(component.errorMessage()).toBe('Invalid username or password. Please try again.');
     expect(dashboardService.setRole).not.toHaveBeenCalled();
   });
+
+  it('does not show a generic sign-in failure when post-login tenant navigation fails', async () => {
+    configure('/tenant/login');
+    dashboardService.setRole.mockRejectedValue(new Error('Navigation failed'));
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    const fixture = TestBed.createComponent(LoginComponent);
+    const component = fixture.componentInstance;
+
+    component.form.setValue({
+      username: 'tenant-user',
+      password: 'secret',
+    });
+
+    await component.submit();
+
+    expect(authApi.login).toHaveBeenCalledWith('tenant-user', 'secret', 'tenant');
+    expect(authSession.scheduleExpiry).toHaveBeenCalledWith('token');
+    expect(component.errorMessage()).toBe('Signed in, but unable to open the selected workspace. Please refresh the page.');
+    expect(component.errorMessage()).not.toBe('Unable to sign in right now. Please try again.');
+
+    consoleError.mockRestore();
+  });
 });

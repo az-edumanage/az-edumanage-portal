@@ -1,3 +1,1726 @@
 
-    :host { display: block; }
-  
+:host { display: block; }
+
+.tenant-group-detail-tabs {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  gap: 0.25rem;
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  padding: 0.25rem;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.tenant-group-detail-tab {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border-radius: 0.5rem;
+  padding: 0 0.875rem;
+  color: #64748b;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  white-space: nowrap;
+  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.tenant-group-detail-tab:hover,
+.tenant-group-detail-tab:focus-visible {
+  background: #f8fafc;
+  color: #4f46e5;
+  outline: none;
+}
+
+.tenant-group-detail-tab--active,
+.tenant-group-detail-tab--active:hover,
+.tenant-group-detail-tab--active:focus-visible {
+  background: #4f46e5;
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgb(79 70 229 / 0.22);
+}
+
+.tenant-group-detail-tab mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-sessions-calendar {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border: 1px solid #c7d2fe;
+  border-radius: 0.5rem;
+  background: #eef2ff;
+  padding: 0 0.875rem;
+  color: #4338ca;
+  font-size: 0.75rem;
+  font-weight: 800;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.tenant-group-sessions-calendar:hover,
+.tenant-group-sessions-calendar:focus-visible {
+  border-color: #4f46e5;
+  background: #4f46e5;
+  color: #ffffff;
+  outline: none;
+}
+
+.tenant-group-sessions-calendar mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-sessions-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.tenant-group-sessions-search {
+  position: relative;
+  display: flex;
+  min-height: 2.5rem;
+  align-items: center;
+  width: 100%;
+}
+
+.tenant-group-sessions-search mat-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  width: 0.875rem;
+  height: 0.875rem;
+  color: #64748b;
+  font-size: 0.875rem;
+  line-height: 0.875rem;
+  transform: translateY(-50%);
+}
+
+.tenant-group-sessions-search input {
+  width: 100%;
+  min-height: 2.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  padding: 0.5rem 1rem 0.5rem 2.5rem;
+  color: #0f172a;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.tenant-group-sessions-search input::placeholder {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.tenant-group-sessions-search input:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgb(79 70 229 / 0.24);
+}
+
+.tenant-group-sessions-filter-wrap {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tenant-group-sessions-filter-btn {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  padding: 0 1rem;
+  color: #334155;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.tenant-group-sessions-filter-btn:hover,
+.tenant-group-sessions-filter-btn:focus-visible {
+  background: #f8fafc;
+  outline: none;
+}
+
+.tenant-group-sessions-filter-btn--active {
+  border-color: #c7d2fe;
+  background: rgb(79 70 229 / 0.1);
+  color: #4f46e5;
+}
+
+.tenant-group-sessions-filter-btn mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-sessions-filter-btn span {
+  display: inline-flex;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #4f46e5;
+  padding: 0 0.25rem;
+  color: #ffffff;
+  font-size: 0.625rem;
+  box-shadow: 0 1px 2px rgb(79 70 229 / 0.4);
+}
+
+.tenant-group-sessions-filter-chevron {
+  transition: transform 200ms ease;
+}
+
+.tenant-group-sessions-filter-panel {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 50;
+  display: grid;
+  width: min(20rem, calc(100vw - 2rem));
+  gap: 1.25rem;
+  margin-top: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  background: #ffffff;
+  padding: 1.25rem;
+  box-shadow: 0 20px 25px -5px rgb(15 23 42 / 0.12);
+}
+
+.tenant-group-sessions-filter-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.75rem;
+}
+
+.tenant-group-sessions-filter-panel h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.tenant-group-sessions-filter-panel-head button {
+  color: #dc2626;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tenant-group-sessions-filter-panel label {
+  display: block;
+  margin-bottom: 0.375rem;
+  color: #64748b;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tenant-group-sessions-filter-panel select {
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #f8fafc;
+  padding: 0.5rem 0.75rem;
+  color: #0f172a;
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.tenant-group-sessions-filter-panel select:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgb(79 70 229 / 0.24);
+}
+
+.tenant-group-sessions-filter-apply {
+  min-height: 2.25rem;
+  border-radius: 0.5rem;
+  background: #4f46e5;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  transition: background-color 160ms ease;
+}
+
+.tenant-group-sessions-filter-apply:hover {
+  background: #4338ca;
+}
+
+.tenant-group-sessions-list {
+  display: grid;
+  gap: 0;
+}
+
+.tenant-group-session-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(10rem, auto) auto;
+  gap: 0.875rem;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: background-color 160ms ease, box-shadow 160ms ease, color 160ms ease;
+}
+
+.tenant-group-session-row:hover,
+.tenant-group-session-row:focus-visible {
+  background: #f8fafc;
+  box-shadow: inset 0.25rem 0 0 #c7d2fe;
+  outline: none;
+}
+
+.tenant-group-session-row:last-child {
+  border-bottom: 0;
+}
+
+.tenant-group-session-row--current {
+  background: #ecfdf5;
+  box-shadow: inset 0.25rem 0 0 #10b981;
+}
+
+.tenant-group-session-row--current:hover,
+.tenant-group-session-row--current:focus-visible {
+  background: #dffcf0;
+  box-shadow: inset 0.25rem 0 0 #059669;
+}
+
+.tenant-group-session-row--current .tenant-group-session-icon {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.tenant-group-session-row--current .tenant-group-session-number,
+.tenant-group-session-row--current .tenant-group-session-main p {
+  color: #047857;
+}
+
+.tenant-group-session-icon {
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.625rem;
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.tenant-group-session-icon mat-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  font-size: 1.125rem;
+  line-height: 1.125rem;
+}
+
+.tenant-group-session-open-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #94a3b8;
+  font-size: 1rem;
+  line-height: 1rem;
+  transition: color 160ms ease, transform 160ms ease;
+}
+
+.tenant-group-session-row:hover .tenant-group-session-open-icon,
+.tenant-group-session-row:focus-visible .tenant-group-session-open-icon {
+  color: #4f46e5;
+  transform: translateX(0.125rem);
+}
+
+.tenant-group-session-main,
+.tenant-group-session-meta {
+  min-width: 0;
+}
+
+.tenant-group-session-main p {
+  margin: 0;
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-session-number {
+  display: inline-flex;
+  margin-bottom: 0.25rem;
+  color: #4f46e5;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1rem;
+}
+
+.tenant-group-session-main > span:not(.tenant-group-session-number),
+.tenant-group-session-meta span {
+  display: block;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-session-meta {
+  text-align: right;
+}
+
+.tenant-group-session-status {
+  display: inline-flex;
+  width: fit-content;
+  margin: 0 0 0.25rem auto;
+  border-radius: 999px;
+  padding: 0.1875rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  line-height: 1rem;
+}
+
+.tenant-group-session-status--current {
+  background: #dcfce7;
+  color: #047857;
+}
+
+.tenant-group-session-status--next {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.tenant-group-session-meta span:first-child:not(.tenant-group-session-status) {
+  color: #334155;
+}
+
+.tenant-group-sessions-empty {
+  display: grid;
+  place-items: center;
+  gap: 0.5rem;
+  padding: 2.5rem 1rem;
+  color: #64748b;
+  text-align: center;
+}
+
+.tenant-group-sessions-empty mat-icon {
+  color: #94a3b8;
+}
+
+.tenant-group-sessions-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.tenant-group-sessions-pagination-summary {
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tenant-group-sessions-pagination-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tenant-group-sessions-pagination-actions label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.tenant-group-sessions-pagination-actions label select {
+  height: 2rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #f8fafc;
+  padding: 0 0.5rem;
+  color: #334155;
+  font-size: 0.75rem;
+  font-weight: 800;
+  outline: none;
+}
+
+.tenant-group-sessions-pagination-actions label select:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgb(79 70 229 / 0.24);
+}
+
+.tenant-group-sessions-pagination-actions > span {
+  color: #334155;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.tenant-group-sessions-pagination button {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: #334155;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease, opacity 160ms ease;
+}
+
+.tenant-group-sessions-pagination button:hover:not(:disabled),
+.tenant-group-sessions-pagination button:focus-visible:not(:disabled) {
+  border-color: #4f46e5;
+  background: #eef2ff;
+  color: #4338ca;
+  outline: none;
+}
+
+.tenant-group-sessions-pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.tenant-group-sessions-pagination mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-lessons-add {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border-radius: 0.5rem;
+  background: #4f46e5;
+  padding: 0 0.875rem;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  transition: background-color 160ms ease;
+}
+
+.tenant-group-lessons-add:hover,
+.tenant-group-lessons-add:focus-visible {
+  background: #4338ca;
+  outline: none;
+}
+
+.tenant-group-lessons-add:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.tenant-group-lessons-add mat-icon,
+.tenant-group-lesson-picker-head button mat-icon,
+.tenant-group-lesson-option > mat-icon,
+.tenant-group-lesson-option-icon mat-icon,
+.tenant-group-lesson-row-icon mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-lesson-picker {
+  display: grid;
+  gap: 0.875rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  padding: 0.875rem;
+}
+
+.tenant-group-lesson-picker-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tenant-group-lesson-picker-head h4 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.tenant-group-lesson-picker-head p {
+  margin: 0.125rem 0 0;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tenant-group-lesson-picker-head button {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  color: #64748b;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.tenant-group-lesson-picker-head button:hover,
+.tenant-group-lesson-picker-head button:focus-visible {
+  background: #eef2ff;
+  color: #4338ca;
+  outline: none;
+}
+
+.tenant-group-lesson-options,
+.tenant-group-lessons-list {
+  display: grid;
+}
+
+.tenant-group-lesson-options {
+  gap: 0.5rem;
+}
+
+.tenant-group-lesson-option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  padding: 0.75rem;
+  text-align: left;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.tenant-group-lesson-option:hover,
+.tenant-group-lesson-option:focus-visible {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  outline: none;
+}
+
+.tenant-group-lesson-option:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.tenant-group-lesson-option > mat-icon {
+  color: #4f46e5;
+}
+
+.tenant-group-lesson-option-icon,
+.tenant-group-lesson-row-icon {
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.625rem;
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.tenant-group-lesson-option-main,
+.tenant-group-lesson-row-main {
+  min-width: 0;
+}
+
+.tenant-group-lesson-option-main strong,
+.tenant-group-lesson-row-main p {
+  display: block;
+  margin: 0;
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-lesson-option-main small,
+.tenant-group-lesson-row-main span {
+  display: block;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-lesson-option-main em {
+  display: block;
+  overflow: hidden;
+  margin-top: 0.125rem;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-style: normal;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-lesson-picker-state {
+  display: flex;
+  min-height: 4rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: 0.75rem;
+  color: #64748b;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.tenant-group-lesson-picker-state--error {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.tenant-group-lesson-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.875rem;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.tenant-group-lesson-row:hover,
+.tenant-group-lesson-row:focus-visible {
+  background: #f8fafc;
+  outline: none;
+}
+
+.tenant-group-lesson-open-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #94a3b8;
+  font-size: 1rem;
+  line-height: 1rem;
+  transition: color 160ms ease, transform 160ms ease;
+}
+
+.tenant-group-lesson-row:hover .tenant-group-lesson-open-icon,
+.tenant-group-lesson-row:focus-visible .tenant-group-lesson-open-icon {
+  color: #4f46e5;
+  transform: translateX(0.125rem);
+}
+
+.tenant-group-lesson-row:last-child {
+  border-bottom: 0;
+}
+
+.tenant-group-lesson-material-toolbar {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1fr) minmax(11rem, auto) auto;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.tenant-group-lesson-material-search,
+.tenant-group-lesson-material-filter {
+  display: flex;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  padding: 0 0.75rem;
+  color: #64748b;
+}
+
+.tenant-group-lesson-material-search mat-icon,
+.tenant-group-lesson-material-filter mat-icon,
+.tenant-group-lesson-material-pagination mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-lesson-material-search input,
+.tenant-group-lesson-material-filter select,
+.tenant-group-lesson-material-pagination select {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #0f172a;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  outline: none;
+}
+
+.tenant-group-lesson-material-search input::placeholder {
+  color: #64748b;
+}
+
+.tenant-group-lesson-material-filter select,
+.tenant-group-lesson-material-pagination select {
+  cursor: pointer;
+}
+
+.tenant-group-lesson-material-clear {
+  min-height: 2.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: #4338ca;
+  padding: 0 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.tenant-group-lesson-material-clear:hover,
+.tenant-group-lesson-material-clear:focus-visible {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  outline: none;
+}
+
+.tenant-group-lesson-material-table-shell {
+  overflow-x: auto;
+}
+
+.tenant-group-lesson-material-table {
+  width: 100%;
+  min-width: 44rem;
+  border-collapse: collapse;
+}
+
+.tenant-group-lesson-material-table th {
+  height: 2.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  padding: 0 1rem;
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-align: start;
+}
+
+.tenant-group-lesson-material-table td {
+  height: 4.25rem;
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+  padding: 0.75rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.tenant-group-lesson-material-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.tenant-group-lesson-content-table-row {
+  transition: background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.tenant-group-lesson-content-table-row--clickable {
+  cursor: pointer;
+}
+
+.tenant-group-lesson-content-table-row--clickable:hover,
+.tenant-group-lesson-content-table-row--clickable:focus-visible {
+  background: #f8fafc;
+  box-shadow: inset 0 0 0 2px rgb(79 70 229 / 0.16);
+  outline: none;
+}
+
+.tenant-group-lesson-material-name-cell {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.tenant-group-lesson-material-name-cell strong,
+.tenant-group-lesson-material-name-cell small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-lesson-material-name-cell strong {
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 900;
+}
+
+.tenant-group-lesson-material-name-cell small {
+  margin-top: 0.125rem;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.tenant-group-lesson-material-th--action,
+.tenant-group-lesson-material-action-cell {
+  width: 5rem;
+  text-align: center;
+}
+
+.tenant-group-lesson-content-open {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: #eef2ff;
+  color: #4338ca;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.tenant-group-lesson-content-table-row--clickable:hover .tenant-group-lesson-content-open,
+.tenant-group-lesson-content-table-row--clickable:focus-visible .tenant-group-lesson-content-open {
+  background: #4f46e5;
+  color: #ffffff;
+  transform: translateX(0.125rem);
+}
+
+.tenant-group-lesson-material-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid #e2e8f0;
+  padding: 0.875rem 1.5rem;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.tenant-group-lesson-material-pagination > div,
+.tenant-group-lesson-material-pagination label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tenant-group-lesson-material-pagination label {
+  color: #475569;
+}
+
+.tenant-group-lesson-material-pagination select {
+  width: auto;
+  min-width: 3.25rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  padding: 0.375rem 0.5rem;
+}
+
+.tenant-group-lesson-material-pagination button {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.tenant-group-lesson-material-pagination button:hover,
+.tenant-group-lesson-material-pagination button:focus-visible {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  color: #4338ca;
+  outline: none;
+}
+
+.tenant-group-lesson-material-pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.tenant-group-student-avatar {
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.tenant-group-student-attendance {
+  display: grid;
+  grid-template-columns: minmax(4rem, 1fr) auto;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 8rem;
+}
+
+.tenant-group-student-attendance > div {
+  height: 0.375rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.tenant-group-student-attendance span {
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.tenant-group-student-status {
+  display: inline-flex;
+  min-height: 1.625rem;
+  align-items: center;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 0 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.tenant-group-student-status--present {
+  background: #dcfce7;
+  color: #047857;
+}
+
+.tenant-group-student-status--absent {
+  background: #ffe4e6;
+  color: #be123c;
+}
+
+.tenant-group-student-table-row--selected {
+  background: rgb(79 70 229 / 0.08);
+}
+
+.tenant-group-student-exit {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border: 1px solid #fecdd3;
+  border-radius: 0.5rem;
+  background: #fff1f2;
+  color: #be123c;
+  padding: 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 900;
+  white-space: nowrap;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.tenant-group-student-exit:hover,
+.tenant-group-student-exit:focus-visible {
+  border-color: #e11d48;
+  background: #e11d48;
+  color: #ffffff;
+  outline: none;
+}
+
+.tenant-group-student-exit:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.tenant-group-student-exit mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-calendar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 160;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(15 23 42 / 0.46);
+}
+
+.tenant-group-calendar-panel {
+  width: min(100%, 72rem);
+  max-height: min(90vh, 52rem);
+  overflow: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  background: #ffffff;
+  box-shadow: 0 18px 48px rgb(15 23 42 / 0.24);
+}
+
+.tenant-group-calendar-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.tenant-group-calendar-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.tenant-group-calendar-add {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border-radius: 0.5rem;
+  background: #4f46e5;
+  padding: 0 0.875rem;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  transition: background-color 160ms ease;
+}
+
+.tenant-group-calendar-add:hover {
+  background: #4338ca;
+}
+
+.tenant-group-calendar-header h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.tenant-group-calendar-header p {
+  margin: 0.25rem 0 0;
+  color: #64748b;
+  font-size: 0.8125rem;
+}
+
+.tenant-group-calendar-close {
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  color: #64748b;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.tenant-group-calendar-close:hover {
+  background: #f1f5f9;
+  color: #4f46e5;
+}
+
+.tenant-group-calendar-form {
+  display: grid;
+  grid-template-columns: minmax(12rem, 1.5fr) repeat(3, minmax(8rem, 1fr));
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.tenant-group-calendar-form label {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.tenant-group-calendar-form span {
+  color: #475569;
+  font-size: 0.6875rem;
+  font-weight: 800;
+}
+
+.tenant-group-calendar-form input {
+  min-height: 2.5rem;
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  padding: 0 0.75rem;
+  color: #0f172a;
+  font-size: 0.8125rem;
+  outline: none;
+}
+
+.tenant-group-calendar-form input:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgb(79 70 229 / 0.14);
+}
+
+.tenant-group-calendar-form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.tenant-group-calendar-form-actions p {
+  margin: 0 auto 0 0;
+  color: #be123c;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.tenant-group-calendar-cancel,
+.tenant-group-calendar-save {
+  min-height: 2.25rem;
+  border-radius: 0.5rem;
+  padding: 0 0.875rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.tenant-group-calendar-cancel {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+}
+
+.tenant-group-calendar-cancel:hover {
+  background: #f1f5f9;
+}
+
+.tenant-group-calendar-save {
+  background: #4f46e5;
+  color: #ffffff;
+}
+
+.tenant-group-calendar-save:hover {
+  background: #4338ca;
+}
+
+:host ::ng-deep full-calendar {
+  display: block;
+  padding: 1rem;
+}
+
+:host ::ng-deep .fc {
+  color: #0f172a;
+  font-family: var(--font-sans, Inter, system-ui, sans-serif);
+  font-size: 0.8125rem;
+}
+
+:host ::ng-deep .fc .fc-toolbar {
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+:host ::ng-deep .fc .fc-toolbar-title {
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+:host ::ng-deep .fc .fc-button {
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: #334155;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: none;
+  box-shadow: none;
+}
+
+:host ::ng-deep .fc .fc-button:hover,
+:host ::ng-deep .fc .fc-button:focus {
+  border-color: #4f46e5;
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+:host ::ng-deep .fc .fc-button-primary:not(:disabled).fc-button-active,
+:host ::ng-deep .fc .fc-button-primary:not(:disabled):active {
+  border-color: #4f46e5;
+  background: #4f46e5;
+  color: #ffffff;
+}
+
+:host ::ng-deep .fc-theme-standard td,
+:host ::ng-deep .fc-theme-standard th,
+:host ::ng-deep .fc-theme-standard .fc-scrollgrid {
+  border-color: #e2e8f0;
+}
+
+:host ::ng-deep .fc-col-header-cell {
+  background: #f8fafc;
+}
+
+:host ::ng-deep .fc-col-header-cell-cushion,
+:host ::ng-deep .fc-timegrid-axis-cushion,
+:host ::ng-deep .fc-timegrid-slot-label-cushion {
+  color: #64748b;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+:host ::ng-deep .fc-event {
+  border-radius: 0.5rem;
+  padding: 0.125rem 0.25rem;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .tenant-group-detail-tabs {
+    width: 100%;
+  }
+
+  .tenant-group-detail-tab {
+    flex: 1 0 auto;
+  }
+
+  .tenant-group-sessions-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .tenant-group-sessions-filter-wrap,
+  .tenant-group-sessions-filter-btn {
+    width: 100%;
+  }
+
+  .tenant-group-sessions-pagination {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tenant-group-lesson-material-toolbar,
+  .tenant-group-lesson-material-pagination {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tenant-group-lesson-material-pagination > div {
+    justify-content: space-between;
+  }
+
+  .tenant-group-sessions-pagination-actions {
+    justify-content: space-between;
+  }
+
+  .tenant-group-session-row {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 1rem;
+  }
+
+  .tenant-group-session-meta {
+    grid-column: 2;
+    text-align: left;
+  }
+
+  .tenant-group-calendar-backdrop {
+    align-items: stretch;
+    padding: 0;
+  }
+
+  .tenant-group-calendar-panel {
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  :host ::ng-deep .fc .fc-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tenant-group-calendar-form {
+    grid-template-columns: 1fr;
+  }
+
+  .tenant-group-calendar-form-actions {
+    justify-content: stretch;
+  }
+
+  .tenant-group-lesson-option,
+  .tenant-group-lesson-row {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 0.875rem 1rem;
+  }
+
+  .tenant-group-lesson-option > mat-icon {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .tenant-group-lesson-open-icon {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .tenant-group-calendar-cancel,
+  .tenant-group-calendar-save {
+    flex: 1;
+  }
+}
+
+:host-context(.dark) .tenant-group-detail-tabs {
+  border-color: #1e293b;
+  background: #0f172a;
+}
+
+:host-context(.dark) .tenant-group-detail-tab {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .tenant-group-detail-tab:hover,
+:host-context(.dark) .tenant-group-detail-tab:focus-visible {
+  background: #1e293b;
+  color: #c7d2fe;
+}
+
+:host-context(.dark) .tenant-group-detail-tab--active,
+:host-context(.dark) .tenant-group-detail-tab--active:hover,
+:host-context(.dark) .tenant-group-detail-tab--active:focus-visible {
+  background: #4f46e5;
+  color: #ffffff;
+}
+
+:host-context(.dark) .tenant-group-sessions-calendar {
+  border-color: #3730a3;
+  background: rgb(79 70 229 / 0.16);
+  color: #c7d2fe;
+}
+
+:host-context(.dark) .tenant-group-sessions-calendar:hover,
+:host-context(.dark) .tenant-group-sessions-calendar:focus-visible {
+  background: #4f46e5;
+  color: #ffffff;
+}
+
+:host-context(.dark) .tenant-group-sessions-search,
+:host-context(.dark) .tenant-group-sessions-filter-btn,
+:host-context(.dark) .tenant-group-sessions-filter-panel,
+:host-context(.dark) .tenant-group-sessions-pagination button {
+  border-color: #334155;
+  background: #111827;
+  color: #94a3b8;
+}
+
+:host-context(.dark) .tenant-group-sessions-search input,
+:host-context(.dark) .tenant-group-sessions-filter-panel select,
+:host-context(.dark) .tenant-group-sessions-pagination-actions label select {
+  border-color: #334155;
+  background: #111827;
+  color: #f8fafc;
+}
+
+:host-context(.dark) .tenant-group-sessions-search input::placeholder {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .tenant-group-sessions-filter-btn:hover,
+:host-context(.dark) .tenant-group-sessions-filter-btn:focus-visible {
+  background: #1e293b;
+}
+
+:host-context(.dark) .tenant-group-sessions-filter-btn--active {
+  border-color: #3730a3;
+  background: rgb(79 70 229 / 0.16);
+  color: #c7d2fe;
+}
+
+:host-context(.dark) .tenant-group-sessions-filter-panel-head {
+  border-color: #1e293b;
+}
+
+:host-context(.dark) .tenant-group-sessions-filter-panel h3,
+:host-context(.dark) .tenant-group-sessions-pagination-actions > span {
+  color: #f8fafc;
+}
+
+:host-context(.dark) .tenant-group-sessions-filter-panel label,
+:host-context(.dark) .tenant-group-sessions-pagination-summary,
+:host-context(.dark) .tenant-group-sessions-pagination-actions label {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .tenant-group-session-row {
+  border-color: #1e293b;
+}
+
+:host-context(.dark) .tenant-group-session-icon {
+  background: rgb(79 70 229 / 0.16);
+  color: #c7d2fe;
+}
+
+:host-context(.dark) .tenant-group-session-main p,
+:host-context(.dark) .tenant-group-session-meta span:first-child {
+  color: #f8fafc;
+}
+
+:host-context(.dark) .tenant-group-session-main span,
+:host-context(.dark) .tenant-group-session-meta span,
+:host-context(.dark) .tenant-group-sessions-empty {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .tenant-group-sessions-pagination {
+  border-color: #1e293b;
+  background: #111827;
+}
+
+:host-context(.dark) .tenant-group-sessions-pagination button:hover:not(:disabled),
+:host-context(.dark) .tenant-group-sessions-pagination button:focus-visible:not(:disabled) {
+  border-color: #4f46e5;
+  background: rgb(79 70 229 / 0.16);
+  color: #c7d2fe;
+}
+
+:host-context(.dark) .tenant-group-lesson-picker,
+:host-context(.dark) .tenant-group-lesson-option,
+:host-context(.dark) .tenant-group-lesson-material-search,
+:host-context(.dark) .tenant-group-lesson-material-filter,
+:host-context(.dark) .tenant-group-lesson-material-clear,
+:host-context(.dark) .tenant-group-lesson-material-pagination select,
+:host-context(.dark) .tenant-group-lesson-material-pagination button {
+  border-color: #1e293b;
+  background: #111827;
+}
+
+:host-context(.dark) .tenant-group-lesson-picker-head h4,
+:host-context(.dark) .tenant-group-lesson-option-main strong,
+:host-context(.dark) .tenant-group-lesson-row-main p,
+:host-context(.dark) .tenant-group-lesson-material-name-cell strong {
+  color: #f8fafc;
+}
+
+:host-context(.dark) .tenant-group-lesson-picker-head p,
+:host-context(.dark) .tenant-group-lesson-picker-head button,
+:host-context(.dark) .tenant-group-lesson-option-main small,
+:host-context(.dark) .tenant-group-lesson-option-main em,
+:host-context(.dark) .tenant-group-lesson-row-main span,
+:host-context(.dark) .tenant-group-lesson-picker-state,
+:host-context(.dark) .tenant-group-lesson-material-search,
+:host-context(.dark) .tenant-group-lesson-material-filter,
+:host-context(.dark) .tenant-group-lesson-material-name-cell small,
+:host-context(.dark) .tenant-group-lesson-material-pagination {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .tenant-group-lesson-material-search input,
+:host-context(.dark) .tenant-group-lesson-material-filter select,
+:host-context(.dark) .tenant-group-lesson-material-pagination select,
+:host-context(.dark) .tenant-group-lesson-material-table td {
+  color: #f8fafc;
+}
+
+:host-context(.dark) .tenant-group-lesson-material-search input::placeholder {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .tenant-group-lesson-picker-head button:hover,
+:host-context(.dark) .tenant-group-lesson-picker-head button:focus-visible,
+:host-context(.dark) .tenant-group-lesson-option:hover,
+:host-context(.dark) .tenant-group-lesson-option:focus-visible,
+:host-context(.dark) .tenant-group-lesson-material-clear:hover,
+:host-context(.dark) .tenant-group-lesson-material-clear:focus-visible,
+:host-context(.dark) .tenant-group-lesson-material-pagination button:hover,
+:host-context(.dark) .tenant-group-lesson-material-pagination button:focus-visible {
+  border-color: #3730a3;
+  background: rgb(79 70 229 / 0.16);
+  color: #c7d2fe;
+}
+
+:host-context(.dark) .tenant-group-lesson-option-icon,
+:host-context(.dark) .tenant-group-lesson-row-icon {
+  background: rgb(79 70 229 / 0.16);
+  color: #c7d2fe;
+}
+
+:host-context(.dark) .tenant-group-lesson-picker-state {
+  border-color: #334155;
+}
+
+:host-context(.dark) .tenant-group-lesson-picker-state--error {
+  border-color: #7f1d1d;
+  background: rgb(127 29 29 / 0.28);
+  color: #fecdd3;
+}
+
+:host-context(.dark) .tenant-group-lesson-row {
+  border-color: #1e293b;
+}
+
+:host-context(.dark) .tenant-group-lesson-material-toolbar,
+:host-context(.dark) .tenant-group-lesson-material-table th {
+  border-color: #1e293b;
+  background: #111827;
+  color: #94a3b8;
+}
+
+:host-context(.dark) .tenant-group-lesson-material-table td,
+:host-context(.dark) .tenant-group-lesson-material-pagination {
+  border-color: #1e293b;
+}
+
+:host-context(.dark) .tenant-group-lesson-content-table-row--clickable:hover,
+:host-context(.dark) .tenant-group-lesson-content-table-row--clickable:focus-visible {
+  background: rgb(30 41 59 / 0.52);
+}
+
+:host-context(.dark) .tenant-group-lesson-content-open {
+  background: rgb(79 70 229 / 0.16);
+  color: #c7d2fe;
+}
+
+:host-context(.dark) .tenant-group-student-avatar,
+:host-context(.dark) .tenant-group-student-status {
+  background: #1e293b;
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .tenant-group-student-attendance > div {
+  background: #1e293b;
+}
+
+:host-context(.dark) .tenant-group-student-attendance span {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .tenant-group-student-status--present {
+  background: rgb(16 185 129 / 0.16);
+  color: #86efac;
+}
+
+:host-context(.dark) .tenant-group-student-status--absent {
+  background: rgb(225 29 72 / 0.16);
+  color: #fecdd3;
+}
+
+:host-context(.dark) .tenant-group-student-table-row--selected {
+  background: rgb(79 70 229 / 0.16);
+}
+
+:host-context(.dark) .tenant-group-student-exit {
+  border-color: #7f1d1d;
+  background: rgb(127 29 29 / 0.28);
+  color: #fecdd3;
+}
+
+:host-context(.dark) .tenant-group-student-exit:hover,
+:host-context(.dark) .tenant-group-student-exit:focus-visible {
+  border-color: #e11d48;
+  background: #e11d48;
+  color: #ffffff;
+}
+
+:host-context(.dark) .tenant-group-lesson-row:hover,
+:host-context(.dark) .tenant-group-lesson-row:focus-visible {
+  background: rgb(30 41 59 / 0.52);
+}
+
+:host-context(.dark) .tenant-group-calendar-panel,
+:host-context(.dark) .tenant-group-calendar-header,
+:host-context(.dark) .tenant-group-calendar-form {
+  border-color: #1e293b;
+  background: #0f172a;
+}
+
+:host-context(.dark) .tenant-group-calendar-header h3,
+:host-context(.dark) ::ng-deep .fc,
+:host-context(.dark) ::ng-deep .fc .fc-toolbar-title {
+  color: #f8fafc;
+}
+
+:host-context(.dark) .tenant-group-calendar-header p,
+:host-context(.dark) .tenant-group-calendar-form span,
+:host-context(.dark) .tenant-group-calendar-close,
+:host-context(.dark) ::ng-deep .fc-col-header-cell-cushion,
+:host-context(.dark) ::ng-deep .fc-timegrid-axis-cushion,
+:host-context(.dark) ::ng-deep .fc-timegrid-slot-label-cushion {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .tenant-group-calendar-close:hover,
+:host-context(.dark) ::ng-deep .fc .fc-button:hover,
+:host-context(.dark) ::ng-deep .fc .fc-button:focus {
+  background: #1e293b;
+}
+
+:host-context(.dark) ::ng-deep .fc .fc-button {
+  border-color: #334155;
+  background: #0f172a;
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .tenant-group-calendar-form input,
+:host-context(.dark) .tenant-group-calendar-cancel {
+  border-color: #334155;
+  background: #111827;
+  color: #f8fafc;
+}
+
+:host-context(.dark) ::ng-deep .fc-theme-standard td,
+:host-context(.dark) ::ng-deep .fc-theme-standard th,
+:host-context(.dark) ::ng-deep .fc-theme-standard .fc-scrollgrid {
+  border-color: #1e293b;
+}
+
+:host-context(.dark) ::ng-deep .fc-col-header-cell {
+  background: #111827;
+}

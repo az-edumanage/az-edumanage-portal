@@ -105,6 +105,12 @@
             </select>
           </div>
 
+          @if (questionTypeLoadError()) {
+            <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-300">
+              {{ questionTypeLoadError() }}
+            </div>
+          }
+
           <div class="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
             <table class="w-full text-left text-sm">
               <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/50">
@@ -260,6 +266,74 @@
             </table>
           </div>
         </div>
+      } @else if (activeTab() === 'question-types') {
+        <div class="space-y-5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <button type="button" (click)="backToGeneral()" class="mb-2 inline-flex items-center gap-1 text-sm font-medium text-slate-500 transition-colors hover:text-indigo-600">
+                <mat-icon class="text-base">arrow_back</mat-icon>
+                General
+              </button>
+              <h3 class="text-xl font-bold text-slate-900 dark:text-white">Question Type</h3>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-500">Manage predefined question types used by curriculum questions.</p>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-800/40 sm:flex-row">
+            <div class="relative flex-1">
+              <label for="question-type-search" class="sr-only">Search question type</label>
+              <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-base text-slate-500">search</mat-icon>
+              <input
+                id="question-type-search"
+                type="search"
+                [ngModel]="questionTypeSearchQuery()"
+                (ngModelChange)="questionTypeSearchQuery.set($event)"
+                placeholder="Search question type..."
+                class="h-10 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-900 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+              >
+            </div>
+            <label for="question-type-filter" class="sr-only">Filter question types</label>
+            <select
+              id="question-type-filter"
+              [ngModel]="questionTypeFilter()"
+              (ngModelChange)="questionTypeFilter.set($event)"
+              class="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+            >
+              <option value="">All Question Types</option>
+              <option value="E">Starts with E</option>
+              <option value="M">Starts with M</option>
+              <option value="S">Starts with S</option>
+              <option value="T">Starts with T</option>
+            </select>
+          </div>
+
+          <div class="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
+            <table class="w-full text-left text-sm">
+              <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/50">
+                <tr>
+                  <th class="px-4 py-3 font-bold">Question Type</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                @if (questionTypesLoading()) {
+                  <tr>
+                    <td class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-500">Loading question types...</td>
+                  </tr>
+                } @else {
+                  @for (type of filteredQuestionTypes(); track type.id) {
+                  <tr class="transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                    <td class="px-4 py-4 font-semibold text-slate-900 dark:text-white">{{ type.name }}</td>
+                  </tr>
+                  } @empty {
+                    <tr>
+                      <td class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-500">No question types match the current filters.</td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
       } @else if (activeTab() === 'general') {
         <div class="space-y-5">
           <div>
@@ -324,6 +398,42 @@
             </button>
             <button
               type="button"
+              (click)="openQuestionTypesScreen()"
+              class="group rounded-xl border border-slate-200 bg-white p-5 text-left shadow-sm transition-all hover:border-indigo-200 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-900 dark:hover:bg-slate-800/60"
+            >
+              <span class="flex items-start justify-between gap-4">
+                <span class="flex min-w-0 items-start gap-3">
+                  <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white">
+                    <mat-icon class="text-lg">quiz</mat-icon>
+                  </span>
+                  <span class="min-w-0">
+                    <span class="block text-base font-bold text-slate-900 dark:text-white">Question Type</span>
+                    <span class="mt-1 block text-sm leading-6 text-slate-500 dark:text-slate-500">Predefined types used by curriculum questions.</span>
+                  </span>
+                </span>
+                <mat-icon class="mt-1 text-base text-slate-400 transition-colors group-hover:text-indigo-600">chevron_right</mat-icon>
+              </span>
+            </button>
+            <button
+              type="button"
+              (click)="openSubscriptionPeriodScreen()"
+              class="group rounded-xl border border-slate-200 bg-white p-5 text-left shadow-sm transition-all hover:border-indigo-200 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-900 dark:hover:bg-slate-800/60"
+            >
+              <span class="flex items-start justify-between gap-4">
+                <span class="flex min-w-0 items-start gap-3">
+                  <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white">
+                    <mat-icon class="text-lg">payments</mat-icon>
+                  </span>
+                  <span class="min-w-0">
+                    <span class="block text-base font-bold text-slate-900 dark:text-white">Subscription period</span>
+                    <span class="mt-1 block text-sm leading-6 text-slate-500 dark:text-slate-500">Method options used by group subscriptions.</span>
+                  </span>
+                </span>
+                <mat-icon class="mt-1 text-base text-slate-400 transition-colors group-hover:text-indigo-600">chevron_right</mat-icon>
+              </span>
+            </button>
+            <button
+              type="button"
               (click)="openEquipmentFacilitiesScreen()"
               class="group rounded-xl border border-slate-200 bg-white p-5 text-left shadow-sm transition-all hover:border-indigo-200 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-900 dark:hover:bg-slate-800/60"
             >
@@ -339,6 +449,150 @@
                 </span>
                 <mat-icon class="mt-1 text-base text-slate-400 transition-colors group-hover:text-indigo-600">chevron_right</mat-icon>
               </span>
+            </button>
+          </div>
+        </div>
+      } @else if (activeTab() === 'subscription-period') {
+        <div class="space-y-5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <button type="button" (click)="backToGeneral()" class="mb-2 inline-flex items-center gap-1 text-sm font-medium text-slate-500 transition-colors hover:text-indigo-600">
+                <mat-icon class="text-base">arrow_back</mat-icon>
+                General
+              </button>
+              <h3 class="text-xl font-bold text-slate-900 dark:text-white">Subscription period</h3>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-500">Manage period values and Method selector options used by group subscriptions.</p>
+            </div>
+            <button
+              type="button"
+              (click)="openSubscriptionPeriodCreateScreen()"
+              class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-700"
+            >
+              <mat-icon class="text-sm">add</mat-icon>
+              Add New Period
+            </button>
+          </div>
+
+          <div class="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
+            <table class="w-full text-left text-sm">
+              <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/50">
+                <tr>
+                  <th class="px-4 py-3 font-bold">Period Name</th>
+                  <th class="px-4 py-3 font-bold">Duration</th>
+                  <th class="px-4 py-3 font-bold">Description</th>
+                  <th class="px-4 py-3 text-right font-bold">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                @if (subscriptionPeriodsLoading()) {
+                  <tr>
+                    <td colspan="4" class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-500">Loading subscription periods...</td>
+                  </tr>
+                } @else if (subscriptionPeriodLoadError()) {
+                  <tr>
+                    <td colspan="4" class="px-4 py-8 text-center text-sm text-red-600 dark:text-red-400">{{ subscriptionPeriodLoadError() }}</td>
+                  </tr>
+                } @else {
+                  @for (period of subscriptionPeriods(); track period.id) {
+                    <tr class="transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                      <td class="px-4 py-4 font-semibold text-slate-900 dark:text-white">{{ period.name }}</td>
+                      <td class="px-4 py-4 text-slate-600 dark:text-slate-400">{{ period.durationValue }} {{ period.durationType }}</td>
+                      <td class="px-4 py-4 text-slate-600 dark:text-slate-400">{{ period.description || 'No description' }}</td>
+                      <td class="px-4 py-4 text-right">
+                        <div class="inline-flex items-center justify-end gap-1">
+                          <button type="button" (click)="editSubscriptionPeriod(period)" [disabled]="subscriptionPeriodSaving() || !!subscriptionPeriodDeletingId()" class="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-60 dark:hover:bg-slate-800" title="Edit period">
+                            <mat-icon class="block text-sm">edit</mat-icon>
+                          </button>
+                          <button type="button" (click)="deleteSubscriptionPeriod(period)" [disabled]="subscriptionPeriodSaving() || subscriptionPeriodDeletingId() === period.id" class="rounded-lg p-2 text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60 dark:hover:bg-red-900/20" title="Delete period">
+                            <mat-icon class="block text-sm">{{ subscriptionPeriodDeletingId() === period.id ? 'hourglass_empty' : 'delete' }}</mat-icon>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="4" class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-500">No subscription periods saved yet.</td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      } @else if (activeTab() === 'subscription-period-create') {
+        <div class="max-w-3xl space-y-5">
+          <div>
+            <button type="button" (click)="cancelSubscriptionPeriodCreate()" class="mb-2 inline-flex items-center gap-1 text-sm font-medium text-slate-500 transition-colors hover:text-indigo-600">
+              <mat-icon class="text-base">arrow_back</mat-icon>
+              Subscription period
+            </button>
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Add New Period</h3>
+          </div>
+
+          <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div class="md:col-span-2">
+                <label for="subscription-period-name" class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Period Name</label>
+                <input
+                  id="subscription-period-name"
+                  type="text"
+                  [ngModel]="subscriptionPeriodName()"
+                  (ngModelChange)="setSubscriptionPeriodName($event)"
+                  class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                >
+                @if (subscriptionPeriodNameError()) {
+                  <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">{{ subscriptionPeriodNameError() }}</p>
+                }
+              </div>
+
+              <div class="md:col-span-2">
+                <span class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Duration</span>
+                <div class="inline-flex overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-800">
+                  <button type="button" (click)="selectSubscriptionPeriodDurationType('Month')" [class.bg-indigo-600]="subscriptionPeriodDurationType() === 'Month'" [class.text-white]="subscriptionPeriodDurationType() === 'Month'" class="h-9 rounded-md px-4 text-sm font-medium text-slate-700 transition-colors dark:text-slate-300">Month</button>
+                  <button type="button" (click)="selectSubscriptionPeriodDurationType('Day')" [class.bg-indigo-600]="subscriptionPeriodDurationType() === 'Day'" [class.text-white]="subscriptionPeriodDurationType() === 'Day'" class="h-9 rounded-md px-4 text-sm font-medium text-slate-700 transition-colors dark:text-slate-300">Day</button>
+                </div>
+              </div>
+
+              @if (subscriptionPeriodDurationType()) {
+                <div>
+                  <label for="subscription-period-duration-value" class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ subscriptionPeriodDurationType() }} count</label>
+                  <input
+                    id="subscription-period-duration-value"
+                    type="number"
+                    min="1"
+                    [ngModel]="subscriptionPeriodDurationValue()"
+                    (ngModelChange)="setSubscriptionPeriodDurationValue($event)"
+                    class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  >
+                  @if (subscriptionPeriodDurationError()) {
+                    <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">{{ subscriptionPeriodDurationError() }}</p>
+                  }
+                </div>
+              }
+
+              <div class="md:col-span-2">
+                <label for="subscription-period-description" class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>
+                <textarea
+                  id="subscription-period-description"
+                  rows="4"
+                  [ngModel]="subscriptionPeriodDescription()"
+                  (ngModelChange)="setSubscriptionPeriodDescription($event)"
+                  class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          @if (subscriptionPeriodSaveError()) {
+            <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-300">{{ subscriptionPeriodSaveError() }}</p>
+          }
+
+          <div class="flex items-center justify-end gap-3">
+            <button type="button" (click)="cancelSubscriptionPeriodCreate()" class="rounded-lg border border-slate-200 bg-white px-5 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">Cancel</button>
+            <button type="button" (click)="saveSubscriptionPeriod()" [disabled]="subscriptionPeriodSaving()" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-700">
+              <mat-icon class="text-sm">save</mat-icon>
+              {{ subscriptionPeriodSaving() ? 'Saving...' : 'Save' }}
             </button>
           </div>
         </div>

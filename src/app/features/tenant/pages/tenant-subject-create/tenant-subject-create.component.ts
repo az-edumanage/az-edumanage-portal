@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { TenantSubjectCreateFacade } from '../../state/tenant-subject-create.facade';
 
@@ -13,6 +13,7 @@ import { TenantSubjectCreateFacade } from '../../state/tenant-subject-create.fac
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TenantSubjectCreateComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute);
   private readonly facade = inject(TenantSubjectCreateFacade);
 
   readonly subjectForm = this.facade.subjectForm;
@@ -22,9 +23,15 @@ export class TenantSubjectCreateComponent implements OnInit {
   readonly filteredGrades = this.facade.filteredGrades;
   readonly loading = this.facade.loading;
   readonly loadError = this.facade.loadError;
+  readonly isEditMode = this.facade.isEditMode;
 
   ngOnInit(): void {
-    void this.facade.initialize();
+    void this.facade.initialize(
+      this.route.snapshot.paramMap.get('id'),
+      this.route.snapshot.queryParamMap.get('returnUrl'),
+      this.route.snapshot.queryParamMap.get('stageId'),
+      this.route.snapshot.queryParamMap.get('gradeId'),
+    );
   }
 
   onStageChange(event: Event): void {

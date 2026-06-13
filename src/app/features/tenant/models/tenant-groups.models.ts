@@ -1,3 +1,10 @@
+export interface GroupDaySchedule {
+  startTime?: string | null;
+  endTime?: string | null;
+  room?: string | null;
+  roomId?: string | null;
+}
+
 export interface Group {
   id: string;
   name: string;
@@ -8,7 +15,10 @@ export interface Group {
   startAt?: string | null;
   duration?: number | null;
   room: string;
+  daySchedules?: Record<string, GroupDaySchedule>;
   pricePerStudent?: number;
   ownedBy?: string;
   educationCategory?: 'BASIC_EDUCATION' | 'UNIVERSITY_EDUCATION';
+  subscriptionPeriodId?: string | null;
+  subscriptionPeriod?: string | null;
 }

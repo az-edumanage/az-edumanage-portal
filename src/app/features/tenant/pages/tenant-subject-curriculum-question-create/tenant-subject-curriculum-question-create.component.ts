@@ -1,0 +1,1504 @@
+import { CUSTOM_ELEMENTS_SCHEMA, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import 'mathlive';
+import type { MathfieldElement } from 'mathlive';
+import { I18nService } from '../../../../core/services/i18n.service';
+import { TenantQuestionType, TenantQuestionTypeSettingsService } from '../../data-access/tenant-question-type-settings.service';
+import { TenantCurriculumQuestionMediaPayload, TenantSubjectsDataService } from '../../data-access/tenant-subjects-data.service';
+import { TenantGroupSearchableSelectorComponent } from '../../components/tenant-group-searchable-selector/tenant-group-searchable-selector.component';
+import { TenantGroupSelectorOption } from '../../models/tenant-group-create.models';
+import { TenantCurriculumQuestion, TenantCurriculumQuestionAnswer, TenantSubjectCurriculumNode } from '../../models/tenant-subjects.models';
+import { TenantSubjectDetailsFacade } from '../../state/tenant-subject-details.facade';
+
+interface CurriculumPathItem {
+  id: string;
+  label: string;
+}
+
+interface AnswerDraft {
+  answer: string;
+  description: string;
+  correct: boolean;
+}
+
+interface BulkAnswerInput {
+  answer: string;
+  correct: boolean;
+}
+
+interface BulkQuestionInput {
+  question: string;
+  answers: BulkAnswerInput[];
+}
+
+interface QuestionMediaOption {
+  name: string;
+  size: number;
+  type: string;
+  previewUrl: string;
+  kind: 'image' | 'video' | 'audio' | 'file';
+  file: File | null;
+  mediaUrl: string | null;
+  mediaFileName: string | null;
+  mediaOriginalName: string | null;
+  mediaContentType: string | null;
+  mediaSizeBytes: number | null;
+}
+
+type QuestionCreateLabelKey =
+  | 'subject'
+  | 'subjectDetails'
+  | 'curriculum'
+  | 'addQuestion'
+  | 'editQuestion'
+  | 'saveQuestion'
+  | 'saving'
+  | 'cancel'
+  | 'loadingTitle'
+  | 'loadingText'
+  | 'loadErrorTitle'
+  | 'backToCurriculum'
+  | 'questionInformation'
+  | 'questionInformationHint'
+  | 'type'
+  | 'loadingQuestionTypes'
+  | 'unableToLoadQuestionTypes'
+  | 'selectQuestionType'
+  | 'searchQuestionTypes'
+  | 'noQuestionTypesFound'
+  | 'typeRequired'
+  | 'multipleQuestions'
+  | 'multipleQuestionsHint'
+  | 'singleQuestion'
+  | 'singleQuestionHint'
+  | 'question'
+  | 'enterQuestion'
+  | 'openMathEditor'
+  | 'uploadMediaOption'
+  | 'removeMediaOption'
+  | 'answer'
+  | 'answers'
+  | 'selectTrueFalse'
+  | 'true'
+  | 'false'
+  | 'correct'
+  | 'add'
+  | 'noAnswers'
+  | 'description'
+  | 'addNotes'
+  | 'curriculumItem'
+  | 'currentItem'
+  | 'path'
+  | 'tip'
+  | 'bulkTrueFalseHint'
+  | 'bulkShortAnswerHint'
+  | 'bulkEssayHint'
+  | 'bulkChoiceHint'
+  | 'closeMultipleQuestions'
+  | 'save'
+  | 'mathEditor'
+  | 'mathEditorHint'
+  | 'equation'
+  | 'insertedLatexHint'
+  | 'insert'
+  | 'addAnswer'
+  | 'addAnswerShortHint'
+  | 'addAnswerEssayHint'
+  | 'addAnswerDefaultHint'
+  | 'enterAnswer'
+  | 'openMathEditorAnswer'
+  | 'uploadAnswerFile'
+  | 'removeAnswerFile'
+  | 'answerDescription'
+  | 'answerFile'
+  | 'answerImage'
+  | 'mediaFile'
+  | 'questionOrMediaRequired'
+  | 'answerRequired'
+  | 'trueFalseRequired'
+  | 'unableToSaveQuestion'
+  | 'unableToUpdateAnswer'
+  | 'missingCurriculumContext'
+  | 'shortAnswerTooLong'
+  | 'oneAnswerOnly'
+  | 'singleAnswerQuestionError'
+  | 'invalidQuestionsFormat'
+  | 'enterAtLeastOneQuestion'
+  | 'answerLinesAfterQuestion'
+  | 'invalidChoiceFormat'
+  | 'invalidTrueFalseFormat'
+  | 'questionMustHaveAnswer'
+  | 'questionMustHaveCorrect'
+  | 'questionMustHaveOneCorrect'
+  | 'questionMustHaveOneAnswer'
+  | 'questionAnswerTooLong'
+  | 'questionHasEmptyAnswer'
+  | 'unableToSaveQuestions'
+  | 'unableToSaveAnswer'
+  | 'enterQuestionBeforeAnswer';
+
+const QUESTION_CREATE_LABELS: Record<QuestionCreateLabelKey, { en: string; ar: string }> = {
+  subject: { en: 'Subject', ar: 'المادة' },
+  subjectDetails: { en: 'Subject Details', ar: 'تفاصيل المادة' },
+  curriculum: { en: 'Curriculum', ar: 'المنهج' },
+  addQuestion: { en: 'Add Question', ar: 'إضافة سؤال' },
+  editQuestion: { en: 'Edit Question', ar: 'تعديل السؤال' },
+  saveQuestion: { en: 'Save Question', ar: 'حفظ السؤال' },
+  saving: { en: 'Saving...', ar: 'جاري الحفظ...' },
+  cancel: { en: 'Cancel', ar: 'إلغاء' },
+  loadingTitle: { en: 'Loading curriculum details', ar: 'جاري تحميل تفاصيل المنهج' },
+  loadingText: { en: 'Please wait while the question form is prepared.', ar: 'يرجى الانتظار حتى يتم تجهيز نموذج السؤال.' },
+  loadErrorTitle: { en: 'Unable to load curriculum details', ar: 'تعذر تحميل تفاصيل المنهج' },
+  backToCurriculum: { en: 'Back to Curriculum', ar: 'العودة إلى المنهج' },
+  questionInformation: { en: 'Question Information', ar: 'بيانات السؤال' },
+  questionInformationHint: { en: 'Choose the type, write the question, then add answers when needed.', ar: 'اختر النوع، اكتب السؤال، ثم أضف الإجابات عند الحاجة.' },
+  type: { en: 'Type', ar: 'النوع' },
+  loadingQuestionTypes: { en: 'Loading question types...', ar: 'جاري تحميل أنواع الأسئلة...' },
+  unableToLoadQuestionTypes: { en: 'Unable to load question types', ar: 'تعذر تحميل أنواع الأسئلة' },
+  selectQuestionType: { en: 'Select question type', ar: 'اختر نوع السؤال' },
+  searchQuestionTypes: { en: 'Search question types...', ar: 'بحث في أنواع الأسئلة...' },
+  noQuestionTypesFound: { en: 'No question types found', ar: 'لا توجد أنواع أسئلة' },
+  typeRequired: { en: 'Type is required.', ar: 'نوع السؤال مطلوب.' },
+  multipleQuestions: { en: 'Multiple Questions', ar: 'أسئلة متعددة' },
+  multipleQuestionsHint: { en: 'Paste many questions in one overlay.', ar: 'ألصق عدة أسئلة في نافذة واحدة.' },
+  singleQuestion: { en: 'Single Question', ar: 'سؤال واحد' },
+  singleQuestionHint: { en: 'Use the current question and answer form.', ar: 'استخدم نموذج السؤال والإجابة الحالي.' },
+  question: { en: 'Question', ar: 'السؤال' },
+  enterQuestion: { en: 'Enter the question', ar: 'أدخل السؤال' },
+  openMathEditor: { en: 'Open MathLive editor', ar: 'فتح محرر MathLive' },
+  uploadMediaOption: { en: 'Upload media option', ar: 'رفع ملف للسؤال' },
+  removeMediaOption: { en: 'Remove media option', ar: 'حذف ملف السؤال' },
+  answer: { en: 'Answer', ar: 'الإجابة' },
+  answers: { en: 'Answers', ar: 'الإجابات' },
+  selectTrueFalse: { en: 'Select whether the question statement is true or false.', ar: 'حدد هل عبارة السؤال صحيحة أم خاطئة.' },
+  true: { en: 'True', ar: 'صح' },
+  false: { en: 'False', ar: 'خطأ' },
+  correct: { en: 'Correct', ar: 'صحيحة' },
+  add: { en: 'Add', ar: 'إضافة' },
+  noAnswers: { en: 'No answers added yet.', ar: 'لم تتم إضافة إجابات بعد.' },
+  description: { en: 'Description', ar: 'الوصف' },
+  addNotes: { en: 'Add notes or explanation', ar: 'أضف ملاحظات أو شرح' },
+  curriculumItem: { en: 'Curriculum Item', ar: 'عنصر المنهج' },
+  currentItem: { en: 'Current item', ar: 'العنصر الحالي' },
+  path: { en: 'Path', ar: 'المسار' },
+  tip: { en: 'For multiple-choice questions, save the question first or add answers here so the options are linked to this curriculum item.', ar: 'في أسئلة الاختيار من متعدد، احفظ السؤال أولاً أو أضف الإجابات هنا حتى ترتبط الخيارات بعنصر المنهج.' },
+  bulkTrueFalseHint: { en: 'Each question starts with q : or س :, ends with ? or ؟, then comma and true, false, or صح.', ar: 'يبدأ كل سؤال بـ q : أو س : وينتهي بـ ? أو ؟ ثم فاصلة ثم true أو false أو صح.' },
+  bulkShortAnswerHint: { en: 'Each question starts with Q : or س : and ends with ? or ؟. Add one answer that starts with - then tab space. Mark it correct, and keep it to 5 words or fewer.', ar: 'يبدأ كل سؤال بـ Q : أو س : وينتهي بـ ? أو ؟. أضف إجابة واحدة تبدأ بـ - ثم مسافة Tab. اجعلها صحيحة وبحد أقصى 5 كلمات.' },
+  bulkEssayHint: { en: 'Each question starts with Q : or س : and ends with ? or ؟. Add one answer that starts with - then tab space. Essay answers can use unlimited words.', ar: 'يبدأ كل سؤال بـ Q : أو س : وينتهي بـ ? أو ؟. أضف إجابة واحدة تبدأ بـ - ثم مسافة Tab. إجابات المقال بدون حد للكلمات.' },
+  bulkChoiceHint: { en: 'Each question starts with Q : or س : and ends with ? or ؟. Each answer starts with - then tab space. Correct answers use correct or صح before a comma.', ar: 'يبدأ كل سؤال بـ Q : أو س : وينتهي بـ ? أو ؟. تبدأ كل إجابة بـ - ثم مسافة Tab. الإجابات الصحيحة تستخدم correct أو صح قبل الفاصلة.' },
+  closeMultipleQuestions: { en: 'Close multiple questions overlay', ar: 'إغلاق نافذة الأسئلة المتعددة' },
+  save: { en: 'Save', ar: 'حفظ' },
+  mathEditor: { en: 'MathLive Editor', ar: 'محرر MathLive' },
+  mathEditorHint: { en: 'Write the equation, then insert it into the selected field.', ar: 'اكتب المعادلة، ثم أدرجها في الحقل المحدد.' },
+  equation: { en: 'Equation', ar: 'المعادلة' },
+  insertedLatexHint: { en: 'Inserted value is saved as LaTeX in the selected text.', ar: 'سيتم حفظ القيمة المدرجة بصيغة LaTeX داخل النص المحدد.' },
+  insert: { en: 'Insert', ar: 'إدراج' },
+  addAnswer: { en: 'Add Answer', ar: 'إضافة إجابة' },
+  addAnswerShortHint: { en: 'Add one answer only, no more than 5 words.', ar: 'أضف إجابة واحدة فقط، بحد أقصى 5 كلمات.' },
+  addAnswerEssayHint: { en: 'Add one answer only. Essay answers can use unlimited words.', ar: 'أضف إجابة واحدة فقط. إجابات المقال بدون حد للكلمات.' },
+  addAnswerDefaultHint: { en: 'Add the answer text and optional notes shown in the answer table.', ar: 'أضف نص الإجابة والملاحظات الاختيارية التي تظهر في جدول الإجابات.' },
+  enterAnswer: { en: 'Enter answer', ar: 'أدخل الإجابة' },
+  openMathEditorAnswer: { en: 'Open MathLive editor for answer', ar: 'فتح محرر MathLive للإجابة' },
+  uploadAnswerFile: { en: 'Upload answer file', ar: 'رفع ملف للإجابة' },
+  removeAnswerFile: { en: 'Remove answer file', ar: 'حذف ملف الإجابة' },
+  answerDescription: { en: 'Answer description', ar: 'وصف الإجابة' },
+  answerFile: { en: 'Answer file', ar: 'ملف الإجابة' },
+  answerImage: { en: 'Answer image', ar: 'صورة الإجابة' },
+  mediaFile: { en: 'Media file', ar: 'ملف وسائط' },
+  questionOrMediaRequired: { en: 'Question or media file is required.', ar: 'السؤال أو ملف الوسائط مطلوب.' },
+  answerRequired: { en: 'Answer is required.', ar: 'الإجابة مطلوبة.' },
+  trueFalseRequired: { en: 'Select True or False as the correct answer.', ar: 'اختر صح أو خطأ كإجابة صحيحة.' },
+  unableToSaveQuestion: { en: 'Unable to save question. Please try again.', ar: 'تعذر حفظ السؤال. حاول مرة أخرى.' },
+  unableToUpdateAnswer: { en: 'Unable to update answer. Please try again.', ar: 'تعذر تحديث الإجابة. حاول مرة أخرى.' },
+  missingCurriculumContext: { en: 'Missing curriculum context.', ar: 'بيانات المنهج غير مكتملة.' },
+  shortAnswerTooLong: { en: 'Short Answer must be no more than 5 words.', ar: 'يجب ألا تزيد الإجابة القصيرة عن 5 كلمات.' },
+  oneAnswerOnly: { en: 'questions can have one answer only.', ar: 'يمكن أن يحتوي على إجابة واحدة فقط.' },
+  singleAnswerQuestionError: { en: 'questions must have one answer only.', ar: 'يجب أن يحتوي على إجابة واحدة فقط.' },
+  invalidQuestionsFormat: { en: 'Invalid questions format.', ar: 'تنسيق الأسئلة غير صحيح.' },
+  enterAtLeastOneQuestion: { en: 'Enter at least one question.', ar: 'أدخل سؤالاً واحداً على الأقل.' },
+  answerLinesAfterQuestion: { en: 'Answer lines must come after a question line.', ar: 'يجب أن تأتي أسطر الإجابة بعد سطر السؤال.' },
+  invalidChoiceFormat: { en: 'Invalid format. Questions must start with Q : or س : and answers must start with -.', ar: 'تنسيق غير صحيح. يجب أن تبدأ الأسئلة بـ Q : أو س : وأن تبدأ الإجابات بـ -.' },
+  invalidTrueFalseFormat: { en: 'Invalid format. True / False questions must start with q : or س :, end with ? or ؟, then comma and true, false, or صح.', ar: 'تنسيق غير صحيح. يجب أن تبدأ أسئلة الصح والخطأ بـ q : أو س : وتنتهي بـ ? أو ؟ ثم فاصلة ثم true أو false أو صح.' },
+  questionMustHaveAnswer: { en: 'must have at least one answer.', ar: 'يجب أن يحتوي على إجابة واحدة على الأقل.' },
+  questionMustHaveCorrect: { en: 'must have one correct answer.', ar: 'يجب أن يحتوي على إجابة صحيحة واحدة.' },
+  questionMustHaveOneCorrect: { en: 'must have exactly one correct answer.', ar: 'يجب أن يحتوي على إجابة صحيحة واحدة فقط.' },
+  questionMustHaveOneAnswer: { en: 'must have one answer only.', ar: 'يجب أن يحتوي على إجابة واحدة فقط.' },
+  questionAnswerTooLong: { en: 'answer must be no more than 5 words.', ar: 'يجب ألا تزيد الإجابة عن 5 كلمات.' },
+  questionHasEmptyAnswer: { en: 'has an empty answer.', ar: 'يحتوي على إجابة فارغة.' },
+  unableToSaveQuestions: { en: 'Unable to save questions. Please try again.', ar: 'تعذر حفظ الأسئلة. حاول مرة أخرى.' },
+  unableToSaveAnswer: { en: 'Unable to save answer. Please try again.', ar: 'تعذر حفظ الإجابة. حاول مرة أخرى.' },
+  enterQuestionBeforeAnswer: { en: 'Enter the question or upload media before adding answers.', ar: 'أدخل السؤال أو ارفع ملف وسائط قبل إضافة الإجابات.' },
+};
+
+const QUESTION_TYPE_LABELS: Record<string, { en: string; ar: string }> = {
+  MULTIPLE_CHOICE: { en: 'Multiple Choice', ar: 'اختيار من متعدد' },
+  TRUE_FALSE: { en: 'True / False', ar: 'صح / خطأ' },
+  SHORT_ANSWER: { en: 'Short Answer', ar: 'إجابة قصيرة' },
+  ESSAY: { en: 'Essay', ar: 'مقال' },
+  MCQ: { en: 'MCQ', ar: 'اختيار إجابة واحدة' },
+};
+
+@Component({
+  selector: 'app-tenant-subject-curriculum-question-create',
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, MatIconModule, TenantGroupSearchableSelectorComponent],
+  templateUrl: './tenant-subject-curriculum-question-create.component.html',
+  styleUrls: ['./tenant-subject-curriculum-question-create.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+})
+export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, OnDestroy {
+  @ViewChild('mathField') private readonly mathField?: ElementRef<MathfieldElement>;
+
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly fb = inject(FormBuilder);
+  private readonly facade = inject(TenantSubjectDetailsFacade);
+  private readonly data = inject(TenantSubjectsDataService);
+  private readonly questionTypeSettings = inject(TenantQuestionTypeSettingsService);
+  private readonly i18n = inject(I18nService);
+
+  readonly subject = this.facade.subject;
+  readonly loading = this.facade.loading;
+  readonly loadError = this.facade.loadError;
+  readonly curriculumLoading = signal(false);
+  readonly curriculumError = signal<string | null>(null);
+  readonly questionTypes = signal<TenantQuestionType[]>([]);
+  readonly questionTypesLoading = signal(false);
+  readonly questionTypeError = signal<string | null>(null);
+  readonly selectedQuestionType = signal('');
+  readonly typeSelectorOpen = signal(false);
+  readonly typeSearchQuery = signal('');
+  readonly currentQuestionId = signal<string | null>(null);
+  readonly editingQuestionId = signal<string | null>(null);
+  readonly multipleChoiceAnswers = signal<TenantCurriculumQuestionAnswer[]>([]);
+  readonly answerDrafts = signal<Record<string, AnswerDraft>>({});
+  readonly multipleChoiceMode = signal<'single' | 'multiple' | null>(null);
+  readonly showBulkQuestionOverlay = signal(false);
+  readonly bulkQuestionsText = signal('');
+  readonly bulkQuestionError = signal<string | null>(null);
+  readonly bulkQuestionSaving = signal(false);
+  readonly questionMediaOption = signal<QuestionMediaOption | null>(null);
+  readonly questionContentError = signal<string | null>(null);
+  readonly trueFalseAnswer = signal<boolean | null>(null);
+  readonly trueFalseAnswerError = signal<string | null>(null);
+  readonly showMathEditor = signal(false);
+  readonly mathEditorValue = signal('');
+  readonly mathEditorTarget = signal<'question' | 'answer' | 'answerDraft' | 'bulk'>('question');
+  readonly mathEditorExistingExpression = signal<string | null>(null);
+  readonly mathEditorAnswerDraftId = signal<string | null>(null);
+  readonly questionSaving = signal(false);
+  readonly questionSaveError = signal<string | null>(null);
+  readonly showAnswerModal = signal(false);
+  readonly newAnswer = signal('');
+  readonly newAnswerDescription = signal('');
+  readonly newAnswerMediaOption = signal<QuestionMediaOption | null>(null);
+  readonly newAnswerError = signal<string | null>(null);
+  readonly answerSaving = signal(false);
+  readonly answerSavingError = signal<string | null>(null);
+  readonly answerUpdatingId = signal<string | null>(null);
+  readonly selectedNodeId = signal<string | null>(null);
+  readonly curriculumRoot = signal<TenantSubjectCurriculumNode | null>(null);
+  readonly questionForm = this.fb.nonNullable.group({
+    question: [''],
+    type: ['', Validators.required],
+    answer: [''],
+    description: [''],
+  });
+  readonly subjectDetailsLink = computed(() => {
+    const subject = this.subject();
+    return subject ? [this.subjectsRootLink(), subject.id] : [this.subjectsRootLink()];
+  });
+  readonly curriculumLink = computed(() => {
+    const subject = this.subject();
+    return subject ? [this.subjectsRootLink(), subject.id, 'curriculum'] : [this.subjectsRootLink()];
+  });
+  readonly detailsLink = computed(() => {
+    const subject = this.subject();
+    const nodeId = this.selectedNodeId();
+    return subject && nodeId ? [this.subjectsRootLink(), subject.id, 'curriculum', nodeId] : this.curriculumLink();
+  });
+  readonly isEditMode = computed(() => !!this.editingQuestionId());
+  readonly pageTitle = computed(() => this.isEditMode() ? this.label('editQuestion') : this.label('addQuestion'));
+  readonly saveButtonLabel = computed(() => this.label('saveQuestion'));
+  readonly selectedNode = computed(() => {
+    const root = this.curriculumRoot();
+    const nodeId = this.selectedNodeId();
+    return root && nodeId ? this.findNode([root], nodeId) : null;
+  });
+  readonly selectedPath = computed<CurriculumPathItem[]>(() => {
+    const root = this.curriculumRoot();
+    const nodeId = this.selectedNodeId();
+    return root && nodeId ? this.findNodePath([root], nodeId) : [];
+  });
+  readonly questionTypeOptions = computed<TenantGroupSelectorOption[]>(() => {
+    const query = this.typeSearchQuery().trim().toLowerCase();
+    return this.questionTypes()
+      .filter((type) => {
+        if (!query) {
+          return true;
+        }
+        return type.name.toLowerCase().includes(query) || type.code.toLowerCase().includes(query);
+      })
+      .map((type) => ({
+        id: type.code,
+        name: this.questionTypeLabel(type.code, type.name),
+        subtitle: type.code,
+      }));
+  });
+  readonly selectedQuestionTypeLabel = computed(() => {
+    const code = this.selectedQuestionType();
+    const type = this.questionTypes().find((item) => item.code === code);
+    return type ? this.questionTypeLabel(type.code, type.name) : '';
+  });
+  readonly typeSelectorPlaceholder = computed(() => {
+    if (this.questionTypesLoading()) {
+      return this.label('loadingQuestionTypes');
+    }
+    if (this.questionTypeError()) {
+      return this.label('unableToLoadQuestionTypes');
+    }
+    return this.label('selectQuestionType');
+  });
+  readonly hasSelectedQuestionType = computed(() => !!this.selectedQuestionType());
+  readonly isMultipleChoice = computed(() => this.selectedQuestionType() === 'MULTIPLE_CHOICE');
+  readonly isMcq = computed(() => this.selectedQuestionType() === 'MCQ');
+  readonly isTrueFalse = computed(() => this.selectedQuestionType() === 'TRUE_FALSE');
+  readonly isShortAnswer = computed(() => this.selectedQuestionType() === 'SHORT_ANSWER');
+  readonly isEssay = computed(() => this.selectedQuestionType() === 'ESSAY');
+  readonly isChoiceQuestionType = computed(() => this.isMultipleChoice() || this.isMcq() || this.isTrueFalse() || this.isShortAnswer() || this.isEssay());
+  readonly answerCorrectHint = computed(() => {
+    if (this.isShortAnswer()) {
+      return this.label('addAnswerShortHint');
+    }
+    if (this.isEssay()) {
+      return this.label('addAnswerEssayHint');
+    }
+    return this.isMcq()
+      ? (this.isArabic() ? 'حدد إجابة واحدة كإجابة صحيحة.' : 'Mark one answer as correct.')
+      : (this.isArabic() ? 'حدد إجابة واحدة أو أكثر كإجابة صحيحة.' : 'Mark one or more answers as correct.');
+  });
+  readonly showSingleQuestionForm = computed(() => this.hasSelectedQuestionType() && (!this.isChoiceQuestionType() || this.isEditMode() || this.multipleChoiceMode() === 'single'));
+
+  @HostListener('document:click')
+  closeOpenPanels(): void {
+    this.typeSelectorOpen.set(false);
+  }
+
+  ngOnInit(): void {
+    this.selectedQuestionType.set(this.questionForm.controls.type.value);
+    this.questionForm.controls.type.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((value) => this.selectedQuestionType.set(value));
+    this.route.paramMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => {
+        this.selectedNodeId.set(params.get('nodeId'));
+        this.editingQuestionId.set(params.get('questionId'));
+        this.currentQuestionId.set(params.get('questionId'));
+        void this.loadSubjectAndCurriculum(params.get('id'));
+        void this.loadQuestionTypes();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.revokeQuestionMediaPreview();
+    this.revokeAnswerMediaPreview();
+  }
+
+  cancel(): void {
+    void this.router.navigate(this.detailsLink());
+  }
+
+  isArabic(): boolean {
+    return this.i18n.language() === 'ar';
+  }
+
+  pageDirection(): 'rtl' | 'ltr' {
+    return this.isArabic() ? 'rtl' : 'ltr';
+  }
+
+  label(key: QuestionCreateLabelKey): string {
+    return QUESTION_CREATE_LABELS[key][this.i18n.language()];
+  }
+
+  breadcrumbSeparatorIcon(): string {
+    return this.isArabic() ? 'chevron_left' : 'chevron_right';
+  }
+
+  subjectsListLink(): unknown[] {
+    return [this.subjectsRootLink()];
+  }
+
+  breadcrumbPathLabel(item: CurriculumPathItem, first: boolean): string {
+    const subject = this.subject();
+    if (first && this.isArabic()) {
+      return subject ? `منهج ${subject.name}` : 'منهج اسم المادة';
+    }
+    return item.label;
+  }
+
+  pathItemIcon(): string {
+    return this.isArabic() ? 'chevron_left' : 'chevron_right';
+  }
+
+  questionTypeLabel(code: string, fallback: string): string {
+    return QUESTION_TYPE_LABELS[code]?.[this.i18n.language()] ?? fallback;
+  }
+
+  inputPaddingWithActions(): string {
+    return this.isArabic() ? 'pl-20' : 'pr-20';
+  }
+
+  singleInputPaddingWithAction(): string {
+    return this.isArabic() ? 'pl-12' : 'pr-12';
+  }
+
+  mathActionPosition(offset: 'near' | 'far'): string {
+    if (this.isArabic()) {
+      return offset === 'near' ? 'left-1' : 'left-10';
+    }
+    return offset === 'near' ? 'right-1' : 'right-10';
+  }
+
+  topMathActionPosition(): string {
+    return this.isArabic() ? 'left-2' : 'right-2';
+  }
+
+  bulkQuestionPlaceholder(): string {
+    if (this.isTrueFalse()) {
+      return 'q : Water boils at 100 degrees? , true\nس : الشمس تشرق من الشرق؟ , صح';
+    }
+    if (this.isShortAnswer()) {
+      return this.isArabic()
+        ? 'س : ما اسم الدرس؟\n-\tصح, الدرس الأول'
+        : 'Q : What is the lesson title?\n-\tcorrect, Lesson 1';
+    }
+    if (this.isEssay()) {
+      return this.isArabic()
+        ? 'س : اشرح فكرة الدرس؟\n-\tصح, اكتب اجابة المقال كاملة هنا بدون حد للكلمات.'
+        : 'Q : Explain the lesson idea?\n-\tcorrect, Write the full essay answer here with as many words as needed.';
+    }
+    return this.isArabic()
+      ? 'س : ما اسم الدرس؟\n-\tصح, الدرس الأول\n-\tالدرس الثاني'
+      : 'Q : What is the lesson title?\n-\tcorrect, Lesson 1\n-\tLesson 2';
+  }
+
+  answerModalHint(): string {
+    if (this.isShortAnswer()) {
+      return this.label('addAnswerShortHint');
+    }
+    if (this.isEssay()) {
+      return this.label('addAnswerEssayHint');
+    }
+    return this.label('addAnswerDefaultHint');
+  }
+
+  bulkQuestionHint(): string {
+    if (this.isTrueFalse()) {
+      return this.label('bulkTrueFalseHint');
+    }
+    if (this.isShortAnswer()) {
+      return this.label('bulkShortAnswerHint');
+    }
+    if (this.isEssay()) {
+      return this.label('bulkEssayHint');
+    }
+    return this.label('bulkChoiceHint');
+  }
+
+  formatQuestionError(question: string, key: 'questionMustHaveAnswer' | 'questionMustHaveCorrect' | 'questionMustHaveOneCorrect' | 'questionMustHaveOneAnswer' | 'questionAnswerTooLong' | 'questionHasEmptyAnswer'): string {
+    return this.isArabic()
+      ? `السؤال "${question}" ${this.label(key)}`
+      : `Question "${question}" ${this.label(key)}`;
+  }
+
+  async saveQuestion(): Promise<void> {
+    this.questionContentError.set(null);
+    if (!this.hasQuestionContent()) {
+      this.questionContentError.set(this.label('questionOrMediaRequired'));
+    }
+    if (this.questionForm.invalid || this.questionContentError()) {
+      this.questionForm.markAllAsTouched();
+      return;
+    }
+    if (this.isEditMode() && this.isChoiceQuestionType() && this.hasBlankAnswerDraft()) {
+      this.questionSaveError.set(this.isSingleAnswerQuestionType()
+        ? `${this.selectedQuestionTypeLabel()} ${this.label('questionMustHaveOneAnswer')}`
+        : this.label('answerRequired'));
+      return;
+    }
+    if (this.isSingleAnswerQuestionType() && this.showSingleQuestionForm() && this.multipleChoiceAnswers().length !== 1) {
+      this.questionSaveError.set(`${this.selectedQuestionTypeLabel()} ${this.label('singleAnswerQuestionError')}`);
+      return;
+    }
+    if (this.isTrueFalse() && this.showSingleQuestionForm() && this.trueFalseAnswer() === null) {
+      this.trueFalseAnswerError.set(this.label('trueFalseRequired'));
+      return;
+    }
+
+    this.questionSaving.set(true);
+    this.questionSaveError.set(null);
+    try {
+      const saved = await this.saveQuestionToBackend();
+      if (this.isTrueFalse() && this.showSingleQuestionForm()) {
+        await this.saveTrueFalseAnswers(saved.id);
+      } else if (this.isEditMode() && this.isChoiceQuestionType()) {
+        await this.saveAnswerDrafts(saved.id);
+      }
+      void this.router.navigate(this.detailsLink());
+    } catch (error) {
+      this.questionSaveError.set(
+        error instanceof Error && error.message === 'Answer is required.'
+          ? this.label('answerRequired')
+          : this.data.toUserMessage(error, this.label('unableToSaveQuestion')),
+      );
+    } finally {
+      this.questionSaving.set(false);
+    }
+  }
+
+  openAnswerModal(): void {
+    this.newAnswer.set('');
+    this.newAnswerDescription.set('');
+    this.revokeAnswerMediaPreview();
+    this.newAnswerMediaOption.set(null);
+    this.newAnswerError.set(null);
+    this.answerSavingError.set(null);
+    this.showAnswerModal.set(true);
+  }
+
+  closeAnswerModal(): void {
+    if (this.answerSaving()) {
+      return;
+    }
+    this.showAnswerModal.set(false);
+    this.newAnswer.set('');
+    this.newAnswerDescription.set('');
+    this.revokeAnswerMediaPreview();
+    this.newAnswerMediaOption.set(null);
+    this.newAnswerError.set(null);
+    this.answerSavingError.set(null);
+  }
+
+  setNewAnswer(value: string): void {
+    this.newAnswer.set(value);
+    this.newAnswerError.set(null);
+  }
+
+  setNewAnswerDescription(value: string): void {
+    this.newAnswerDescription.set(value);
+  }
+
+  onAnswerMediaSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    if (!file) {
+      return;
+    }
+
+    this.revokeAnswerMediaPreview();
+    const previewUrl = URL.createObjectURL(file);
+    this.newAnswerMediaOption.set({
+      name: file.name,
+      size: file.size,
+      type: file.type || this.label('mediaFile'),
+      previewUrl,
+      kind: this.resolveMediaKind(file.type),
+      file,
+      mediaUrl: null,
+      mediaFileName: null,
+      mediaOriginalName: file.name,
+      mediaContentType: file.type || null,
+      mediaSizeBytes: file.size,
+    });
+    input.value = '';
+  }
+
+  removeAnswerMedia(): void {
+    this.revokeAnswerMediaPreview();
+    this.newAnswerMediaOption.set(null);
+  }
+
+  setQuestionValue(value: string): void {
+    this.questionForm.controls.question.setValue(value);
+    if (value.trim() || this.questionMediaOption()) {
+      this.questionContentError.set(null);
+    }
+  }
+
+  toggleTypeSelector(): void {
+    this.typeSelectorOpen.update((isOpen) => !isOpen);
+  }
+
+  setTypeSearchQuery(value: string): void {
+    this.typeSearchQuery.set(value);
+  }
+
+  selectQuestionType(name: string): void {
+    const selected = this.questionTypes().find((type) => type.name === name || this.questionTypeLabel(type.code, type.name) === name || type.code === name);
+    if (!selected) {
+      return;
+    }
+    this.questionForm.controls.type.setValue(selected.code);
+    this.questionForm.controls.type.markAsDirty();
+    this.questionForm.controls.type.markAsTouched();
+    this.selectedQuestionType.set(selected.code);
+    this.multipleChoiceMode.set(this.isChoiceTypeCode(selected.code) && !this.isEditMode() ? null : 'single');
+    this.trueFalseAnswer.set(null);
+    this.trueFalseAnswerError.set(null);
+    this.typeSearchQuery.set('');
+    this.typeSelectorOpen.set(false);
+  }
+
+  selectMultipleChoiceMode(mode: 'single' | 'multiple'): void {
+    this.multipleChoiceMode.set(mode);
+    this.trueFalseAnswerError.set(null);
+    if (mode === 'multiple') {
+      this.openBulkQuestionOverlay();
+    }
+  }
+
+  selectTrueFalseAnswer(value: boolean): void {
+    this.trueFalseAnswer.set(value);
+    this.trueFalseAnswerError.set(null);
+  }
+
+  onQuestionMediaSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    if (!file) {
+      return;
+    }
+
+    this.revokeQuestionMediaPreview();
+    const previewUrl = URL.createObjectURL(file);
+    this.questionMediaOption.set({
+      name: file.name,
+      size: file.size,
+      type: file.type || this.label('mediaFile'),
+      previewUrl,
+      kind: this.resolveMediaKind(file.type),
+      file,
+      mediaUrl: null,
+      mediaFileName: null,
+      mediaOriginalName: file.name,
+      mediaContentType: file.type || null,
+      mediaSizeBytes: file.size,
+    });
+    this.questionContentError.set(null);
+    input.value = '';
+  }
+
+  openMathEditor(target: 'question' | 'answer' | 'bulk' = 'question'): void {
+    const existingExpression = target === 'question' ? this.findFirstLatexExpression(this.questionForm.controls.question.value) : null;
+    const initialValue = existingExpression?.latex ?? '';
+    this.mathEditorTarget.set(target);
+    this.mathEditorAnswerDraftId.set(null);
+    this.mathEditorExistingExpression.set(existingExpression?.source ?? null);
+    this.mathEditorValue.set(initialValue);
+    this.showMathEditor.set(true);
+    setTimeout(() => {
+      const field = this.mathField?.nativeElement;
+      if (field) {
+        field.value = initialValue;
+        field.focus();
+      }
+    });
+  }
+
+  openAnswerDraftMathEditor(answer: TenantCurriculumQuestionAnswer): void {
+    const answerValue = this.answerDraftValue(answer, 'answer');
+    const existingExpression = this.findFirstLatexExpression(answerValue);
+    const initialValue = existingExpression?.latex ?? '';
+    this.mathEditorTarget.set('answerDraft');
+    this.mathEditorAnswerDraftId.set(answer.id);
+    this.mathEditorExistingExpression.set(existingExpression?.source ?? null);
+    this.mathEditorValue.set(initialValue);
+    this.showMathEditor.set(true);
+    setTimeout(() => {
+      const field = this.mathField?.nativeElement;
+      if (field) {
+        field.value = initialValue;
+        field.focus();
+      }
+    });
+  }
+
+  closeMathEditor(): void {
+    this.showMathEditor.set(false);
+    this.mathEditorValue.set('');
+    this.mathEditorExistingExpression.set(null);
+    this.mathEditorAnswerDraftId.set(null);
+  }
+
+  setMathEditorValue(event: Event): void {
+    const field = event.target as MathfieldElement;
+    this.mathEditorValue.set(field.value);
+  }
+
+  insertMathExpression(): void {
+    const value = this.mathEditorValue().trim();
+    if (!value) {
+      return;
+    }
+    const expression = `\\(${value}\\)`;
+    if (this.mathEditorTarget() === 'answer') {
+      const currentAnswer = this.newAnswer().trim();
+      this.setNewAnswer(currentAnswer ? `${currentAnswer} ${expression}` : expression);
+    } else if (this.mathEditorTarget() === 'answerDraft') {
+      const answerId = this.mathEditorAnswerDraftId();
+      if (!answerId) {
+        return;
+      }
+      const currentAnswer = this.answerDrafts()[answerId]?.answer.trim() ?? '';
+      const existingExpression = this.mathEditorExistingExpression();
+      this.setAnswerDraftValue(answerId, 'answer', existingExpression && currentAnswer.includes(existingExpression)
+        ? currentAnswer.replace(existingExpression, expression)
+        : currentAnswer ? `${currentAnswer} ${expression}` : expression);
+    } else if (this.mathEditorTarget() === 'bulk') {
+      const currentBulkQuestions = this.bulkQuestionsText().trimEnd();
+      this.setBulkQuestionsText(currentBulkQuestions ? `${currentBulkQuestions} ${expression}` : expression);
+    } else {
+      const currentQuestion = this.questionForm.controls.question.value.trim();
+      const existingExpression = this.mathEditorExistingExpression();
+      this.setQuestionValue(existingExpression && currentQuestion.includes(existingExpression)
+        ? currentQuestion.replace(existingExpression, expression)
+        : currentQuestion ? `${currentQuestion} ${expression}` : expression);
+    }
+    this.closeMathEditor();
+  }
+
+  removeQuestionMedia(): void {
+    this.revokeQuestionMediaPreview();
+    this.questionMediaOption.set(null);
+  }
+
+  formatFileSize(size: number): string {
+    if (size < 1024) {
+      return `${size} B`;
+    }
+    if (size < 1024 * 1024) {
+      return `${(size / 1024).toFixed(1)} KB`;
+    }
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  mediaAbsoluteUrl(url: string | null | undefined): string | null {
+    return this.data.mediaUrlToAbsolute(url);
+  }
+
+  answerMediaKind(answer: TenantCurriculumQuestionAnswer): QuestionMediaOption['kind'] {
+    return this.resolveMediaKind(answer.mediaContentType ?? '');
+  }
+
+  openBulkQuestionOverlay(): void {
+    this.bulkQuestionError.set(null);
+    this.showBulkQuestionOverlay.set(true);
+  }
+
+  closeBulkQuestionOverlay(): void {
+    if (this.bulkQuestionSaving()) {
+      return;
+    }
+    this.showBulkQuestionOverlay.set(false);
+    this.bulkQuestionError.set(null);
+  }
+
+  setBulkQuestionsText(value: string): void {
+    this.bulkQuestionsText.set(value);
+    this.bulkQuestionError.set(null);
+  }
+
+  async saveBulkQuestions(): Promise<void> {
+    if (this.bulkQuestionSaving()) {
+      return;
+    }
+    const subject = this.subject();
+    const nodeId = this.selectedNodeId();
+    if (!subject || !nodeId) {
+      this.bulkQuestionError.set(this.label('missingCurriculumContext'));
+      return;
+    }
+
+    let questions: BulkQuestionInput[];
+    try {
+      questions = this.isTrueFalse()
+        ? this.parseBulkTrueFalseQuestions(this.bulkQuestionsText())
+        : this.parseBulkQuestions(this.bulkQuestionsText());
+      if (this.isSingleAnswerBulkType()) {
+        this.assertSingleAnswerBulkQuestions(questions);
+      }
+    } catch (error) {
+      this.bulkQuestionError.set(error instanceof Error ? error.message : this.label('invalidQuestionsFormat'));
+      return;
+    }
+
+    this.bulkQuestionSaving.set(true);
+    this.bulkQuestionError.set(null);
+    try {
+      for (const item of questions) {
+        const savedQuestion = await this.data.createCurriculumQuestion(subject.id, nodeId, {
+          question: item.question,
+          type: this.selectedQuestionType(),
+          answer: null,
+          description: null,
+          ...this.emptyMediaPayload(),
+        });
+        for (const answer of item.answers) {
+          await this.data.createCurriculumQuestionAnswer(subject.id, nodeId, savedQuestion.id, {
+            answer: answer.answer,
+            correct: answer.correct,
+            description: null,
+          });
+        }
+      }
+      void this.router.navigate(this.detailsLink());
+    } catch (error) {
+      this.bulkQuestionError.set(this.data.toUserMessage(error, this.label('unableToSaveQuestions')));
+    } finally {
+      this.bulkQuestionSaving.set(false);
+    }
+  }
+
+  async saveAnswer(): Promise<void> {
+    if (this.answerSaving()) {
+      return;
+    }
+    const answer = this.newAnswer().trim();
+    const hasAnswerMedia = !!this.newAnswerMediaOption();
+    this.newAnswerError.set(answer || hasAnswerMedia ? null : this.label('answerRequired'));
+    this.answerSavingError.set(null);
+    if (!answer && !hasAnswerMedia) {
+      return;
+    }
+    if (this.isSingleAnswerQuestionType() && this.multipleChoiceAnswers().length) {
+      this.newAnswerError.set(`${this.selectedQuestionTypeLabel()} ${this.label('oneAnswerOnly')}`);
+      return;
+    }
+    const shortAnswerError = this.isShortAnswer() ? this.validateShortAnswerText(answer) : null;
+    if (shortAnswerError) {
+      this.newAnswerError.set(shortAnswerError);
+      return;
+    }
+    if (this.questionForm.invalid) {
+      this.questionForm.markAllAsTouched();
+      this.answerSavingError.set(this.isArabic() ? 'أدخل السؤال والنوع قبل إضافة الإجابات.' : 'Enter the question and type before adding answers.');
+      return;
+    }
+    if (!this.hasQuestionContent()) {
+      this.questionContentError.set(this.label('questionOrMediaRequired'));
+      this.answerSavingError.set(this.label('enterQuestionBeforeAnswer'));
+      return;
+    }
+
+    this.answerSaving.set(true);
+    try {
+      const question = await this.saveQuestionToBackend();
+      const subject = this.subject();
+      const nodeId = this.selectedNodeId();
+      if (!subject || !nodeId) {
+        throw new Error(this.label('missingCurriculumContext'));
+      }
+      const savedAnswer = await this.data.createCurriculumQuestionAnswer(subject.id, nodeId, question.id, {
+        answer,
+        correct: this.isTrueFalse() ? answer.toLowerCase() === 'true' : this.isSingleAnswerQuestionType(),
+        description: this.newAnswerDescription(),
+        ...await this.resolveAnswerMediaPayload(),
+      });
+      this.multipleChoiceAnswers.update((answers) => [...answers, savedAnswer]);
+      this.answerDrafts.update((drafts) => ({
+        ...drafts,
+        [savedAnswer.id]: {
+          answer: savedAnswer.answer,
+          description: savedAnswer.description ?? '',
+          correct: savedAnswer.correct,
+        },
+      }));
+      this.showAnswerModal.set(false);
+      this.newAnswer.set('');
+      this.newAnswerDescription.set('');
+      this.revokeAnswerMediaPreview();
+      this.newAnswerMediaOption.set(null);
+      this.newAnswerError.set(null);
+    } catch (error) {
+      this.answerSavingError.set(this.data.toUserMessage(error, this.label('unableToSaveAnswer')));
+    } finally {
+      this.answerSaving.set(false);
+    }
+  }
+
+  async toggleAnswerCorrect(answer: TenantCurriculumQuestionAnswer, event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const correct = input.checked;
+    if (this.isEditMode()) {
+      this.setAnswerDraftCorrect(answer.id, correct);
+      return;
+    }
+    const subject = this.subject();
+    const nodeId = this.selectedNodeId();
+    const questionId = this.currentQuestionId();
+    if (!subject || !nodeId || !questionId) {
+      input.checked = answer.correct;
+      return;
+    }
+
+    this.answerUpdatingId.set(answer.id);
+    this.questionSaveError.set(null);
+    try {
+      const updated = await this.data.updateCurriculumQuestionAnswer(subject.id, nodeId, questionId, answer.id, { correct });
+      if (this.isSingleCorrectType() && correct) {
+        const otherCorrectAnswers = this.multipleChoiceAnswers().filter((item) => item.id !== answer.id && item.correct);
+        const updatedOtherAnswers = await Promise.all(otherCorrectAnswers.map((item) =>
+          this.data.updateCurriculumQuestionAnswer(subject.id, nodeId, questionId, item.id, { correct: false }),
+        ));
+        const updatedById = new Map([updated, ...updatedOtherAnswers].map((item) => [item.id, item]));
+        this.multipleChoiceAnswers.update((answers) => answers.map((item) => updatedById.get(item.id) ?? item));
+        this.answerDrafts.set(this.toAnswerDrafts(this.multipleChoiceAnswers()));
+      } else {
+        this.multipleChoiceAnswers.update((answers) => answers.map((item) => item.id === updated.id ? updated : item));
+      }
+    } catch (error) {
+      input.checked = answer.correct;
+      this.questionSaveError.set(this.data.toUserMessage(error, this.label('unableToUpdateAnswer')));
+    } finally {
+      this.answerUpdatingId.set(null);
+    }
+  }
+
+  private async loadSubjectAndCurriculum(subjectId: string | null): Promise<void> {
+    this.curriculumRoot.set(null);
+    await this.facade.loadSubject(subjectId);
+    const subject = this.subject();
+    if (subject) {
+      await this.loadCurriculum(subject.id);
+      const nodeId = this.selectedNodeId();
+      const questionId = this.editingQuestionId();
+      if (nodeId && questionId) {
+        await this.loadQuestionForEdit(subject.id, nodeId, questionId);
+      }
+    }
+  }
+
+  private findFirstLatexExpression(value: string): { source: string; latex: string } | null {
+    const match = value.match(/\\\((.+?)\\\)/);
+    if (!match) {
+      return null;
+    }
+    return {
+      source: match[0],
+      latex: match[1],
+    };
+  }
+
+  private async loadQuestionForEdit(subjectId: string, nodeId: string, questionId: string): Promise<void> {
+    this.curriculumLoading.set(true);
+    this.curriculumError.set(null);
+    try {
+      const questions = await this.data.listCurriculumQuestions(subjectId, nodeId);
+      const question = questions.find((item) => item.id === questionId);
+      if (!question) {
+        throw new Error(this.isArabic() ? 'السؤال غير موجود.' : 'Question not found.');
+      }
+      this.applyQuestionForEdit(question);
+    } catch (error) {
+      this.curriculumError.set(this.data.toUserMessage(error, this.isArabic() ? 'تعذر تحميل تفاصيل السؤال. حاول مرة أخرى.' : 'Unable to load question details. Please try again.'));
+    } finally {
+      this.curriculumLoading.set(false);
+    }
+  }
+
+  private applyQuestionForEdit(question: TenantCurriculumQuestion): void {
+    this.currentQuestionId.set(question.id);
+    this.questionForm.patchValue({
+      question: question.question,
+      type: question.type,
+      answer: question.answer ?? '',
+      description: question.description ?? '',
+    });
+    this.selectedQuestionType.set(question.type);
+    this.multipleChoiceMode.set('single');
+    const answers = this.isSingleAnswerTypeCode(question.type) ? this.normalizeSingleAnswerQuestions(question.answers) : question.answers;
+    this.multipleChoiceAnswers.set(answers);
+    this.answerDrafts.set(this.toAnswerDrafts(answers));
+    if (question.type === 'TRUE_FALSE') {
+      this.trueFalseAnswer.set(this.resolveTrueFalseAnswer(question.answers));
+    }
+    this.applyQuestionMediaForEdit(question);
+  }
+
+  private async loadCurriculum(subjectId: string): Promise<void> {
+    this.curriculumLoading.set(true);
+    this.curriculumError.set(null);
+    try {
+      this.curriculumRoot.set(await this.data.getSubjectCurriculum(subjectId));
+    } catch (error) {
+      this.curriculumError.set(this.data.toUserMessage(error, this.label('loadErrorTitle')));
+    } finally {
+      this.curriculumLoading.set(false);
+    }
+  }
+
+  private async loadQuestionTypes(): Promise<void> {
+    this.questionTypesLoading.set(true);
+    this.questionTypeError.set(null);
+    try {
+      const questionTypes = await this.questionTypeSettings.listQuestionTypes();
+      this.questionTypes.set(questionTypes);
+    } catch (error) {
+      this.questionTypeError.set(this.questionTypeSettings.toUserMessage(error));
+    } finally {
+      this.questionTypesLoading.set(false);
+    }
+  }
+
+  private async saveQuestionToBackend(): Promise<{ id: string }> {
+    const subject = this.subject();
+    const nodeId = this.selectedNodeId();
+    if (!subject || !nodeId) {
+      throw new Error(this.label('missingCurriculumContext'));
+    }
+    const payload = {
+      question: this.questionForm.controls.question.value,
+      type: this.questionForm.controls.type.value,
+      answer: this.isChoiceQuestionType() ? null : this.questionForm.controls.answer.value,
+      description: this.questionForm.controls.description.value,
+      ...await this.resolveQuestionMediaPayload(),
+    };
+    const questionId = this.currentQuestionId();
+    const saved = questionId
+      ? await this.data.updateCurriculumQuestion(subject.id, nodeId, questionId, payload)
+      : await this.data.createCurriculumQuestion(subject.id, nodeId, payload);
+    this.currentQuestionId.set(saved.id);
+    this.multipleChoiceAnswers.set(saved.answers);
+    return saved;
+  }
+
+  private async saveAnswerDrafts(questionId: string): Promise<void> {
+    const subject = this.subject();
+    const nodeId = this.selectedNodeId();
+    if (!subject || !nodeId) {
+      throw new Error(this.label('missingCurriculumContext'));
+    }
+
+    const drafts = this.answerDrafts();
+    const answers = this.multipleChoiceAnswers();
+    const updatedAnswers = await Promise.all(answers.map((answer) => {
+      const draft = drafts[answer.id];
+      if (this.isShortAnswer()) {
+        const validationError = this.validateShortAnswerText(draft.answer);
+        if (validationError) {
+          throw new Error(validationError);
+        }
+      }
+      return this.data.updateCurriculumQuestionAnswer(subject.id, nodeId, questionId, answer.id, {
+        answer: draft.answer,
+        correct: this.isSingleAnswerQuestionType() ? true : draft.correct,
+        description: draft.description,
+        mediaUrl: answer.mediaUrl ?? null,
+        mediaFileName: answer.mediaFileName ?? null,
+        mediaOriginalName: answer.mediaOriginalName ?? null,
+        mediaContentType: answer.mediaContentType ?? null,
+        mediaSizeBytes: answer.mediaSizeBytes ?? null,
+      });
+    }));
+    this.multipleChoiceAnswers.set(updatedAnswers);
+    this.answerDrafts.set(this.toAnswerDrafts(updatedAnswers));
+  }
+
+  private async saveTrueFalseAnswers(questionId: string): Promise<void> {
+    const subject = this.subject();
+    const nodeId = this.selectedNodeId();
+    const correctAnswer = this.trueFalseAnswer();
+    if (!subject || !nodeId) {
+      throw new Error(this.label('missingCurriculumContext'));
+    }
+    if (correctAnswer === null) {
+      throw new Error(this.label('trueFalseRequired'));
+    }
+
+    const existingAnswers = this.multipleChoiceAnswers();
+    const savedAnswers = [];
+    for (const option of [true, false]) {
+      const answerText = option ? 'True' : 'False';
+      const existing = existingAnswers.find((answer) => answer.answer.trim().toLowerCase() === answerText.toLowerCase());
+      const payload = {
+        answer: answerText,
+        correct: option === correctAnswer,
+        description: null,
+      };
+      const saved = existing
+        ? await this.data.updateCurriculumQuestionAnswer(subject.id, nodeId, questionId, existing.id, payload)
+        : await this.data.createCurriculumQuestionAnswer(subject.id, nodeId, questionId, payload);
+      savedAnswers.push(saved);
+    }
+    this.multipleChoiceAnswers.set(savedAnswers);
+    this.answerDrafts.set(this.toAnswerDrafts(savedAnswers));
+  }
+
+  answerDraftValue(answer: TenantCurriculumQuestionAnswer, field: 'answer' | 'description'): string {
+    return this.answerDrafts()[answer.id]?.[field] ?? (field === 'answer' ? answer.answer : answer.description ?? '');
+  }
+
+  answerDraftCorrect(answer: TenantCurriculumQuestionAnswer): boolean {
+    return this.answerDrafts()[answer.id]?.correct ?? answer.correct;
+  }
+
+  setAnswerDraftValue(answerId: string, field: 'answer' | 'description', value: string): void {
+    this.answerDrafts.update((drafts) => ({
+      ...drafts,
+      [answerId]: {
+        answer: drafts[answerId]?.answer ?? '',
+        description: drafts[answerId]?.description ?? '',
+        correct: drafts[answerId]?.correct ?? false,
+        [field]: value,
+      },
+    }));
+  }
+
+  setAnswerDraftCorrect(answerId: string, correct: boolean): void {
+    this.answerDrafts.update((drafts) => {
+      const nextDrafts = { ...drafts };
+      if (this.isSingleCorrectType() && correct) {
+        for (const id of Object.keys(nextDrafts)) {
+          nextDrafts[id] = { ...nextDrafts[id], correct: false };
+        }
+      }
+      nextDrafts[answerId] = {
+        answer: nextDrafts[answerId]?.answer ?? '',
+        description: nextDrafts[answerId]?.description ?? '',
+        correct,
+      };
+      return nextDrafts;
+    });
+    this.multipleChoiceAnswers.update((answers) => answers.map((answer) => {
+      if (answer.id === answerId) {
+        return { ...answer, correct };
+      }
+      return this.isSingleCorrectType() && correct ? { ...answer, correct: false } : answer;
+    }));
+  }
+
+  private toAnswerDrafts(answers: TenantCurriculumQuestionAnswer[]): Record<string, AnswerDraft> {
+    return answers.reduce<Record<string, AnswerDraft>>((drafts, answer) => {
+      drafts[answer.id] = {
+        answer: answer.answer,
+        description: answer.description ?? '',
+        correct: answer.correct,
+      };
+      return drafts;
+    }, {});
+  }
+
+  private hasBlankAnswerDraft(): boolean {
+    const drafts = this.answerDrafts();
+    return this.multipleChoiceAnswers().some((answer) => {
+      const draft = drafts[answer.id];
+      if (this.isShortAnswer() && draft) {
+        const validationError = this.validateShortAnswerText(draft.answer);
+        return !!validationError;
+      }
+      return !draft?.answer.trim() && !answer.mediaUrl;
+    });
+  }
+
+  private hasQuestionContent(): boolean {
+    return !!this.questionForm.controls.question.value.trim() || !!this.questionMediaOption();
+  }
+
+  private isChoiceTypeCode(code: string): boolean {
+    return code === 'MULTIPLE_CHOICE' || code === 'MCQ' || code === 'TRUE_FALSE' || code === 'SHORT_ANSWER' || code === 'ESSAY';
+  }
+
+  private isSingleCorrectType(): boolean {
+    return this.isMcq() || this.isSingleAnswerQuestionType();
+  }
+
+  private isSingleAnswerQuestionType(): boolean {
+    return this.isShortAnswer() || this.isEssay();
+  }
+
+  private isSingleAnswerBulkType(): boolean {
+    return this.isMcq() || this.isSingleAnswerQuestionType();
+  }
+
+  private isSingleAnswerTypeCode(code: string): boolean {
+    return code === 'MCQ' || code === 'SHORT_ANSWER' || code === 'ESSAY';
+  }
+
+  private normalizeSingleAnswerQuestions(answers: TenantCurriculumQuestionAnswer[]): TenantCurriculumQuestionAnswer[] {
+    let foundCorrectAnswer = false;
+    const normalized = answers.map((answer) => {
+      if (!answer.correct) {
+        return answer;
+      }
+      if (!foundCorrectAnswer) {
+        foundCorrectAnswer = true;
+        return answer;
+      }
+      return { ...answer, correct: false };
+    });
+    return this.isSingleAnswerQuestionType() ? normalized.slice(0, 1).map((answer) => ({ ...answer, correct: true })) : normalized;
+  }
+
+  private assertSingleAnswerBulkQuestions(questions: BulkQuestionInput[]): void {
+    for (const question of questions) {
+      const correctAnswers = question.answers.filter((answer) => answer.correct);
+      if (this.isSingleAnswerQuestionType() && question.answers.length !== 1) {
+        throw new Error(this.formatQuestionError(question.question, 'questionMustHaveOneAnswer'));
+      }
+      if (correctAnswers.length !== 1) {
+        throw new Error(this.formatQuestionError(question.question, 'questionMustHaveOneCorrect'));
+      }
+      if (this.isShortAnswer()) {
+        const validationError = this.validateShortAnswerText(question.answers[0]?.answer ?? '');
+        if (validationError) {
+          throw new Error(this.formatQuestionError(question.question, 'questionAnswerTooLong'));
+        }
+      }
+    }
+  }
+
+  private validateShortAnswerText(answer: string): string | null {
+    const trimmed = answer.trim();
+    if (!trimmed) {
+      return this.label('answerRequired');
+    }
+    const words = trimmed.split(/\s+/).filter(Boolean);
+    return words.length > 5 ? this.label('shortAnswerTooLong') : null;
+  }
+
+  private resolveTrueFalseAnswer(answers: TenantCurriculumQuestionAnswer[]): boolean | null {
+    const correct = answers.find((answer) => answer.correct);
+    if (!correct) {
+      return null;
+    }
+
+    const value = correct.answer.trim().toLowerCase();
+    if (value === 'true' || value === 'صح') {
+      return true;
+    }
+    if (value === 'false' || value === 'خطأ' || value === 'خطا') {
+      return false;
+    }
+    return null;
+  }
+
+  private emptyMediaPayload(): TenantCurriculumQuestionMediaPayload {
+    return {
+      mediaUrl: null,
+      mediaFileName: null,
+      mediaOriginalName: null,
+      mediaContentType: null,
+      mediaSizeBytes: null,
+    };
+  }
+
+  private async resolveQuestionMediaPayload(): Promise<TenantCurriculumQuestionMediaPayload> {
+    const media = this.questionMediaOption();
+    if (!media) {
+      return this.emptyMediaPayload();
+    }
+    if (!media.file && media.mediaUrl) {
+      return {
+        mediaUrl: media.mediaUrl,
+        mediaFileName: media.mediaFileName,
+        mediaOriginalName: media.mediaOriginalName,
+        mediaContentType: media.mediaContentType,
+        mediaSizeBytes: media.mediaSizeBytes,
+      };
+    }
+    if (!media.file) {
+      return this.emptyMediaPayload();
+    }
+    const uploaded = await this.data.uploadCurriculumQuestionMedia(media.file);
+    return {
+      mediaUrl: uploaded.url,
+      mediaFileName: uploaded.fileName,
+      mediaOriginalName: uploaded.originalName,
+      mediaContentType: uploaded.contentType,
+      mediaSizeBytes: uploaded.sizeBytes,
+    };
+  }
+
+  private async resolveAnswerMediaPayload(): Promise<Partial<TenantCurriculumQuestionMediaPayload>> {
+    const media = this.newAnswerMediaOption();
+    if (!media?.file) {
+      return {};
+    }
+    const uploaded = await this.data.uploadCurriculumQuestionMedia(media.file);
+    return {
+      mediaUrl: uploaded.url,
+      mediaFileName: uploaded.fileName,
+      mediaOriginalName: uploaded.originalName,
+      mediaContentType: uploaded.contentType,
+      mediaSizeBytes: uploaded.sizeBytes,
+    };
+  }
+
+  private applyQuestionMediaForEdit(question: TenantCurriculumQuestion): void {
+    this.revokeQuestionMediaPreview();
+    if (!question.mediaUrl) {
+      this.questionMediaOption.set(null);
+      return;
+    }
+    const previewUrl = this.data.mediaUrlToAbsolute(question.mediaUrl) ?? question.mediaUrl;
+    this.questionMediaOption.set({
+      name: question.mediaOriginalName || question.mediaFileName || (this.isArabic() ? 'ملف السؤال' : 'Question media'),
+      size: question.mediaSizeBytes ?? 0,
+      type: question.mediaContentType || this.label('mediaFile'),
+      previewUrl,
+      kind: this.resolveMediaKind(question.mediaContentType ?? ''),
+      file: null,
+      mediaUrl: question.mediaUrl,
+      mediaFileName: question.mediaFileName,
+      mediaOriginalName: question.mediaOriginalName,
+      mediaContentType: question.mediaContentType,
+      mediaSizeBytes: question.mediaSizeBytes,
+    });
+  }
+
+  private resolveMediaKind(type: string): QuestionMediaOption['kind'] {
+    if (type.startsWith('image/')) {
+      return 'image';
+    }
+    if (type.startsWith('video/')) {
+      return 'video';
+    }
+    if (type.startsWith('audio/')) {
+      return 'audio';
+    }
+    return 'file';
+  }
+
+  private revokeQuestionMediaPreview(): void {
+    const current = this.questionMediaOption();
+    if (current?.previewUrl?.startsWith('blob:')) {
+      URL.revokeObjectURL(current.previewUrl);
+    }
+  }
+
+  private revokeAnswerMediaPreview(): void {
+    const current = this.newAnswerMediaOption();
+    if (current?.previewUrl?.startsWith('blob:')) {
+      URL.revokeObjectURL(current.previewUrl);
+    }
+  }
+
+  private parseBulkQuestions(value: string): BulkQuestionInput[] {
+    const lines = value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    const questions: BulkQuestionInput[] = [];
+    let current: BulkQuestionInput | null = null;
+
+    for (const line of lines) {
+      const questionMatch = /^(?:Q\s*:|س\s*:)\s*(.+[?؟])$/iu.exec(line);
+      if (questionMatch) {
+        current = { question: questionMatch[1].trim(), answers: [] };
+        questions.push(current);
+        continue;
+      }
+
+      const answerMatch = /^-\s*(?:(correct|صح|اجابة صحيحه|اجابه صحيحه|إجابة صحيحة|إجابه صحيحه|إجابة صحيحه)\s*,\s*)?(.+)$/iu.exec(line);
+      if (answerMatch) {
+        if (!current) {
+          throw new Error(this.label('answerLinesAfterQuestion'));
+        }
+        current.answers.push({
+          correct: !!answerMatch[1],
+          answer: answerMatch[2].trim(),
+        });
+        continue;
+      }
+
+      throw new Error(this.label('invalidChoiceFormat'));
+    }
+
+    if (!questions.length) {
+      throw new Error(this.label('enterAtLeastOneQuestion'));
+    }
+
+    for (const question of questions) {
+      if (!question.answers.length) {
+        throw new Error(this.formatQuestionError(question.question, 'questionMustHaveAnswer'));
+      }
+      if (!question.answers.some((answer) => answer.correct)) {
+        throw new Error(this.formatQuestionError(question.question, 'questionMustHaveCorrect'));
+      }
+      if (question.answers.some((answer) => !answer.answer)) {
+        throw new Error(this.formatQuestionError(question.question, 'questionHasEmptyAnswer'));
+      }
+    }
+
+    return questions;
+  }
+
+  private parseBulkTrueFalseQuestions(value: string): BulkQuestionInput[] {
+    const lines = value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    const questions: BulkQuestionInput[] = [];
+
+    for (const line of lines) {
+      const questionMatch = /^(?:Q\s*:|q\s*:|س\s*:)\s*(.+[?؟])\s*,\s*(true|false|صح|خطأ|خطا)$/iu.exec(line);
+      if (!questionMatch) {
+        throw new Error(this.label('invalidTrueFalseFormat'));
+      }
+      const answerValue = questionMatch[2].trim().toLowerCase();
+      const isTrue = answerValue === 'true' || answerValue === 'صح';
+      questions.push({
+        question: questionMatch[1].trim(),
+        answers: [
+          { answer: 'True', correct: isTrue },
+          { answer: 'False', correct: !isTrue },
+        ],
+      });
+    }
+
+    if (!questions.length) {
+      throw new Error(this.label('enterAtLeastOneQuestion'));
+    }
+
+    return questions;
+  }
+
+  private findNode(nodes: TenantSubjectCurriculumNode[], nodeId: string): TenantSubjectCurriculumNode | null {
+    for (const node of nodes) {
+      if (node.id === nodeId) {
+        return node;
+      }
+
+      const child = node.children.length ? this.findNode(node.children, nodeId) : null;
+      if (child) {
+        return child;
+      }
+    }
+
+    return null;
+  }
+
+  private findNodePath(
+    nodes: TenantSubjectCurriculumNode[],
+    nodeId: string,
+    parents: CurriculumPathItem[] = [],
+  ): CurriculumPathItem[] {
+    for (const node of nodes) {
+      const path = [...parents, { id: node.id, label: node.label }];
+      if (node.id === nodeId) {
+        return path;
+      }
+
+      const childPath = node.children.length ? this.findNodePath(node.children, nodeId, path) : [];
+      if (childPath.length) {
+        return childPath;
+      }
+    }
+
+    return [];
+  }
+
+  private subjectsRootLink(): string {
+    return this.router.url.startsWith('/tenant/university-subjects') ? '/tenant/university-subjects' : '/tenant/subjects';
+  }
+}

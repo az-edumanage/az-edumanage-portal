@@ -8,6 +8,7 @@ export class TenantSubjectCreateStore {
   readonly stages = signal<TenantSubjectStageOption[]>([]);
   readonly grades = signal<TenantSubjectGradeOption[]>([]);
   readonly selectedStageId = signal('');
+  readonly editingSubjectId = signal<string | null>(null);
   readonly loading = signal(false);
   readonly loadError = signal<string | null>(null);
 

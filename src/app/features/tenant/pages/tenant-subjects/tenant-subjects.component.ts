@@ -25,6 +25,8 @@ export class TenantSubjectsComponent implements OnInit {
   readonly subjects = this.facade.subjects;
   readonly loading = this.facade.loading;
   readonly loadError = this.facade.loadError;
+  readonly deleteError = this.facade.deleteError;
+  readonly deletingId = this.facade.deletingId;
   readonly activeFiltersCount = this.facade.activeFiltersCount;
   readonly filteredSubjects = this.facade.filteredSubjects;
   readonly stageOptions = this.facade.stageOptions;
@@ -68,5 +70,9 @@ export class TenantSubjectsComponent implements OnInit {
   clearAllFilters(): void {
     this.facade.clearAllFilters();
     this.clearAdvancedFilters();
+  }
+
+  deleteSubject(id: string): void {
+    void this.facade.deleteSubject(id);
   }
 }

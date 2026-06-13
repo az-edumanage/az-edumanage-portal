@@ -1,4 +1,5 @@
 import { signal } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { SidebarComponent } from './sidebar.component';
@@ -150,6 +151,27 @@ describe('SidebarComponent', () => {
     expect(fixture.componentInstance.isAccordionExpanded(universityEducation!)).toBe(false);
     expect(fixture.componentInstance.hasActiveChild(universityEducation!)).toBe(true);
     expect(fixture.componentInstance.isRouteActive(activeChild?.route)).toBe(true);
+  });
+
+  it.each([
+    ['/tenant/subjects', 'sidebar.item.basicEducation'],
+    ['/tenant/colleges', 'sidebar.item.universityEducation'],
+  ])('highlights the accordion parent when a child route is active for %s', (currentUrl, parentLabelKey) => {
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'isActive').mockImplementation((url) => {
+      const route = url.toString();
+      return currentUrl === route || currentUrl.startsWith(`${route}/`);
+    });
+    const fixture = TestBed.createComponent(SidebarComponent);
+    fixture.detectChanges();
+
+    const parentButton = fixture.debugElement
+      .queryAll(By.css('button'))
+      .find((button) => (button.nativeElement as HTMLElement).textContent?.includes(parentLabelKey));
+
+    expect(parentButton).toBeDefined();
+    expect(parentButton?.classes['sidebar-accordion-active']).toBe(true);
+    expect(parentButton?.classes['text-white']).toBe(true);
   });
 
   it('returns no menu sections for unresolved workspace', () => {

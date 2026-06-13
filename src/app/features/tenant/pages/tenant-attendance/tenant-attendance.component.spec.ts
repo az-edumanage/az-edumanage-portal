@@ -46,6 +46,7 @@ describe('TenantAttendanceComponent', () => {
       barcode,
       isPresent,
       attendanceState: isPresent ? 'Present' : 'Absent',
+      attendanceTime: '',
       manualStatus: 'Manual',
       overrideChecks: 'Ready',
       attendanceRate: 0,
@@ -180,6 +181,7 @@ describe('TenantAttendanceComponent', () => {
                   ...student,
                   isPresent: attendanceState === 'Present',
                   attendanceState,
+                  attendanceTime: '2026-06-04T23:15:00+03:00',
                   manualStatus: 'Manual',
                   overrideChecks: 'Manual override saved',
                 }
@@ -258,6 +260,7 @@ describe('TenantAttendanceComponent', () => {
 
     expect(firstRow.classList).toContain('student-row-present');
     expect(firstRow.querySelector('.present-pill')?.textContent).toContain('Present');
+    expect(firstRow.textContent).toContain('11:15 PM');
     expect(firstRow.querySelector('.present-button-active')).toBeTruthy();
     expect(firstRow.querySelector('.absent-button-active')).toBeFalsy();
     expect(text).toContain('1 / 4');
@@ -280,7 +283,14 @@ describe('TenantAttendanceComponent', () => {
     );
     groupAttendanceDataService.loadStudentsByGroupId.mockReturnValue(
       of([
-        { ...mockAttendanceStudentsByGroupId.get('physics-g11-c')![0], barcode: '30001', isPresent: true, attendanceState: 'Present', manualStatus: 'Auto' },
+        {
+          ...mockAttendanceStudentsByGroupId.get('physics-g11-c')![0],
+          barcode: '30001',
+          isPresent: true,
+          attendanceState: 'Present',
+          attendanceTime: '2026-06-04T23:15:00+03:00',
+          manualStatus: 'Auto',
+        },
         mockAttendanceStudentsByGroupId.get('physics-g11-c')![1],
       ]),
     );
@@ -294,6 +304,7 @@ describe('TenantAttendanceComponent', () => {
     expect(groupAttendanceDataService.scanBarcode).toHaveBeenCalledWith({ barcodeNumber: '30001', selectedGroupId: null });
     expect(scannedRow?.classList).toContain('student-row-present');
     expect(scannedRow?.querySelector('.present-pill')?.textContent).toContain('Present');
+    expect(scannedRow?.textContent).toContain('11:15 PM');
     expect(fixture.nativeElement.textContent).toContain('Omar Hassan present Physics G11-C');
     expect(input.value).toBe('');
   });
@@ -312,7 +323,14 @@ describe('TenantAttendanceComponent', () => {
     );
     groupAttendanceDataService.loadStudentsByGroupId.mockReturnValue(
       of([
-        { ...mockAttendanceStudentsByGroupId.get('physics-g11-c')![0], barcode: '30001', isPresent: true, attendanceState: 'Present', manualStatus: 'Auto' },
+        {
+          ...mockAttendanceStudentsByGroupId.get('physics-g11-c')![0],
+          barcode: '30001',
+          isPresent: true,
+          attendanceState: 'Present',
+          attendanceTime: '2026-06-04T23:15:00+03:00',
+          manualStatus: 'Auto',
+        },
         mockAttendanceStudentsByGroupId.get('physics-g11-c')![1],
       ]),
     );

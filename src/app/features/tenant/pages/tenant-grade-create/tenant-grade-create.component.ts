@@ -28,7 +28,10 @@ export class TenantGradeCreateComponent implements OnInit, OnDestroy {
   readonly levelsError = this.facade.levelsError;
 
   ngOnInit(): void {
-    void this.facade.initialize(this.route.snapshot.paramMap.get('id'));
+    void this.facade.initialize(
+      this.route.snapshot.paramMap.get('id'),
+      this.route.snapshot.queryParamMap.get('returnUrl'),
+    );
   }
 
   ngOnDestroy(): void {

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { TenantCollegesFacade } from '../../state/tenant-colleges.facade';
 
@@ -15,6 +15,7 @@ import { TenantCollegesFacade } from '../../state/tenant-colleges.facade';
 export class TenantCollegeCreateComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly facade = inject(TenantCollegesFacade);
 
   readonly saving = this.facade.saving;
@@ -38,7 +39,7 @@ export class TenantCollegeCreateComponent implements OnInit {
     this.collegeId.set(id);
     this.isEditMode.set(!!id);
     if (!id) {
-      this.form.patchValue({ universityId: this.universityOptions()[0]?.value ?? '' });
+      this.form.patchValue({ universityId: this.preferredUniversityId() });
       return;
     }
     const college = await this.facade.getCollege(id);
@@ -49,6 +50,40 @@ export class TenantCollegeCreateComponent implements OnInit {
         description: college.description ?? '',
       });
     }
+  }
+
+  private preferredUniversityId(): string {
+    const universityId = this.route.snapshot.queryParamMap.get('universityId');
+    if (universityId && this.universityOptions().some((university) => university.value === universityId)) {
+      return universityId;
+    }
+
+    return this.universityOptions()[0]?.value ?? '';
+  }
+
+  private groupReturnUrl(): string | null {
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    return returnUrl === '/tenant/groups/create' ? returnUrl : null;
+  }
+
+  private async goAfterCreate(): Promise<void> {
+    const returnUrl = this.groupReturnUrl();
+    if (returnUrl) {
+      await this.router.navigateByUrl(returnUrl);
+      return;
+    }
+
+    await this.facade.goToList();
+  }
+
+  private async goAfterCancel(): Promise<void> {
+    const returnUrl = this.groupReturnUrl();
+    if (returnUrl) {
+      await this.router.navigateByUrl(returnUrl);
+      return;
+    }
+
+    await this.facade.goToList();
   }
 
   async submit(): Promise<void> {
@@ -63,7 +98,7 @@ export class TenantCollegeCreateComponent implements OnInit {
       description: value.description || null,
     });
     if (saved) {
-      await this.facade.goToList();
+      await this.goAfterCreate();
     }
   }
 
@@ -76,6 +111,6 @@ export class TenantCollegeCreateComponent implements OnInit {
   }
 
   goBack(): void {
-    void this.facade.goToList();
+    void this.goAfterCancel();
   }
 }

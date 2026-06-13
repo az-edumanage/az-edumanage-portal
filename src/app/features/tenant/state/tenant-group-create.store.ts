@@ -204,6 +204,17 @@ export class TenantGroupCreateStore {
     this.showCollegeDropdown.set(value);
   }
 
+  closeAllDropdowns(): void {
+    this.showOwnedByDropdown.set(false);
+    this.showTeacherDropdown.set(false);
+    this.showStageDropdown.set(false);
+    this.showGradeDropdown.set(false);
+    this.showUniversityDropdown.set(false);
+    this.showCollegeDropdown.set(false);
+    this.showSubjectDropdown.set(false);
+    this.showRoomDropdown.set(false);
+  }
+
   closeAllDropdownsExcept(except: 'ownedBy' | 'teacher' | 'stage' | 'grade' | 'university' | 'college' | 'subject' | 'room'): void {
     if (except !== 'ownedBy') this.showOwnedByDropdown.set(false);
     if (except !== 'teacher') this.showTeacherDropdown.set(false);

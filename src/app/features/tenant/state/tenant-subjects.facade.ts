@@ -14,6 +14,8 @@ export class TenantSubjectsFacade {
   readonly subjects = this.store.subjects;
   readonly loading = this.store.loading;
   readonly loadError = this.store.loadError;
+  readonly deleteError = this.store.deleteError;
+  readonly deletingId = this.store.deletingId;
   readonly activeFiltersCount = this.store.activeFiltersCount;
   readonly filteredSubjects = this.store.filteredSubjects;
   readonly stageOptions = this.store.stageOptions;
@@ -21,6 +23,10 @@ export class TenantSubjectsFacade {
 
   loadSubjects(): Promise<void> {
     return this.store.loadSubjects();
+  }
+
+  deleteSubject(id: string): Promise<boolean> {
+    return this.store.deleteSubject(id);
   }
 
   setFilters(stageId: string, gradeId: string, sortBy: string): void {

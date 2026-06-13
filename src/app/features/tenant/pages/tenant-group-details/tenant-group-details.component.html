@@ -83,15 +83,476 @@
         </div>
       </div>
 
+      <div class="tenant-group-detail-tabs" role="tablist" aria-label="Group detail sections">
+        <button
+          type="button"
+          class="tenant-group-detail-tab"
+          [class.tenant-group-detail-tab--active]="activeTab() === 'sessions'"
+          role="tab"
+          [attr.aria-selected]="activeTab() === 'sessions'"
+          aria-controls="tenant-group-sessions-panel"
+          id="tenant-group-sessions-tab"
+          (click)="selectTab('sessions')"
+        >
+          <mat-icon>event</mat-icon>
+          <span>{{ tabLabel('sessions') }}</span>
+        </button>
+        <button
+          type="button"
+          class="tenant-group-detail-tab"
+          [class.tenant-group-detail-tab--active]="activeTab() === 'enrolledStudents'"
+          role="tab"
+          [attr.aria-selected]="activeTab() === 'enrolledStudents'"
+          aria-controls="tenant-group-enrolled-students-panel"
+          id="tenant-group-enrolled-students-tab"
+          (click)="selectTab('enrolledStudents')"
+        >
+          <mat-icon>groups</mat-icon>
+          <span>{{ tabLabel('enrolledStudents') }}</span>
+        </button>
+        <button
+          type="button"
+          class="tenant-group-detail-tab"
+          [class.tenant-group-detail-tab--active]="activeTab() === 'lessons'"
+          role="tab"
+          [attr.aria-selected]="activeTab() === 'lessons'"
+          aria-controls="tenant-group-lessons-panel"
+          id="tenant-group-lessons-tab"
+          (click)="selectTab('lessons')"
+        >
+          <mat-icon>menu_book</mat-icon>
+          <span>{{ tabLabel('lessons') }}</span>
+        </button>
+        <button
+          type="button"
+          class="tenant-group-detail-tab"
+          [class.tenant-group-detail-tab--active]="activeTab() === 'overview'"
+          role="tab"
+          [attr.aria-selected]="activeTab() === 'overview'"
+          aria-controls="tenant-group-overview-panel"
+          id="tenant-group-overview-tab"
+          (click)="selectTab('overview')"
+        >
+          <mat-icon>dashboard</mat-icon>
+          <span>{{ tabLabel('overview') }}</span>
+        </button>
+      </div>
+
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Students List -->
         <div class="lg:col-span-2 space-y-4">
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-            <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-              <h3 class="font-bold text-slate-900 dark:text-white">Enrolled Students</h3>
-              <div class="flex gap-2">
-                <button class="p-1.5 text-slate-500 hover:text-indigo-600 transition-colors"><mat-icon class="text-sm">search</mat-icon></button>
-                <button class="p-1.5 text-slate-500 hover:text-indigo-600 transition-colors"><mat-icon class="text-sm">filter_list</mat-icon></button>
+          @if (activeTab() === 'sessions') {
+            <section
+              class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden"
+              id="tenant-group-sessions-panel"
+              role="tabpanel"
+              aria-labelledby="tenant-group-sessions-tab"
+            >
+              <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col gap-4">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div>
+                    <h3 class="font-bold text-slate-900 dark:text-white">Sessions</h3>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-500">{{ filteredSessionCountLabel() }}</p>
+                  </div>
+                  <button type="button" (click)="openCalendar()" class="tenant-group-sessions-calendar">
+                    <mat-icon>calendar_month</mat-icon>
+                    Open Calendar
+                  </button>
+                </div>
+                <div class="tenant-group-sessions-toolbar" aria-label="Session tools">
+                  <div class="tenant-group-sessions-search">
+                    <mat-icon>search</mat-icon>
+                    <input
+                      type="text"
+                      [ngModel]="sessionSearchTerm()"
+                      (ngModelChange)="setSessionSearchTerm($event)"
+                      placeholder="Search sessions by day, date, time or room..."
+                    />
+                  </div>
+                  <div class="tenant-group-sessions-filter-wrap">
+                    <button
+                      type="button"
+                      (click)="toggleSessionFilterPanel()"
+                      [class.tenant-group-sessions-filter-btn--active]="sessionFilterPanelOpen() || activeSessionFiltersCount() > 0"
+                      class="tenant-group-sessions-filter-btn"
+                    >
+                      <mat-icon>filter_list</mat-icon>
+                      Advanced Filters
+                      @if (activeSessionFiltersCount() > 0) {
+                        <span>{{ activeSessionFiltersCount() }}</span>
+                      }
+                      <mat-icon class="tenant-group-sessions-filter-chevron" [class.rotate-180]="sessionFilterPanelOpen()">expand_more</mat-icon>
+                    </button>
+
+                    @if (sessionFilterPanelOpen()) {
+                      <div class="tenant-group-sessions-filter-panel">
+                        <div class="tenant-group-sessions-filter-panel-head">
+                          <h3>Filter Options</h3>
+                          <button type="button" (click)="clearSessionAdvancedFilters()">Reset</button>
+                        </div>
+                        <div>
+                          <label for="session-filter-type">Session Type</label>
+                          <select
+                            id="session-filter-type"
+                            [ngModel]="sessionFilter()"
+                            (ngModelChange)="setSessionFilter($event)"
+                          >
+                            <option value="all">All sessions</option>
+                            <option value="dated">Dated sessions</option>
+                            <option value="recurring">Recurring sessions</option>
+                          </select>
+                        </div>
+                        <button type="button" class="tenant-group-sessions-filter-apply" (click)="toggleSessionFilterPanel()">
+                          Apply Filters
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+              <div class="tenant-group-sessions-list">
+                @for (session of pagedSessionRows(); track session.id; let sessionIndex = $index) {
+                  <div
+                    class="tenant-group-session-row"
+                    [class.tenant-group-session-row--current]="sessionRelativeStatus(session) === 'current'"
+                    role="link"
+                    tabindex="0"
+                    (click)="openSessionDetails(session)"
+                    (keydown)="activateSessionDetails($event, session)"
+                    [attr.aria-label]="'Open ' + session.day + ' session details'"
+                  >
+                    <div class="tenant-group-session-icon">
+                      <mat-icon>event_available</mat-icon>
+                    </div>
+                    <div class="tenant-group-session-main">
+                      <span class="tenant-group-session-number">{{ sessionNumberLabel(sessionIndex) }}</span>
+                      <p>{{ session.day }}</p>
+                      <span>{{ session.date }}</span>
+                    </div>
+                    <div class="tenant-group-session-meta">
+                      @if (sessionRelativeStatus(session); as relativeStatus) {
+                        <span
+                          class="tenant-group-session-status"
+                          [class.tenant-group-session-status--current]="relativeStatus === 'current'"
+                          [class.tenant-group-session-status--next]="relativeStatus === 'next'"
+                        >
+                          {{ sessionRelativeStatusLabel(relativeStatus) }}
+                        </span>
+                      }
+                      <span>{{ session.timeRange }}</span>
+                      <span>{{ session.room }}</span>
+                    </div>
+                    <mat-icon class="tenant-group-session-open-icon">chevron_right</mat-icon>
+                  </div>
+                } @empty {
+                  <div class="tenant-group-sessions-empty">
+                    <mat-icon>event_busy</mat-icon>
+                    <p>{{ sessionRows().length ? 'No sessions match your filters.' : 'No sessions scheduled yet.' }}</p>
+                  </div>
+                }
+              </div>
+              <div class="tenant-group-sessions-pagination" aria-label="Sessions pagination">
+                <div class="tenant-group-sessions-pagination-summary">
+                  @if (filteredSessionRows().length > 0) {
+                    Showing {{ sessionPageStart() }}-{{ sessionPageEnd() }} of {{ filteredSessionRows().length }} sessions
+                  } @else {
+                    No sessions to display
+                  }
+                </div>
+                <div class="tenant-group-sessions-pagination-actions">
+                  <label>
+                    Rows
+                    <select [ngModel]="sessionPageSize()" (ngModelChange)="setSessionPageSize($event)">
+                      <option [value]="5">5</option>
+                      <option [value]="10">10</option>
+                      <option [value]="20">20</option>
+                    </select>
+                  </label>
+                  <button type="button" (click)="previousSessionPage()" [disabled]="sessionPageIndex() === 0" title="Previous page">
+                    <mat-icon>chevron_left</mat-icon>
+                  </button>
+                  <span>Page {{ sessionPageIndex() + 1 }} of {{ sessionTotalPages() }}</span>
+                  <button
+                    type="button"
+                    (click)="nextSessionPage()"
+                    [disabled]="sessionPageIndex() + 1 === sessionTotalPages()"
+                    title="Next page"
+                  >
+                    <mat-icon>chevron_right</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </section>
+          } @else if (activeTab() === 'lessons') {
+            <section
+              class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden"
+              id="tenant-group-lessons-panel"
+              role="tabpanel"
+              aria-labelledby="tenant-group-lessons-tab"
+            >
+              <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col gap-4">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div>
+                    <h3 class="font-bold text-slate-900 dark:text-white">Lessons</h3>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-500">{{ groupLessons().length }} loaded from curriculum</p>
+                  </div>
+                  <button type="button" class="tenant-group-lessons-add" (click)="openLessonPicker()" [disabled]="lessonsLoading() || lessonsSyncing()">
+                    <mat-icon>add</mat-icon>
+                    Add lesson
+                  </button>
+                </div>
+                @if (lessonPickerOpen()) {
+                  <div class="tenant-group-lesson-picker" aria-label="Curriculum lesson picker">
+                    <div class="tenant-group-lesson-picker-head">
+                      <div>
+                        <h4>Select from curriculum</h4>
+                        <p>{{ group()?.subject || 'Subject curriculum' }}</p>
+                      </div>
+                      <button type="button" (click)="closeLessonPicker()" aria-label="Close lesson picker">
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    </div>
+                    @if (lessonPickerLoading()) {
+                      <div class="tenant-group-lesson-picker-state">
+                        <mat-icon>sync</mat-icon>
+                        <span>Loading curriculum...</span>
+                      </div>
+                    } @else if (lessonPickerError()) {
+                      <div class="tenant-group-lesson-picker-state tenant-group-lesson-picker-state--error">
+                        <mat-icon>error</mat-icon>
+                        <span>{{ lessonPickerError() }}</span>
+                      </div>
+                    } @else {
+                      <div class="tenant-group-lesson-options">
+                        @for (lesson of availableCurriculumLessonOptions(); track lesson.id) {
+                          <button
+                            type="button"
+                            class="tenant-group-lesson-option"
+                            (click)="addLessonFromCurriculum(lesson)"
+                            [disabled]="savingLessonNodeId() === lesson.id"
+                          >
+                            <span class="tenant-group-lesson-option-icon">
+                              <mat-icon [class.animate-spin]="savingLessonNodeId() === lesson.id">
+                                {{ savingLessonNodeId() === lesson.id ? 'sync' : 'menu_book' }}
+                              </mat-icon>
+                            </span>
+                            <span class="tenant-group-lesson-option-main">
+                              <strong>{{ lesson.title }}</strong>
+                              <small>{{ lesson.path }}</small>
+                              @if (lesson.description) {
+                                <em>{{ lesson.description }}</em>
+                              }
+                            </span>
+                            <mat-icon>{{ savingLessonNodeId() === lesson.id ? 'hourglass_empty' : 'add_circle' }}</mat-icon>
+                          </button>
+                        } @empty {
+                          <div class="tenant-group-lesson-picker-state">
+                            <mat-icon>inventory_2</mat-icon>
+                            <span>No curriculum lessons available.</span>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+              <div class="tenant-group-lessons-list">
+                @if (lessonsLoading() || lessonsSyncing()) {
+                  <div class="tenant-group-sessions-empty">
+                    <mat-icon class="animate-spin">sync</mat-icon>
+                    <p>{{ lessonsSyncing() ? 'Loading curriculum lessons...' : 'Loading lessons...' }}</p>
+                  </div>
+                } @else if (lessonsError()) {
+                  <div class="tenant-group-sessions-empty tenant-group-lesson-picker-state--error">
+                    <mat-icon>error</mat-icon>
+                    <p>{{ lessonsError() }}</p>
+                  </div>
+                } @else if (groupLessons().length) {
+                  <div class="tenant-group-lesson-material-toolbar">
+                    <label class="tenant-group-lesson-material-search">
+                      <mat-icon>search</mat-icon>
+                      <input
+                        type="search"
+                        placeholder="Search lessons..."
+                        [value]="lessonSearchTerm()"
+                        (input)="setLessonSearchTerm($any($event.target).value)"
+                      />
+                    </label>
+                    <label class="tenant-group-lesson-material-filter">
+                      <mat-icon>filter_list</mat-icon>
+                      <select [value]="lessonFilter()" (change)="setLessonFilter($any($event.target).value)">
+                        <option value="all">All lessons</option>
+                        <option value="withDescription">With description</option>
+                        <option value="withoutDescription">No description</option>
+                      </select>
+                    </label>
+                    @if (activeLessonFiltersCount()) {
+                      <button type="button" class="tenant-group-lesson-material-clear" (click)="clearLessonFilters()">
+                        Clear filters
+                      </button>
+                    }
+                  </div>
+                  @if (filteredGroupLessons().length) {
+                    <div class="tenant-group-lesson-material-table-shell">
+                      <table class="tenant-group-lesson-material-table">
+                        <thead>
+                          <tr>
+                            <th>Lesson</th>
+                            <th>Path</th>
+                            <th>Description</th>
+                            <th class="tenant-group-lesson-material-th--action">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (lesson of pagedGroupLessons(); track lesson.id) {
+                            <tr
+                              class="tenant-group-lesson-content-table-row tenant-group-lesson-content-table-row--clickable"
+                              role="link"
+                              tabindex="0"
+                              (click)="openLessonDetails(lesson)"
+                              (keydown)="activateLessonDetails($event, lesson)"
+                              [attr.aria-label]="'Open ' + lesson.title + ' lesson details'"
+                            >
+                              <td>
+                                <div class="tenant-group-lesson-material-name-cell">
+                                  <span class="tenant-group-lesson-row-icon">
+                                    <mat-icon>menu_book</mat-icon>
+                                  </span>
+                                  <span>
+                                    <strong>{{ lesson.title }}</strong>
+                                    <small>Curriculum lesson</small>
+                                  </span>
+                                </div>
+                              </td>
+                              <td>{{ lesson.path }}</td>
+                              <td>{{ lesson.description || 'No description' }}</td>
+                              <td class="tenant-group-lesson-material-action-cell">
+                                <span class="tenant-group-lesson-content-open" aria-hidden="true">
+                                  <mat-icon>chevron_right</mat-icon>
+                                </span>
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="tenant-group-lesson-material-pagination">
+                      <span>Showing {{ lessonPageStart() }}-{{ lessonPageEnd() }} of {{ filteredGroupLessons().length }} lessons</span>
+                      <div>
+                        <label>
+                          Rows
+                          <select [value]="lessonPageSize()" (change)="setLessonPageSize($any($event.target).value)">
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                          </select>
+                        </label>
+                        <button type="button" aria-label="Previous lesson page" [disabled]="lessonVisiblePageIndex() === 0" (click)="previousLessonPage()">
+                          <mat-icon>chevron_left</mat-icon>
+                        </button>
+                        <strong>Page {{ lessonVisiblePageIndex() + 1 }} of {{ lessonTotalPages() }}</strong>
+                        <button type="button" aria-label="Next lesson page" [disabled]="lessonVisiblePageIndex() >= lessonTotalPages() - 1" (click)="nextLessonPage()">
+                          <mat-icon>chevron_right</mat-icon>
+                        </button>
+                      </div>
+                    </div>
+                  } @else {
+                    <div class="tenant-group-sessions-empty">
+                      <mat-icon>search_off</mat-icon>
+                      <p>No lessons match the current search or filter.</p>
+                    </div>
+                  }
+                } @else {
+                  <div class="tenant-group-sessions-empty">
+                    <mat-icon>menu_book</mat-icon>
+                    <p>No lessons added yet.</p>
+                  </div>
+                }
+              </div>
+            </section>
+          } @else if (activeTab() === 'overview') {
+            <section
+              class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden"
+              id="tenant-group-overview-panel"
+              role="tabpanel"
+              aria-labelledby="tenant-group-overview-tab"
+            >
+              <div class="p-4 border-b border-slate-200 dark:border-slate-800">
+                <h3 class="font-bold text-slate-900 dark:text-white">Overview</h3>
+                <p class="mt-1 text-xs text-slate-500 dark:text-slate-500">Group academic and operational summary</p>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4">
+                <div class="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 p-4">
+                  <div class="flex items-center gap-3">
+                    <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300">
+                      <mat-icon class="text-base">menu_book</mat-icon>
+                    </span>
+                    <div>
+                      <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Subject</p>
+                      <h4 class="mt-1 text-sm font-bold text-slate-900 dark:text-white">{{ group()?.subject || 'Not linked' }}</h4>
+                    </div>
+                  </div>
+                </div>
+                <div class="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 p-4">
+                  <div class="flex items-center gap-3">
+                    <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300">
+                      <mat-icon class="text-base">person</mat-icon>
+                    </span>
+                    <div>
+                      <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Teacher</p>
+                      <h4 class="mt-1 text-sm font-bold text-slate-900 dark:text-white">{{ group()?.teacher || 'Not assigned' }}</h4>
+                    </div>
+                  </div>
+                </div>
+                <div class="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 p-4">
+                  <div class="flex items-center gap-3">
+                    <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300">
+                      <mat-icon class="text-base">meeting_room</mat-icon>
+                    </span>
+                    <div>
+                      <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Room</p>
+                      <h4 class="mt-1 text-sm font-bold text-slate-900 dark:text-white">{{ group()?.room || 'Not set' }}</h4>
+                    </div>
+                  </div>
+                </div>
+                <div class="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 p-4">
+                  <div class="flex items-center gap-3">
+                    <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300">
+                      <mat-icon class="text-base">event</mat-icon>
+                    </span>
+                    <div>
+                      <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Schedule</p>
+                      <h4 class="mt-1 text-sm font-bold text-slate-900 dark:text-white">{{ group()?.schedule || 'Not scheduled' }}</h4>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-slate-200 dark:border-slate-800 p-4">
+                <div>
+                  <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Capacity</p>
+                  <h4 class="mt-1 text-lg font-bold text-slate-900 dark:text-white">{{ group()?.enrolled || 0 }} / {{ group()?.capacity || 0 }}</h4>
+                </div>
+                <div>
+                  <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Avg. Attendance</p>
+                  <h4 class="mt-1 text-lg font-bold text-slate-900 dark:text-white">{{ avgAttendanceLabel() }}</h4>
+                </div>
+                <div>
+                  <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Monthly Revenue</p>
+                  <h4 class="mt-1 text-lg font-bold text-slate-900 dark:text-white">{{ monthlyRevenueLabel() }}</h4>
+                </div>
+              </div>
+            </section>
+          } @else {
+          <div
+            class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden"
+            id="tenant-group-enrolled-students-panel"
+            role="tabpanel"
+            aria-labelledby="tenant-group-enrolled-students-tab"
+          >
+            <div class="p-4 border-b border-slate-200 dark:border-slate-800">
+              <div>
+                <h3 class="font-bold text-slate-900 dark:text-white">Enrolled Students</h3>
+                <p class="mt-1 text-xs text-slate-500 dark:text-slate-500">{{ students().length }} enrolled in this group</p>
               </div>
             </div>
             @if (exitStudentError()) {
@@ -99,66 +560,165 @@
                 {{ exitStudentError() }}
               </div>
             }
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-sm">
-                <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                  <tr>
-                    <th class="px-6 py-3 font-medium">Student</th>
-                    <th class="px-6 py-3 font-medium">Attendance</th>
-                    <th class="px-6 py-3 font-medium">Last Seen</th>
-                    <th class="px-6 py-3 font-medium text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
-                  @for (student of students(); track student.id) {
-                    <tr 
-                      (click)="selectStudent(student)"
-                      class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
-                      [class.bg-indigo-600/10]="selectedStudent()?.id === student.id"
-                    >
-                      <td class="px-6 py-4">
-                        <div class="flex items-center gap-3">
-                          <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-500 font-bold text-xs">
-                            {{ student.name.charAt(0) }}
-                          </div>
-                          <div>
-                            <p class="font-medium text-slate-900 dark:text-white">{{ student.name }}</p>
-                            <p class="text-[10px] text-slate-500">{{ student.email }}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="px-6 py-4">
-                        <div class="flex items-center gap-2">
-                          <div class="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden min-w-[60px]">
-                            <div class="ds-progress-fill" [style.--ds-progress]="student.attendanceRate + '%'"></div>
-                          </div>
-                          <span class="text-xs font-medium text-slate-500 dark:text-slate-500">{{ student.attendanceRate }}%</span>
-                        </div>
-                      </td>
-                      <td class="px-6 py-4 text-slate-500 dark:text-slate-500 text-xs">{{ student.lastAttendance }}</td>
-                      <td class="px-6 py-4 text-right">
-                        <button
-                          type="button"
-                          class="inline-flex min-h-9 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-700 transition-colors hover:border-rose-600 hover:bg-rose-600 hover:text-white disabled:cursor-wait disabled:opacity-70 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200"
-                          [disabled]="exitingStudentId() === student.id"
-                          (click)="exitGroup($event, student)"
+            @if (students().length) {
+              <div class="tenant-group-lesson-material-toolbar">
+                <label class="tenant-group-lesson-material-search">
+                  <mat-icon>search</mat-icon>
+                  <input
+                    type="search"
+                    placeholder="Search students..."
+                    [value]="enrolledStudentSearchTerm()"
+                    (input)="setEnrolledStudentSearchTerm($any($event.target).value)"
+                  />
+                </label>
+                <label class="tenant-group-lesson-material-filter">
+                  <mat-icon>filter_list</mat-icon>
+                  <select [value]="enrolledStudentFilter()" (change)="setEnrolledStudentFilter($any($event.target).value)">
+                    <option value="all">All students</option>
+                    <option value="present">Present</option>
+                    <option value="absent">Absent</option>
+                    <option value="notMarked">Not marked</option>
+                  </select>
+                </label>
+                @if (activeEnrolledStudentFiltersCount()) {
+                  <button type="button" class="tenant-group-lesson-material-clear" (click)="clearEnrolledStudentFilters()">
+                    Clear filters
+                  </button>
+                }
+              </div>
+              @if (filteredEnrolledStudents().length) {
+                <div class="tenant-group-lesson-material-table-shell">
+                  <table class="tenant-group-lesson-material-table">
+                    <thead>
+                      <tr>
+                        <th>Student</th>
+                        <th>Attendance</th>
+                        <th>Status</th>
+                        <th>Last Seen</th>
+                        <th class="tenant-group-lesson-material-th--action">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (student of pagedEnrolledStudents(); track student.id) {
+                        <tr
+                          class="tenant-group-lesson-content-table-row tenant-group-lesson-content-table-row--clickable"
+                          [class.tenant-group-student-table-row--selected]="selectedStudent()?.id === student.id"
+                          role="button"
+                          tabindex="0"
+                          (click)="selectStudent(student)"
+                          (keydown)="activateStudentSelection($event, student)"
+                          [attr.aria-label]="'Open ' + student.name + ' student profile'"
                         >
-                          <mat-icon class="text-sm" [class.animate-spin]="exitingStudentId() === student.id">
-                            {{ exitingStudentId() === student.id ? 'sync' : 'logout' }}
-                          </mat-icon>
-                          {{ exitingStudentId() === student.id ? 'Exiting' : 'Exit group' }}
-                        </button>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
+                          <td>
+                            <div class="tenant-group-lesson-material-name-cell">
+                              <span class="tenant-group-student-avatar">{{ student.name.charAt(0) }}</span>
+                              <span>
+                                <strong>{{ student.name }}</strong>
+                                <small>{{ student.email }}</small>
+                              </span>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="tenant-group-student-attendance">
+                              <div>
+                                <div class="ds-progress-fill" [style.--ds-progress]="student.attendanceRate + '%'"></div>
+                              </div>
+                              <span>{{ student.attendanceRate }}%</span>
+                            </div>
+                          </td>
+                          <td>
+                            <span
+                              class="tenant-group-student-status"
+                              [class.tenant-group-student-status--present]="student.attendanceState === 'Present'"
+                              [class.tenant-group-student-status--absent]="student.attendanceState === 'Absent'"
+                            >
+                              {{ attendanceStateLabel(student) }}
+                            </span>
+                          </td>
+                          <td>{{ student.lastAttendance || 'No attendance yet' }}</td>
+                          <td class="tenant-group-lesson-material-action-cell">
+                            <button
+                              type="button"
+                              class="tenant-group-student-exit"
+                              [disabled]="exitingStudentId() === student.id"
+                              (click)="exitGroup($event, student)"
+                            >
+                              <mat-icon [class.animate-spin]="exitingStudentId() === student.id">
+                                {{ exitingStudentId() === student.id ? 'sync' : 'logout' }}
+                              </mat-icon>
+                              {{ exitingStudentId() === student.id ? 'Exiting' : 'Exit group' }}
+                            </button>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+                <div class="tenant-group-lesson-material-pagination">
+                  <span>Showing {{ enrolledStudentPageStart() }}-{{ enrolledStudentPageEnd() }} of {{ filteredEnrolledStudents().length }} students</span>
+                  <div>
+                    <label>
+                      Rows
+                      <select [value]="enrolledStudentPageSize()" (change)="setEnrolledStudentPageSize($any($event.target).value)">
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                      </select>
+                    </label>
+                    <button type="button" aria-label="Previous students page" [disabled]="enrolledStudentVisiblePageIndex() === 0" (click)="previousEnrolledStudentPage()">
+                      <mat-icon>chevron_left</mat-icon>
+                    </button>
+                    <strong>Page {{ enrolledStudentVisiblePageIndex() + 1 }} of {{ enrolledStudentTotalPages() }}</strong>
+                    <button type="button" aria-label="Next students page" [disabled]="enrolledStudentVisiblePageIndex() >= enrolledStudentTotalPages() - 1" (click)="nextEnrolledStudentPage()">
+                      <mat-icon>chevron_right</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              } @else {
+                <div class="tenant-group-sessions-empty">
+                  <mat-icon>search_off</mat-icon>
+                  <p>No enrolled students match the current search or filter.</p>
+                </div>
+              }
+            } @else {
+              <div class="tenant-group-sessions-empty">
+                <mat-icon>groups</mat-icon>
+                <p>No students enrolled yet.</p>
+              </div>
+            }
           </div>
+          }
         </div>
 
         <!-- Sidebar: Settings & Info -->
         <div class="space-y-6">
+          <!-- Quick Actions -->
+          <div class="bg-indigo-600 rounded-xl p-6 text-white space-y-4">
+            <h3 class="font-bold">Quick Actions</h3>
+            <div class="grid grid-cols-2 gap-2">
+              <a [routerLink]="['/tenant/groups', groupId, 'attendance']" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+                <mat-icon>how_to_reg</mat-icon>
+                <span class="text-[10px] font-bold uppercase">Attendance</span>
+              </a>
+              <a [routerLink]="['/tenant/groups', groupId, 'exam']" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+                <mat-icon>assignment</mat-icon>
+                <span class="text-[10px] font-bold uppercase">Exam</span>
+              </a>
+              <a [routerLink]="['/tenant/groups', groupId, 'broadcast']" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+                <mat-icon>mail</mat-icon>
+                <span class="text-[10px] font-bold uppercase">Broadcast</span>
+              </a>
+              <button type="button" (click)="openCalendar()" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+                <mat-icon>calendar_month</mat-icon>
+                <span class="text-[10px] font-bold uppercase">Calendar</span>
+              </button>
+              <button class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+                <mat-icon>analytics</mat-icon>
+                <span class="text-[10px] font-bold uppercase">Report</span>
+              </button>
+            </div>
+          </div>
+
           <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
             <div>
               <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Group Settings</h3>
@@ -205,31 +765,64 @@
               </div>
             </div>
           </div>
-
-          <!-- Quick Actions -->
-          <div class="bg-indigo-600 rounded-xl p-6 text-white space-y-4">
-            <h3 class="font-bold">Quick Actions</h3>
-            <div class="grid grid-cols-2 gap-2">
-              <a [routerLink]="['/tenant/groups', groupId, 'attendance']" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
-                <mat-icon>how_to_reg</mat-icon>
-                <span class="text-[10px] font-bold uppercase">Attendance</span>
-              </a>
-              <a [routerLink]="['/tenant/groups', groupId, 'exam']" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
-                <mat-icon>assignment</mat-icon>
-                <span class="text-[10px] font-bold uppercase">Exam</span>
-              </a>
-              <a [routerLink]="['/tenant/groups', groupId, 'broadcast']" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
-                <mat-icon>mail</mat-icon>
-                <span class="text-[10px] font-bold uppercase">Broadcast</span>
-              </a>
-              <button class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
-                <mat-icon>analytics</mat-icon>
-                <span class="text-[10px] font-bold uppercase">Report</span>
-              </button>
-            </div>
-          </div>
         </div>
       </div>
+
+      @if (calendarOpen()) {
+        <div class="tenant-group-calendar-backdrop" role="presentation" (click)="closeCalendar()">
+          <section
+            class="tenant-group-calendar-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="tenant-group-calendar-title"
+            (click)="$event.stopPropagation()"
+          >
+            <div class="tenant-group-calendar-header">
+              <div>
+                <h3 id="tenant-group-calendar-title">Group Calendar</h3>
+                <p>{{ group()?.name || 'Group schedule' }}</p>
+              </div>
+              <div class="tenant-group-calendar-header-actions">
+                <button type="button" (click)="openEventEditorFromButton()" class="tenant-group-calendar-add">
+                  <mat-icon>add</mat-icon>
+                  Add Event
+                </button>
+                <button type="button" (click)="closeCalendar()" class="tenant-group-calendar-close" aria-label="Close calendar">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            </div>
+            @if (eventEditorOpen()) {
+              <form [formGroup]="eventForm" class="tenant-group-calendar-form" (ngSubmit)="saveCalendarEvent()">
+                <label>
+                  <span>Event Title</span>
+                  <input type="text" formControlName="title" placeholder="Event title">
+                </label>
+                <label>
+                  <span>Date</span>
+                  <input type="date" formControlName="date">
+                </label>
+                <label>
+                  <span>Start Time</span>
+                  <input type="time" formControlName="startTime">
+                </label>
+                <label>
+                  <span>End Time</span>
+                  <input type="time" formControlName="endTime">
+                </label>
+                <div class="tenant-group-calendar-form-actions">
+                  @if (eventFormError()) {
+                    <p role="alert">{{ eventFormError() }}</p>
+                  }
+                  <button type="button" (click)="cancelCalendarEvent()" class="tenant-group-calendar-cancel">Cancel</button>
+                  <button type="submit" class="tenant-group-calendar-save">Save Event</button>
+                </div>
+              </form>
+            }
+            <full-calendar [options]="calendarOptions()"></full-calendar>
+          </section>
+        </div>
+      }
 
       <!-- Student Details Overlay Panel -->
       @if (selectedStudent(); as student) {

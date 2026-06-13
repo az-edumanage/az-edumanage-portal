@@ -4,14 +4,13 @@
       <h2 class="tenant-educational-stages-title">Educational Stages</h2>
       <p class="tenant-educational-stages-subtitle">Manage stage definitions used to organize grades and classes.</p>
     </div>
-    <button
-      type="button"
+    <a
+      routerLink="/tenant/educational-stages/create"
       class="tenant-educational-stages-add-btn"
-      (click)="openCreateModal()"
     >
       <mat-icon class="text-sm">add</mat-icon>
       Add New Stage
-    </button>
+    </a>
   </div>
 
   <div class="tenant-educational-stages-filter-shell">

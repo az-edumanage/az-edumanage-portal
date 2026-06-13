@@ -29,7 +29,7 @@
               <mat-icon class="text-sm block">view_list</mat-icon>
             </button>
           </div>
-          <a routerLink="/tenant/groups/create" class="flex items-center gap-2 px-4 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20">
+          <a routerLink="/tenant/groups/create" [queryParams]="{ fresh: 'true' }" class="flex items-center gap-2 px-4 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20">
             <mat-icon class="text-sm">group_add</mat-icon>
             Create Group
           </a>
@@ -187,7 +187,7 @@
                       </div>
                       <div>
                         <p class="text-[10px] text-slate-500 uppercase font-bold">Room</p>
-                        <p class="text-xs font-medium text-slate-700 dark:text-slate-300">{{ group.room }}</p>
+                        <p class="text-xs font-medium text-slate-700 dark:text-slate-300">{{ formatRooms(group) }}</p>
                       </div>
                     </div>
                   </div>
@@ -231,7 +231,7 @@
                         </span>
                       </td>
                       <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ group.teacher }}</td>
-                      <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ group.room }}</td>
+                      <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ formatRooms(group) }}</td>
                       <td class="px-6 py-4 text-slate-500 dark:text-slate-500 whitespace-nowrap">{{ formatStartAt(group) }}</td>
                       <td class="px-6 py-4 text-slate-500 dark:text-slate-500 whitespace-nowrap">{{ formatDuration(group) }}</td>
                       <td class="px-6 py-4 text-center">
@@ -242,9 +242,9 @@
                           <a [routerLink]="['/tenant/groups', group.id]" class="p-2 text-indigo-600 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="Manage">
                             <mat-icon class="text-sm block">settings</mat-icon>
                           </a>
-                          <button class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Edit">
+                          <a [routerLink]="['/tenant/groups', group.id, 'edit']" class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Edit">
                             <mat-icon class="text-sm block">edit</mat-icon>
-                          </button>
+                          </a>
                           <button
                             type="button"
                             (click)="requestDelete(group.id)"
