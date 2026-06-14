@@ -1,0 +1,51 @@
+<div class="curriculum-note-page" [attr.dir]="pageDirection()">
+  <header class="curriculum-note-hero">
+    <nav class="curriculum-note-breadcrumb" aria-label="Breadcrumb">
+      <a [routerLink]="subjectsListLink()">{{ breadcrumbLabel('subject') }}</a>
+      <mat-icon>{{ breadcrumbSeparatorIcon() }}</mat-icon>
+      <a [routerLink]="subjectDetailsLink()">{{ breadcrumbLabel('subjectDetails') }}</a>
+      <mat-icon>{{ breadcrumbSeparatorIcon() }}</mat-icon>
+      <a [routerLink]="curriculumLink()">{{ breadcrumbLabel('curriculum') }}</a>
+      @for (item of selectedPath(); track item.id; let first = $first) {
+        <mat-icon>{{ breadcrumbSeparatorIcon() }}</mat-icon>
+        <a [routerLink]="nodeDetailsLink()">{{ breadcrumbPathLabel(item, first) }}</a>
+      }
+      <mat-icon>{{ breadcrumbSeparatorIcon() }}</mat-icon>
+      <a [routerLink]="materialFolderLink()">{{ breadcrumbLabel('material') }}</a>
+      <mat-icon>{{ breadcrumbSeparatorIcon() }}</mat-icon>
+      <span>{{ breadcrumbLabel('note') }}</span>
+    </nav>
+
+    <div class="curriculum-note-toolbar">
+      <div>
+        <h1>{{ titleLabel() }}</h1>
+        <p>{{ subtitleLabel() }}</p>
+      </div>
+      <div class="curriculum-note-actions">
+        <a class="curriculum-note-secondary" [routerLink]="materialFolderLink()">
+          <mat-icon>close</mat-icon>
+          <span>{{ cancelLabel() }}</span>
+        </a>
+        <button type="button" class="curriculum-note-primary" [disabled]="saving()" (click)="saveNote()">
+          <mat-icon>save</mat-icon>
+          <span>{{ saving() ? 'Saving...' : saveNoteLabel() }}</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  @if (loading() || loadingPage()) {
+    <section class="curriculum-note-state">Loading note editor...</section>
+  } @else if (loadError() || pageError()) {
+    <section class="curriculum-note-state">{{ loadError() || pageError() }}</section>
+  } @else {
+    @if (saveError()) {
+      <div class="curriculum-note-error">{{ saveError() }}</div>
+    }
+    <main class="curriculum-note-workspace">
+      <section class="curriculum-note-paper" aria-label="Note document">
+        <div #noteEditorHost class="curriculum-note-editor"></div>
+      </section>
+    </main>
+  }
+</div>

@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { TaskService } from '../../../core/services/task.service';
@@ -31,6 +32,11 @@ describe('TenantGroupCreateFacade', () => {
     subjects: [],
   };
   let assignedTeachersResponse: TenantGroupSelectorOption[] = [];
+  let taskServiceMock: {
+    getTask: ReturnType<typeof vi.fn>;
+    removeTask: ReturnType<typeof vi.fn>;
+    addTask: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     teacherClassificationCalls = [];
@@ -40,8 +46,8 @@ describe('TenantGroupCreateFacade', () => {
     createOptionsResponse = {
       owners: [{ id: 'owner-1', name: 'Tenant Admin', subtitle: 'TENANT_ADMIN' }],
       teachers: [
-        { id: 'teacher-1', name: 'Sarah Nabil' },
-        { id: 'teacher-2', name: 'Omar Adel' },
+        { id: 'teacher-1', name: 'Sarah Nabil', educationCategory: 'BASIC_EDUCATION' },
+        { id: 'teacher-2', name: 'Omar Adel', educationCategory: 'UNIVERSITY_EDUCATION' },
       ],
       stages: [{ id: 'stage-1', name: 'Secondary' }],
       grades: [{ id: 'grade-1', name: 'Grade 12', parentId: 'stage-1' }],
@@ -89,6 +95,11 @@ describe('TenantGroupCreateFacade', () => {
       subjects: [],
     };
     assignedTeachersResponse = [];
+    taskServiceMock = {
+      getTask: vi.fn(() => undefined),
+      removeTask: vi.fn(),
+      addTask: vi.fn(),
+    };
     const dataService = {
       loadCreateOptions: () => of(createOptionsResponse),
       loadGroupForEdit: (groupId: string) => {
@@ -125,11 +136,7 @@ describe('TenantGroupCreateFacade', () => {
         },
         {
           provide: TaskService,
-          useValue: {
-            getTask: () => undefined,
-            removeTask: () => undefined,
-            addTask: () => undefined,
-          },
+          useValue: taskServiceMock,
         },
         { provide: TenantGroupCreateDataService, useValue: dataService },
       ],
@@ -138,6 +145,7 @@ describe('TenantGroupCreateFacade', () => {
     facade = TestBed.inject(TenantGroupCreateFacade);
     store = TestBed.inject(TenantGroupCreateStore);
     store.setCreateOptions(createOptionsResponse);
+    facade.onEducationCategoryChange('BASIC_EDUCATION');
   });
 
   it('should toggle teacher dropdown and close others', () => {
@@ -162,7 +170,20 @@ describe('TenantGroupCreateFacade', () => {
     facade.selectOwnedBy('Center');
 
     expect(facade.groupForm.get('teacher')?.value).toBe('Sarah Nabil');
-    expect(facade.filteredTeachers().map((teacher) => teacher.name)).toEqual(['Sarah Nabil', 'Omar Adel']);
+    expect(facade.filteredTeachers().map((teacher) => teacher.name)).toEqual(['Sarah Nabil']);
+  });
+
+  it('filters Assigned Teacher options when education category changes', () => {
+    expect(facade.filteredTeachers().map((teacher) => teacher.name)).toEqual(['Sarah Nabil']);
+
+    facade.onEducationCategoryChange('UNIVERSITY_EDUCATION');
+
+    expect(facade.filteredTeachers().map((teacher) => teacher.name)).toEqual(['Omar Adel']);
+    expect(facade.groupForm.get('teacher')?.value).toBe('');
+
+    facade.onEducationCategoryChange('BASIC_EDUCATION');
+
+    expect(facade.filteredTeachers().map((teacher) => teacher.name)).toEqual(['Sarah Nabil']);
   });
 
   it('loads teacher classification when selecting a teacher with Center ownership', () => {
@@ -277,6 +298,8 @@ describe('TenantGroupCreateFacade', () => {
   it('passes the selected group id when submitting edit mode and keeps create mode without an id', () => {
     assignedTeachersResponse = [{ id: 'teacher-1', name: 'Sarah Nabil' }];
     facade.initialize('group-1');
+    facade.groupForm.patchValue({ paymentMethod: 'Monthly',
+      paymentMethodId: 'period-1' });
 
     facade.onSubmit();
 
@@ -295,6 +318,8 @@ describe('TenantGroupCreateFacade', () => {
       teacher: 'Sarah Nabil',
       ownedBy: 'Center',
       room: 'Lab 101',
+      paymentMethod: 'Monthly',
+      paymentMethodId: 'period-1',
       capacity: 25,
       fees: 500,
     });
@@ -303,6 +328,79 @@ describe('TenantGroupCreateFacade', () => {
 
     expect(submitCalls.at(-1)?.groupId).toBeNull();
     expect(submitCalls.at(-1)?.payload.name).toBe('Create Physics');
+  });
+
+  it('submits duration start and end dates to the backend payload', () => {
+    facade.initialize(null);
+    store.setSubjects([{ id: 'subject-1', name: 'Physics', stageId: 'stage-1', gradeId: 'grade-1' }]);
+    store.setTeachers([{ id: 'teacher-1', name: 'Sarah Nabil' }]);
+    facade.groupForm.patchValue({
+      name: 'Create Physics',
+      educationCategory: 'BASIC_EDUCATION',
+      stage: 'Secondary',
+      grade: 'Grade 12',
+      subject: 'Physics',
+      teacher: 'Sarah Nabil',
+      ownedBy: 'Center',
+      room: 'Lab 101',
+      paymentMethod: 'Monthly',
+      paymentMethodId: 'period-1',
+      capacity: 25,
+      fees: 500,
+      startDate: '2026-06-01',
+      endDate: '2026-07-01',
+    });
+
+    facade.onSubmit();
+
+    expect(submitCalls.at(-1)?.payload).toEqual(expect.objectContaining({
+      hasSpecificDuration: true,
+      startDate: '2026-06-01',
+      endDate: '2026-07-01',
+    }));
+  });
+
+
+  it('omits the fixed room id when submitting different time per day schedules', () => {
+    facade.initialize(null);
+    store.setSubjects([{ id: 'subject-1', name: 'Physics', stageId: 'stage-1', gradeId: 'grade-1' }]);
+    store.setTeachers([{ id: 'teacher-1', name: 'Sarah Nabil' }]);
+    facade.groupForm.patchValue({
+      name: 'Create Physics',
+      educationCategory: 'BASIC_EDUCATION',
+      stage: 'Secondary',
+      grade: 'Grade 12',
+      subject: 'Physics',
+      teacher: 'Sarah Nabil',
+      ownedBy: 'Center',
+      room: 'Lab 101',
+      paymentMethod: 'Monthly',
+      paymentMethodId: 'period-1',
+      capacity: 25,
+      fees: 500,
+    });
+    facade.onDayToggle('Sunday');
+    facade.onDayToggle('Monday');
+    facade.onTimeTypeChange(false);
+    (facade.groupForm.get(['daySchedules', 'Sunday']) as FormGroup).patchValue({
+      startTime: '09:00',
+      endTime: '10:00',
+      room: 'Lab 101',
+    });
+    (facade.groupForm.get(['daySchedules', 'Monday']) as FormGroup).patchValue({
+      startTime: '11:00',
+      endTime: '12:00',
+      room: 'Lab 102',
+    });
+
+    facade.onSubmit();
+
+    const payload = submitCalls.at(-1)?.payload;
+    expect(payload).not.toHaveProperty('roomId');
+    expect(payload?.daySchedules).toEqual({
+      Sunday: { startTime: '09:00', endTime: '10:00', room: 'Lab 101', roomId: 'room-1' },
+      Monday: { startTime: '11:00', endTime: '12:00', room: 'Lab 102', roomId: 'room-2' },
+    });
   });
 
   it('recalculates teacher availability conflict when duration changes into an occupied range', () => {
@@ -438,6 +536,8 @@ describe('TenantGroupCreateFacade', () => {
     }]);
     facade.groupForm.patchValue({
       room: 'Lab 101',
+      paymentMethod: 'Monthly',
+      paymentMethodId: 'period-1',
       startTime: '14:30',
       duration: 60,
     });
@@ -465,6 +565,8 @@ describe('TenantGroupCreateFacade', () => {
     }]);
     facade.groupForm.patchValue({
       room: 'Lab 101',
+      paymentMethod: 'Monthly',
+      paymentMethodId: 'period-1',
       startTime: '14:00',
       duration: 60,
     });
@@ -508,6 +610,8 @@ describe('TenantGroupCreateFacade', () => {
       teacher: 'Sarah Nabil',
       ownedBy: 'Center',
       room: 'Lab 101',
+      paymentMethod: 'Monthly',
+      paymentMethodId: 'period-1',
       startTime: '14:00',
       duration: 60,
     });
@@ -531,6 +635,8 @@ describe('TenantGroupCreateFacade', () => {
       teacher: 'Sarah Nabil',
       ownedBy: 'Center',
       room: 'Lab 101',
+      paymentMethod: 'Monthly',
+      paymentMethodId: 'period-1',
       startTime: '2:30 PM',
       duration: 60,
     });
@@ -539,5 +645,31 @@ describe('TenantGroupCreateFacade', () => {
     facade.onSubmit();
 
     expect(submitCalls.at(-1)?.payload.startTime).toBe('14:30');
+  });
+
+  it('stores create group drafts with the create form route', () => {
+    facade.initialize(null);
+    facade.groupForm.patchValue({ name: 'Physics Draft' });
+
+    facade.onDestroy();
+
+    expect(taskServiceMock.addTask).toHaveBeenCalledWith(expect.objectContaining({
+      id: 'create-group-task',
+      route: '/tenant/groups/create',
+      data: expect.objectContaining({ name: 'Physics Draft' }),
+    }));
+  });
+
+  it('stores edit group drafts with the edit form route', () => {
+    facade.initialize('group-1');
+    facade.groupForm.patchValue({ name: 'Edited Physics Draft' });
+
+    facade.onDestroy();
+
+    expect(taskServiceMock.addTask).toHaveBeenCalledWith(expect.objectContaining({
+      id: 'edit-group-group-1',
+      route: '/tenant/groups/group-1/edit',
+      data: expect.objectContaining({ name: 'Edited Physics Draft' }),
+    }));
   });
 });

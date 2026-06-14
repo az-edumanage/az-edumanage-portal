@@ -1,1 +1,15 @@
+:host-context(.rtl) .tenant-group-searchable-selector-trigger,
+:host-context(.rtl) .tenant-group-searchable-selector-option {
+  text-align: right;
+}
 
+:host-context(.rtl) .tenant-group-searchable-selector-search-icon {
+  left: auto;
+  right: 0.5rem;
+}
+
+:host-context(.rtl) .tenant-group-searchable-selector-search-input {
+  padding-left: 0.75rem;
+  padding-right: 2rem;
+  text-align: right;
+}

@@ -29,7 +29,7 @@ export class TaskBarComponent {
     this.isDropdownOpen.set(false);
     
     // Navigate
-    this.router.navigate([route]);
+    void this.router.navigateByUrl(route);
   }
 
   clearAll() {

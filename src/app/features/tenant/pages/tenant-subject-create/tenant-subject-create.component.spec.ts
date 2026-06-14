@@ -20,6 +20,7 @@ describe('TenantSubjectCreateComponent', () => {
     filteredGrades: signal([{ value: 'grade-1', label: 'Grade 10', stageId: 'stage-1' }]),
     loading: signal(false),
     loadError: signal<string | null>(null),
+    isEditMode: signal(false),
     initialize: vi.fn().mockResolvedValue(undefined),
     onStageChange: vi.fn(),
     resetForm: vi.fn(),

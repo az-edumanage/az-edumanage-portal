@@ -243,6 +243,7 @@
                             <th>Student Name</th>
                             <th>RFID BARCODE ID</th>
                             <th>Attendance State</th>
+                            <th>Attendance Time</th>
                             <th>MANUAL OVERRIDE CHECK</th>
                           </tr>
                         </thead>
@@ -268,6 +269,9 @@
                                   <i aria-hidden="true"></i>
                                   {{ student.attendanceState }}
                                 </span>
+                              </td>
+                              <td>
+                                <span class="attendance-time">{{ formatAttendanceTime(student.attendanceTime) }}</span>
                               </td>
                               <td>
                                 <div class="attendance-actions">

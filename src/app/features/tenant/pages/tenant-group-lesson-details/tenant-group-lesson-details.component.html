@@ -1,0 +1,471 @@
+<div class="tenant-group-lesson-details">
+  <div class="tenant-group-lesson-details-header">
+    <div class="tenant-group-lesson-details-title">
+      <div class="tenant-group-lesson-details-breadcrumb">
+        <a routerLink="/tenant/groups">Groups</a>
+        <mat-icon>chevron_right</mat-icon>
+        <a [routerLink]="['/tenant/groups', groupId]">{{ group()?.name || 'Group' }}</a>
+        <mat-icon>chevron_right</mat-icon>
+        <span>Lesson Details</span>
+      </div>
+      <h2>{{ lesson()?.title || (isLoading() ? 'Loading lesson...' : 'Lesson Details') }}</h2>
+      <p>{{ group()?.subject || 'Group lesson' }}</p>
+    </div>
+    <div class="tenant-group-lesson-details-actions">
+      <a [routerLink]="['/tenant/groups', groupId]" [queryParams]="{ tab: 'lessons' }" class="tenant-group-lesson-details-secondary">
+        <mat-icon>arrow_back</mat-icon>
+        Back to lessons
+      </a>
+      @if (group()?.subjectId && lesson()?.curriculumNodeId) {
+        <button
+          type="button"
+          class="tenant-group-lesson-details-primary"
+          (click)="openInsertContentModal()"
+        >
+          <mat-icon>note_add</mat-icon>
+          Insert Content
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <section class="tenant-group-lesson-details-state">
+      <mat-icon class="animate-spin">sync</mat-icon>
+      <p>Loading lesson details...</p>
+    </section>
+  } @else if (error()) {
+    <section class="tenant-group-lesson-details-state tenant-group-lesson-details-state--error">
+      <mat-icon>error</mat-icon>
+      <p>{{ error() }}</p>
+    </section>
+  } @else if (lesson(); as selectedLesson) {
+    <div class="tenant-group-lesson-stats">
+      <div class="tenant-group-lesson-stat-card">
+        <p>Total Material</p>
+        <div>
+          <h4>{{ lessonContent().length }}</h4>
+          <span>{{ materialCountLabel() }}</span>
+        </div>
+      </div>
+      <div class="tenant-group-lesson-stat-card">
+        <p>Files</p>
+        <div>
+          <h4>{{ fileMaterialCount() }}</h4>
+          <span>Uploaded files</span>
+        </div>
+      </div>
+      <div class="tenant-group-lesson-stat-card">
+        <p>Notes</p>
+        <div>
+          <h4>{{ noteMaterialCount() }}</h4>
+          <span>Lesson notes</span>
+        </div>
+      </div>
+      <div class="tenant-group-lesson-stat-card">
+        <p>Links</p>
+        <div>
+          <h4>{{ linkMaterialCount() }}</h4>
+          <span>External links</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tenant-group-lesson-layout">
+      <section class="tenant-group-lesson-details-card tenant-group-lesson-material-card">
+        <div class="tenant-group-lesson-details-card-head">
+          <span>
+            <mat-icon>library_books</mat-icon>
+          </span>
+          <div>
+            <p>Lesson material</p>
+            <h3>{{ materialCountLabel() }}</h3>
+          </div>
+        </div>
+        @if (contentLoading()) {
+          <div class="tenant-group-lesson-details-content-state" aria-live="polite">
+            <mat-icon class="animate-spin">sync</mat-icon>
+            <span>Loading lesson material...</span>
+          </div>
+        } @else if (contentError()) {
+          <div class="tenant-group-lesson-details-content-state tenant-group-lesson-details-content-state--error">
+            <mat-icon>error</mat-icon>
+            <span>{{ contentError() }}</span>
+          </div>
+        } @else if (lessonContent().length) {
+          <div class="tenant-group-lesson-material-toolbar">
+            <label class="tenant-group-lesson-material-search">
+              <mat-icon>search</mat-icon>
+              <input
+                type="search"
+                placeholder="Search material..."
+                [value]="contentSearchTerm()"
+                (input)="setContentSearchTerm($any($event.target).value)"
+              />
+            </label>
+            <label class="tenant-group-lesson-material-filter">
+              <mat-icon>filter_list</mat-icon>
+              <select [value]="contentFilter()" (change)="setContentFilter($any($event.target).value)">
+                <option value="all">All types</option>
+                <option value="FILE">Files</option>
+                <option value="NOTE">Notes</option>
+                <option value="LINK">Links</option>
+              </select>
+            </label>
+            @if (activeContentFiltersCount()) {
+              <button type="button" class="tenant-group-lesson-material-clear" (click)="clearContentFilters()">
+                Clear filters
+              </button>
+            }
+          </div>
+          @if (filteredLessonContent().length) {
+            <div class="tenant-group-lesson-material-table-shell">
+              <table class="tenant-group-lesson-material-table">
+                <thead>
+                  <tr>
+                    <th>Material</th>
+                    <th>Type</th>
+                    <th>Folder</th>
+                    <th>Source</th>
+                    <th class="tenant-group-lesson-material-th--action">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (content of pagedLessonContent(); track content.id) {
+                    <tr
+                      class="tenant-group-lesson-content-table-row"
+                      [class.tenant-group-lesson-content-table-row--clickable]="canOpenContent(content)"
+                      [attr.role]="canOpenContent(content) ? 'button' : null"
+                      [attr.tabindex]="canOpenContent(content) ? 0 : null"
+                      [attr.aria-label]="canOpenContent(content) ? contentActionLabel(content) : null"
+                      (click)="canOpenContent(content) && openInsertedContent(content)"
+                      (keydown)="openInsertedContentFromKeyboard($event, content)"
+                    >
+                      <td>
+                        <div class="tenant-group-lesson-material-name-cell">
+                          <span class="tenant-group-lesson-content-icon">
+                            <mat-icon>{{ materialIcon(content.contentType, content.fileContentType) }}</mat-icon>
+                          </span>
+                          <span>
+                            <strong>{{ content.title }}</strong>
+                            @if (content.sizeBytes) {
+                              <small>{{ formatBytes(content.sizeBytes) }}</small>
+                            }
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="tenant-group-lesson-material-type-chip">{{ materialTypeLabel(content.contentType) }}</span>
+                      </td>
+                      <td>{{ content.folderName }}</td>
+                      <td>{{ content.curriculumNodeLabel }}</td>
+                      <td class="tenant-group-lesson-material-action-cell">
+                        @if (canOpenContent(content)) {
+                          <span class="tenant-group-lesson-content-open" aria-hidden="true">
+                            <mat-icon>visibility</mat-icon>
+                          </span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <div class="tenant-group-lesson-material-pagination">
+              <span>Showing {{ contentPageStart() }}-{{ contentPageEnd() }} of {{ filteredLessonContent().length }} materials</span>
+              <div>
+                <label>
+                  Rows
+                  <select [value]="contentPageSize()" (change)="setContentPageSize($any($event.target).value)">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                  </select>
+                </label>
+                <button type="button" aria-label="Previous material page" [disabled]="contentVisiblePageIndex() === 0" (click)="previousContentPage()">
+                  <mat-icon>chevron_left</mat-icon>
+                </button>
+                <strong>Page {{ contentVisiblePageIndex() + 1 }} of {{ contentTotalPages() }}</strong>
+                <button type="button" aria-label="Next material page" [disabled]="contentVisiblePageIndex() >= contentTotalPages() - 1" (click)="nextContentPage()">
+                  <mat-icon>chevron_right</mat-icon>
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div class="tenant-group-lesson-details-content-state">
+              <mat-icon>search_off</mat-icon>
+              <span>No material matches the current search or filter.</span>
+            </div>
+          }
+        } @else {
+          <div class="tenant-group-lesson-details-content-state">
+            <mat-icon>library_add</mat-icon>
+            <span>No material found for this lesson yet.</span>
+            @if (group()?.subjectId && selectedLesson.curriculumNodeId) {
+              <button type="button" class="tenant-group-lesson-empty-action" (click)="openInsertContentModal()">Insert Content</button>
+            }
+          </div>
+        }
+      </section>
+
+      <aside class="tenant-group-lesson-sidebar">
+        <section class="tenant-group-lesson-quick-actions" aria-label="Quick actions">
+          <h3>Quick Actions</h3>
+          <div>
+            @if (group()?.subjectId && selectedLesson.curriculumNodeId) {
+              <button type="button" (click)="openInsertContentModal()">
+                <mat-icon>note_add</mat-icon>
+                <span>Insert Content</span>
+              </button>
+            }
+            <a [routerLink]="['/tenant/groups', groupId]" [queryParams]="{ tab: 'lessons' }">
+              <mat-icon>arrow_back</mat-icon>
+              <span>Back to lessons</span>
+            </a>
+            <a [routerLink]="['/tenant/groups', groupId]" [queryParams]="{ tab: 'sessions' }">
+              <mat-icon>event_available</mat-icon>
+              <span>Assign to session</span>
+            </a>
+          </div>
+        </section>
+
+        <section class="tenant-group-lesson-details-card tenant-group-lesson-curriculum-card">
+          <div class="tenant-group-lesson-settings-section">
+            <div class="tenant-group-lesson-settings-head">
+              <h3>Curriculum lesson</h3>
+              <span class="tenant-group-lesson-status">{{ materialCountLabel() }}</span>
+            </div>
+            <div class="tenant-group-lesson-settings-list">
+              <div class="tenant-group-lesson-settings-row">
+                <div>
+                  <mat-icon>menu_book</mat-icon>
+                  <span>Lesson</span>
+                </div>
+                <strong>{{ selectedLesson.title }}</strong>
+              </div>
+              <div class="tenant-group-lesson-settings-row">
+                <div>
+                  <mat-icon>auto_stories</mat-icon>
+                  <span>Subject</span>
+                </div>
+                <strong>{{ group()?.subject || 'Not linked' }}</strong>
+              </div>
+              <div class="tenant-group-lesson-settings-row">
+                <div>
+                  <mat-icon>account_tree</mat-icon>
+                  <span>Path</span>
+                </div>
+                <strong class="tenant-group-lesson-settings-path">{{ selectedLesson.path }}</strong>
+              </div>
+              <div class="tenant-group-lesson-settings-row">
+                <div>
+                  <mat-icon>library_books</mat-icon>
+                  <span>Material</span>
+                </div>
+                <strong>{{ materialCountLabel() }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="tenant-group-lesson-settings-section">
+            <h3>Group Details</h3>
+            <div class="tenant-group-lesson-settings-list">
+              <div class="tenant-group-lesson-settings-row">
+                <div>
+                  <mat-icon>person</mat-icon>
+                  <span>Teacher</span>
+                </div>
+                <strong>{{ group()?.teacher || 'Not assigned' }}</strong>
+              </div>
+              <div class="tenant-group-lesson-settings-row">
+                <div>
+                  <mat-icon>school</mat-icon>
+                  <span>Education Stage</span>
+                </div>
+                <strong>{{ group()?.stageName || 'Not set' }}</strong>
+              </div>
+              <div class="tenant-group-lesson-settings-row">
+                <div>
+                  <mat-icon>workspace_premium</mat-icon>
+                  <span>Grade</span>
+                </div>
+                <strong>{{ group()?.gradeName || 'Not set' }}</strong>
+              </div>
+              <div class="tenant-group-lesson-settings-row">
+                <div>
+                  <mat-icon>groups</mat-icon>
+                  <span>Group</span>
+                </div>
+                <strong>{{ group()?.name || 'Group' }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="tenant-group-lesson-settings-actions">
+            @if (selectedLesson.description) {
+              <p>{{ selectedLesson.description }}</p>
+            } @else {
+              <p>No description added for this lesson.</p>
+            }
+          </div>
+        </section>
+      </aside>
+    </div>
+  } @else {
+    <section class="tenant-group-lesson-details-state">
+      <mat-icon>menu_book</mat-icon>
+      <p>Lesson was not found for this group.</p>
+    </section>
+  }
+</div>
+
+@if (insertModalOpen()) {
+  <div class="tenant-group-lesson-modal-backdrop" role="presentation" (click)="closeInsertContentModal()">
+    <div
+      class="tenant-group-lesson-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="insert-content-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="tenant-group-lesson-modal-head">
+        <div>
+          <h3 id="insert-content-title">Insert Content</h3>
+          <p>Select material from the parent directory.</p>
+        </div>
+        <button type="button" class="tenant-group-lesson-modal-close" aria-label="Close insert content" (click)="closeInsertContentModal()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="tenant-group-lesson-modal-body">
+        @if (materialLoading()) {
+          <div class="tenant-group-lesson-details-content-state" aria-live="polite">
+            <mat-icon class="animate-spin">sync</mat-icon>
+            <span>Loading material...</span>
+          </div>
+        } @else if (materialError()) {
+          <div class="tenant-group-lesson-details-content-state tenant-group-lesson-details-content-state--error">
+            <mat-icon>error</mat-icon>
+            <span>{{ materialError() }}</span>
+          </div>
+        } @else if (materialOptions().length) {
+          <div class="tenant-group-lesson-material-list" role="listbox" aria-label="Available material">
+            @for (option of materialOptions(); track option.type + option.id) {
+              <button
+                type="button"
+                class="tenant-group-lesson-material-option"
+                [class.tenant-group-lesson-material-option--selected]="selectedMaterial()?.id === option.id && selectedMaterial()?.type === option.type"
+                [class.tenant-group-lesson-material-option--inserted]="isMaterialInserted(option)"
+                role="option"
+                [attr.aria-selected]="selectedMaterial()?.id === option.id && selectedMaterial()?.type === option.type"
+                [disabled]="isMaterialInserted(option)"
+                (click)="selectMaterial(option)"
+              >
+                <span class="tenant-group-lesson-content-icon">
+                  <mat-icon>{{ materialIcon(option.type, option.fileContentType) }}</mat-icon>
+                </span>
+                <span>
+                  <strong>{{ option.title }}</strong>
+                  <small>{{ option.source.nodeLabel }} · {{ option.source.folder.name }} · {{ option.subtitle }}</small>
+                </span>
+                @if (isMaterialInserted(option)) {
+                  <em>Inserted</em>
+                }
+              </button>
+            }
+          </div>
+        } @else {
+          <div class="tenant-group-lesson-details-content-state">
+            <mat-icon>folder_open</mat-icon>
+            <span>No material found in the parent directory.</span>
+          </div>
+        }
+        @if (insertError()) {
+          <div class="tenant-group-lesson-insert-error">{{ insertError() }}</div>
+        }
+      </div>
+
+      <div class="tenant-group-lesson-modal-footer">
+        <button type="button" class="tenant-group-lesson-details-secondary" [disabled]="insertingContent()" (click)="closeInsertContentModal()">Cancel</button>
+        <button type="button" class="tenant-group-lesson-details-primary" [disabled]="!selectedMaterial() || insertingContent()" (click)="insertSelectedMaterial()">
+          {{ insertingContent() ? 'Inserting...' : 'Insert selected' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (previewContent(); as content) {
+  <div class="tenant-group-lesson-modal-backdrop" role="presentation" (click)="closeContentPreview()">
+    <div
+      class="tenant-group-lesson-modal tenant-group-lesson-preview-modal"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="content.title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="tenant-group-lesson-modal-head">
+        <div>
+          <h3>{{ content.title }}</h3>
+          <p>{{ materialTypeLabel(content.contentType) }} · {{ content.folderName }}</p>
+        </div>
+        <button type="button" class="tenant-group-lesson-modal-close" aria-label="Close material preview" (click)="closeContentPreview()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="tenant-group-lesson-preview-body">
+        @if (previewLoading()) {
+          <div class="tenant-group-lesson-details-content-state" aria-live="polite">
+            <mat-icon class="animate-spin">sync</mat-icon>
+            <span>Loading content...</span>
+          </div>
+        } @else if (previewError()) {
+          <div class="tenant-group-lesson-details-content-state tenant-group-lesson-details-content-state--error">
+            <mat-icon>error</mat-icon>
+            <span>{{ previewError() }}</span>
+          </div>
+        } @else if (content.contentType === 'NOTE') {
+          <article class="tenant-group-lesson-note-preview">
+            @for (line of notePreviewBlocks(previewNote()); track $index) {
+              <p>{{ line }}</p>
+            }
+          </article>
+        } @else if (content.contentType === 'LINK') {
+          <div class="tenant-group-lesson-link-preview">
+            <span class="tenant-group-lesson-content-icon">
+              <mat-icon>link</mat-icon>
+            </span>
+            <div>
+              <h4>{{ content.title }}</h4>
+              <p>{{ contentHostLabel(content) }}</p>
+            </div>
+            @if (content.url) {
+              <a [href]="content.url" target="_blank" rel="noopener">Open link</a>
+            }
+          </div>
+        } @else if (content.url && isImageContent(content)) {
+          <img class="tenant-group-lesson-file-preview" [src]="content.url" [alt]="content.title" />
+        } @else if (content.url && isVideoContent(content)) {
+          <video class="tenant-group-lesson-file-preview" [src]="content.url" controls playsinline preload="metadata" [attr.title]="content.title"></video>
+        } @else if (content.url && isPdfContent(content)) {
+          <iframe class="tenant-group-lesson-file-frame" [src]="safeContentUrl(content)" [title]="content.title"></iframe>
+        } @else {
+          <div class="tenant-group-lesson-link-preview">
+            <span class="tenant-group-lesson-content-icon">
+              <mat-icon>{{ materialIcon(content.contentType, content.fileContentType) }}</mat-icon>
+            </span>
+            <div>
+              <h4>{{ content.title }}</h4>
+              <p>This material type cannot be previewed inline.</p>
+            </div>
+            @if (content.url) {
+              <a [href]="content.url" target="_blank" rel="noopener">Open file</a>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

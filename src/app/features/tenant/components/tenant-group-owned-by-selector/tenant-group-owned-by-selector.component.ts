@@ -5,6 +5,7 @@ import { TenantGroupSelectorOption } from '../../models/tenant-group-create.mode
 
 @Component({
   selector: 'app-tenant-group-owned-by-selector',
+  host: { '(click)': '$event.stopPropagation()' },
   imports: [CommonModule, MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './tenant-group-owned-by-selector.component.html',

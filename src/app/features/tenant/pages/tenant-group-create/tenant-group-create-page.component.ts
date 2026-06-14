@@ -1,21 +1,29 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
+  DestroyRef,
   OnDestroy,
   OnInit,
   inject,
+  signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { startWith } from 'rxjs';
 import { TenantGroupCreateFacade } from '../../state/tenant-group-create.facade';
 import { TenantGroupSearchableSelectorComponent } from '../../components/tenant-group-searchable-selector/tenant-group-searchable-selector.component';
 import { TenantGroupOwnedBySelectorComponent } from '../../components/tenant-group-owned-by-selector/tenant-group-owned-by-selector.component';
 import { TenantGroupScheduleSectionComponent } from '../../components/tenant-group-schedule-section/tenant-group-schedule-section.component';
+import { TenantGroupSelectorOption } from '../../models/tenant-group-create.models';
+import { TenantSubscriptionPeriod, TenantSubscriptionPeriodSettingsService } from '../../data-access/tenant-subscription-period-settings.service';
 
 @Component({
   selector: 'app-tenant-group-create-page',
+  host: { '(click)': 'closeDropdowns()' },
   imports: [
     CommonModule,
     RouterModule,
@@ -32,6 +40,8 @@ import { TenantGroupScheduleSectionComponent } from '../../components/tenant-gro
 export class TenantGroupCreatePageComponent implements OnInit, OnDestroy {
   private readonly facade = inject(TenantGroupCreateFacade);
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly subscriptionPeriodSettings = inject(TenantSubscriptionPeriodSettingsService);
 
   readonly groupForm = this.facade.groupForm;
   readonly isSubmitting = this.facade.isSubmitting;
@@ -71,10 +81,64 @@ export class TenantGroupCreatePageComponent implements OnInit, OnDestroy {
   readonly filteredColleges = this.facade.filteredColleges;
   readonly filteredSubjects = this.facade.filteredSubjects;
   readonly filteredRooms = this.facade.filteredRooms;
+  readonly rooms = this.facade.rooms;
+
+  readonly showPaymentMethodDropdown = signal(false);
+  readonly paymentMethodSearchQuery = signal('');
+  readonly paymentMethodOptions = signal<TenantGroupSelectorOption[]>([]);
+  readonly paymentMethodsLoading = signal(false);
+  readonly paymentMethodsLoadError = signal<string | null>(null);
+  readonly filteredPaymentMethods = computed(() => {
+    const query = this.paymentMethodSearchQuery().toLowerCase();
+    const options = this.paymentMethodOptions();
+    if (!query) return options;
+    return options.filter(
+      (method) =>
+        method.name.toLowerCase().includes(query) ||
+        (method.subtitle ?? '').toLowerCase().includes(query),
+    );
+  });
+
+  readonly paymentMethodEmptyText = computed(() => {
+    if (this.paymentMethodsLoading()) {
+      return 'Loading subscription periods...';
+    }
+    if (this.paymentMethodsLoadError()) {
+      return this.paymentMethodsLoadError() ?? 'Unable to load subscription periods';
+    }
+    return 'No subscription periods found';
+  });
+
+  isGradeSelectorDisabled(): boolean {
+    return this.educationCategory() === 'BASIC_EDUCATION' && !this.groupForm.get('stage')?.value;
+  }
+
+  isCollegeSelectorDisabled(): boolean {
+    return this.educationCategory() === 'UNIVERSITY_EDUCATION' && !this.groupForm.get('university')?.value;
+  }
+
+  isSubjectSelectorDisabled(): boolean {
+    if (this.educationCategory() === 'BASIC_EDUCATION') {
+      return !this.groupForm.get('grade')?.value;
+    }
+
+    return !this.groupForm.get('college')?.value;
+  }
+
+  subjectCreateQueryParams(): Record<string, string> {
+    return this.facade.subjectCreateQueryParams();
+  }
+
+  collegeCreateQueryParams(): Record<string, string> {
+    return this.facade.collegeCreateQueryParams();
+  }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    this.facade.initialize(id);
+    const freshCreate = !id && this.route.snapshot.queryParamMap.get('fresh') === 'true';
+    this.facade.initialize(id, freshCreate);
+    this.setupPaymentMethodSync();
+    void this.loadSubscriptionPeriods();
   }
 
   ngOnDestroy(): void {
@@ -90,6 +154,7 @@ export class TenantGroupCreatePageComponent implements OnInit, OnDestroy {
   }
 
   toggleOwnedByDropdown(): void {
+    this.closePaymentMethodDropdown();
     this.facade.toggleOwnedByDropdown();
   }
 
@@ -98,6 +163,7 @@ export class TenantGroupCreatePageComponent implements OnInit, OnDestroy {
   }
 
   toggleTeacherDropdown(): void {
+    this.closePaymentMethodDropdown();
     this.facade.toggleTeacherDropdown();
   }
 
@@ -110,6 +176,7 @@ export class TenantGroupCreatePageComponent implements OnInit, OnDestroy {
   }
 
   toggleStageDropdown(): void {
+    this.closePaymentMethodDropdown();
     this.facade.toggleStageDropdown();
   }
 
@@ -118,6 +185,12 @@ export class TenantGroupCreatePageComponent implements OnInit, OnDestroy {
   }
 
   toggleGradeDropdown(): void {
+    if (this.isGradeSelectorDisabled()) {
+      this.closeDropdowns();
+      return;
+    }
+
+    this.closePaymentMethodDropdown();
     this.facade.toggleGradeDropdown();
   }
 
@@ -126,6 +199,7 @@ export class TenantGroupCreatePageComponent implements OnInit, OnDestroy {
   }
 
   toggleUniversityDropdown(): void {
+    this.closePaymentMethodDropdown();
     this.facade.toggleUniversityDropdown();
   }
 
@@ -134,6 +208,12 @@ export class TenantGroupCreatePageComponent implements OnInit, OnDestroy {
   }
 
   toggleCollegeDropdown(): void {
+    if (this.isCollegeSelectorDisabled()) {
+      this.closeDropdowns();
+      return;
+    }
+
+    this.closePaymentMethodDropdown();
     this.facade.toggleCollegeDropdown();
   }
 
@@ -142,7 +222,28 @@ export class TenantGroupCreatePageComponent implements OnInit, OnDestroy {
   }
 
   toggleSubjectDropdown(): void {
+    if (this.isSubjectSelectorDisabled()) {
+      this.closeDropdowns();
+      return;
+    }
+
+    this.closePaymentMethodDropdown();
     this.facade.toggleSubjectDropdown();
+  }
+
+  togglePaymentMethodDropdown(): void {
+    const next = !this.showPaymentMethodDropdown();
+    this.facade.closeAllDropdowns();
+    this.showPaymentMethodDropdown.set(next);
+  }
+
+  selectPaymentMethod(value: string): void {
+    const method = this.paymentMethodOptions().find((option) => option.name === value);
+    this.groupForm.patchValue({
+      paymentMethod: value,
+      paymentMethodId: method?.id ?? '',
+    });
+    this.showPaymentMethodDropdown.set(false);
   }
 
   selectSubject(value: string): void {
@@ -150,6 +251,7 @@ export class TenantGroupCreatePageComponent implements OnInit, OnDestroy {
   }
 
   toggleRoomDropdown(): void {
+    this.closePaymentMethodDropdown();
     this.facade.toggleRoomDropdown();
   }
 
@@ -183,6 +285,74 @@ export class TenantGroupCreatePageComponent implements OnInit, OnDestroy {
 
   setRoomSearchQuery(value: string): void {
     this.facade.setRoomSearchQuery(value);
+  }
+
+  setPaymentMethodSearchQuery(value: string): void {
+    this.paymentMethodSearchQuery.set(value);
+  }
+
+  closeDropdowns(): void {
+    this.facade.closeAllDropdowns();
+    this.closePaymentMethodDropdown();
+  }
+
+  private closePaymentMethodDropdown(): void {
+    this.showPaymentMethodDropdown.set(false);
+  }
+
+  private async loadSubscriptionPeriods(): Promise<void> {
+    this.paymentMethodsLoading.set(true);
+    this.paymentMethodsLoadError.set(null);
+    try {
+      const periods = await this.subscriptionPeriodSettings.listSubscriptionPeriods();
+      this.paymentMethodOptions.set(periods.map((period) => this.toPaymentMethodOption(period)));
+      this.syncSelectedPaymentMethod(true);
+    } catch {
+      this.paymentMethodOptions.set([]);
+      this.paymentMethodsLoadError.set('Unable to load subscription periods');
+    } finally {
+      this.paymentMethodsLoading.set(false);
+    }
+  }
+
+  private toPaymentMethodOption(period: TenantSubscriptionPeriod): TenantGroupSelectorOption {
+    const durationLabel = period.durationValue + ' ' + period.durationType + (period.durationValue === 1 ? '' : 's');
+    return {
+      id: period.id,
+      name: period.name,
+      subtitle: period.description?.trim() || durationLabel,
+    };
+  }
+
+  private setupPaymentMethodSync(): void {
+    this.groupForm.get('paymentMethodId')?.valueChanges
+      .pipe(startWith(this.groupForm.get('paymentMethodId')?.value ?? ''), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.syncSelectedPaymentMethod(false));
+  }
+
+  private syncSelectedPaymentMethod(clearMissingName: boolean): void {
+    const selected = this.groupForm.get('paymentMethod')?.value ?? '';
+    const selectedId = this.groupForm.get('paymentMethodId')?.value ?? '';
+    const methods = this.paymentMethodOptions();
+
+    if (selectedId) {
+      const method = methods.find((option) => option.id === selectedId);
+      if (method) {
+        this.groupForm.patchValue({ paymentMethod: method.name, paymentMethodId: method.id }, { emitEvent: false });
+        return;
+      }
+    }
+
+    if (!selected) {
+      return;
+    }
+
+    const method = methods.find((option) => option.name === selected);
+    if (method) {
+      this.groupForm.patchValue({ paymentMethod: method.name, paymentMethodId: method.id }, { emitEvent: false });
+    } else if (clearMissingName) {
+      this.groupForm.patchValue({ paymentMethod: '', paymentMethodId: '' }, { emitEvent: false });
+    }
   }
 
   onCancel(): void {

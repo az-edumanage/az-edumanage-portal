@@ -30,12 +30,12 @@ export class TenantUniversitySubjectsDataService {
       params = params.set('search', filters.search.trim());
     }
     const response = await firstValueFrom(this.http.get<TenantUniversitySubject[]>(this.subjectsUrl, { params }));
-    return response ?? [];
+    return (response ?? []).map((subject) => this.normalizeSubject(subject));
   }
 
   async getSubject(id: string): Promise<TenantUniversitySubject> {
     await this.authApi.ensureLoggedIn();
-    return firstValueFrom(this.http.get<TenantUniversitySubject>(`${this.subjectsUrl}/${id}`));
+    return this.normalizeSubject(await firstValueFrom(this.http.get<TenantUniversitySubject>(`${this.subjectsUrl}/${id}`)));
   }
 
   async createSubject(payload: TenantUniversitySubjectPayload): Promise<TenantUniversitySubject> {
@@ -75,6 +75,14 @@ export class TenantUniversitySubjectsDataService {
       collegeId: payload.collegeId,
       name: payload.name.trim(),
       description: payload.description?.trim() || null,
+    };
+  }
+
+  private normalizeSubject(subject: TenantUniversitySubject): TenantUniversitySubject {
+    return {
+      ...subject,
+      assignedTeachersCount: subject.assignedTeachersCount ?? subject.teachers?.length ?? 0,
+      teachers: subject.teachers ?? [],
     };
   }
 

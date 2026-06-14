@@ -1,0 +1,510 @@
+<div class="curriculum-material-page space-y-6" [attr.dir]="pageDirection()">
+  <div class="space-y-1">
+    <div class="curriculum-material-breadcrumb flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+      <a [routerLink]="subjectsListLink()" class="hover:text-indigo-600 transition-colors">{{ breadcrumbLabel('subject') }}</a>
+      <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+      <a [routerLink]="subjectDetailsLink()" class="hover:text-indigo-600 transition-colors">{{ breadcrumbLabel('subjectDetails') }}</a>
+      <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+      <a [routerLink]="curriculumLink()" class="hover:text-indigo-600 transition-colors">{{ breadcrumbLabel('curriculum') }}</a>
+      @for (item of selectedPath(); track item.id; let first = $first; let last = $last) {
+        <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+        @if (first) {
+          <a [routerLink]="curriculumLink()" class="hover:text-indigo-600 transition-colors">{{ breadcrumbPathLabel(item, first) }}</a>
+        } @else if (!last) {
+          <span>{{ breadcrumbPathLabel(item, first) }}</span>
+        } @else {
+          <a [routerLink]="nodeDetailsLink()" class="hover:text-indigo-600 transition-colors">{{ breadcrumbPathLabel(item, first) }}</a>
+        }
+      }
+      <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+      <a [routerLink]="nodeDetailsLink()" [queryParams]="{ tab: 'material' }" class="hover:text-indigo-600 transition-colors">{{ breadcrumbLabel('material') }}</a>
+    </div>
+    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ folder()?.name || breadcrumbLabel('material') }}</h2>
+    @if (subject(); as selectedSubject) {
+      <p class="text-slate-500 dark:text-slate-500 text-sm">{{ selectedSubject.name }} · {{ selectedSubject.stageName }} · {{ selectedSubject.gradeName }}</p>
+    }
+  </div>
+
+  @if (loading() || loadingFolder()) {
+    <div class="curriculum-material-card curriculum-material-empty">
+      <mat-icon>sync</mat-icon>
+      <span>Loading material folder...</span>
+    </div>
+  } @else if (loadError() || folderError()) {
+    <div class="curriculum-material-card curriculum-material-empty">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ loadError() || folderError() }}</span>
+    </div>
+  } @else if (folder(); as selectedFolder) {
+    <section class="curriculum-material-card">
+      <div class="curriculum-material-header">
+        <div class="curriculum-material-folder-summary">
+          <div class="curriculum-material-folder-icon">
+            <mat-icon>folder</mat-icon>
+          </div>
+          <div>
+            <p>{{ breadcrumbLabel('material') }}</p>
+            <h3>{{ selectedFolder.name }}</h3>
+            @if (selectedFolder.description) {
+              <span>{{ selectedFolder.description }}</span>
+            }
+          </div>
+        </div>
+        <span class="curriculum-material-count">{{ materialCountLabel() }}</span>
+      </div>
+      @if (uploadError()) {
+        <div class="curriculum-material-error">{{ uploadError() }}</div>
+      }
+
+      <div class="curriculum-material-workspace">
+        <aside class="curriculum-material-quick-actions" [attr.aria-label]="quickActionsLabel()">
+          <div class="curriculum-material-quick-actions-head">
+            <h3>{{ quickActionsLabel() }}</h3>
+            <mat-icon>apps</mat-icon>
+          </div>
+          <div class="curriculum-material-quick-actions-grid">
+            <a class="curriculum-material-quick-action" [routerLink]="addNoteLink()">
+              <mat-icon>edit_note</mat-icon>
+              <span>{{ addNoteLabel() }}</span>
+            </a>
+            <button type="button" class="curriculum-material-quick-action" (click)="openLinkModal()">
+              <mat-icon>add_link</mat-icon>
+              <span>{{ addExternalLinkLabel() }}</span>
+            </button>
+            <label class="curriculum-material-quick-action curriculum-material-quick-action-upload">
+              <mat-icon>upload_file</mat-icon>
+              <span>{{ uploading() ? uploadingLabel() : uploadLabel() }}</span>
+              <input type="file" [disabled]="uploading()" (change)="uploadFile($event)" />
+            </label>
+          </div>
+        </aside>
+
+        <div class="curriculum-material-content">
+          <div class="curriculum-material-content-bar">
+            <div>
+              <p>{{ contentFilterLabel(contentFilter()) }}</p>
+              <h4>{{ visibleMaterialCountLabel() }}</h4>
+            </div>
+            <div class="curriculum-material-tools" (click)="stopPanelClick($event)">
+              <label class="curriculum-material-search">
+                <mat-icon>search</mat-icon>
+                <input
+                  type="search"
+                  [value]="contentSearch()"
+                  (input)="updateContentSearch($event)"
+                  [placeholder]="searchPlaceholder()"
+                  [attr.aria-label]="searchPlaceholder()"
+                />
+              </label>
+              <div class="curriculum-material-filter">
+                <button
+                  type="button"
+                  class="curriculum-material-filter-btn"
+                  [class.curriculum-material-filter-btn--active]="contentFilter() !== 'all'"
+                  (click)="toggleContentFilter($event)"
+                >
+                  <mat-icon>filter_list</mat-icon>
+                  <span>{{ filterLabel() }}</span>
+                  @if (contentFilter() !== 'all') {
+                    <span class="curriculum-material-filter-count">1</span>
+                  }
+                </button>
+                @if (contentFilterOpen()) {
+                  <div class="curriculum-material-filter-panel" role="menu" (click)="stopPanelClick($event)">
+                    <div class="curriculum-material-filter-panel-head">
+                      <span>{{ filterByLabel() }}</span>
+                      <button type="button" (click)="selectContentFilter('all')">{{ resetLabel() }}</button>
+                    </div>
+                    <button
+                      type="button"
+                      class="curriculum-material-filter-option"
+                      [class.curriculum-material-filter-option--active]="contentFilter() === 'all'"
+                      (click)="selectContentFilter('all')"
+                    >
+                      {{ contentFilterLabel('all') }}
+                    </button>
+                    <button
+                      type="button"
+                      class="curriculum-material-filter-option"
+                      [class.curriculum-material-filter-option--active]="contentFilter() === 'notes'"
+                      (click)="selectContentFilter('notes')"
+                    >
+                      {{ contentFilterLabel('notes') }}
+                    </button>
+                    <button
+                      type="button"
+                      class="curriculum-material-filter-option"
+                      [class.curriculum-material-filter-option--active]="contentFilter() === 'links'"
+                      (click)="selectContentFilter('links')"
+                    >
+                      {{ contentFilterLabel('links') }}
+                    </button>
+                    <button
+                      type="button"
+                      class="curriculum-material-filter-option"
+                      [class.curriculum-material-filter-option--active]="contentFilter() === 'files'"
+                      (click)="selectContentFilter('files')"
+                    >
+                      {{ contentFilterLabel('files') }}
+                    </button>
+                  </div>
+                }
+              </div>
+              @if (contentSearch() || contentFilter() !== 'all') {
+                <button type="button" class="curriculum-material-clear-filters" (click)="clearContentFilters()">
+                  <mat-icon>close</mat-icon>
+                  <span>{{ clearLabel() }}</span>
+                </button>
+              }
+            </div>
+          </div>
+
+      @if (hasVisibleContent()) {
+        <div class="curriculum-material-file-grid">
+          @if (uploading()) {
+            <article
+              class="curriculum-material-upload-card"
+              role="progressbar"
+              [attr.aria-valuenow]="uploadProgressPercent()"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            >
+              <div class="curriculum-material-upload-card-main">
+                <span class="curriculum-material-upload-card-icon">
+                  <mat-icon>cloud_upload</mat-icon>
+                </span>
+                <div>
+                  <span class="curriculum-material-upload-card-label">{{ uploadingLabel() }}</span>
+                  <h4>{{ uploadFileName() }}</h4>
+                </div>
+              </div>
+              <div class="curriculum-material-upload-card-footer">
+                <div class="curriculum-material-upload-card-stats">
+                  <span>{{ uploadUploadedLabel() }}</span>
+                  <span>{{ uploadRemainingLabel() }}</span>
+                </div>
+                <div class="curriculum-material-upload-progress-track">
+                  <span [style.width.%]="uploadProgressPercent()"></span>
+                </div>
+                <strong>{{ uploadProgressLabel() }}</strong>
+              </div>
+            </article>
+          }
+          @for (note of filteredNotes(); track note.id) {
+            <article class="curriculum-material-file-card curriculum-material-note-card">
+              <a
+                class="curriculum-material-note-preview-button"
+                [routerLink]="noteLink(note.id)"
+                [attr.aria-label]="'Open ' + note.title"
+              >
+                <span class="curriculum-material-note-card-head">
+                  <span class="curriculum-material-note-card-icon">
+                    <mat-icon>edit_note</mat-icon>
+                  </span>
+                  <span>{{ noteLabel() }}</span>
+                </span>
+                <span class="curriculum-material-note-card-title">{{ note.title }}</span>
+                <span class="curriculum-material-note-card-text">{{ notePreview(note) }}</span>
+              </a>
+              <button
+                type="button"
+                class="curriculum-material-file-delete"
+                [disabled]="deletingNoteId() === note.id"
+                [attr.aria-label]="'Delete ' + note.title"
+                (click)="confirmDeleteNote(note, $event)"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </article>
+          }
+          @for (link of filteredLinks(); track link.id) {
+            <article class="curriculum-material-file-card curriculum-material-link-card">
+              <button type="button" class="curriculum-material-note-preview-button" [attr.aria-label]="'Open ' + link.title" (click)="openLinkPreview(link)">
+                <span class="curriculum-material-note-card-head">
+                  <span class="curriculum-material-link-card-icon">
+                    <mat-icon>{{ isYoutubeLink(link) ? 'smart_display' : 'link' }}</mat-icon>
+                  </span>
+                  <span>{{ linkLabel() }}</span>
+                </span>
+                <span class="curriculum-material-note-card-title">{{ link.title }}</span>
+                <span class="curriculum-material-note-card-text">{{ linkHostLabel(link) }}</span>
+              </button>
+              <button
+                type="button"
+                class="curriculum-material-file-delete"
+                [disabled]="deletingLinkId() === link.id"
+                [attr.aria-label]="'Delete ' + link.title"
+                (click)="deleteLink(link, $event)"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </article>
+          }
+          @for (file of filteredFiles(); track file.id) {
+            <article class="curriculum-material-file-card">
+              <button type="button" class="curriculum-material-file-preview-button" [attr.aria-label]="'Preview ' + file.originalName" (click)="openFilePreview(file)">
+                <span class="curriculum-material-file-preview">
+                  @if (isImageFile(file)) {
+                    <img [src]="file.url" [alt]="file.originalName" loading="lazy" />
+                  } @else {
+                    <span class="curriculum-material-file-icon">
+                      <mat-icon>{{ fileIcon(file) }}</mat-icon>
+                    </span>
+                  }
+                </span>
+                <span class="curriculum-material-file-name">{{ file.originalName }}</span>
+              </button>
+              <button
+                type="button"
+                class="curriculum-material-file-delete"
+                [disabled]="deletingFileId() === file.id"
+                [attr.aria-label]="'Delete ' + file.originalName"
+                (click)="confirmDeleteFile(file, $event)"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="curriculum-material-empty">
+          <mat-icon>upload_file</mat-icon>
+          <span>{{ emptyFilesLabel() }}</span>
+        </div>
+      }
+        </div>
+      </div>
+    </section>
+  }
+</div>
+
+@if (previewFile(); as file) {
+  <div class="curriculum-material-preview-overlay" role="dialog" aria-modal="true" [attr.aria-label]="file.originalName" (click)="closeFilePreview()">
+    <div class="curriculum-material-preview-panel" (click)="$event.stopPropagation()">
+      <div class="curriculum-material-preview-head">
+        <div>
+          <h3>{{ file.originalName }}</h3>
+          @if (file.contentType) {
+            <p>{{ file.contentType }}</p>
+          }
+        </div>
+        <div class="curriculum-material-preview-actions">
+          <a class="curriculum-material-preview-open" [href]="file.url" target="_blank" rel="noopener">
+            <mat-icon>open_in_new</mat-icon>
+            <span>Open</span>
+          </a>
+          <button type="button" class="curriculum-material-preview-close" aria-label="Close file preview" (click)="closeFilePreview()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+      <div class="curriculum-material-preview-body">
+        @if (isImageFile(file)) {
+          <img [src]="file.url" [alt]="file.originalName" />
+        } @else if (isVideoFile(file)) {
+          <video
+            class="curriculum-material-video-preview"
+            [src]="file.url"
+            controls
+            playsinline
+            preload="metadata"
+            [attr.title]="file.originalName"
+          ></video>
+        } @else if (isPdfFile(file)) {
+          @if (previewPdfLoading()) {
+            <div class="curriculum-material-preview-state">
+              <mat-icon>sync</mat-icon>
+              <p>{{ previewLoadingLabel() }}</p>
+            </div>
+          } @else if (previewPdfUrl(); as pdfUrl) {
+            <iframe [src]="pdfUrl" [title]="file.originalName"></iframe>
+          } @else {
+            <div class="curriculum-material-preview-fallback">
+              <span class="curriculum-material-file-icon curriculum-material-file-icon--large">
+                <mat-icon>picture_as_pdf</mat-icon>
+              </span>
+              <p>{{ previewPdfError() || 'Unable to preview this PDF inline.' }}</p>
+              <a [href]="file.url" target="_blank" rel="noopener">Open file</a>
+            </div>
+          }
+        } @else if (isPresentationFile(file)) {
+          <div class="curriculum-material-presentation-preview">
+            @if (previewPresentationLoading()) {
+              <div class="curriculum-material-preview-state">
+                <mat-icon>sync</mat-icon>
+                <p>{{ previewLoadingLabel() }}</p>
+              </div>
+            }
+            @if (previewPresentationError()) {
+              <div class="curriculum-material-preview-fallback">
+                <span class="curriculum-material-file-icon curriculum-material-file-icon--large">
+                  <mat-icon>slideshow</mat-icon>
+                </span>
+                <p>{{ previewPresentationError() }}</p>
+                <a [href]="file.url" target="_blank" rel="noopener">Open file</a>
+              </div>
+            } @else {
+              <div #presentationPreviewHost class="curriculum-material-presentation-host" [class.is-loading]="previewPresentationLoading()"></div>
+            }
+          </div>
+        } @else {
+          <div class="curriculum-material-preview-fallback">
+            <span class="curriculum-material-file-icon curriculum-material-file-icon--large">
+              <mat-icon>{{ fileIcon(file) }}</mat-icon>
+            </span>
+            <p>This file type may need to open in a new tab.</p>
+            <a [href]="file.url" target="_blank" rel="noopener">Open file</a>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+@if (previewLink(); as link) {
+  <div class="curriculum-material-preview-overlay" role="dialog" aria-modal="true" [attr.aria-label]="link.title" (click)="closeFilePreview()">
+    <div class="curriculum-material-preview-panel" (click)="$event.stopPropagation()">
+      <div class="curriculum-material-preview-head">
+        <div>
+          <h3>{{ link.title }}</h3>
+          <p>{{ linkHostLabel(link) }}</p>
+        </div>
+        <div class="curriculum-material-preview-actions">
+          <a class="curriculum-material-preview-open" [href]="link.url" target="_blank" rel="noopener">
+            <mat-icon>open_in_new</mat-icon>
+            <span>Open</span>
+          </a>
+          <button type="button" class="curriculum-material-preview-close" aria-label="Close link preview" (click)="closeFilePreview()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+      <div class="curriculum-material-preview-body curriculum-material-link-preview-body">
+        @if (isYoutubeLink(link)) {
+          <iframe
+            class="curriculum-material-link-frame curriculum-material-link-frame--youtube"
+            [src]="externalPreviewUrl(link)"
+            [title]="link.title"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+        } @else {
+          <div class="curriculum-material-external-preview">
+            <span class="curriculum-material-external-preview-icon">
+              <mat-icon>open_in_new</mat-icon>
+            </span>
+            <div>
+              <h4>{{ link.title }}</h4>
+              <p>{{ link.url }}</p>
+            </div>
+            <a [href]="link.url" target="_blank" rel="noopener">Open link</a>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+@if (filePendingDelete(); as file) {
+  <div class="curriculum-material-confirm-backdrop" role="presentation" (click)="closeDeleteFileModal()">
+    <div class="curriculum-material-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="material-file-delete-title" (click)="$event.stopPropagation()">
+      <div class="curriculum-material-confirm-icon">
+        <mat-icon>delete</mat-icon>
+      </div>
+      <div>
+        <h3 id="material-file-delete-title">{{ deleteFileTitle() }}</h3>
+        <p>{{ deleteFileMessage(file) }}</p>
+        @if (deleteFileError()) {
+          <div class="curriculum-material-error">{{ deleteFileError() }}</div>
+        }
+      </div>
+      <div class="curriculum-material-confirm-actions">
+        <button type="button" class="curriculum-material-confirm-cancel" [disabled]="deletingFileId() === file.id" (click)="closeDeleteFileModal()">{{ cancelLabel() }}</button>
+        <button type="button" class="curriculum-material-confirm-delete" [disabled]="deletingFileId() === file.id" (click)="deleteFile()">
+          {{ deletingFileId() === file.id ? 'Deleting...' : deleteLabel() }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (linkModalOpen()) {
+  <div class="curriculum-material-confirm-backdrop" role="presentation" (click)="closeLinkModal()">
+    <div class="curriculum-material-confirm-dialog curriculum-material-link-dialog" role="dialog" aria-modal="true" aria-labelledby="material-link-title" (click)="$event.stopPropagation()">
+      <div class="curriculum-material-confirm-icon curriculum-material-link-dialog-icon">
+        <mat-icon>add_link</mat-icon>
+      </div>
+      <div>
+        <h3 id="material-link-title">{{ addExternalLinkLabel() }}</h3>
+        <label class="curriculum-material-link-field">
+          <span>{{ linkTitleLabel() }}</span>
+          <input type="text" [value]="linkTitle()" (input)="updateLinkTitle($any($event.target).value)" />
+        </label>
+        <label class="curriculum-material-link-field">
+          <span>{{ linkUrlLabel() }}</span>
+          <input type="url" [value]="linkUrl()" (input)="updateLinkUrl($any($event.target).value)" placeholder="https://..." />
+        </label>
+        @if (linkError()) {
+          <div class="curriculum-material-error">{{ linkError() }}</div>
+        }
+      </div>
+      <div class="curriculum-material-confirm-actions">
+        <button type="button" class="curriculum-material-confirm-cancel" [disabled]="linkSaving()" (click)="closeLinkModal()">{{ cancelLabel() }}</button>
+        <button type="button" class="curriculum-material-confirm-delete curriculum-material-link-save" [disabled]="linkSaving()" (click)="saveExternalLink()">
+          {{ linkSaving() ? 'Saving...' : saveLabel() }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (noteEditorOpen()) {
+  <div class="curriculum-material-preview-overlay" role="dialog" aria-modal="true" aria-label="Material note editor" (click)="closeNoteEditor()">
+    <div class="curriculum-material-note-editor-panel" (click)="$event.stopPropagation()">
+      <div class="curriculum-material-preview-head">
+        <div>
+          <h3>{{ activeNote()?.title || addNoteLabel() }}</h3>
+          <p>{{ noteLabel() }}</p>
+        </div>
+        <div class="curriculum-material-preview-actions">
+          <button type="button" class="curriculum-material-preview-open" [disabled]="noteSaving()" (click)="saveNote()">
+            <mat-icon>save</mat-icon>
+            <span>{{ noteSaving() ? 'Saving...' : saveNoteLabel() }}</span>
+          </button>
+          <button type="button" class="curriculum-material-preview-close" aria-label="Close note editor" [disabled]="noteSaving()" (click)="closeNoteEditor()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+      @if (noteError()) {
+        <div class="curriculum-material-error curriculum-material-note-error">{{ noteError() }}</div>
+      }
+      <div class="curriculum-material-note-editor-body">
+        <div #noteEditorHost class="curriculum-material-note-editor-host"></div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (notePendingDelete(); as note) {
+  <div class="curriculum-material-confirm-backdrop" role="presentation" (click)="closeDeleteNoteModal()">
+    <div class="curriculum-material-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="material-note-delete-title" (click)="$event.stopPropagation()">
+      <div class="curriculum-material-confirm-icon">
+        <mat-icon>delete</mat-icon>
+      </div>
+      <div>
+        <h3 id="material-note-delete-title">{{ deleteNoteTitle() }}</h3>
+        <p>{{ deleteNoteMessage(note) }}</p>
+        @if (deleteNoteError()) {
+          <div class="curriculum-material-error">{{ deleteNoteError() }}</div>
+        }
+      </div>
+      <div class="curriculum-material-confirm-actions">
+        <button type="button" class="curriculum-material-confirm-cancel" [disabled]="deletingNoteId() === note.id" (click)="closeDeleteNoteModal()">{{ cancelLabel() }}</button>
+        <button type="button" class="curriculum-material-confirm-delete" [disabled]="deletingNoteId() === note.id" (click)="deleteNote()">
+          {{ deletingNoteId() === note.id ? 'Deleting...' : deleteLabel() }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -14,7 +14,12 @@
           <p class="text-slate-500 dark:text-slate-500 text-sm">Mark attendance for today's session: {{ today | date:'fullDate' }}</p>
         </div>
         <div class="flex gap-2">
-          <button (click)="saveAttendance()" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2">
+          <button
+            type="button"
+            (click)="saveAttendance()"
+            [disabled]="!attendanceAvailable()"
+            class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
+          >
             <mat-icon class="text-sm">save</mat-icon>
             Save Attendance
           </button>
@@ -37,81 +42,213 @@
         </div>
       </div>
 
-      <!-- Students List -->
+      <!-- Students Table -->
       <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-          <h3 class="font-bold text-slate-900 dark:text-white">Student List</h3>
-          <div class="flex gap-2">
-            <button (click)="markAll(true)" class="text-xs font-bold text-emerald-600 hover:underline uppercase">Mark All Present</button>
-            <span class="text-slate-300">|</span>
-            <button (click)="markAll(false)" class="text-xs font-bold text-rose-600 hover:underline uppercase">Mark All Absent</button>
+        <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col gap-4">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div>
+              <h3 class="font-bold text-slate-900 dark:text-white">Student List</h3>
+              <p class="mt-1 text-xs text-slate-500 dark:text-slate-500">{{ filteredStudents().length }} of {{ students().length }} students shown</p>
+            </div>
+            <div class="flex gap-2">
+              <button type="button" (click)="markAll(true)" [disabled]="!attendanceAvailable()" class="text-xs font-bold text-emerald-600 hover:underline uppercase disabled:cursor-not-allowed disabled:opacity-40">Mark All Present</button>
+              <span class="text-slate-300">|</span>
+              <button type="button" (click)="markAll(false)" [disabled]="!attendanceAvailable()" class="text-xs font-bold text-rose-600 hover:underline uppercase disabled:cursor-not-allowed disabled:opacity-40">Mark All Absent</button>
+            </div>
           </div>
+          @if (attendanceBlockedMessage()) {
+            <div class="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700 dark:bg-amber-900/20 dark:text-amber-200">
+              <mat-icon class="text-base">lock_clock</mat-icon>
+              {{ attendanceBlockedMessage() }}
+            </div>
+          }
+
+          <div class="grid grid-cols-1 xl:grid-cols-[minmax(14rem,1fr)_minmax(10rem,14rem)_minmax(16rem,22rem)] gap-3">
+            <label class="flex min-h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-slate-500 dark:border-slate-700 dark:bg-slate-950">
+              <mat-icon class="text-base">search</mat-icon>
+              <input
+                type="search"
+                class="w-full bg-transparent text-sm font-semibold text-slate-900 outline-none placeholder:text-slate-400 dark:text-white"
+                placeholder="Search by student, ID, barcode..."
+                [value]="studentSearchTerm()"
+                (input)="setStudentSearchTerm($any($event.target).value)"
+              />
+            </label>
+            <label class="flex min-h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-slate-500 dark:border-slate-700 dark:bg-slate-950">
+              <mat-icon class="text-base">filter_list</mat-icon>
+              <select
+                class="w-full bg-transparent text-sm font-semibold text-slate-900 outline-none dark:text-white"
+                [value]="studentFilter()"
+                (change)="setStudentFilter($any($event.target).value)"
+              >
+                <option value="all">All students</option>
+                <option value="present">Present</option>
+                <option value="absent">Absent</option>
+              </select>
+            </label>
+            <form class="flex min-h-10 overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950" (submit)="$event.preventDefault(); markBarcodePresent()">
+              <label class="flex min-w-0 flex-1 items-center gap-2 px-3 text-slate-500">
+                <mat-icon class="text-base">barcode_scanner</mat-icon>
+                <input
+                  type="text"
+                  [disabled]="!attendanceAvailable()"
+                  class="w-full bg-transparent text-sm font-semibold text-slate-900 outline-none placeholder:text-slate-400 dark:text-white"
+                  placeholder="Student barcode quick present"
+                  [value]="barcodeInput()"
+                  (input)="setBarcodeInput($any($event.target).value)"
+                />
+              </label>
+              <button type="submit" [disabled]="!attendanceAvailable()" class="flex items-center gap-1 bg-emerald-600 px-4 text-xs font-bold uppercase text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50">
+                <mat-icon class="text-sm">check</mat-icon>
+                Present
+              </button>
+            </form>
+          </div>
+          @if (barcodeMessage()) {
+            <div
+              class="rounded-lg px-3 py-2 text-xs font-bold"
+              [class.bg-emerald-50]="barcodeMessageState() === 'success'"
+              [class.text-emerald-700]="barcodeMessageState() === 'success'"
+              [class.bg-rose-50]="barcodeMessageState() === 'error'"
+              [class.text-rose-700]="barcodeMessageState() === 'error'"
+              role="status"
+            >
+              {{ barcodeMessage() }}
+            </div>
+          }
         </div>
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th class="px-6 py-3 font-medium">Student</th>
-                <th class="px-6 py-3 font-medium">Overall Attendance</th>
-                <th class="px-6 py-3 font-medium text-center">Status</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
-              @for (student of students(); track student.id) {
-                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                  <td class="px-6 py-4">
-                    <div class="flex items-center gap-3">
-                      <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-500 font-bold text-xs">
-                        {{ student.name.charAt(0) }}
+          @if (isLoading()) {
+            <div class="flex min-h-40 items-center justify-center gap-2 text-sm font-semibold text-slate-500">
+              <mat-icon class="animate-spin text-base">sync</mat-icon>
+              Loading group students...
+            </div>
+          } @else if (error()) {
+            <div class="flex min-h-40 items-center justify-center gap-2 px-6 text-center text-sm font-semibold text-rose-600">
+              <mat-icon class="text-base">error</mat-icon>
+              {{ error() }}
+            </div>
+          } @else if (filteredStudents().length) {
+            <table class="w-full min-w-[58rem] text-left text-sm">
+              <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th class="px-6 py-3 font-medium">Student</th>
+                  <th class="px-6 py-3 font-medium">Barcode</th>
+                  <th class="px-6 py-3 font-medium">Overall Attendance</th>
+                  <th class="px-6 py-3 font-medium">Status</th>
+                  <th class="px-6 py-3 font-medium text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                @for (student of pagedStudents(); track student.id) {
+                  <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td class="px-6 py-4">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-500 font-bold text-xs">
+                          {{ student.name.charAt(0) }}
+                        </div>
+                        <div>
+                          <p class="font-medium text-slate-900 dark:text-white">{{ student.name }}</p>
+                          <p class="text-[10px] text-slate-500">ID: {{ student.id }}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p class="font-medium text-slate-900 dark:text-white">{{ student.name }}</p>
-                        <p class="text-[10px] text-slate-500">ID: {{ student.id }}</p>
+                    </td>
+                    <td class="px-6 py-4">
+                      <div class="flex flex-col gap-1">
+                        <code class="text-xs font-bold text-slate-700 dark:text-slate-200">{{ student.barcode || 'No barcode' }}</code>
+                        @if (student.rfid) {
+                          <span class="text-[10px] font-semibold text-slate-500">RFID: {{ student.rfid }}</span>
+                        }
                       </div>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
+                    </td>
+                    <td class="px-6 py-4">
                       <div class="flex items-center gap-3">
                         <div class="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden max-w-[100px]">
-                        <div class="ds-progress-fill" [style.--ds-progress]="student.attendanceRate + '%'"></div>
+                          <div class="ds-progress-fill" [style.--ds-progress]="student.attendanceRate + '%'"></div>
+                        </div>
+                        <span class="text-xs font-medium text-slate-500 dark:text-slate-500">{{ student.attendedSessions }}/{{ student.totalSessions }} ({{ student.attendanceRate }}%)</span>
                       </div>
-                      <span class="text-xs font-medium text-slate-500 dark:text-slate-500">{{ student.attendedSessions }}/{{ student.totalSessions }} ({{ student.attendanceRate }}%)</span>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <div class="flex items-center justify-center gap-4">
-                      <label class="flex items-center gap-2 cursor-pointer group">
-                        <input type="radio" [name]="'status-' + student.id" [checked]="student.isPresent" (change)="toggleAttendance(student.id, true)" class="hidden">
-                        <div class="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all"
-                          [class.bg-emerald-100]="student.isPresent"
-                          [class.border-emerald-500]="student.isPresent"
-                          [class.text-emerald-600]="student.isPresent"
-                          [class.border-slate-200]="!student.isPresent"
-                          [class.text-slate-300]="!student.isPresent"
-                        >
-                          <mat-icon>check</mat-icon>
-                        </div>
-                        <span class="text-[10px] font-bold uppercase" [class.text-emerald-600]="student.isPresent" [class.text-slate-500]="!student.isPresent">Present</span>
-                      </label>
-                      <label class="flex items-center gap-2 cursor-pointer group">
-                        <input type="radio" [name]="'status-' + student.id" [checked]="!student.isPresent" (change)="toggleAttendance(student.id, false)" class="hidden">
-                        <div class="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all"
-                          [class.bg-rose-100]="!student.isPresent"
-                          [class.border-rose-500]="!student.isPresent"
-                          [class.text-rose-600]="!student.isPresent"
-                          [class.border-slate-200]="student.isPresent"
-                          [class.text-slate-300]="student.isPresent"
-                        >
-                          <mat-icon>close</mat-icon>
-                        </div>
-                        <span class="text-[10px] font-bold uppercase" [class.text-rose-600]="!student.isPresent" [class.text-slate-500]="student.isPresent">Absent</span>
-                      </label>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+                    </td>
+                    <td class="px-6 py-4">
+                      <span
+                        class="inline-flex min-h-7 items-center rounded-full px-3 text-xs font-bold"
+                        [class.bg-emerald-50]="student.isPresent"
+                        [class.text-emerald-700]="student.isPresent"
+                        [class.bg-rose-50]="!student.isPresent"
+                        [class.text-rose-700]="!student.isPresent"
+                      >
+                        {{ statusLabel(student) }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4">
+                      <div class="flex items-center justify-center gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer group">
+                          <input type="radio" [name]="'status-' + student.id" [checked]="student.isPresent" [disabled]="!attendanceAvailable()" (change)="toggleAttendance(student.id, true)" class="hidden">
+                          <div class="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all"
+                            [class.bg-emerald-100]="student.isPresent"
+                            [class.border-emerald-500]="student.isPresent"
+                            [class.text-emerald-600]="student.isPresent"
+                            [class.border-slate-200]="!student.isPresent"
+                            [class.text-slate-300]="!student.isPresent"
+                          >
+                            <mat-icon>check</mat-icon>
+                          </div>
+                          <span class="text-[10px] font-bold uppercase" [class.text-emerald-600]="student.isPresent" [class.text-slate-500]="!student.isPresent">Present</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer group">
+                          <input type="radio" [name]="'status-' + student.id" [checked]="!student.isPresent" [disabled]="!attendanceAvailable()" (change)="toggleAttendance(student.id, false)" class="hidden">
+                          <div class="w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all"
+                            [class.bg-rose-100]="!student.isPresent"
+                            [class.border-rose-500]="!student.isPresent"
+                            [class.text-rose-600]="!student.isPresent"
+                            [class.border-slate-200]="student.isPresent"
+                            [class.text-slate-300]="student.isPresent"
+                          >
+                            <mat-icon>close</mat-icon>
+                          </div>
+                          <span class="text-[10px] font-bold uppercase" [class.text-rose-600]="!student.isPresent" [class.text-slate-500]="student.isPresent">Absent</span>
+                        </label>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            <div class="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 text-xs font-bold text-slate-500 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
+              <span>Showing {{ studentPageStart() }}-{{ studentPageEnd() }} of {{ filteredStudents().length }} students</span>
+              <div class="flex flex-wrap items-center gap-2">
+                <label class="flex items-center gap-2">
+                  Rows
+                  <select
+                    class="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-bold text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
+                    [value]="studentPageSize()"
+                    (change)="setStudentPageSize($any($event.target).value)"
+                  >
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                  </select>
+                </label>
+                <button type="button" aria-label="Previous students page" [disabled]="studentVisiblePageIndex() === 0" (click)="previousStudentPage()" class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
+                  <mat-icon class="text-base">chevron_left</mat-icon>
+                </button>
+                <strong class="text-slate-700 dark:text-slate-200">Page {{ studentVisiblePageIndex() + 1 }} of {{ studentTotalPages() }}</strong>
+                <button type="button" aria-label="Next students page" [disabled]="studentVisiblePageIndex() >= studentTotalPages() - 1" (click)="nextStudentPage()" class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
+                  <mat-icon class="text-base">chevron_right</mat-icon>
+                </button>
+              </div>
+            </div>
+          } @else if (students().length) {
+            <div class="flex min-h-40 items-center justify-center gap-2 text-sm font-semibold text-slate-500">
+              <mat-icon class="text-base">search_off</mat-icon>
+              No students match the current search or filter.
+            </div>
+          } @else {
+            <div class="flex min-h-40 items-center justify-center gap-2 text-sm font-semibold text-slate-500">
+              <mat-icon class="text-base">group_off</mat-icon>
+              No students enrolled in this group.
+            </div>
+          }
         </div>
       </div>
     </div>

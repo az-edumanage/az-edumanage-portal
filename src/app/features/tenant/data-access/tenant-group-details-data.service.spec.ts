@@ -32,6 +32,22 @@ describe('TenantGroupDetailsDataService', () => {
       expect(group.attendanceAvailable).toBe(false);
       expect(group.monthlyRevenue).toBe(1500);
       expect(group.currency).toBe('EGP');
+      expect(group.startAt).toBe('10:00');
+      expect(group.duration).toBe(90);
+      expect(group.scheduleDays).toEqual(['Monday', 'Wednesday']);
+      expect(group.daySchedules).toEqual({
+        Monday: { startTime: '10:00', endTime: '11:30', room: 'Lab 101', roomId: 'room-1' },
+      });
+      expect(group.calendarEvents).toEqual([
+        {
+          id: 'group-123:2026-06-08:10:00',
+          date: '2026-06-08',
+          day: 'Monday',
+          startTime: '10:00',
+          endTime: '11:30',
+          room: 'Lab 101',
+        },
+      ]);
     });
 
     const request = httpTesting.expectOne(`${environment.apiBaseUrl}/tenant/groups/group-123`);
@@ -52,6 +68,22 @@ describe('TenantGroupDetailsDataService', () => {
       attendanceAvailable: false,
       monthlyRevenue: 1500,
       currency: 'EGP',
+      startAt: '10:00',
+      duration: 90,
+      scheduleDays: ['Monday', 'Wednesday'],
+      daySchedules: {
+        Monday: { startTime: '10:00', endTime: '11:30', room: 'Lab 101', roomId: 'room-1' },
+      },
+      calendarEvents: [
+        {
+          id: 'group-123:2026-06-08:10:00',
+          date: '2026-06-08',
+          day: 'Monday',
+          startTime: '10:00',
+          endTime: '11:30',
+          room: 'Lab 101',
+        },
+      ],
       students: [],
     });
 
@@ -68,6 +100,9 @@ describe('TenantGroupDetailsDataService', () => {
           barcodeNumber: null,
           attendanceRate: 0,
           lastAttendance: '',
+          attendanceTime: null,
+          attendanceState: null,
+          attendanceSource: null,
         },
         {
           id: 'student-2',
@@ -76,6 +111,9 @@ describe('TenantGroupDetailsDataService', () => {
           barcodeNumber: null,
           attendanceRate: 87,
           lastAttendance: '2026-05-31',
+          attendanceTime: '2026-05-31T10:05:00+03:00',
+          attendanceState: 'Present',
+          attendanceSource: 'Auto',
         },
       ]);
     });
@@ -114,6 +152,9 @@ describe('TenantGroupDetailsDataService', () => {
           barcodeNumber: null,
           attendanceRate: 87,
           lastAttendance: '2026-05-31',
+          attendanceTime: '2026-05-31T10:05:00+03:00',
+          attendanceState: 'Present',
+          attendanceSource: 'Auto',
         },
       ],
     });
@@ -253,6 +294,121 @@ describe('TenantGroupDetailsDataService', () => {
     const request = httpTesting.expectOne(`${environment.apiBaseUrl}/tenant/groups/group-123/enrollments/student-1`);
     expect(request.request.method).toBe('DELETE');
     request.flush(null);
+
+    actual.unsubscribe();
+  });
+
+  it('loads persisted group lessons without requesting curriculum sync by default', () => {
+    const actual = service.loadGroupLessons('group-123', { sync: false }).subscribe((lessons) => {
+      expect(lessons).toEqual([
+        {
+          id: 'group-lesson-1',
+          curriculumNodeId: 'lesson-1',
+          title: 'Lesson one',
+          path: 'Physics / Unit one',
+          description: null,
+          completed: true,
+        },
+      ]);
+    });
+
+    const request = httpTesting.expectOne((req) =>
+      req.url === `${environment.apiBaseUrl}/tenant/groups/group-123/lessons` && !req.params.has('sync'),
+    );
+    expect(request.request.method).toBe('GET');
+    request.flush([
+      {
+        id: 'group-lesson-1',
+        curriculumNodeId: 'lesson-1',
+        title: 'Lesson one',
+        path: 'Physics / Unit one',
+        description: null,
+        completed: true,
+      },
+    ]);
+
+    actual.unsubscribe();
+  });
+
+  it('can explicitly request backend lesson sync when needed', () => {
+    const actual = service.loadGroupLessons('group-123', { sync: true }).subscribe((lessons) => {
+      expect(lessons).toEqual([]);
+    });
+
+    const request = httpTesting.expectOne((req) =>
+      req.url === `${environment.apiBaseUrl}/tenant/groups/group-123/lessons` && req.params.get('sync') === 'true',
+    );
+    expect(request.request.method).toBe('GET');
+    request.flush([]);
+
+    actual.unsubscribe();
+  });
+
+  it('can scope group lessons to a session', () => {
+    const sessionId = 'group-123:2026-06-13:10:00';
+    const actual = service.loadGroupLessons('group-123', { sessionId }).subscribe((lessons) => {
+      expect(lessons).toEqual([]);
+    });
+
+    const request = httpTesting.expectOne((req) =>
+      req.url === `${environment.apiBaseUrl}/tenant/groups/group-123/lessons`
+      && req.params.get('sessionId') === sessionId
+      && !req.params.has('sync'),
+    );
+    expect(request.request.method).toBe('GET');
+    request.flush([]);
+
+    actual.unsubscribe();
+  });
+
+  it('sends the session id when adding a session lesson', () => {
+    const sessionId = 'group-123:2026-06-13:10:00';
+    const actual = service.addGroupLesson('group-123', 'lesson-1', { sessionId }).subscribe((lesson) => {
+      expect(lesson.id).toBe('group-lesson-1');
+    });
+
+    const request = httpTesting.expectOne(`${environment.apiBaseUrl}/tenant/groups/group-123/lessons`);
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ curriculumNodeId: 'lesson-1', sessionId });
+    request.flush({
+      id: 'group-lesson-1',
+      curriculumNodeId: 'lesson-1',
+      title: 'Lesson one',
+      path: 'Physics / Unit one',
+      description: null,
+    });
+
+    actual.unsubscribe();
+  });
+
+  it('removes a group lesson by id', () => {
+    const actual = service.deleteGroupLesson('group-123', 'group-lesson-1').subscribe((result) => {
+      expect(result).toBeNull();
+    });
+
+    const request = httpTesting.expectOne(`${environment.apiBaseUrl}/tenant/groups/group-123/lessons/group-lesson-1`);
+    expect(request.request.method).toBe('DELETE');
+    request.flush(null);
+
+    actual.unsubscribe();
+  });
+
+  it('updates lesson completion by id', () => {
+    const actual = service.updateGroupLessonCompletion('group-123', 'group-lesson-1', true).subscribe((lesson) => {
+      expect(lesson.completed).toBe(true);
+    });
+
+    const request = httpTesting.expectOne(`${environment.apiBaseUrl}/tenant/groups/group-123/lessons/group-lesson-1/completion`);
+    expect(request.request.method).toBe('PATCH');
+    expect(request.request.body).toEqual({ completed: true });
+    request.flush({
+      id: 'group-lesson-1',
+      curriculumNodeId: 'lesson-1',
+      title: 'Lesson one',
+      path: 'Physics / Unit one',
+      description: null,
+      completed: true,
+    });
 
     actual.unsubscribe();
   });

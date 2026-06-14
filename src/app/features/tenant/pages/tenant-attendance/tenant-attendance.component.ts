@@ -239,7 +239,7 @@ export class TenantAttendanceComponent implements OnInit, OnDestroy {
     const attendanceState = isPresent ? 'Present' : 'Absent';
     this.groupAttendanceDataService.saveManualAttendance({ groupId, studentId, attendanceState }).subscribe({
       next: (response) => {
-        this.applyManualAttendanceResponse(response.groupId, response.studentId, response.attendanceState);
+        this.applyManualAttendanceResponse(response.groupId, response.studentId, response.attendanceState, response.scanTime);
         this.reloadStudentsForGroup(response.groupId);
         this.barcodeScanNotification = { message: response.message, state: 'success' };
         this.changeDetectorRef.markForCheck();
@@ -308,7 +308,7 @@ export class TenantAttendanceComponent implements OnInit, OnDestroy {
     return value?.trim() || 'Unavailable';
   }
 
-  private applyManualAttendanceResponse(groupId: string, studentId: string, attendanceState: 'Present' | 'Absent'): void {
+  private applyManualAttendanceResponse(groupId: string, studentId: string, attendanceState: 'Present' | 'Absent', attendanceTime: string): void {
     const isPresent = attendanceState === 'Present';
     const students = this.getStudentsForGroup(groupId);
 
@@ -320,6 +320,7 @@ export class TenantAttendanceComponent implements OnInit, OnDestroy {
               ...student,
               isPresent,
               attendanceState,
+              attendanceTime,
               manualStatus: 'Manual',
               overrideChecks: 'Manual override saved',
             }
@@ -372,6 +373,7 @@ export class TenantAttendanceComponent implements OnInit, OnDestroy {
       barcode: response.student.barcodeNumber,
       isPresent: true,
       attendanceState: 'Present',
+      attendanceTime: response.attendance.scanTime,
       manualStatus: response.attendance.source,
       overrideChecks: 'Auto barcode scan saved',
       attendanceRate: 0,
@@ -387,6 +389,7 @@ export class TenantAttendanceComponent implements OnInit, OnDestroy {
             barcode: response.student?.barcodeNumber ?? student.barcode,
             isPresent: true,
             attendanceState: 'Present' as const,
+            attendanceTime: response.attendance?.scanTime ?? student.attendanceTime,
             manualStatus: 'Auto' as const,
             overrideChecks: 'Auto barcode scan saved',
           }
@@ -453,6 +456,30 @@ export class TenantAttendanceComponent implements OnInit, OnDestroy {
     }
 
     return Math.round((presentCount / studentCount) * 100);
+  }
+
+  formatAttendanceTime(value: string | null | undefined): string {
+    const normalized = value?.trim();
+    if (!normalized) {
+      return 'Not recorded';
+    }
+
+    const date = new Date(normalized);
+    if (!Number.isNaN(date.getTime())) {
+      return new Intl.DateTimeFormat('en-US', {
+        timeZone: this.egyptTimeZone,
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      }).format(date);
+    }
+
+    const timeMatch = normalized.match(/(\d{1,2}:\d{2})(?::\d{2})?(?:\s*(AM|PM))?/i);
+    if (timeMatch) {
+      return `${timeMatch[1]}${timeMatch[2] ? ` ${timeMatch[2].toUpperCase()}` : ''}`;
+    }
+
+    return normalized;
   }
 
   refreshAttendanceClock(): void {
@@ -657,6 +684,7 @@ export class TenantAttendanceComponent implements OnInit, OnDestroy {
         ...student,
         isPresent: true,
         attendanceState: 'Present',
+        attendanceTime: matchingConfirmedStudent.attendanceTime,
         manualStatus: matchingConfirmedStudent.manualStatus,
         overrideChecks: matchingConfirmedStudent.overrideChecks,
       };

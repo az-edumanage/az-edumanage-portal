@@ -42,6 +42,8 @@ describe('Route Deep Link Matrix', () => {
     expect(paths).toContain('overview');
     expect(paths).toContain('groups/create');
     expect(paths).toContain('groups/:id/edit');
+    expect(paths).toContain('subjects/:id/curriculum');
+    expect(paths).toContain('university-subjects/:id/curriculum');
   });
 
   it('should include major teacher deep links', () => {

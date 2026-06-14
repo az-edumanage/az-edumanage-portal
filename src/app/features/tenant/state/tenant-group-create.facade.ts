@@ -32,6 +32,7 @@ export class TenantGroupCreateFacade {
 
   private isSuccess = false;
   private taskId = 'create-group-task';
+  private readonly pendingCreatedSubjectTaskId = 'create-group-pending-subject';
   private scheduleValidationSubscription: Subscription | null = null;
 
   readonly days = [
@@ -105,6 +106,8 @@ export class TenantGroupCreateFacade {
     duration: [90, Validators.required],
     daySchedules: this.fb.group({}),
     fees: [500, Validators.required],
+    paymentMethod: ['', Validators.required],
+    paymentMethodId: ['', Validators.required],
     autoInvoice: [true],
     allowSelfEnroll: [false],
     hasSpecificDuration: [false],
@@ -188,7 +191,7 @@ export class TenantGroupCreateFacade {
     );
   });
 
-  initialize(groupId: string | null): void {
+  initialize(groupId: string | null, freshCreate = false): void {
     this.ensureScheduleValidationSubscription();
     const selectedGroupId = groupId?.trim() || null;
     this.loadCreateOptions(selectedGroupId);
@@ -200,7 +203,12 @@ export class TenantGroupCreateFacade {
 
       this.store.setGroupId(null);
       this.taskId = 'create-group-task';
-    this.restoreSavedTask();
+    if (freshCreate) {
+      this.taskService.removeTask(this.taskId);
+      this.resetCreateForm();
+    } else {
+      this.restoreSavedTask();
+    }
     this.loadTeacherAvailabilityForSelection();
   }
 
@@ -227,7 +235,6 @@ export class TenantGroupCreateFacade {
 
   onEducationCategoryChange(category: TenantGroupEducationCategory): void {
     this.store.setEducationCategory(category);
-    const currentTeacher = this.groupForm.get('teacher')?.value ?? '';
     this.groupForm.patchValue({
       educationCategory: category,
       stage: '',
@@ -249,10 +256,34 @@ export class TenantGroupCreateFacade {
     }
     ['stage', 'grade', 'university', 'college'].forEach((control) => this.groupForm.get(control)?.updateValueAndValidity());
     this.store.resetAcademicOptions();
-    this.store.setTeachers(this.store.allTeachers());
-    if (currentTeacher) {
-      this.loadTeacherClassification();
+    this.groupForm.patchValue({ teacher: '' });
+    this.resetTeachersForSelectedEducationCategory();
+    this.loadTeacherAvailabilityForSelection();
+  }
+
+  private resetTeachersForSelectedEducationCategory(): void {
+    this.store.setTeachers(this.teachersForEducationCategory(this.educationCategory()));
+  }
+
+  private teachersForEducationCategory(category: TenantGroupEducationCategory): TenantGroupSelectorOption[] {
+    return this.store.allTeachers().filter((teacher) => this.teacherMatchesEducationCategory(teacher, category));
+  }
+
+  private teacherMatchesEducationCategory(teacher: TenantGroupSelectorOption, category: TenantGroupEducationCategory): boolean {
+    const teacherCategory = this.teacherEducationCategory(teacher);
+    return teacherCategory === category;
+  }
+
+  private teacherEducationCategory(teacher: TenantGroupSelectorOption): TenantGroupEducationCategory | null {
+    if (teacher.educationCategory === 'BASIC_EDUCATION' || teacher.educationCategory === 'UNIVERSITY_EDUCATION') {
+      return teacher.educationCategory;
     }
+
+    if (teacher.subtitle === 'BASIC_EDUCATION' || teacher.subtitle === 'UNIVERSITY_EDUCATION') {
+      return teacher.subtitle;
+    }
+
+    return null;
   }
 
   private hasSelectedTeacher(): boolean {
@@ -281,7 +312,7 @@ export class TenantGroupCreateFacade {
 
   private resetTeachersForIncompleteClassification(): void {
     if (!this.hasSelectedTeacher()) {
-      this.store.setTeachers(this.store.allTeachers());
+      this.resetTeachersForSelectedEducationCategory();
     }
   }
 
@@ -305,20 +336,67 @@ export class TenantGroupCreateFacade {
     this.scheduleValidationSubscription?.unsubscribe();
     this.scheduleValidationSubscription = null;
     const value = this.groupForm.getRawValue();
-    const hasData = value.name !== '' || value.ownedBy !== '';
+    const hasData = this.hasDraftData(value);
 
     if (hasData && !this.isSuccess && !this.isSubmitting()) {
       this.taskService.addTask({
         id: this.taskId,
         type: 'form',
         label: `${this.isEditMode() ? 'Editing' : 'Creating'} Group: ${value.name || 'New Group'}`,
-        route: this.router.url,
+        route: this.taskRoute(),
         data: {
           ...value,
           scheduleDays: this.selectedDays(),
         },
       });
     }
+  }
+
+  private taskRoute(): string {
+    const groupId = this.groupId();
+    return groupId ? '/tenant/groups/' + groupId + '/edit' : '/tenant/groups/create';
+  }
+
+  private hasDraftData(value: Record<string, unknown>): boolean {
+    return Object.entries(value).some(([key, fieldValue]) => {
+      if (key === 'educationCategory') {
+        return fieldValue !== 'BASIC_EDUCATION';
+      }
+
+      if (key === 'capacity') {
+        return fieldValue !== 25;
+      }
+
+      if (key === 'isFixedTime' || key === 'autoInvoice' || key === 'requireApproval' || key === 'isActive') {
+        return fieldValue !== true;
+      }
+
+      if (key === 'startTime') {
+        return fieldValue !== '10:00';
+      }
+
+      if (key === 'duration') {
+        return fieldValue !== 90;
+      }
+
+      if (key === 'fees') {
+        return fieldValue !== 500;
+      }
+
+      if (typeof fieldValue === 'boolean') {
+        return fieldValue;
+      }
+
+      if (Array.isArray(fieldValue)) {
+        return fieldValue.length > 0;
+      }
+
+      if (fieldValue && typeof fieldValue === 'object') {
+        return Object.keys(fieldValue).length > 0;
+      }
+
+      return fieldValue !== '';
+    }) || this.selectedDays().length > 0;
   }
 
   onDayToggle(day: string): void {
@@ -341,6 +419,8 @@ export class TenantGroupCreateFacade {
             this.fb.group({
               startTime: ['', Validators.required],
               endTime: ['', Validators.required],
+              room: ['', Validators.required],
+              roomId: [''],
             }),
           );
         }
@@ -362,20 +442,26 @@ export class TenantGroupCreateFacade {
             this.fb.group({
               startTime: ['', Validators.required],
               endTime: ['', Validators.required],
+              room: ['', Validators.required],
+              roomId: [''],
             }),
           );
         }
       });
       this.groupForm.get('startTime')?.clearValidators();
       this.groupForm.get('duration')?.clearValidators();
+      this.groupForm.get('room')?.clearValidators();
+      this.groupForm.get('room')?.setValue('');
     } else {
       Object.keys(daySchedules.controls).forEach((day) => daySchedules.removeControl(day));
       this.groupForm.get('startTime')?.setValidators(Validators.required);
       this.groupForm.get('duration')?.setValidators(Validators.required);
+      this.groupForm.get('room')?.setValidators(Validators.required);
     }
 
     this.groupForm.get('startTime')?.updateValueAndValidity();
     this.groupForm.get('duration')?.updateValueAndValidity();
+    this.groupForm.get('room')?.updateValueAndValidity();
     this.validateCurrentAvailability();
   }
 
@@ -436,6 +522,21 @@ export class TenantGroupCreateFacade {
     }
   }
 
+  subjectCreateQueryParams(): Record<string, string> {
+    const params: Record<string, string> = { returnUrl: '/tenant/groups/create' };
+    if (this.educationCategory() === 'BASIC_EDUCATION') {
+      const stage = this.selectedOption(this.stages(), this.groupForm.get('stage')?.value ?? '');
+      const grade = this.selectedOption(this.grades(), this.groupForm.get('grade')?.value ?? '');
+      if (stage) {
+        params['stageId'] = stage.id;
+      }
+      if (grade) {
+        params['gradeId'] = grade.id;
+      }
+    }
+    return params;
+  }
+
   selectGrade(value: string): void {
     this.groupForm.patchValue({ grade: value, subject: '' });
     this.store.setGradeDropdownOpen(false);
@@ -453,6 +554,17 @@ export class TenantGroupCreateFacade {
       this.store.closeAllDropdownsExcept('university');
       this.universitySearchQuery.set('');
     }
+  }
+
+  collegeCreateQueryParams(): Record<string, string> {
+    const params: Record<string, string> = { returnUrl: '/tenant/groups/create' };
+    if (this.educationCategory() === 'UNIVERSITY_EDUCATION') {
+      const university = this.selectedOption(this.universities(), this.groupForm.get('university')?.value ?? '');
+      if (university) {
+        params['universityId'] = university.id;
+      }
+    }
+    return params;
   }
 
   selectUniversity(value: string): void {
@@ -539,6 +651,10 @@ export class TenantGroupCreateFacade {
     this.roomSearchQuery.set(value);
   }
 
+  closeAllDropdowns(): void {
+    this.store.closeAllDropdowns();
+  }
+
   onCancel(): void {
     this.isSuccess = true;
     this.taskService.removeTask(this.taskId);
@@ -570,6 +686,9 @@ export class TenantGroupCreateFacade {
       .subscribe({
         next: () => {
           this.isSuccess = true;
+          if (!this.groupId()) {
+            this.resetCreateForm();
+          }
           this.taskService.removeTask(this.taskId);
           this.router.navigate(['/tenant/groups']);
         },
@@ -577,6 +696,44 @@ export class TenantGroupCreateFacade {
           this.store.setErrorMessage(error.message);
         },
       });
+  }
+
+  private resetCreateForm(): void {
+    const daySchedules = this.groupForm.get('daySchedules') as FormGroup;
+    Object.keys(daySchedules.controls).forEach((day) => daySchedules.removeControl(day));
+    this.store.setSelectedDays([]);
+    this.store.setEducationCategory('BASIC_EDUCATION');
+    this.store.closeAllDropdowns();
+    this.groupForm.reset({
+      name: '',
+      educationCategory: 'BASIC_EDUCATION',
+      stage: '',
+      grade: '',
+      university: '',
+      college: '',
+      subject: '',
+      teacher: '',
+      ownedBy: '',
+      room: '',
+      capacity: 25,
+      isFixedTime: true,
+      startTime: '10:00',
+      duration: 90,
+      fees: 500,
+      paymentMethod: '',
+      paymentMethodId: '',
+      autoInvoice: true,
+      allowSelfEnroll: false,
+      hasSpecificDuration: false,
+      startDate: '',
+      endDate: '',
+      requireApproval: true,
+      isActive: true,
+    });
+    this.onEducationCategoryChange('BASIC_EDUCATION');
+    this.onTimeTypeChange(true);
+    this.groupForm.markAsPristine();
+    this.groupForm.markAsUntouched();
   }
 
   private loadCreateOptions(groupId?: string | null): void {
@@ -587,7 +744,11 @@ export class TenantGroupCreateFacade {
       .subscribe({
         next: (options) => {
           this.store.setCreateOptions(options);
+          this.resetTeachersForSelectedEducationCategory();
           this.loadRoomAvailabilityForSelection(groupId);
+          if (!groupId) {
+            this.loadSubjects();
+          }
           if (groupId) {
             this.loadGroupForEdit(groupId);
           }
@@ -623,7 +784,7 @@ export class TenantGroupCreateFacade {
       name: group.name,
       educationCategory: group.educationCategory,
       ownedBy: this.ownerChoiceForEdit(group),
-      room: this.optionNameById(this.rooms(), group.roomId),
+      room: this.optionNameById(this.rooms(), group.roomId ?? null),
       capacity: group.capacity,
       isFixedTime: group.isFixedTime,
       startTime: group.startTime,
@@ -636,6 +797,7 @@ export class TenantGroupCreateFacade {
       endDate: group.endDate ?? '',
       requireApproval: group.requireApproval,
       isActive: group.isActive,
+      paymentMethodId: group.subscriptionPeriodId ?? '',
     });
     this.store.setSelectedDays(group.scheduleDays ?? []);
     this.onTimeTypeChange(group.isFixedTime);
@@ -744,9 +906,40 @@ export class TenantGroupCreateFacade {
         collegeId: college?.id,
       })
       .subscribe({
-        next: (subjects) => this.store.setSubjects(subjects),
+        next: (subjects) => {
+          this.store.setSubjects(subjects);
+          this.applyPendingCreatedSubject(subjects);
+        },
         error: (error: Error) => this.store.setErrorMessage(error.message),
       });
+  }
+
+  private applyPendingCreatedSubject(subjects: TenantGroupSelectorOption[]): void {
+    const task = this.taskService.getTask(this.pendingCreatedSubjectTaskId);
+    if (!task?.data || this.educationCategory() !== 'BASIC_EDUCATION') {
+      return;
+    }
+
+    const data = task.data as Record<string, unknown>;
+    const id = typeof data['id'] === 'string' ? data['id'] : '';
+    const name = typeof data['name'] === 'string' ? data['name'] : '';
+    const stageId = typeof data['stageId'] === 'string' ? data['stageId'] : '';
+    const gradeId = typeof data['gradeId'] === 'string' ? data['gradeId'] : '';
+    const currentStage = this.selectedOption(this.stages(), this.groupForm.get('stage')?.value ?? '');
+    const currentGrade = this.selectedOption(this.grades(), this.groupForm.get('grade')?.value ?? '');
+
+    this.taskService.removeTask(this.pendingCreatedSubjectTaskId);
+    if (!id || !name || currentStage?.id !== stageId || currentGrade?.id !== gradeId) {
+      return;
+    }
+
+    const createdSubject = subjects.find((subject) => subject.id === id || subject.name === name);
+    if (!createdSubject) {
+      return;
+    }
+
+    this.groupForm.patchValue({ subject: createdSubject.name, teacher: '' });
+    this.loadAssignedTeachersIfClassificationComplete();
   }
 
   private loadAssignedTeachers(): void {
@@ -912,6 +1105,22 @@ export class TenantGroupCreateFacade {
   }
 
   private currentRoomScheduleConflicts(): boolean {
+    if (this.groupForm.get('isFixedTime')?.value === false) {
+      const daySchedules = this.groupForm.get('daySchedules') as FormGroup;
+      return this.selectedDays().some((day) => {
+        const group = daySchedules.get(day) as FormGroup | null;
+        const roomName = group?.get('room')?.value ?? '';
+        const selectedRoom = this.selectedOption(this.store.allRooms(), roomName);
+        if (!selectedRoom) {
+          return false;
+        }
+        const ranges = this.roomUnavailableRanges().filter((range) => range.roomId === selectedRoom.id);
+        const start = this.timeToMinute(group?.get('startTime')?.value ?? '');
+        const end = this.timeToMinute(group?.get('endTime')?.value ?? '');
+        return start !== null && end !== null && this.conflictsWithRoomRanges(day, start, end, ranges);
+      });
+    }
+
     const roomName = this.groupForm.get('room')?.value ?? '';
     const selectedRoom = this.selectedOption(this.store.allRooms(), roomName);
     if (!selectedRoom) {
@@ -1102,6 +1311,10 @@ export class TenantGroupCreateFacade {
     const ownerId = this.resolveOwnerId(payload.ownedBy, teacher);
     const room = this.selectedOption(this.store.allRooms(), payload.room);
 
+    const startDate = payload.startDate || null;
+    const endDate = payload.endDate || null;
+    const hasDurationDateRange = startDate !== null || endDate !== null;
+
     return {
       name: payload.name,
       pricePerStudent: payload.fees,
@@ -1114,32 +1327,35 @@ export class TenantGroupCreateFacade {
       collegeId: category === 'UNIVERSITY_EDUCATION' ? college?.id ?? null : null,
       universitySubjectId: category === 'UNIVERSITY_EDUCATION' ? subject?.id ?? null : null,
       assignedTeacherId: teacher?.id ?? '',
-      roomId: room?.id ?? null,
+      ...(payload.isFixedTime ? { roomId: room?.id ?? null } : {}),
       capacity: payload.capacity,
       isFixedTime: payload.isFixedTime,
       startTime: this.normalizeTime(payload.startTime) ?? payload.startTime,
       duration: payload.duration,
       daySchedules: this.normalizeDaySchedules(payload.daySchedules),
       scheduleDays: payload.scheduleDays,
+      subscriptionPeriodId: payload.paymentMethodId || null,
       autoInvoice: payload.autoInvoice,
       allowSelfEnroll: payload.allowSelfEnroll,
-      hasSpecificDuration: payload.hasSpecificDuration,
-      startDate: payload.startDate || null,
-      endDate: payload.endDate || null,
+      hasSpecificDuration: payload.hasSpecificDuration || hasDurationDateRange,
+      startDate,
+      endDate,
       requireApproval: payload.requireApproval,
       isActive: payload.isActive,
     };
   }
 
   private normalizeDaySchedules(
-    schedules: Record<string, { startTime: string; endTime: string }>,
-  ): Record<string, { startTime: string; endTime: string }> {
+    schedules: Record<string, { startTime: string; endTime: string; room?: string; roomId?: string | null }>,
+  ): Record<string, { startTime: string; endTime: string; room?: string; roomId?: string | null }> {
     return Object.fromEntries(
       Object.entries(schedules ?? {}).map(([day, schedule]) => [
         day,
         {
           startTime: this.normalizeTime(schedule.startTime) ?? schedule.startTime,
           endTime: this.normalizeTime(schedule.endTime) ?? schedule.endTime,
+          room: schedule.room ?? '',
+          roomId: schedule.roomId || (this.selectedOption(this.store.allRooms(), schedule.room ?? '')?.id ?? null),
         },
       ]),
     );

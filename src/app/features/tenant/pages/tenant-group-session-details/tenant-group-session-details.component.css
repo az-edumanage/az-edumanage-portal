@@ -1,0 +1,1968 @@
+:host {
+  display: block;
+}
+
+.tenant-group-session-details {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(20rem, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.tenant-group-session-details-header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tenant-group-session-details-title {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.tenant-group-session-details-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.tenant-group-session-details-breadcrumb a {
+  transition: color 160ms ease;
+}
+
+.tenant-group-session-details-breadcrumb a:hover,
+.tenant-group-session-details-breadcrumb a:focus-visible {
+  color: #4f46e5;
+  outline: none;
+}
+
+.tenant-group-session-details-breadcrumb mat-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  font-size: 0.75rem;
+  line-height: 0.75rem;
+}
+
+.tenant-group-session-details-title h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.tenant-group-session-details-title p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.tenant-group-session-details-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.tenant-group-session-details-primary,
+.tenant-group-session-details-secondary {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  padding: 0 1rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.tenant-group-session-details-primary {
+  background: #4f46e5;
+  color: #ffffff;
+}
+
+.tenant-group-session-details-primary:hover,
+.tenant-group-session-details-primary:focus-visible {
+  background: #4338ca;
+  outline: none;
+}
+
+.tenant-group-session-details-secondary {
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #334155;
+}
+
+.tenant-group-session-details-secondary:hover,
+.tenant-group-session-details-secondary:focus-visible {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  color: #4338ca;
+  outline: none;
+}
+
+.tenant-group-session-details-primary mat-icon,
+.tenant-group-session-details-secondary mat-icon,
+.tenant-group-session-details-state mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-session-details-card,
+.tenant-group-session-details-state {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.tenant-group-session-details-state {
+  grid-column: 1 / -1;
+}
+
+.tenant-group-session-details-card {
+  overflow: hidden;
+}
+
+.tenant-group-session-stats {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.tenant-group-session-stat-card {
+  min-height: 6.125rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.tenant-group-session-stat-card p {
+  margin: 0 0 0.25rem;
+  color: #64748b;
+  font-size: 0.625rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tenant-group-session-stat-card > div {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.tenant-group-session-stat-card h4 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.tenant-group-session-stat-card--wide h4 {
+  font-size: 1.25rem;
+}
+
+.tenant-group-session-stat-card span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #10b981;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: end;
+  white-space: nowrap;
+}
+
+.tenant-group-session-stat-card span.tenant-group-session-stat-meta--danger {
+  color: #f43f5e;
+}
+
+.tenant-group-session-stat-status {
+  border-radius: 999px;
+  padding: 0.125rem 0.375rem;
+}
+
+.tenant-group-session-stat-status--coming {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.tenant-group-session-stat-status--running {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.tenant-group-session-stat-status--ended {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.tenant-group-session-stat-card mat-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  font-size: 0.75rem;
+  line-height: 0.75rem;
+}
+
+.tenant-group-session-sidebar {
+  grid-column: 2;
+  grid-row: 3;
+  display: grid;
+  gap: 1.5rem;
+}
+
+.tenant-group-session-quick-actions {
+  display: grid;
+  gap: 1rem;
+  border-radius: 0.75rem;
+  background: #4f46e5;
+  padding: 1.5rem;
+  color: #ffffff;
+}
+
+.tenant-group-session-quick-actions h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.tenant-group-session-quick-actions > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.tenant-group-session-quick-actions a {
+  display: flex;
+  min-height: 4.625rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  background: rgb(255 255 255 / 0.1);
+  padding: 0.75rem;
+  color: #ffffff;
+  text-align: center;
+  transition: background-color 160ms ease;
+}
+
+.tenant-group-session-quick-actions a:hover,
+.tenant-group-session-quick-actions a:focus-visible {
+  background: rgb(255 255 255 / 0.2);
+  outline: none;
+}
+
+.tenant-group-session-quick-actions mat-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 1.5rem;
+  line-height: 1.5rem;
+}
+
+.tenant-group-session-quick-actions span {
+  color: #ffffff;
+  font-size: 0.625rem;
+  font-weight: 900;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.tenant-group-session-overview-card {
+  display: grid;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: #ffffff;
+}
+
+.tenant-group-session-status {
+  display: inline-flex;
+  min-height: 1.5rem;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 900;
+}
+
+.tenant-group-session-status--info {
+  background: oklch(93.9% 0.032 270);
+  color: oklch(42% 0.19 270);
+}
+
+.tenant-group-session-status--success {
+  background: oklch(93.7% 0.055 156);
+  color: oklch(38% 0.12 156);
+}
+
+.tenant-group-session-status--muted {
+  background: oklch(94.8% 0.007 260);
+  color: oklch(44% 0.035 260);
+}
+
+.tenant-group-session-settings-section {
+  display: grid;
+  gap: 1rem;
+}
+
+.tenant-group-session-settings-section + .tenant-group-session-settings-section,
+.tenant-group-session-settings-actions {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 1.5rem;
+}
+
+.tenant-group-session-settings-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.tenant-group-session-settings-section h3 {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tenant-group-session-settings-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.tenant-group-session-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tenant-group-session-settings-row > div {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tenant-group-session-settings-row mat-icon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  color: #64748b;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-session-settings-row span {
+  overflow: hidden;
+  color: #334155;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-session-settings-row strong {
+  flex: 0 0 auto;
+  max-width: 50%;
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 0.8125rem;
+  font-weight: 900;
+  text-align: end;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-session-settings-row--present strong {
+  color: #10b981;
+}
+
+.tenant-group-session-settings-row--absent strong {
+  color: #f43f5e;
+}
+
+.tenant-group-session-settings-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tenant-group-session-settings-actions p {
+  max-width: 64ch;
+  margin: 0;
+  color: #64748b;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.tenant-group-session-attendance-link {
+  display: inline-flex;
+  min-height: 2.375rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  background: #4f46e5;
+  padding: 0 0.875rem;
+  color: #ffffff;
+  font-size: 0.8125rem;
+  font-weight: 900;
+  transition: background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.tenant-group-session-attendance-link mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-session-attendance-link:hover,
+.tenant-group-session-attendance-link:focus-visible {
+  background: #4338ca;
+  box-shadow: 0 8px 20px rgb(79 70 229 / 0.18);
+  outline: none;
+}
+
+.tenant-group-session-tables {
+  grid-column: 1;
+  grid-row: 3;
+  display: grid;
+  gap: 1.5rem;
+}
+
+.tenant-group-session-table-card {
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.tenant-group-session-table-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1rem 1.25rem;
+}
+
+.tenant-group-session-table-head h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.tenant-group-session-table-head p {
+  margin: 0.25rem 0 0;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.tenant-group-session-table-head > span,
+.tenant-group-session-table-head a {
+  display: inline-flex;
+  min-height: 1.875rem;
+  flex: 0 0 auto;
+  align-items: center;
+  border-radius: 999px;
+  background: #eef2ff;
+  padding: 0 0.75rem;
+  color: #4f46e5;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.tenant-group-session-table-head a:hover,
+.tenant-group-session-table-head a:focus-visible {
+  background: #e0e7ff;
+  color: #4338ca;
+  outline: none;
+}
+
+.tenant-group-session-student-tools {
+  display: grid;
+  grid-template-columns: minmax(16rem, 1fr) minmax(18rem, 1fr);
+  gap: 0.875rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1rem 1.25rem;
+}
+
+.tenant-group-session-barcode-label,
+.tenant-group-session-student-filters span {
+  display: block;
+  margin-bottom: 0.375rem;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.tenant-group-session-barcode-row {
+  display: grid;
+  grid-template-columns: 1.125rem minmax(0, 1fr) 2.25rem;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  padding: 0 0.375rem 0 0.75rem;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.tenant-group-session-barcode-row:focus-within {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgb(79 70 229 / 0.12);
+}
+
+.tenant-group-session-barcode-row > mat-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  color: #4f46e5;
+  font-size: 1.125rem;
+  line-height: 1.125rem;
+}
+
+.tenant-group-session-barcode-row input,
+.tenant-group-session-student-filters input,
+.tenant-group-session-student-filters select,
+.tenant-group-session-table-pagination select {
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: #0f172a;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  outline: none;
+}
+
+.tenant-group-session-student-filters input,
+.tenant-group-session-student-filters select,
+.tenant-group-session-table-pagination select {
+  width: 100%;
+  min-height: 2.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  padding: 0 0.75rem;
+}
+
+.tenant-group-session-barcode-row button {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0.5rem;
+  background: #4f46e5;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.tenant-group-session-barcode-row button:hover,
+.tenant-group-session-barcode-row button:focus-visible {
+  background: #4338ca;
+  outline: none;
+}
+
+.tenant-group-session-barcode-row button:disabled,
+.tenant-group-session-barcode-row input:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.tenant-group-session-barcode-row button mat-icon,
+.tenant-group-session-row-action mat-icon,
+.tenant-group-session-table-pagination button mat-icon,
+.tenant-group-session-barcode-notification mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-session-barcode-row--loading button mat-icon {
+  animation: session-spin 900ms linear infinite;
+}
+
+.tenant-group-session-student-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(9rem, 0.55fr);
+  gap: 0.75rem;
+}
+
+.tenant-group-session-barcode-notification {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.75rem 1.25rem;
+  color: #475569;
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+.tenant-group-session-barcode-notification--success {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.tenant-group-session-barcode-notification--error {
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.tenant-group-session-table-shell {
+  overflow-x: auto;
+}
+
+.tenant-group-session-table {
+  width: 100%;
+  min-width: 42rem;
+  border-collapse: collapse;
+}
+
+.tenant-group-session-lessons-table {
+  min-width: 48rem;
+}
+
+.tenant-group-session-expand-column {
+  width: 3.25rem;
+}
+
+.tenant-group-session-table th {
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-align: start;
+  text-transform: uppercase;
+}
+
+.tenant-group-session-table th,
+.tenant-group-session-table td {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.875rem 1rem;
+  vertical-align: middle;
+}
+
+.tenant-group-session-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.tenant-group-session-table td {
+  color: #334155;
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+.tenant-group-session-expansion-row {
+  transition: background-color 160ms ease;
+}
+
+.tenant-group-session-expansion-row:hover,
+.tenant-group-session-expansion-row--open {
+  background: #f8fafc;
+}
+
+.tenant-group-session-row-toggler {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #4f46e5;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.tenant-group-session-row-toggler:hover,
+.tenant-group-session-row-toggler:focus-visible {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  outline: none;
+}
+
+.tenant-group-session-row-toggler mat-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  font-size: 1.125rem;
+  line-height: 1.125rem;
+}
+
+.tenant-group-session-expanded-content-row td {
+  background: #ffffff;
+  padding: 0;
+}
+
+.tenant-group-session-expanded-content {
+  display: grid;
+  gap: 1rem;
+  margin: 0.75rem 1rem 1rem 4.25rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  padding: 1rem;
+}
+
+.tenant-group-session-expanded-content-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tenant-group-session-expanded-content-head span {
+  display: block;
+  color: #64748b;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tenant-group-session-expanded-content-head strong {
+  display: block;
+  margin-top: 0.25rem;
+  color: #0f172a;
+  font-size: 0.9375rem;
+  font-weight: 900;
+}
+
+.tenant-group-session-expanded-content-head small {
+  display: inline-flex;
+  min-height: 1.5rem;
+  align-items: center;
+  border-radius: 999px;
+  background: #eef2ff;
+  padding: 0 0.625rem;
+  color: #4338ca;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.tenant-group-session-material-list {
+  display: grid;
+  gap: 0.625rem;
+}
+
+.tenant-group-session-material-item {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr) minmax(8rem, 0.45fr);
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.625rem;
+  background: #ffffff;
+  padding: 0.75rem;
+  color: inherit;
+  cursor: pointer;
+  text-align: start;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.tenant-group-session-material-item:hover,
+.tenant-group-session-material-item:focus-visible,
+.tenant-group-session-material-item--active {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  outline: none;
+}
+
+.tenant-group-session-material-item--active {
+  box-shadow: inset 0 0 0 1px #c7d2fe;
+}
+
+.tenant-group-session-material-item > mat-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 1.125rem;
+  line-height: 2.25rem;
+  text-align: center;
+}
+
+.tenant-group-session-material-item span {
+  display: grid;
+  min-width: 0;
+  gap: 0.125rem;
+}
+
+.tenant-group-session-material-item strong {
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-session-material-item small {
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.tenant-group-session-material-item small span::before {
+  content: " - ";
+}
+
+.tenant-group-session-material-item em {
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-style: normal;
+  font-weight: 800;
+  text-align: end;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-session-material-state {
+  display: grid;
+  min-height: 5rem;
+  place-items: center;
+  gap: 0.375rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: 0.625rem;
+  background: #ffffff;
+  padding: 1rem;
+  color: #64748b;
+  text-align: center;
+}
+
+.tenant-group-session-material-state mat-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 1.25rem;
+  line-height: 1.25rem;
+}
+
+.tenant-group-session-material-state p {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+.tenant-group-session-material-state--error {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.tenant-group-session-insert-lesson-btn,
+.tenant-group-session-empty-action {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: #6d28d9;
+  padding: 0 0.875rem;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.tenant-group-session-insert-lesson-btn:hover,
+.tenant-group-session-insert-lesson-btn:focus-visible,
+.tenant-group-session-empty-action:hover,
+.tenant-group-session-empty-action:focus-visible {
+  background: #5b21b6;
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.tenant-group-session-insert-lesson-btn mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-session-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 75;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+}
+
+.tenant-group-session-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(15 23 42 / 0.48);
+  cursor: pointer;
+}
+
+.tenant-group-session-modal {
+  position: relative;
+  display: grid;
+  width: min(42rem, 100%);
+  max-height: min(42rem, calc(100vh - 3rem));
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  box-shadow: 0 24px 64px rgb(15 23 42 / 0.28);
+}
+
+.tenant-group-session-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1rem 1.125rem;
+}
+
+.tenant-group-session-modal-head span {
+  color: #64748b;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tenant-group-session-modal-head h3 {
+  margin: 0.1875rem 0 0;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.tenant-group-session-modal-head p {
+  margin: 0.25rem 0 0;
+  color: #64748b;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.tenant-group-session-modal-head button {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+}
+
+.tenant-group-session-modal-head button:hover,
+.tenant-group-session-modal-head button:focus-visible {
+  border-color: #c7d2fe;
+  color: #4f46e5;
+  outline: none;
+}
+
+.tenant-group-session-modal-body {
+  overflow: auto;
+  padding: 1rem;
+}
+
+.tenant-group-session-lesson-picker-tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(10rem, 0.35fr);
+  gap: 0.75rem;
+  margin-bottom: 0.875rem;
+}
+
+.tenant-group-session-lesson-picker-tools label {
+  display: grid;
+  min-width: 0;
+  gap: 0.375rem;
+}
+
+.tenant-group-session-lesson-picker-tools span {
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.tenant-group-session-lesson-picker-tools input,
+.tenant-group-session-lesson-picker-tools select {
+  width: 100%;
+  min-height: 2.5rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 0.625rem;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.tenant-group-session-lesson-picker-tools input {
+  padding: 0 0.875rem;
+}
+
+.tenant-group-session-lesson-picker-tools select {
+  padding: 0 2rem 0 0.875rem;
+}
+
+.tenant-group-session-lesson-picker-tools input::placeholder {
+  color: #94a3b8;
+}
+
+.tenant-group-session-lesson-picker-tools input:focus,
+.tenant-group-session-lesson-picker-tools select:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgb(99 102 241 / 0.14);
+}
+
+.tenant-group-session-lesson-picker-list {
+  display: grid;
+  gap: 0.625rem;
+}
+
+.tenant-group-session-lesson-picker-option {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.625rem;
+  background: #ffffff;
+  padding: 0.75rem;
+  color: inherit;
+  cursor: pointer;
+  text-align: start;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.tenant-group-session-lesson-picker-option:hover,
+.tenant-group-session-lesson-picker-option:focus-visible {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  outline: none;
+}
+
+.tenant-group-session-lesson-picker-option:disabled {
+  cursor: default;
+  opacity: 0.72;
+}
+
+.tenant-group-session-lesson-picker-option--inserted {
+  background: #f8fafc;
+}
+
+.tenant-group-session-lesson-picker-option > mat-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 1.125rem;
+  line-height: 2.25rem;
+  text-align: center;
+}
+
+.tenant-group-session-lesson-picker-option span {
+  display: grid;
+  min-width: 0;
+  gap: 0.125rem;
+}
+
+.tenant-group-session-lesson-picker-option strong {
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-session-lesson-picker-option small,
+.tenant-group-session-lesson-picker-option em {
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-style: normal;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-session-lesson-picker-option b {
+  border-radius: 999px;
+  background: #eef2ff;
+  padding: 0.25rem 0.625rem;
+  color: #4f46e5;
+  font-size: 0.6875rem;
+  font-weight: 900;
+}
+
+.tenant-group-session-preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tenant-group-session-preview-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(15 23 42 / 0.5);
+  cursor: pointer;
+}
+
+.tenant-group-session-preview-drawer {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(72rem, calc(100vw - 3rem));
+  height: 100dvh;
+  border-left: 1px solid #e2e8f0;
+  background: #ffffff;
+  box-shadow: -8px 0 24px rgb(15 23 42 / 0.14);
+}
+
+.tenant-group-session-preview-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1rem 1.25rem;
+}
+
+.tenant-group-session-preview-header span {
+  color: #64748b;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tenant-group-session-preview-header h3 {
+  margin: 0.25rem 0 0;
+  color: #0f172a;
+  font-size: 1.125rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.tenant-group-session-preview-header p {
+  margin: 0.25rem 0 0;
+  color: #64748b;
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+.tenant-group-session-preview-header > div:last-child {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.5rem;
+}
+
+.tenant-group-session-preview-header a,
+.tenant-group-session-preview-header button {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border-radius: 0.5rem;
+  padding: 0 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 900;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.tenant-group-session-preview-header a {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.tenant-group-session-preview-header button {
+  width: 2.25rem;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #475569;
+  padding: 0;
+  cursor: pointer;
+}
+
+.tenant-group-session-preview-header a:hover,
+.tenant-group-session-preview-header a:focus-visible,
+.tenant-group-session-preview-header button:hover,
+.tenant-group-session-preview-header button:focus-visible {
+  background: #4f46e5;
+  color: #ffffff;
+  outline: none;
+}
+
+.tenant-group-session-preview-header mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-session-preview-body {
+  min-height: 0;
+  overflow: auto;
+  background: #f8fafc;
+  padding: 1rem;
+}
+
+.tenant-group-session-drawer-file-preview,
+.tenant-group-session-drawer-file-frame {
+  width: 100%;
+  min-height: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+}
+
+.tenant-group-session-drawer-file-preview {
+  max-height: calc(100dvh - 7rem);
+  object-fit: contain;
+}
+
+video.tenant-group-session-drawer-file-preview {
+  aspect-ratio: 16 / 9;
+  min-height: auto;
+  background: #020617;
+}
+
+.tenant-group-session-drawer-file-frame {
+  height: calc(100dvh - 7rem);
+}
+
+.tenant-group-session-preview-empty {
+  display: grid;
+  min-height: calc(100dvh - 8rem);
+  place-items: center;
+  gap: 0.5rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  padding: 2rem;
+  color: #64748b;
+  text-align: center;
+}
+
+.tenant-group-session-preview-empty mat-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 1.5rem;
+  line-height: 1.5rem;
+}
+
+.tenant-group-session-preview-empty p {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.tenant-group-session-preview-empty--error {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.tenant-group-session-note-preview {
+  display: grid;
+  gap: 1rem;
+  min-height: calc(100dvh - 8rem);
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  padding: 1.5rem;
+  align-content: start;
+}
+
+.tenant-group-session-note-preview p {
+  max-width: 72ch;
+  margin: 0;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+.tenant-group-session-table code {
+  display: inline-flex;
+  max-width: 11rem;
+  overflow: hidden;
+  border-radius: 0.375rem;
+  background: #f1f5f9;
+  padding: 0.25rem 0.5rem;
+  color: #334155;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-session-person-cell,
+.tenant-group-session-lesson-cell {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tenant-group-session-person-cell > span {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.tenant-group-session-person-cell div,
+.tenant-group-session-lesson-cell div {
+  display: grid;
+  min-width: 0;
+  gap: 0.125rem;
+}
+
+.tenant-group-session-person-cell strong,
+.tenant-group-session-lesson-cell strong {
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-session-person-cell small,
+.tenant-group-session-lesson-cell small {
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-session-lesson-cell mat-icon {
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  border-radius: 0.5rem;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 1rem;
+  line-height: 2rem;
+  text-align: center;
+}
+
+.tenant-group-session-table-status {
+  display: inline-flex;
+  min-height: 1.5rem;
+  align-items: center;
+  border-radius: 999px;
+  background: #f1f5f9;
+  padding: 0 0.625rem;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.tenant-group-session-table-status--present {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.tenant-group-session-table-status--absent {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.tenant-group-session-row-action {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border-radius: 0.5rem;
+  background: #eef2ff;
+  padding: 0 0.625rem;
+  color: #4338ca;
+  font-size: 0.75rem;
+  font-weight: 900;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.tenant-group-session-row-action mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-session-row-action:hover,
+.tenant-group-session-row-action:focus-visible {
+  background: #4f46e5;
+  color: #ffffff;
+  outline: none;
+}
+
+.tenant-group-session-row-action--danger {
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.tenant-group-session-row-action--danger:hover,
+.tenant-group-session-row-action--danger:focus-visible {
+  background: #e11d48;
+  color: #ffffff;
+}
+
+.tenant-group-session-row-action:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.tenant-group-session-row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.tenant-group-session-icon-action {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  background: #eef2ff;
+  color: #4338ca;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease, opacity 160ms ease;
+}
+
+.tenant-group-session-icon-action mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-session-icon-action:hover,
+.tenant-group-session-icon-action:focus-visible {
+  border-color: #c7d2fe;
+  background: #4f46e5;
+  color: #ffffff;
+  outline: none;
+}
+
+.tenant-group-session-icon-action--complete.tenant-group-session-icon-action--active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.tenant-group-session-icon-action--complete.tenant-group-session-icon-action--active:hover,
+.tenant-group-session-icon-action--complete.tenant-group-session-icon-action--active:focus-visible {
+  border-color: #86efac;
+  background: #16a34a;
+  color: #ffffff;
+}
+
+.tenant-group-session-icon-action--danger {
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.tenant-group-session-icon-action--danger:hover,
+.tenant-group-session-icon-action--danger:focus-visible {
+  border-color: #fecdd3;
+  background: #e11d48;
+  color: #ffffff;
+}
+
+.tenant-group-session-icon-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.tenant-group-session-table-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  border-top: 1px solid #e2e8f0;
+  padding: 0.75rem 1.25rem;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.tenant-group-session-table-pagination label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.tenant-group-session-table-pagination strong {
+  color: #0f172a;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.tenant-group-session-table-pagination select {
+  width: auto;
+  min-height: 2rem;
+  padding: 0 1.75rem 0 0.625rem;
+}
+
+.tenant-group-session-table-pagination button {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+}
+
+.tenant-group-session-table-pagination button:hover,
+.tenant-group-session-table-pagination button:focus-visible {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  color: #4338ca;
+  outline: none;
+}
+
+.tenant-group-session-table-pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.tenant-group-session-table-more {
+  margin: 0;
+  border-top: 1px solid #e2e8f0;
+  padding: 0.75rem 1.25rem;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.tenant-group-session-table-empty {
+  display: grid;
+  min-height: 10rem;
+  place-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  color: #64748b;
+  text-align: center;
+}
+
+.tenant-group-session-table-empty mat-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 1.25rem;
+  line-height: 1.25rem;
+}
+
+.tenant-group-session-table-empty p {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+.tenant-group-session-table-empty--error {
+  color: #be123c;
+}
+
+.tenant-group-session-details-state {
+  display: grid;
+  min-height: 12rem;
+  place-items: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  color: #64748b;
+  text-align: center;
+}
+
+.tenant-group-session-details-state p {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.tenant-group-session-details-state--error {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #be123c;
+}
+
+@media (max-width: 720px) {
+  .tenant-group-session-details {
+    grid-template-columns: 1fr;
+  }
+
+  .tenant-group-session-details-header {
+    display: grid;
+  }
+
+  .tenant-group-session-details-actions {
+    justify-content: stretch;
+  }
+
+  .tenant-group-session-details-primary,
+  .tenant-group-session-details-secondary {
+    flex: 1 1 12rem;
+  }
+
+  .tenant-group-session-settings-actions {
+    display: grid;
+  }
+
+  .tenant-group-session-attendance-link {
+    width: 100%;
+  }
+
+  .tenant-group-session-stats {
+    grid-column: 1;
+    grid-row: 2;
+    grid-template-columns: 1fr;
+  }
+
+  .tenant-group-session-quick-actions {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .tenant-group-session-sidebar {
+    grid-column: 1;
+    grid-row: 4;
+  }
+
+  .tenant-group-session-overview-card {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .tenant-group-session-tables {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .tenant-group-session-student-tools,
+  .tenant-group-session-student-filters,
+  .tenant-group-session-lesson-picker-tools {
+    grid-template-columns: 1fr;
+  }
+
+  .tenant-group-session-expanded-content {
+    grid-template-columns: 1fr;
+    margin-left: 1rem;
+  }
+
+  .tenant-group-session-material-item {
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+  }
+
+  .tenant-group-session-material-item em {
+    grid-column: 2;
+    text-align: start;
+  }
+
+  .tenant-group-session-table-pagination {
+    justify-content: flex-start;
+  }
+
+  .tenant-group-session-preview-drawer {
+    width: 100vw;
+  }
+
+  .tenant-group-session-preview-header {
+    display: grid;
+  }
+}
+
+@media (min-width: 721px) and (max-width: 1100px) {
+  .tenant-group-session-details {
+    grid-template-columns: 1fr;
+  }
+
+  .tenant-group-session-stats {
+    grid-column: 1;
+    grid-row: 2;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tenant-group-session-quick-actions {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .tenant-group-session-sidebar {
+    grid-column: 1;
+    grid-row: 4;
+  }
+
+  .tenant-group-session-overview-card {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .tenant-group-session-tables {
+    grid-column: 1;
+    grid-row: 3;
+  }
+}
+
+@keyframes session-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+:host-context(.dark) .tenant-group-session-details-title h2,
+:host-context(.dark) .tenant-group-session-stat-card h4,
+:host-context(.dark) .tenant-group-session-settings-row strong,
+:host-context(.dark) .tenant-group-session-table-head h3,
+:host-context(.dark) .tenant-group-session-table-pagination strong,
+:host-context(.dark) .tenant-group-session-expanded-content-head strong,
+:host-context(.dark) .tenant-group-session-material-item strong,
+:host-context(.dark) .tenant-group-session-preview-header h3,
+:host-context(.dark) .tenant-group-session-note-preview p,
+:host-context(.dark) .tenant-group-session-person-cell strong,
+:host-context(.dark) .tenant-group-session-lesson-cell strong {
+  color: #f8fafc;
+}
+
+:host-context(.dark) .tenant-group-session-details-card,
+:host-context(.dark) .tenant-group-session-details-state,
+:host-context(.dark) .tenant-group-session-stat-card,
+:host-context(.dark) .tenant-group-session-table-card {
+  border-color: #1e293b;
+  background: #0f172a;
+}
+
+:host-context(.dark) .tenant-group-session-overview-card {
+  background: #0f172a;
+}
+
+:host-context(.dark) .tenant-group-session-settings-section + .tenant-group-session-settings-section,
+:host-context(.dark) .tenant-group-session-settings-actions,
+:host-context(.dark) .tenant-group-session-table-head,
+:host-context(.dark) .tenant-group-session-table th,
+:host-context(.dark) .tenant-group-session-table td,
+:host-context(.dark) .tenant-group-session-expanded-content,
+:host-context(.dark) .tenant-group-session-material-item,
+:host-context(.dark) .tenant-group-session-material-state,
+:host-context(.dark) .tenant-group-session-preview-drawer,
+:host-context(.dark) .tenant-group-session-drawer-file-preview,
+:host-context(.dark) .tenant-group-session-drawer-file-frame,
+:host-context(.dark) .tenant-group-session-preview-empty,
+:host-context(.dark) .tenant-group-session-note-preview,
+:host-context(.dark) .tenant-group-session-table-more,
+:host-context(.dark) .tenant-group-session-student-tools,
+:host-context(.dark) .tenant-group-session-barcode-notification,
+:host-context(.dark) .tenant-group-session-table-pagination {
+  border-color: #1e293b;
+}
+
+:host-context(.dark) .tenant-group-session-table th {
+  background: #111827;
+}
+
+:host-context(.dark) .tenant-group-session-expanded-content-row td {
+  background: #0f172a;
+}
+
+:host-context(.dark) .tenant-group-session-expanded-content,
+:host-context(.dark) .tenant-group-session-material-item,
+:host-context(.dark) .tenant-group-session-material-state,
+:host-context(.dark) .tenant-group-session-preview-drawer,
+:host-context(.dark) .tenant-group-session-preview-empty,
+:host-context(.dark) .tenant-group-session-note-preview,
+:host-context(.dark) .tenant-group-session-expansion-row:hover,
+:host-context(.dark) .tenant-group-session-expansion-row--open {
+  background: #111827;
+}
+
+:host-context(.dark) .tenant-group-session-preview-body {
+  background: #020617;
+}
+
+:host-context(.dark) .tenant-group-session-details-title p,
+:host-context(.dark) .tenant-group-session-details-breadcrumb,
+:host-context(.dark) .tenant-group-session-stat-card p,
+:host-context(.dark) .tenant-group-session-settings-section h3,
+:host-context(.dark) .tenant-group-session-settings-row mat-icon,
+:host-context(.dark) .tenant-group-session-settings-actions p,
+:host-context(.dark) .tenant-group-session-table-head p,
+:host-context(.dark) .tenant-group-session-expanded-content-head span,
+:host-context(.dark) .tenant-group-session-preview-header span,
+:host-context(.dark) .tenant-group-session-preview-header p,
+:host-context(.dark) .tenant-group-session-material-item small,
+:host-context(.dark) .tenant-group-session-material-item em,
+:host-context(.dark) .tenant-group-session-material-state,
+:host-context(.dark) .tenant-group-session-preview-empty,
+:host-context(.dark) .tenant-group-session-table th,
+:host-context(.dark) .tenant-group-session-person-cell small,
+:host-context(.dark) .tenant-group-session-lesson-cell small,
+:host-context(.dark) .tenant-group-session-table-more,
+:host-context(.dark) .tenant-group-session-table-empty {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .tenant-group-session-settings-row span {
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .tenant-group-session-table td {
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .tenant-group-session-table-status {
+  background: #1e293b;
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .tenant-group-session-barcode-label,
+:host-context(.dark) .tenant-group-session-student-filters span,
+:host-context(.dark) .tenant-group-session-lesson-picker-tools span {
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .tenant-group-session-barcode-row,
+:host-context(.dark) .tenant-group-session-student-filters input,
+:host-context(.dark) .tenant-group-session-student-filters select,
+:host-context(.dark) .tenant-group-session-lesson-picker-tools input,
+:host-context(.dark) .tenant-group-session-lesson-picker-tools select,
+:host-context(.dark) .tenant-group-session-table-pagination select,
+:host-context(.dark) .tenant-group-session-table-pagination button,
+:host-context(.dark) .tenant-group-session-row-toggler,
+:host-context(.dark) .tenant-group-session-table code {
+  border-color: #334155;
+  background: #111827;
+  color: #e2e8f0;
+}
+
+:host-context(.dark) .tenant-group-session-row-toggler {
+  color: #c7d2fe;
+}
+
+:host-context(.dark) .tenant-group-session-row-toggler:hover,
+:host-context(.dark) .tenant-group-session-row-toggler:focus-visible {
+  border-color: #6366f1;
+  background: #1e1b4b;
+}
+
+:host-context(.dark) .tenant-group-session-table-status--present {
+  background: #064e3b;
+  color: #bbf7d0;
+}
+
+:host-context(.dark) .tenant-group-session-table-status--absent {
+  background: #7f1d1d;
+  color: #fecaca;
+}
+
+:host-context(.dark) .tenant-group-session-stat-status--coming {
+  background: #1e1b4b;
+  color: #c7d2fe;
+}
+
+:host-context(.dark) .tenant-group-session-stat-status--running {
+  background: #064e3b;
+  color: #bbf7d0;
+}
+
+:host-context(.dark) .tenant-group-session-stat-status--ended {
+  background: #1e293b;
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .tenant-group-session-settings-row--present strong {
+  color: #bbf7d0;
+}
+
+:host-context(.dark) .tenant-group-session-settings-row--absent strong {
+  color: #fecaca;
+}
+
+:host-context(.dark) .tenant-group-session-details-secondary {
+  border-color: #334155;
+  background: #111827;
+  color: #e2e8f0;
+}
+
+:host-context(.dark) .tenant-group-session-details-secondary:hover,
+:host-context(.dark) .tenant-group-session-details-secondary:focus-visible {
+  border-color: #6366f1;
+  background: #1e1b4b;
+  color: #c7d2fe;
+}

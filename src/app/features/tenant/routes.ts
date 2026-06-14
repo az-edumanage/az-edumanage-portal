@@ -10,6 +10,8 @@ import { TenantTeacherDetailsComponent } from './pages/tenant-teacher-details/te
 import { TenantGroupsComponent } from './pages/tenant-groups/tenant-groups.component';
 import { TenantGroupCreatePageComponent } from './pages/tenant-group-create/tenant-group-create-page.component';
 import { TenantGroupDetailsComponent } from './pages/tenant-group-details/tenant-group-details.component';
+import { TenantGroupLessonDetailsComponent } from './pages/tenant-group-lesson-details/tenant-group-lesson-details.component';
+import { TenantGroupSessionDetailsComponent } from './pages/tenant-group-session-details/tenant-group-session-details.component';
 import { TenantGroupStudentAddComponent } from './pages/tenant-group-student-add/tenant-group-student-add.component';
 import { TenantGroupAttendanceComponent } from './pages/tenant-group-attendance/tenant-group-attendance.component';
 import { TenantGroupExamCreateComponent } from './pages/tenant-group-exam-create/tenant-group-exam-create.component';
@@ -20,11 +22,17 @@ import { TenantRoomCreateComponent } from './pages/tenant-room-create/tenant-roo
 import { TenantRoomDetailsComponent } from './pages/tenant-room-details/tenant-room-details.component';
 import { TenantRoomBookingComponent } from './pages/tenant-room-booking/tenant-room-booking.component';
 import { TenantEducationalStagesComponent } from './pages/tenant-educational-stages/tenant-educational-stages.component';
+import { TenantEducationalStageCreateComponent } from './pages/tenant-educational-stage-create/tenant-educational-stage-create.component';
 import { TenantGradesComponent } from './pages/tenant-grades/tenant-grades.component';
 import { TenantGradeCreateComponent } from './pages/tenant-grade-create/tenant-grade-create.component';
 import { TenantGradeDetailsComponent } from './pages/tenant-grade-details/tenant-grade-details.component';
 import { TenantSubjectsComponent } from './pages/tenant-subjects/tenant-subjects.component';
 import { TenantSubjectCreateComponent } from './pages/tenant-subject-create/tenant-subject-create.component';
+import { TenantSubjectCurriculumComponent } from './pages/tenant-subject-curriculum/tenant-subject-curriculum.component';
+import { TenantSubjectCurriculumDetailsComponent } from './pages/tenant-subject-curriculum-details/tenant-subject-curriculum-details.component';
+import { TenantSubjectCurriculumMaterialFolderComponent } from './pages/tenant-subject-curriculum-material-folder/tenant-subject-curriculum-material-folder.component';
+import { TenantSubjectCurriculumMaterialNoteComponent } from './pages/tenant-subject-curriculum-material-note/tenant-subject-curriculum-material-note.component';
+import { TenantSubjectCurriculumQuestionCreateComponent } from './pages/tenant-subject-curriculum-question-create/tenant-subject-curriculum-question-create.component';
 import { TenantSubjectDetailsComponent } from './pages/tenant-subject-details/tenant-subject-details.component';
 import { TenantUniversitiesComponent } from './pages/tenant-universities/tenant-universities.component';
 import { TenantUniversityCreateComponent } from './pages/tenant-university-create/tenant-university-create.component';
@@ -86,6 +94,8 @@ export const TENANT_ROUTES: Routes = [
       { path: 'teachers/:id', component: TenantTeacherDetailsComponent },
       { path: 'groups', component: TenantGroupsComponent },
       { path: 'groups/create', component: TenantGroupCreatePageComponent },
+      { path: 'groups/:id/sessions/:sessionId', component: TenantGroupSessionDetailsComponent },
+      { path: 'groups/:id/lessons/:lessonId', component: TenantGroupLessonDetailsComponent },
       { path: 'groups/:id', component: TenantGroupDetailsComponent },
       { path: 'groups/:id/edit', component: TenantGroupCreatePageComponent },
       { path: 'groups/:id/enroll', component: TenantGroupStudentAddComponent },
@@ -98,14 +108,24 @@ export const TENANT_ROUTES: Routes = [
       { path: 'rooms/:id/edit', component: TenantRoomCreateComponent },
       { path: 'rooms/:id/book', component: TenantRoomBookingComponent },
       { path: 'educational-stages', component: TenantEducationalStagesComponent },
+      { path: 'educational-stages/create', component: TenantEducationalStageCreateComponent },
       { path: 'grades', component: TenantGradesComponent },
       { path: 'grades/create', component: TenantGradeCreateComponent },
       { path: 'grades/:id/edit', component: TenantGradeCreateComponent },
       { path: 'grades/:id', component: TenantGradeDetailsComponent },
       { path: 'subjects', component: TenantSubjectsComponent },
       { path: 'subjects/create', component: TenantSubjectCreateComponent },
+      { path: 'subjects/:id/edit', component: TenantSubjectCreateComponent },
+      { path: 'subjects/:id/curriculum/:nodeId/editQuestion/:questionId', component: TenantSubjectCurriculumQuestionCreateComponent },
+      { path: 'subjects/:id/curriculum/:nodeId/addQuestion', component: TenantSubjectCurriculumQuestionCreateComponent },
+      { path: 'subjects/:id/curriculum/:nodeId/material/:folderId/addNote', component: TenantSubjectCurriculumMaterialNoteComponent },
+      { path: 'subjects/:id/curriculum/:nodeId/material/:folderId/notes/:noteId', component: TenantSubjectCurriculumMaterialNoteComponent },
+      { path: 'subjects/:id/curriculum/:nodeId/material/:folderId', component: TenantSubjectCurriculumMaterialFolderComponent },
+      { path: 'subjects/:id/curriculum/:nodeId', component: TenantSubjectCurriculumDetailsComponent },
+      { path: 'subjects/:id/curriculum', component: TenantSubjectCurriculumComponent },
       { path: 'subjects/:id', component: TenantSubjectDetailsComponent },
       { path: 'universities', component: TenantUniversitiesComponent },
+      { path: 'universities/create', component: TenantUniversityCreateComponent },
       { path: 'universities/:id/edit', component: TenantUniversityCreateComponent },
       { path: 'universities/:id', component: TenantUniversityDetailsComponent },
       { path: 'colleges', component: TenantCollegesComponent },
@@ -115,6 +135,13 @@ export const TENANT_ROUTES: Routes = [
       { path: 'university-subjects', component: TenantUniversitySubjectsComponent },
       { path: 'university-subjects/create', component: TenantUniversitySubjectCreateComponent },
       { path: 'university-subjects/:id/edit', component: TenantUniversitySubjectCreateComponent },
+      { path: 'university-subjects/:id/curriculum/:nodeId/editQuestion/:questionId', component: TenantSubjectCurriculumQuestionCreateComponent },
+      { path: 'university-subjects/:id/curriculum/:nodeId/addQuestion', component: TenantSubjectCurriculumQuestionCreateComponent },
+      { path: 'university-subjects/:id/curriculum/:nodeId/material/:folderId/addNote', component: TenantSubjectCurriculumMaterialNoteComponent },
+      { path: 'university-subjects/:id/curriculum/:nodeId/material/:folderId/notes/:noteId', component: TenantSubjectCurriculumMaterialNoteComponent },
+      { path: 'university-subjects/:id/curriculum/:nodeId/material/:folderId', component: TenantSubjectCurriculumMaterialFolderComponent },
+      { path: 'university-subjects/:id/curriculum/:nodeId', component: TenantSubjectCurriculumDetailsComponent },
+      { path: 'university-subjects/:id/curriculum', component: TenantSubjectCurriculumComponent },
       { path: 'university-subjects/:id', component: TenantUniversitySubjectDetailsComponent },
       { path: 'users', component: TenantUsersComponent },
       { path: 'users/create', component: TenantUserCreateComponent },

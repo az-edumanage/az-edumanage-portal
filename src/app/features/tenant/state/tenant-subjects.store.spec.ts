@@ -94,10 +94,12 @@ function subject(overrides: Partial<TenantSubject>): TenantSubject {
     gradeId: 'grade-1',
     gradeName: 'Grade',
     assignedGroupsCount: 0,
+    assignedTeachersCount: 0,
     totalStudentsCount: 0,
     createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2026-01-01T00:00:00Z',
     groups: [],
+    teachers: [],
     ...overrides,
   };
 }

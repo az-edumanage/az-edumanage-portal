@@ -1023,7 +1023,7 @@
 
 .selected-group-item table {
   width: 100%;
-  min-width: 48rem;
+  min-width: 56rem;
   border-collapse: collapse;
 }
 
@@ -1047,6 +1047,12 @@
   color: oklch(18% .03 265);
   font-size: .75rem;
   vertical-align: middle;
+}
+
+.attendance-time {
+  color: oklch(32% .04 262);
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 .student-cell {

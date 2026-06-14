@@ -17,6 +17,7 @@ export class TenantGradeCreateFacade {
   private readonly store = inject(TenantGradeCreateStore);
 
   private isSuccess = false;
+  private returnUrl: string | null = null;
 
   readonly isSubmitting = this.store.isSubmitting;
   readonly saveError = this.store.saveError;
@@ -37,8 +38,9 @@ export class TenantGradeCreateFacade {
     description: [''],
   });
 
-  async initialize(gradeId: string | null = null): Promise<void> {
+  async initialize(gradeId: string | null = null, returnUrl: string | null = null): Promise<void> {
     this.isSuccess = false;
+    this.returnUrl = returnUrl === '/tenant/groups/create' ? returnUrl : null;
     this.store.setEditMode(gradeId);
     this.store.loadError.set(null);
     this.store.saveError.set(null);
@@ -133,6 +135,10 @@ export class TenantGradeCreateFacade {
       await this.data.createGrade(payload);
       this.isSuccess = true;
       this.taskService.removeTask(this.store.taskId());
+      if (this.returnUrl) {
+        await this.router.navigateByUrl(this.returnUrl);
+        return;
+      }
       await this.router.navigate(['/tenant/grades']);
     } catch (error) {
       this.store.saveError.set(this.data.toUserMessage(error));

@@ -1,1 +1,16 @@
+:host {
+  display: block;
+}
 
+.subject-details-page {
+  text-align: start;
+}
+
+.subject-details-table {
+  text-align: start;
+}
+
+.subject-details-table th,
+.subject-details-table td {
+  text-align: start;
+}

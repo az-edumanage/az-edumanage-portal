@@ -62,13 +62,15 @@ export interface TenantGroupPayload {
   isFixedTime: boolean;
   startTime: string;
   duration: number;
-  daySchedules: Record<string, { startTime: string; endTime: string }>;
+  daySchedules: Record<string, { startTime: string; endTime: string; room?: string; roomId?: string | null }>;
   fees: number;
   autoInvoice: boolean;
   allowSelfEnroll: boolean;
   hasSpecificDuration: boolean;
   startDate: string;
   endDate: string;
+  paymentMethod: string;
+  paymentMethodId: string;
   requireApproval: boolean;
   isActive: boolean;
   scheduleDays: string[];
@@ -108,12 +110,12 @@ export interface TenantGroupCreateApiPayload {
   collegeId: string | null;
   universitySubjectId: string | null;
   assignedTeacherId: string;
-  roomId: string | null;
+  roomId?: string | null;
   capacity: number;
   isFixedTime: boolean;
   startTime: string;
   duration: number;
-  daySchedules: Record<string, { startTime: string; endTime: string }>;
+  daySchedules: Record<string, { startTime: string; endTime: string; room?: string; roomId?: string | null }>;
   scheduleDays: string[];
   autoInvoice: boolean;
   allowSelfEnroll: boolean;
@@ -122,6 +124,7 @@ export interface TenantGroupCreateApiPayload {
   endDate: string | null;
   requireApproval: boolean;
   isActive: boolean;
+  subscriptionPeriodId?: string | null;
 }
 
 export interface TenantGroupEditApiPayload extends TenantGroupCreateApiPayload {
