@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://localhost:18080/api/v1',
+  apiBaseUrl: 'https://api.az-edumange.com/api/v1',
 };
