@@ -7,9 +7,9 @@
           Subjects
         </button>
         <mat-icon class="text-[10px]">chevron_right</mat-icon>
-        <span>Add New Subject</span>
+        <span>{{ isEditMode() ? 'Edit Subject' : 'Add New Subject' }}</span>
       </div>
-      <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Create Subject</h2>
+      <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ isEditMode() ? 'Edit Subject' : 'Create Subject' }}</h2>
     </div>
 
     <button
@@ -113,7 +113,7 @@
           Saving...
         } @else {
           <mat-icon class="text-sm">save</mat-icon>
-          Save Subject
+          {{ isEditMode() ? 'Update Subject' : 'Save Subject' }}
         }
       </button>
     </div>

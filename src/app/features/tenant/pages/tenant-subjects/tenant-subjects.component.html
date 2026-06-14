@@ -128,6 +128,13 @@
     </div>
   </div>
 
+  @if (deleteError()) {
+    <div class="tenant-grades-delete-error">
+      <mat-icon class="text-sm">error_outline</mat-icon>
+      <span>{{ deleteError() }}</span>
+    </div>
+  }
+
   @if (loading()) {
     <div class="tenant-grades-empty">
       <div class="tenant-grades-empty-icon-wrap">
@@ -157,6 +164,12 @@
                 <a [routerLink]="['/tenant/subjects', subject.id]" class="tenant-grades-icon-btn" title="View Details">
                   <mat-icon class="text-sm">visibility</mat-icon>
                 </a>
+                <a [routerLink]="['/tenant/subjects', subject.id, 'edit']" class="tenant-grades-icon-btn" title="Edit">
+                  <mat-icon class="text-sm">edit</mat-icon>
+                </a>
+                <button type="button" (click)="deleteSubject(subject.id)" [disabled]="deletingId() === subject.id" class="tenant-grades-icon-btn tenant-grades-icon-btn--danger" title="Delete">
+                  <mat-icon class="text-sm">{{ deletingId() === subject.id ? 'sync' : 'delete' }}</mat-icon>
+                </button>
               </div>
             </div>
 
@@ -214,6 +227,12 @@
                       <a [routerLink]="['/tenant/subjects', subject.id]" class="tenant-grades-row-btn tenant-grades-row-btn--view" title="View Details">
                         <mat-icon class="text-sm block">visibility</mat-icon>
                       </a>
+                      <a [routerLink]="['/tenant/subjects', subject.id, 'edit']" class="tenant-grades-row-btn tenant-grades-row-btn--edit" title="Edit">
+                        <mat-icon class="text-sm block">edit</mat-icon>
+                      </a>
+                      <button type="button" (click)="deleteSubject(subject.id)" [disabled]="deletingId() === subject.id" class="tenant-grades-row-btn tenant-grades-row-btn--delete" title="Delete">
+                        <mat-icon class="text-sm block">{{ deletingId() === subject.id ? 'sync' : 'delete' }}</mat-icon>
+                      </button>
                     </div>
                   </td>
                 </tr>

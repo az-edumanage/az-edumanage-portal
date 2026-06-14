@@ -1,16 +1,20 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   input,
   output,
+  signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup } from '@angular/forms';
-import { TeacherUnavailableRange } from '../../models/tenant-group-create.models';
+import { TeacherUnavailableRange, TenantGroupSelectorOption } from '../../models/tenant-group-create.models';
+import { TenantGroupSearchableSelectorComponent } from '../tenant-group-searchable-selector/tenant-group-searchable-selector.component';
 
 @Component({
   selector: 'app-tenant-group-schedule-section',
-  imports: [CommonModule, ReactiveFormsModule],
+  host: { '(document:click)': 'closeDayRoomDropdown()' },
+  imports: [CommonModule, ReactiveFormsModule, TenantGroupSearchableSelectorComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './tenant-group-schedule-section.component.html',
   styleUrl: './tenant-group-schedule-section.component.css',
@@ -20,7 +24,21 @@ export class TenantGroupScheduleSectionComponent {
   readonly days = input<string[]>([]);
   readonly selectedDays = input<string[]>([]);
   readonly unavailableRanges = input<TeacherUnavailableRange[]>([]);
+  readonly rooms = input<TenantGroupSelectorOption[]>([]);
   readonly hasAvailabilityConflict = input(false);
+
+  readonly openDayRoomDropdown = signal<string | null>(null);
+  readonly dayRoomSearchQuery = signal('');
+  readonly filteredDayRooms = computed(() => {
+    const query = this.dayRoomSearchQuery().trim().toLowerCase();
+    if (!query) {
+      return this.rooms();
+    }
+
+    return this.rooms().filter((room) =>
+      room.name.toLowerCase().includes(query) || (room.subtitle ?? '').toLowerCase().includes(query),
+    );
+  });
 
   readonly dayToggled = output<string>();
   readonly timeTypeChanged = output<boolean>();
@@ -34,7 +52,40 @@ export class TenantGroupScheduleSectionComponent {
   }
 
   onTimeTypeChange(isFixed: boolean): void {
+    this.closeDayRoomDropdown();
     this.timeTypeChanged.emit(isFixed);
+  }
+
+  toggleDayRoomDropdown(day: string): void {
+    const nextOpenDay = this.openDayRoomDropdown() === day ? null : day;
+    this.openDayRoomDropdown.set(nextOpenDay);
+    this.dayRoomSearchQuery.set('');
+  }
+
+  setDayRoomSearchQuery(value: string): void {
+    this.dayRoomSearchQuery.set(value);
+  }
+
+  selectDayRoom(day: string, roomName: string): void {
+    const group = this.groupForm().get(['daySchedules', day]) as FormGroup | null;
+    const room = this.rooms().find((option) => option.name === roomName);
+    group?.get('room')?.setValue(roomName);
+    group?.get('roomId')?.setValue(room?.id ?? '');
+    group?.get('room')?.markAsDirty();
+    group?.get('roomId')?.markAsDirty();
+    group?.get('room')?.updateValueAndValidity();
+    group?.get('roomId')?.updateValueAndValidity();
+    this.closeDayRoomDropdown();
+  }
+
+  selectedDayRoom(day: string): string {
+    const group = this.groupForm().get(['daySchedules', day]) as FormGroup | null;
+    return group?.get('room')?.value ?? '';
+  }
+
+  closeDayRoomDropdown(): void {
+    this.openDayRoomDropdown.set(null);
+    this.dayRoomSearchQuery.set('');
   }
 
   fixedTimeConflicts(): boolean {

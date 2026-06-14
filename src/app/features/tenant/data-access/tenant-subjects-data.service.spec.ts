@@ -1,6 +1,7 @@
 import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter, Router } from '@angular/router';
 import { AuthApiService } from '../../../core/auth/auth-api.service';
 import { TenantSubjectsDataService } from './tenant-subjects-data.service';
 
@@ -18,6 +19,7 @@ describe('TenantSubjectsDataService', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
+        provideRouter([]),
         { provide: AuthApiService, useValue: authApiMock },
       ],
     });
@@ -57,15 +59,35 @@ describe('TenantSubjectsDataService', () => {
     await expect(promise).resolves.toEqual(subjectResponse());
   });
 
-  it('loads subject details and normalizes missing groups', async () => {
+  it('loads subject details and normalizes missing groups and teachers', async () => {
     const promise = service.getSubjectDetails('subject-1');
     await Promise.resolve();
 
     const request = httpTesting.expectOne((req) => req.url.endsWith('/tenant/platform-settings/subjects/subject-1'));
     expect(request.request.method).toBe('GET');
-    request.flush({ ...subjectResponse(), groups: null });
+    request.flush({ ...subjectResponse(), groups: null, teachers: null });
 
-    await expect(promise).resolves.toEqual({ ...subjectResponse(), groups: [] });
+    await expect(promise).resolves.toEqual({ ...subjectResponse(), groups: [], teachers: [] });
+  });
+
+  it('uses the university subject API base for curriculum routes under university subjects', async () => {
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'url', 'get').mockReturnValue('/tenant/university-subjects/university-subject-1/curriculum');
+
+    const promise = service.getSubjectCurriculum('university-subject-1');
+    await Promise.resolve();
+
+    const request = httpTesting.expectOne((req) => req.url.endsWith('/tenant/platform-settings/university-subjects/university-subject-1/curriculum'));
+    expect(request.request.method).toBe('GET');
+    request.flush({ id: 'curriculum', label: 'Thermodynamics Curriculum', icon: 'folder', children: [] });
+
+    await expect(promise).resolves.toEqual({
+      id: 'curriculum',
+      label: 'Thermodynamics Curriculum',
+      icon: 'folder',
+      description: null,
+      children: [],
+    });
   });
 
   it('loads stage and grade selector options', async () => {
@@ -101,9 +123,11 @@ function subjectResponse() {
     gradeId: 'grade-1',
     gradeName: 'Grade 10',
     assignedGroupsCount: 0,
+    assignedTeachersCount: 0,
     totalStudentsCount: 0,
     createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2026-01-01T00:00:00Z',
     groups: [],
+    teachers: [],
   };
 }

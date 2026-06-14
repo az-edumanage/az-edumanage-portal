@@ -4,7 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { TenantCountry, TenantCountrySettingsService } from '../../data-access/tenant-country-settings.service';
 import { TenantEquipmentFacility, TenantEquipmentFacilitySettingsService } from '../../data-access/tenant-equipment-facility-settings.service';
+import { TenantQuestionType, TenantQuestionTypeSettingsService } from '../../data-access/tenant-question-type-settings.service';
 import { TenantRoomType, TenantRoomTypeSettingsService } from '../../data-access/tenant-room-type-settings.service';
+import { TenantSubscriptionPeriod, TenantSubscriptionPeriodSettingsService } from '../../data-access/tenant-subscription-period-settings.service';
 
 @Component({
   selector: 'app-tenant-platform-settings',
@@ -16,6 +18,8 @@ export class TenantPlatformSettingsComponent implements OnInit {
   private readonly tenantCountrySettings = inject(TenantCountrySettingsService);
   private readonly tenantRoomTypeSettings = inject(TenantRoomTypeSettingsService);
   private readonly tenantEquipmentFacilitySettings = inject(TenantEquipmentFacilitySettingsService);
+  private readonly tenantSubscriptionPeriodSettings = inject(TenantSubscriptionPeriodSettingsService);
+  private readonly tenantQuestionTypeSettings = inject(TenantQuestionTypeSettingsService);
 
   readonly searchQuery = signal('');
   readonly activeTab = signal('general');
@@ -23,6 +27,12 @@ export class TenantPlatformSettingsComponent implements OnInit {
   readonly userRoleFilter = signal('');
   readonly countrySearchQuery = signal('');
   readonly countryFilter = signal('');
+  readonly questionTypeSearchQuery = signal('');
+  readonly questionTypeFilter = signal('');
+  readonly questionTypes = signal<TenantQuestionType[]>([]);
+  readonly questionTypesLoading = signal(false);
+  readonly questionTypesLoaded = signal(false);
+  readonly questionTypeLoadError = signal<string | null>(null);
   readonly showCountryModal = signal(false);
   readonly newCountryName = signal('');
   readonly countryLoadError = signal<string | null>(null);
@@ -87,6 +97,21 @@ export class TenantPlatformSettingsComponent implements OnInit {
     },
   ];
 
+  readonly subscriptionPeriods = signal<TenantSubscriptionPeriod[]>([]);
+  readonly subscriptionPeriodsLoading = signal(false);
+  readonly subscriptionPeriodsLoaded = signal(false);
+  readonly subscriptionPeriodLoadError = signal<string | null>(null);
+  readonly subscriptionPeriodSaveError = signal<string | null>(null);
+  readonly subscriptionPeriodSaving = signal(false);
+  readonly subscriptionPeriodDeletingId = signal<string | null>(null);
+  readonly editingSubscriptionPeriodId = signal<string | null>(null);
+  readonly subscriptionPeriodName = signal('');
+  readonly subscriptionPeriodDurationType = signal<'Month' | 'Day' | ''>('');
+  readonly subscriptionPeriodDurationValue = signal<number | null>(null);
+  readonly subscriptionPeriodDescription = signal('');
+  readonly subscriptionPeriodNameError = signal<string | null>(null);
+  readonly subscriptionPeriodDurationError = signal<string | null>(null);
+
   readonly users = [
     { name: 'Tenant Admin', email: 'admin@center.com', role: 'Admin', status: 'Active' },
     { name: 'Academic Manager', email: 'academic@center.com', role: 'Manager', status: 'Active' },
@@ -116,6 +141,15 @@ export class TenantPlatformSettingsComponent implements OnInit {
     return this.countries()
       .filter((country) => !query || country.name.toLowerCase().includes(query))
       .filter((country) => !filter || country.name.charAt(0).toUpperCase() === filter);
+  });
+
+  readonly filteredQuestionTypes = computed(() => {
+    const query = this.questionTypeSearchQuery().trim().toLowerCase();
+    const filter = this.questionTypeFilter();
+
+    return this.questionTypes()
+      .filter((type) => !query || type.name.toLowerCase().includes(query))
+      .filter((type) => !filter || type.name.charAt(0).toUpperCase() === filter);
   });
 
   readonly filteredRoomTypes = computed(() => {
@@ -181,6 +215,13 @@ export class TenantPlatformSettingsComponent implements OnInit {
     await this.selectTab('country');
   }
 
+  async openQuestionTypesScreen(): Promise<void> {
+    this.activeTab.set('question-types');
+    if (!this.questionTypesLoaded()) {
+      await this.loadQuestionTypes();
+    }
+  }
+
   async openRoomTypesScreen(): Promise<void> {
     this.activeTab.set('room-types');
     if (!this.roomTypesLoaded()) {
@@ -195,8 +236,141 @@ export class TenantPlatformSettingsComponent implements OnInit {
     }
   }
 
+  async openSubscriptionPeriodScreen(): Promise<void> {
+    this.activeTab.set('subscription-period');
+    if (!this.subscriptionPeriodsLoaded()) {
+      await this.loadSubscriptionPeriods();
+    }
+  }
+
+  openSubscriptionPeriodCreateScreen(): void {
+    this.resetSubscriptionPeriodForm();
+    this.activeTab.set('subscription-period-create');
+  }
+
+  cancelSubscriptionPeriodCreate(): void {
+    this.resetSubscriptionPeriodForm();
+    this.activeTab.set('subscription-period');
+  }
+
+  editSubscriptionPeriod(period: TenantSubscriptionPeriod): void {
+    if (!period.id) {
+      return;
+    }
+
+    this.editingSubscriptionPeriodId.set(period.id);
+    this.subscriptionPeriodName.set(period.name);
+    this.subscriptionPeriodDurationType.set(period.durationType);
+    this.subscriptionPeriodDurationValue.set(period.durationValue);
+    this.subscriptionPeriodDescription.set(period.description ?? '');
+    this.subscriptionPeriodNameError.set(null);
+    this.subscriptionPeriodDurationError.set(null);
+    this.activeTab.set('subscription-period-create');
+  }
+
+  async deleteSubscriptionPeriod(period: TenantSubscriptionPeriod): Promise<void> {
+    if (this.subscriptionPeriodDeletingId()) {
+      return;
+    }
+    this.subscriptionPeriodDeletingId.set(period.id);
+    this.subscriptionPeriodSaveError.set(null);
+    try {
+      await this.tenantSubscriptionPeriodSettings.deleteSubscriptionPeriod(period.id);
+      this.subscriptionPeriods.update((periods) => periods.filter((currentPeriod) => currentPeriod.id !== period.id));
+    } catch (error) {
+      this.subscriptionPeriodSaveError.set(this.tenantSubscriptionPeriodSettings.toUserMessage(error));
+    } finally {
+      this.subscriptionPeriodDeletingId.set(null);
+    }
+  }
+
+  setSubscriptionPeriodName(value: string): void {
+    this.subscriptionPeriodName.set(value);
+    this.subscriptionPeriodNameError.set(null);
+  }
+
+  setSubscriptionPeriodDurationValue(value: string | number | null): void {
+    const nextValue = value === null || value === '' ? null : Number(value);
+    this.subscriptionPeriodDurationValue.set(Number.isFinite(nextValue) ? nextValue : null);
+    this.subscriptionPeriodDurationError.set(null);
+  }
+
+  setSubscriptionPeriodDescription(value: string): void {
+    this.subscriptionPeriodDescription.set(value);
+  }
+
+  selectSubscriptionPeriodDurationType(value: 'Month' | 'Day'): void {
+    this.subscriptionPeriodDurationType.set(value);
+    this.subscriptionPeriodDurationError.set(null);
+  }
+
+  async saveSubscriptionPeriod(): Promise<void> {
+    const name = this.subscriptionPeriodName().trim();
+    const durationType = this.subscriptionPeriodDurationType();
+    const durationValue = this.subscriptionPeriodDurationValue();
+    this.subscriptionPeriodNameError.set(name ? null : 'Period name is required.');
+    this.subscriptionPeriodDurationError.set(durationType && durationValue && durationValue > 0 ? null : 'Duration is required.');
+
+    if (!name || !durationType || !durationValue || durationValue <= 0) {
+      return;
+    }
+
+    const payload = {
+      name,
+      durationType,
+      durationValue,
+      description: this.subscriptionPeriodDescription().trim() || null,
+    };
+    const editId = this.editingSubscriptionPeriodId();
+    this.subscriptionPeriodSaving.set(true);
+    this.subscriptionPeriodSaveError.set(null);
+    try {
+      const saved = editId
+        ? await this.tenantSubscriptionPeriodSettings.updateSubscriptionPeriod(editId, payload)
+        : await this.tenantSubscriptionPeriodSettings.createSubscriptionPeriod(payload);
+      this.subscriptionPeriods.update((periods) => {
+        if (!editId) {
+          return [...periods, saved];
+        }
+        return periods.map((period) => period.id === editId ? saved : period);
+      });
+      this.resetSubscriptionPeriodForm();
+      this.activeTab.set('subscription-period');
+    } catch (error) {
+      this.subscriptionPeriodSaveError.set(this.tenantSubscriptionPeriodSettings.toUserMessage(error));
+    } finally {
+      this.subscriptionPeriodSaving.set(false);
+    }
+  }
+
+  private resetSubscriptionPeriodForm(): void {
+    this.editingSubscriptionPeriodId.set(null);
+    this.subscriptionPeriodName.set('');
+    this.subscriptionPeriodDurationType.set('');
+    this.subscriptionPeriodDurationValue.set(null);
+    this.subscriptionPeriodDescription.set('');
+    this.subscriptionPeriodNameError.set(null);
+    this.subscriptionPeriodDurationError.set(null);
+  }
+
   async backToGeneral(): Promise<void> {
     await this.selectTab('general');
+  }
+
+  async loadSubscriptionPeriods(): Promise<void> {
+    if (this.subscriptionPeriodsLoading()) {
+      return;
+    }
+    this.subscriptionPeriodsLoading.set(true);
+    this.subscriptionPeriodLoadError.set(null);
+    try {
+      this.subscriptionPeriods.set(await this.tenantSubscriptionPeriodSettings.listSubscriptionPeriods());
+      this.subscriptionPeriodsLoaded.set(true);
+    } catch (error) {
+      this.subscriptionPeriodLoadError.set(this.tenantSubscriptionPeriodSettings.toUserMessage(error));
+    } finally {
+      this.subscriptionPeriodsLoading.set(false);
+    }
   }
 
   async loadCountries(): Promise<void> {
@@ -212,6 +386,22 @@ export class TenantPlatformSettingsComponent implements OnInit {
       this.countryLoadError.set('Unable to load countries. Please try again.');
     } finally {
       this.countriesLoading.set(false);
+    }
+  }
+
+  async loadQuestionTypes(): Promise<void> {
+    if (this.questionTypesLoading()) {
+      return;
+    }
+    this.questionTypesLoading.set(true);
+    this.questionTypeLoadError.set(null);
+    try {
+      this.questionTypes.set(await this.tenantQuestionTypeSettings.listQuestionTypes());
+      this.questionTypesLoaded.set(true);
+    } catch (error) {
+      this.questionTypeLoadError.set(this.tenantQuestionTypeSettings.toUserMessage(error));
+    } finally {
+      this.questionTypesLoading.set(false);
     }
   }
 

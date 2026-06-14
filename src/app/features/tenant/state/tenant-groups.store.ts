@@ -53,7 +53,7 @@ export class TenantGroupsStore {
         group.name.toLowerCase().includes(query) ||
         group.subject.toLowerCase().includes(query) ||
         group.teacher.toLowerCase().includes(query) ||
-        group.room.toLowerCase().includes(query);
+        this.groupRoomLabel(group).toLowerCase().includes(query);
 
       const matchesSubject = !subject || group.subject === subject;
       const matchesTeacher = !teacher || group.teacher === teacher;
@@ -160,6 +160,22 @@ export class TenantGroupsStore {
         });
       },
     });
+  }
+
+  private groupRoomLabel(group: Group): string {
+    const rooms = new Set<string>();
+    if (group.room?.trim()) {
+      rooms.add(group.room.trim());
+    }
+
+    Object.values(group.daySchedules ?? {}).forEach((schedule) => {
+      const room = schedule.room?.trim();
+      if (room) {
+        rooms.add(room);
+      }
+    });
+
+    return [...rooms].join(', ');
   }
 
   setPageIndex(value: number): void {

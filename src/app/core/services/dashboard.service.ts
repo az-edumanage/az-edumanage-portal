@@ -44,7 +44,7 @@ export class DashboardService {
 
   private getInitialTheme(): 'light' | 'dark' {
     if (isPlatformBrowser(this.platformId)) {
-      const saved = localStorage.getItem('theme');
+      const saved = this.safeGetLocalStorageItem('theme');
       if (saved === 'light' || saved === 'dark') return saved;
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
@@ -53,7 +53,7 @@ export class DashboardService {
 
   private getInitialTenantTheme(): TenantTheme {
     if (isPlatformBrowser(this.platformId)) {
-      const saved = localStorage.getItem('tenant-theme');
+      const saved = this.safeGetLocalStorageItem('tenant-theme');
       if (saved === 'default' || saved === 'ocean') return saved;
     }
     return 'default';
@@ -62,11 +62,19 @@ export class DashboardService {
   private syncTenantThemeFromStorage() {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    const saved = localStorage.getItem('tenant-theme');
+    const saved = this.safeGetLocalStorageItem('tenant-theme');
     if (saved === 'default' || saved === 'ocean') {
       this.tenantTheme.set(saved);
     } else {
       this.tenantTheme.set('default');
+    }
+  }
+
+  private safeGetLocalStorageItem(key: string): string | null {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
     }
   }
 

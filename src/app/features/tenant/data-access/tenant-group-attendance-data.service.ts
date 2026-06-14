@@ -6,6 +6,7 @@ import {
   TenantAttendanceStudent,
   TenantBarcodeAttendanceScanRequest,
   TenantBarcodeAttendanceScanResponse,
+  TenantGroupAttendanceDetails,
   TenantManualAttendanceRequest,
   TenantManualAttendanceResponse,
 } from '../models/tenant-group-attendance.models';
@@ -69,17 +70,27 @@ export class TenantGroupAttendanceDataService {
     return (this.mockStudentsByGroupId.get(groupId) ?? []).map((student) => ({ ...student }));
   }
 
-  loadStudentsByGroupId(groupId: string | null): Observable<TenantAttendanceStudent[]> {
+  loadGroupAttendance(groupId: string | null): Observable<TenantGroupAttendanceDetails> {
     const selectedGroupId = groupId?.trim();
     if (!selectedGroupId) {
       return throwError(() => new Error('Group is required'));
     }
 
     return this.http.get<TenantGroupDetailsResponse>(this.groupsUrl + '/' + encodeURIComponent(selectedGroupId)).pipe(
-      map((group) => (group.students ?? []).map((student) => this.toAttendanceStudent(student))),
-      switchMap((students) => this.withStudentDetailBarcodes(students)),
+      switchMap((group) =>
+        this.withStudentDetailBarcodes((group.students ?? []).map((student) => this.toAttendanceStudent(student))).pipe(
+          map((students) => ({
+            attendanceAvailable: group.attendanceAvailable,
+            students,
+          })),
+        ),
+      ),
       catchError((error: HttpErrorResponse) => this.handleError(error)),
     );
+  }
+
+  loadStudentsByGroupId(groupId: string | null): Observable<TenantAttendanceStudent[]> {
+    return this.loadGroupAttendance(groupId).pipe(map((details) => details.students));
   }
 
   scanBarcode(request: TenantBarcodeAttendanceScanRequest): Observable<TenantBarcodeAttendanceScanResponse> {
@@ -113,6 +124,7 @@ export class TenantGroupAttendanceDataService {
       0,
       0,
       student.attendanceSource ?? (attendanceState === 'Present' ? 'Auto' : 'Manual'),
+      student.attendanceTime ?? '',
     );
   }
 
@@ -155,6 +167,7 @@ export class TenantGroupAttendanceDataService {
     totalSessions: number,
     attendedSessions: number,
     manualStatus: 'Manual' | 'Auto' = 'Manual',
+    attendanceTime = '',
   ): TenantAttendanceStudent {
     return {
       id,
@@ -163,6 +176,7 @@ export class TenantGroupAttendanceDataService {
       barcode,
       isPresent,
       attendanceState: isPresent ? 'Present' : 'Absent',
+      attendanceTime,
       manualStatus,
       overrideChecks: 'Ready',
       attendanceRate,

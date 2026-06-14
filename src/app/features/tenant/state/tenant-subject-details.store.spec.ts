@@ -19,10 +19,19 @@ describe('TenantSubjectDetailsStore', () => {
         gradeId: 'grade-1',
         gradeName: 'Grade 10',
         assignedGroupsCount: 1,
+        assignedTeachersCount: 1,
         totalStudentsCount: 0,
         createdAt: '2026-01-01T00:00:00Z',
         updatedAt: '2026-01-01T00:00:00Z',
         groups: [{ id: 'group-1', name: 'Group A', studentsCount: 0, teacherName: null }],
+        teachers: [{
+          id: 'teacher-1',
+          name: 'Sarah Nabil',
+          email: 'sarah@example.com',
+          phone: null,
+          status: 'Active',
+          joinDate: null,
+        }],
       }),
       toUserMessage: vi.fn().mockReturnValue('Unable to load subject'),
     };
@@ -39,7 +48,9 @@ describe('TenantSubjectDetailsStore', () => {
     await store.loadSubject('subject-1');
 
     expect(store.subject()?.assignedGroupsCount).toBe(1);
+    expect(store.subject()?.assignedTeachersCount).toBe(1);
     expect(store.subject()?.groups[0].teacherName).toBeNull();
+    expect(store.subject()?.teachers[0].name).toBe('Sarah Nabil');
   });
 
   it('shows not-found when no id is provided', async () => {

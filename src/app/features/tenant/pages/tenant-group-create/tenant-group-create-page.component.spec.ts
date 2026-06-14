@@ -6,6 +6,7 @@ import { of } from 'rxjs';
 import { TenantGroupCreatePageComponent } from './tenant-group-create-page.component';
 import { TenantGroupCreateDataService } from '../../data-access/tenant-group-create-data.service';
 import { TenantGroupCreateFacade } from '../../state/tenant-group-create.facade';
+import { TenantSubscriptionPeriodSettingsService } from '../../data-access/tenant-subscription-period-settings.service';
 import { TaskService } from '../../../../core/services/task.service';
 
 @Component({
@@ -34,6 +35,8 @@ describe('TenantGroupCreatePageComponent', () => {
       duration: [90],
       daySchedules: fb.group({}),
       fees: [500],
+      paymentMethod: [''],
+      paymentMethodId: [''],
       autoInvoice: [true],
       allowSelfEnroll: [false],
       hasSpecificDuration: [false],
@@ -76,7 +79,8 @@ describe('TenantGroupCreatePageComponent', () => {
     filteredColleges: signal([]),
     filteredSubjects: signal([]),
     filteredRooms: signal([]),
-    initialize: (_id: string | null) => {},
+    rooms: signal([]),
+    initialize: vi.fn((_id: string | null, _freshCreate?: boolean) => {}),
     onDestroy: () => {},
     onDayToggle: (_day: string) => {},
     onTimeTypeChange: (_isFixed: boolean) => {},
@@ -93,6 +97,8 @@ describe('TenantGroupCreatePageComponent', () => {
     selectUniversity: (_value: string) => {},
     toggleCollegeDropdown: () => {},
     selectCollege: (_value: string) => {},
+    subjectCreateQueryParams: () => ({ returnUrl: '/tenant/groups/create' }),
+    collegeCreateQueryParams: () => ({ returnUrl: '/tenant/groups/create', universityId: 'university-1' }),
     toggleSubjectDropdown: () => {},
     selectSubject: (_value: string) => {},
     toggleRoomDropdown: () => {},
@@ -108,21 +114,79 @@ describe('TenantGroupCreatePageComponent', () => {
     onSubmit: () => {},
   };
 
-  const mockActivatedRoute = {
+  const subscriptionPeriodSettings = {
+    listSubscriptionPeriods: vi.fn(() => Promise.resolve([
+      {
+        id: 'period-1',
+        name: 'Monthly',
+        durationType: 'Month' as const,
+        durationValue: 1,
+        description: null,
+        createdAt: '2026-06-06T00:00:00Z',
+        updatedAt: '2026-06-06T00:00:00Z',
+      },
+    ])),
+  };
+
+  const mockActivatedRoute = { 
     snapshot: {
       paramMap: {
-        get: () => null,
+        get: (_key: string): string | null => null,
+      },
+      queryParamMap: {
+        get: (_key: string): string | null => null,
       },
     },
   };
 
   beforeEach(async () => {
+    vi.clearAllMocks();
+    mockFacade.groupForm.reset({
+      name: '',
+      educationCategory: 'BASIC_EDUCATION',
+      stage: '',
+      grade: '',
+      university: '',
+      college: '',
+      subject: '',
+      teacher: '',
+      ownedBy: '',
+      room: '',
+      capacity: 25,
+      isFixedTime: true,
+      startTime: '10:00',
+      duration: 90,
+      fees: 500,
+      paymentMethod: '',
+      paymentMethodId: '',
+      autoInvoice: true,
+      allowSelfEnroll: false,
+      hasSpecificDuration: false,
+      startDate: '',
+      endDate: '',
+      requireApproval: true,
+      isActive: true,
+    });
+    subscriptionPeriodSettings.listSubscriptionPeriods.mockResolvedValue([
+      {
+        id: 'period-1',
+        name: 'Monthly',
+        durationType: 'Month' as const,
+        durationValue: 1,
+        description: null,
+        createdAt: '2026-06-06T00:00:00Z',
+        updatedAt: '2026-06-06T00:00:00Z',
+      },
+    ]);
+    mockFacade.initialize.mockClear();
+
     await TestBed.configureTestingModule({
       imports: [TenantGroupCreatePageComponent],
       providers: [
         provideRouter([{ path: 'tenant/groups', component: EmptyRouteComponent }]),
         { provide: TenantGroupCreateFacade, useValue: mockFacade },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
+        { provide: TenantSubscriptionPeriodSettingsService, useValue: subscriptionPeriodSettings },
       ],
     }).compileComponents();
   });
@@ -139,6 +203,37 @@ describe('TenantGroupCreatePageComponent', () => {
 
     const groupNameInput = fixture.nativeElement.querySelector('#groupName');
     expect(groupNameInput).toBeTruthy();
+  });
+
+  it('passes fresh create mode when the route query param requests a new empty form', () => {
+    vi.spyOn(mockActivatedRoute.snapshot.queryParamMap, 'get').mockReturnValueOnce('true');
+    const fixture = TestBed.createComponent(TenantGroupCreatePageComponent);
+
+    fixture.detectChanges();
+
+    expect(mockFacade.initialize).toHaveBeenCalledWith(null, true);
+  });
+
+  it('restores the visible subscription period method from the saved id in edit mode', async () => {
+    mockFacade.groupForm.patchValue({ paymentMethod: '', paymentMethodId: 'period-1' });
+    const fixture = TestBed.createComponent(TenantGroupCreatePageComponent);
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(mockFacade.groupForm.get('paymentMethod')?.value).toBe('Monthly');
+    expect(mockFacade.groupForm.get('paymentMethodId')?.value).toBe('period-1');
+  });
+
+  it('restores the visible subscription period method when edit data arrives after options load', async () => {
+    const fixture = TestBed.createComponent(TenantGroupCreatePageComponent);
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+    mockFacade.groupForm.patchValue({ paymentMethod: '', paymentMethodId: 'period-1' });
+
+    expect(mockFacade.groupForm.get('paymentMethod')?.value).toBe('Monthly');
+    expect(mockFacade.groupForm.get('paymentMethodId')?.value).toBe('period-1');
   });
 
   it('keeps one schedule section and no extra availability panel', () => {
@@ -251,6 +346,8 @@ describe('TenantGroupCreateFacade teacher availability', () => {
       teacher: 'Sarah Nabil',
       ownedBy: 'Center',
       room: 'Room 101',
+      paymentMethod: 'Monthly',
+      paymentMethodId: 'period-1',
       startTime: '10:00',
       duration: 60,
     });
@@ -286,6 +383,8 @@ describe('TenantGroupCreateFacade teacher availability', () => {
       teacher: 'Sarah Nabil',
       ownedBy: 'Center',
       room: 'Room 101',
+      paymentMethod: 'Monthly',
+      paymentMethodId: 'period-1',
       startTime: '12:00',
       duration: 90,
     });
@@ -321,6 +420,8 @@ describe('TenantGroupCreateFacade teacher availability', () => {
       teacher: 'Sarah Nabil',
       ownedBy: 'Center',
       room: 'Room 101',
+      paymentMethod: 'Monthly',
+      paymentMethodId: 'period-1',
       startTime: '12:30',
       duration: 60,
     });
@@ -355,6 +456,8 @@ describe('TenantGroupCreateFacade teacher availability', () => {
       teacher: 'Sarah Nabil',
       ownedBy: 'Center',
       room: 'Room 101',
+      paymentMethod: 'Monthly',
+      paymentMethodId: 'period-1',
       startTime: '12:00',
       duration: 90,
     });

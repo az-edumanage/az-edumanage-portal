@@ -1,7 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { TenantCountrySettingsService } from '../../data-access/tenant-country-settings.service';
 import { TenantEquipmentFacilitySettingsService } from '../../data-access/tenant-equipment-facility-settings.service';
+import { TenantQuestionTypeSettingsService } from '../../data-access/tenant-question-type-settings.service';
 import { TenantRoomTypeSettingsService } from '../../data-access/tenant-room-type-settings.service';
+import { TenantSubscriptionPeriodSettingsService } from '../../data-access/tenant-subscription-period-settings.service';
 import { TenantPlatformSettingsComponent } from './tenant-platform-settings.component';
 
 describe('TenantPlatformSettingsComponent', () => {
@@ -19,11 +21,22 @@ describe('TenantPlatformSettingsComponent', () => {
     deleteRoomType: ReturnType<typeof vi.fn>;
     toUserMessage: ReturnType<typeof vi.fn>;
   };
+  let subscriptionPeriodSettings: {
+    listSubscriptionPeriods: ReturnType<typeof vi.fn>;
+    createSubscriptionPeriod: ReturnType<typeof vi.fn>;
+    updateSubscriptionPeriod: ReturnType<typeof vi.fn>;
+    deleteSubscriptionPeriod: ReturnType<typeof vi.fn>;
+    toUserMessage: ReturnType<typeof vi.fn>;
+  };
   let equipmentFacilitySettings: {
     listEquipmentFacilities: ReturnType<typeof vi.fn>;
     createEquipmentFacility: ReturnType<typeof vi.fn>;
     updateEquipmentFacility: ReturnType<typeof vi.fn>;
     deleteEquipmentFacility: ReturnType<typeof vi.fn>;
+    toUserMessage: ReturnType<typeof vi.fn>;
+  };
+  let questionTypeSettings: {
+    listQuestionTypes: ReturnType<typeof vi.fn>;
     toUserMessage: ReturnType<typeof vi.fn>;
   };
 
@@ -76,6 +89,29 @@ describe('TenantPlatformSettingsComponent', () => {
       deleteRoomType: vi.fn().mockResolvedValue(undefined),
       toUserMessage: vi.fn().mockReturnValue('Room type already exists'),
     };
+    subscriptionPeriodSettings = {
+      listSubscriptionPeriods: vi.fn().mockResolvedValue([]),
+      createSubscriptionPeriod: vi.fn().mockResolvedValue({
+        id: 'period-1',
+        name: 'Monthly',
+        durationType: 'Month',
+        durationValue: 1,
+        description: 'Monthly subscription',
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      }),
+      updateSubscriptionPeriod: vi.fn().mockResolvedValue({
+        id: 'period-1',
+        name: 'Quarterly',
+        durationType: 'Month',
+        durationValue: 3,
+        description: 'Monthly subscription',
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-02T00:00:00Z',
+      }),
+      deleteSubscriptionPeriod: vi.fn().mockResolvedValue(undefined),
+      toUserMessage: vi.fn().mockReturnValue('Subscription period already exists'),
+    };
     equipmentFacilitySettings = {
       listEquipmentFacilities: vi.fn().mockResolvedValue([
         {
@@ -103,6 +139,16 @@ describe('TenantPlatformSettingsComponent', () => {
       deleteEquipmentFacility: vi.fn().mockResolvedValue(undefined),
       toUserMessage: vi.fn().mockReturnValue('Equipment & Facilities already exists'),
     };
+    questionTypeSettings = {
+      listQuestionTypes: vi.fn().mockResolvedValue([
+        { id: 'question-type-1', name: 'Multiple Choice', code: 'MULTIPLE_CHOICE', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+        { id: 'question-type-2', name: 'True / False', code: 'TRUE_FALSE', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+        { id: 'question-type-3', name: 'Short Answer', code: 'SHORT_ANSWER', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+        { id: 'question-type-4', name: 'Essay', code: 'ESSAY', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+        { id: 'question-type-5', name: 'MCQ', code: 'MCQ', createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+      ]),
+      toUserMessage: vi.fn().mockReturnValue('Unable to load question types. Please try again.'),
+    };
 
     await TestBed.configureTestingModule({
       imports: [TenantPlatformSettingsComponent],
@@ -110,6 +156,8 @@ describe('TenantPlatformSettingsComponent', () => {
         { provide: TenantCountrySettingsService, useValue: countrySettings },
         { provide: TenantRoomTypeSettingsService, useValue: roomTypeSettings },
         { provide: TenantEquipmentFacilitySettingsService, useValue: equipmentFacilitySettings },
+        { provide: TenantSubscriptionPeriodSettingsService, useValue: subscriptionPeriodSettings },
+        { provide: TenantQuestionTypeSettingsService, useValue: questionTypeSettings },
       ],
     }).compileComponents();
   });
@@ -255,6 +303,32 @@ describe('TenantPlatformSettingsComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Brazil');
   });
 
+  it('shows the Question Type card in General and opens predefined question types', async () => {
+    const fixture = TestBed.createComponent(TenantPlatformSettingsComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    await component.selectTab('general');
+    fixture.detectChanges();
+
+    const nav = fixture.nativeElement.querySelector('nav');
+    expect(nav.textContent).not.toContain('Question Type');
+    expect(fixture.nativeElement.textContent).toContain('Question Type');
+
+    await component.openQuestionTypesScreen();
+    fixture.detectChanges();
+
+    expect(component.activeTab()).toBe('question-types');
+    expect(questionTypeSettings.listQuestionTypes).toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Manage predefined question types used by curriculum questions.');
+    expect(fixture.nativeElement.textContent).toContain('Multiple Choice');
+    expect(fixture.nativeElement.textContent).toContain('True / False');
+    expect(fixture.nativeElement.textContent).toContain('Short Answer');
+    expect(fixture.nativeElement.textContent).toContain('Essay');
+    expect(fixture.nativeElement.textContent).toContain('MCQ');
+  });
+
   it('shows the Room Type card in General and opens the room types screen', async () => {
     const fixture = TestBed.createComponent(TenantPlatformSettingsComponent);
     const component = fixture.componentInstance;
@@ -321,6 +395,148 @@ describe('TenantPlatformSettingsComponent', () => {
     expect(roomTypeSettings.deleteRoomType).toHaveBeenCalledWith('room-type-1');
     expect(component.roomTypes()).toEqual([]);
     expect(component.roomTypeStatusModal()?.title).toBe('Room type deleted');
+  });
+
+  it('shows the Subscription period card in General and opens period settings', async () => {
+    const fixture = TestBed.createComponent(TenantPlatformSettingsComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    await component.selectTab('general');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Subscription period');
+
+    component.subscriptionPeriodsLoaded.set(true);
+    await component.openSubscriptionPeriodScreen();
+    fixture.detectChanges();
+
+    expect(component.activeTab()).toBe('subscription-period');
+    expect(fixture.nativeElement.textContent).toContain('Period Name');
+    expect(fixture.nativeElement.textContent).toContain('Actions');
+    expect(fixture.nativeElement.textContent).toContain('No subscription periods saved yet.');
+  });
+
+  it('opens the Add New Period page and saves a period', async () => {
+    const fixture = TestBed.createComponent(TenantPlatformSettingsComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    await component.openSubscriptionPeriodScreen();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Add New Period');
+
+    component.openSubscriptionPeriodCreateScreen();
+    fixture.detectChanges();
+
+    expect(component.activeTab()).toBe('subscription-period-create');
+    expect(fixture.nativeElement.textContent).toContain('Period Name');
+    expect(fixture.nativeElement.textContent).toContain('Month');
+    expect(fixture.nativeElement.textContent).toContain('Day');
+    expect(fixture.nativeElement.textContent).toContain('Description');
+
+    component.subscriptionPeriodName.set('Monthly');
+    component.selectSubscriptionPeriodDurationType('Month');
+    component.subscriptionPeriodDurationValue.set(1);
+    component.subscriptionPeriodDescription.set('Monthly subscription');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Month count');
+
+    await component.saveSubscriptionPeriod();
+    fixture.detectChanges();
+
+    expect(component.activeTab()).toBe('subscription-period');
+    expect(subscriptionPeriodSettings.createSubscriptionPeriod).toHaveBeenCalledWith({
+      name: 'Monthly',
+      durationType: 'Month',
+      durationValue: 1,
+      description: 'Monthly subscription',
+    });
+    expect(component.subscriptionPeriods()).toEqual([expect.objectContaining({
+      id: 'period-1',
+      name: 'Monthly',
+      durationType: 'Month',
+      durationValue: 1,
+      description: 'Monthly subscription',
+    })]);
+    expect(fixture.nativeElement.textContent).toContain('Monthly');
+    expect(fixture.nativeElement.textContent).toContain('1 Month');
+    expect(fixture.nativeElement.textContent).toContain('Monthly subscription');
+    expect(fixture.nativeElement.querySelector('[title="Edit period"]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('[title="Delete period"]')).toBeTruthy();
+  });
+
+  it('edits and deletes saved subscription periods', async () => {
+    const fixture = TestBed.createComponent(TenantPlatformSettingsComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    component.subscriptionPeriods.set([{
+      id: 'period-1',
+      name: 'Monthly',
+      durationType: 'Month',
+      durationValue: 1,
+      description: 'Monthly subscription',
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    }]);
+    component.subscriptionPeriodsLoaded.set(true);
+    await component.openSubscriptionPeriodScreen();
+    fixture.detectChanges();
+
+    component.editSubscriptionPeriod(component.subscriptionPeriods()[0]);
+    fixture.detectChanges();
+
+    expect(component.activeTab()).toBe('subscription-period-create');
+    expect(component.subscriptionPeriodName()).toBe('Monthly');
+
+    component.subscriptionPeriodName.set('Quarterly');
+    component.subscriptionPeriodDurationValue.set(3);
+    await component.saveSubscriptionPeriod();
+    fixture.detectChanges();
+
+    expect(subscriptionPeriodSettings.updateSubscriptionPeriod).toHaveBeenCalledWith('period-1', {
+      name: 'Quarterly',
+      durationType: 'Month',
+      durationValue: 3,
+      description: 'Monthly subscription',
+    });
+    expect(component.subscriptionPeriods()[0]).toEqual(expect.objectContaining({
+      id: 'period-1',
+      name: 'Quarterly',
+      durationType: 'Month',
+      durationValue: 3,
+      description: 'Monthly subscription',
+    }));
+    expect(fixture.nativeElement.textContent).toContain('Quarterly');
+
+    await component.deleteSubscriptionPeriod(component.subscriptionPeriods()[0]);
+    fixture.detectChanges();
+
+    expect(subscriptionPeriodSettings.deleteSubscriptionPeriod).toHaveBeenCalledWith('period-1');
+    expect(component.subscriptionPeriods()).toEqual([]);
+    expect(fixture.nativeElement.textContent).toContain('No subscription periods saved yet.');
+  });
+
+  it('cancels Add New Period and returns to Subscription period', async () => {
+    const fixture = TestBed.createComponent(TenantPlatformSettingsComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    component.openSubscriptionPeriodCreateScreen();
+    component.subscriptionPeriodName.set('Daily');
+
+    component.cancelSubscriptionPeriodCreate();
+    fixture.detectChanges();
+
+    expect(component.activeTab()).toBe('subscription-period');
+    expect(component.subscriptionPeriodName()).toBe('');
   });
 
   it('shows the Equipment & Facilities card in General and opens the list screen', async () => {

@@ -1,16 +1,16 @@
-<div class="space-y-6">
+<div class="space-y-6 subject-details-page" [attr.dir]="pageDirection()">
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
     <div class="space-y-1">
       <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
-        <a routerLink="/tenant/subjects" class="hover:text-indigo-600 transition-colors">Subjects</a>
-        <mat-icon class="text-[10px]">chevron_right</mat-icon>
-        <span>Subject Details</span>
+        <a routerLink="/tenant/subjects" class="hover:text-indigo-600 transition-colors">{{ label('subjects') }}</a>
+        <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+        <span>{{ label('subjectDetails') }}</span>
       </div>
       <h2 class="text-2xl font-bold text-slate-900 dark:text-white">
         @if (subject()) {
           {{ subject()?.name }}
         } @else {
-          Subject Details
+          {{ label('subjectDetails') }}
         }
       </h2>
       @if (subject()) {
@@ -24,29 +24,29 @@
       <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
         <mat-icon class="text-slate-500 animate-spin">sync</mat-icon>
       </div>
-      <h3 class="font-bold text-slate-900 dark:text-white">Loading subject details</h3>
-      <p class="text-sm text-slate-500 mt-1">Please wait while the subject is loaded.</p>
+      <h3 class="font-bold text-slate-900 dark:text-white">{{ label('loadingTitle') }}</h3>
+      <p class="text-sm text-slate-500 mt-1">{{ label('loadingMessage') }}</p>
     </div>
   } @else if (loadError()) {
     <div class="bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
       <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
         <mat-icon class="text-slate-500">error_outline</mat-icon>
       </div>
-      <h3 class="font-bold text-slate-900 dark:text-white">Unable to load subject</h3>
+      <h3 class="font-bold text-slate-900 dark:text-white">{{ label('loadErrorTitle') }}</h3>
       <p class="text-sm text-slate-500 mt-1">{{ loadError() }}</p>
       <a routerLink="/tenant/subjects" class="inline-flex items-center gap-2 mt-5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors">
         <mat-icon class="text-sm">arrow_back</mat-icon>
-        Back to Subjects
+        {{ label('backToSubjects') }}
       </a>
     </div>
   } @else if (subject(); as selectedSubject) {
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
       <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
         <div class="w-12 h-12 rounded-2xl bg-indigo-600/10 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600">
           <mat-icon>account_tree</mat-icon>
         </div>
         <div>
-          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Educational Stage</p>
+          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ label('educationalStage') }}</p>
           <h4 class="text-xl font-bold text-slate-900 dark:text-white">{{ selectedSubject.stageName }}</h4>
         </div>
       </div>
@@ -55,7 +55,7 @@
           <mat-icon>school</mat-icon>
         </div>
         <div>
-          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Assigned Groups</p>
+          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ label('assignedGroups') }}</p>
           <h4 class="text-xl font-bold text-slate-900 dark:text-white">{{ selectedSubject.assignedGroupsCount }}</h4>
         </div>
       </div>
@@ -64,68 +64,223 @@
           <mat-icon>groups</mat-icon>
         </div>
         <div>
-          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Students</p>
+          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ label('totalStudents') }}</p>
           <h4 class="text-xl font-bold text-slate-900 dark:text-white">{{ selectedSubject.totalStudentsCount }}</h4>
+        </div>
+      </div>
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center text-sky-600">
+          <mat-icon>person</mat-icon>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ label('assignedTeachers') }}</p>
+          <h4 class="text-xl font-bold text-slate-900 dark:text-white">{{ selectedSubject.assignedTeachersCount }}</h4>
         </div>
       </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="lg:col-span-2 space-y-6">
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Subject Information</h3>
-          <p class="text-sm text-slate-500 dark:text-slate-500 leading-relaxed">
-            {{ selectedSubject.name }} belongs to {{ selectedSubject.gradeName }} in {{ selectedSubject.stageName }}.
-          </p>
-        </div>
-
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div id="subject-assigned-groups" class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
           <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Assigned Groups</h3>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">{{ label('assignedGroups') }}</h3>
           </div>
           <div class="overflow-x-auto">
-            <table class="w-full text-left">
+            <table class="w-full subject-details-table" [attr.dir]="pageDirection()">
               <thead class="bg-slate-50 dark:bg-slate-800/50">
                 <tr>
-                  <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Group Name</th>
-                  <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Students</th>
-                  <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Teacher</th>
+                  <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ label('groupName') }}</th>
+                  <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ label('students') }}</th>
+                  <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ label('teacher') }}</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
-                @for (group of selectedSubject.groups; track group.id) {
+                @for (group of pagedGroups(); track group.id) {
                   <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                     <td class="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">{{ group.name }}</td>
                     <td class="px-6 py-4 text-sm text-slate-500">{{ group.studentsCount }}</td>
-                    <td class="px-6 py-4 text-sm text-slate-500">{{ group.teacherName || 'Unassigned' }}</td>
+                    <td class="px-6 py-4 text-sm text-slate-500">{{ group.teacherName || label('unassigned') }}</td>
                   </tr>
                 } @empty {
                   <tr>
                     <td colspan="3" class="px-6 py-8 text-center text-sm text-slate-500">
-                      No groups are assigned to this subject.
+                      {{ label('noGroupsAssigned') }}
                     </td>
                   </tr>
                 }
               </tbody>
             </table>
           </div>
+          <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="text-xs font-medium text-slate-500 dark:text-slate-500">
+              @if (totalGroups() > 0) {
+                {{ showingRangeLabel(groupsPageStart(), groupsPageEnd(), totalGroups(), 'groups') }}
+              } @else {
+                {{ label('noGroupsDisplay') }}
+              }
+            </div>
+            <div class="flex items-center gap-3">
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-500">
+                {{ label('rows') }}
+                <select
+                  [ngModel]="groupsPageSize()"
+                  (ngModelChange)="setGroupsPageSize($event)"
+                  class="h-8 px-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option [value]="5">5</option>
+                  <option [value]="10">10</option>
+                  <option [value]="20">20</option>
+                </select>
+              </label>
+              <button
+                type="button"
+                (click)="previousGroupsPage()"
+                [disabled]="groupsPageIndex() === 0"
+                class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                [title]="label('previousPage')"
+              >
+                <mat-icon class="text-sm">chevron_left</mat-icon>
+              </button>
+              <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ pageLabel(clampedGroupsPageIndex() + 1, groupsTotalPages()) }}</span>
+              <button
+                type="button"
+                (click)="nextGroupsPage()"
+                [disabled]="clampedGroupsPageIndex() >= groupsTotalPages() - 1"
+                class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                [title]="label('nextPage')"
+              >
+                <mat-icon class="text-sm">chevron_right</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="subject-assigned-teachers" class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">{{ label('assignedTeachers') }}</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full subject-details-table" [attr.dir]="pageDirection()">
+              <thead class="bg-slate-50 dark:bg-slate-800/50">
+                <tr>
+                  <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ label('teacher') }}</th>
+                  <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ label('phone') }}</th>
+                  <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ label('status') }}</th>
+                  <th class="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ label('joinDate') }}</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                @for (teacher of pagedTeachers(); track teacher.id) {
+                  <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td class="px-6 py-4">
+                      <div class="text-sm font-medium text-slate-900 dark:text-white">{{ teacher.name }}</div>
+                      <div class="text-xs text-slate-500">{{ teacher.email }}</div>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-slate-500">{{ teacher.phone || label('notSet') }}</td>
+                    <td class="px-6 py-4 text-sm text-slate-500">{{ statusLabel(teacher.status) }}</td>
+                    <td class="px-6 py-4 text-sm text-slate-500">{{ teacher.joinDate ? (teacher.joinDate | date: 'mediumDate') : label('notSet') }}</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="4" class="px-6 py-8 text-center text-sm text-slate-500">
+                      {{ label('noTeachersAssigned') }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="text-xs font-medium text-slate-500 dark:text-slate-500">
+              @if (totalTeachers() > 0) {
+                {{ showingRangeLabel(teachersPageStart(), teachersPageEnd(), totalTeachers(), 'teachers') }}
+              } @else {
+                {{ label('noTeachersDisplay') }}
+              }
+            </div>
+            <div class="flex items-center gap-3">
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-500">
+                {{ label('rows') }}
+                <select
+                  [ngModel]="teachersPageSize()"
+                  (ngModelChange)="setTeachersPageSize($event)"
+                  class="h-8 px-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option [value]="5">5</option>
+                  <option [value]="10">10</option>
+                  <option [value]="20">20</option>
+                </select>
+              </label>
+              <button
+                type="button"
+                (click)="previousTeachersPage()"
+                [disabled]="teachersPageIndex() === 0"
+                class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                [title]="label('previousPage')"
+              >
+                <mat-icon class="text-sm">chevron_left</mat-icon>
+              </button>
+              <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ pageLabel(clampedTeachersPageIndex() + 1, teachersTotalPages()) }}</span>
+              <button
+                type="button"
+                (click)="nextTeachersPage()"
+                [disabled]="clampedTeachersPageIndex() >= teachersTotalPages() - 1"
+                class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                [title]="label('nextPage')"
+              >
+                <mat-icon class="text-sm">chevron_right</mat-icon>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Subject Metadata</h3>
-        <div class="space-y-4">
-          <div>
-            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Grade</p>
-            <p class="text-sm font-medium text-slate-900 dark:text-white">{{ selectedSubject.gradeName }}</p>
+      <div class="space-y-6">
+        <div class="bg-indigo-600 rounded-xl p-6 text-white space-y-4">
+          <h3 class="font-bold">{{ label('quickActions') }}</h3>
+          <div class="grid grid-cols-2 gap-2">
+            <a [routerLink]="['/tenant/subjects', selectedSubject.id, 'curriculum']" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+              <mat-icon>playlist_add</mat-icon>
+              <span class="text-[10px] font-bold uppercase">{{ label('addCurriculum') }}</span>
+            </a>
+            <a routerLink="/tenant/groups/create" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+              <mat-icon>add_circle</mat-icon>
+              <span class="text-[10px] font-bold uppercase">{{ label('newGroup') }}</span>
+            </a>
+            <a routerLink="/tenant/subjects/create" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+              <mat-icon>menu_book</mat-icon>
+              <span class="text-[10px] font-bold uppercase">{{ label('newSubject') }}</span>
+            </a>
+            <a routerLink="/tenant/subjects" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+              <mat-icon>list_alt</mat-icon>
+              <span class="text-[10px] font-bold uppercase">{{ label('subjects') }}</span>
+            </a>
           </div>
-          <div>
-            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Created</p>
-            <p class="text-sm font-medium text-slate-900 dark:text-white">{{ selectedSubject.createdAt | date: 'medium' }}</p>
-          </div>
-          <div>
-            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Last Updated</p>
-            <p class="text-sm font-medium text-slate-900 dark:text-white">{{ selectedSubject.updatedAt | date: 'medium' }}</p>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">{{ label('subjectMetadata') }}</h3>
+          <div class="space-y-4">
+            <div>
+              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ label('subjectName') }}</p>
+              <p class="text-sm font-medium text-slate-900 dark:text-white">{{ selectedSubject.name }}</p>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ label('educationalStage') }}</p>
+              <p class="text-sm font-medium text-slate-900 dark:text-white">{{ selectedSubject.stageName }}</p>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ label('grade') }}</p>
+              <p class="text-sm font-medium text-slate-900 dark:text-white">{{ selectedSubject.gradeName }}</p>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ label('created') }}</p>
+              <p class="text-sm font-medium text-slate-900 dark:text-white">{{ selectedSubject.createdAt | date: 'medium' }}</p>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ label('lastUpdated') }}</p>
+              <p class="text-sm font-medium text-slate-900 dark:text-white">{{ selectedSubject.updatedAt | date: 'medium' }}</p>
+            </div>
           </div>
         </div>
       </div>

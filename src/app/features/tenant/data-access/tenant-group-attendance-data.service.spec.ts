@@ -137,6 +137,39 @@ describe('TenantGroupAttendanceDataService', () => {
       students: [{ id: 'student-1', name: 'Ahmed Ali', email: 'ahmed@example.com', barcodeNumber: '10001', attendanceRate: null, lastAttendance: '' }],
     });
   });
+  it('loads group attendance availability with enrolled attendance rows', () => {
+    service.loadGroupAttendance('science-g-1').subscribe((details) => {
+      expect(details.attendanceAvailable).toBe(true);
+      expect(details.students[0]).toEqual(
+        expect.objectContaining({
+          id: 'student-1',
+          name: 'Ahmed Ali',
+          barcode: '10001',
+        }),
+      );
+    });
+
+    const request = httpTesting.expectOne(`${environment.apiBaseUrl}/tenant/groups/science-g-1`);
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      id: 'science-g-1',
+      name: 'SCINCE G-1',
+      subject: 'Science',
+      teacher: 'Mohamed Hussein',
+      room: 'Room 102',
+      schedule: 'Monday 10:00',
+      capacity: 10,
+      enrolled: 1,
+      pricePerStudent: 500,
+      status: 'Active',
+      avgAttendanceRate: null,
+      absenceRate: null,
+      attendanceAvailable: true,
+      monthlyRevenue: 500,
+      currency: 'EGP',
+      students: [{ id: 'student-1', name: 'Ahmed Ali', email: 'ahmed@example.com', barcodeNumber: '10001', attendanceRate: null, lastAttendance: '' }],
+    });
+  });
   it('maps saved attendance state from group details into attendance rows', () => {
     service.loadStudentsByGroupId('science-g-1').subscribe((students) => {
       expect(students[0]).toEqual(
@@ -146,6 +179,7 @@ describe('TenantGroupAttendanceDataService', () => {
           barcode: '000000000001',
           isPresent: true,
           attendanceState: 'Present',
+          attendanceTime: '2026-06-05T04:45:00+03:00',
           manualStatus: 'Auto',
         }),
       );
@@ -176,6 +210,7 @@ describe('TenantGroupAttendanceDataService', () => {
           barcodeNumber: '000000000001',
           attendanceRate: null,
           lastAttendance: '',
+          attendanceTime: '2026-06-05T04:45:00+03:00',
           attendanceState: 'Present',
           attendanceSource: 'Auto',
         },

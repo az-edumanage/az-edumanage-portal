@@ -1,0 +1,589 @@
+<div class="space-y-6">
+  <div class="space-y-1">
+    <div class="curriculum-details-breadcrumb flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+      <a [routerLink]="subjectsListLink()" class="hover:text-indigo-600 transition-colors">{{ breadcrumbLabel('subject') }}</a>
+      <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+      <a [routerLink]="subjectDetailsLink()" class="hover:text-indigo-600 transition-colors">{{ breadcrumbLabel('subjectDetails') }}</a>
+      <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+      <a [routerLink]="curriculumLink()" class="hover:text-indigo-600 transition-colors">{{ breadcrumbLabel('curriculum') }}</a>
+      @for (item of selectedPath(); track item.id; let first = $first; let last = $last) {
+        <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+        @if (first) {
+          <a [routerLink]="curriculumLink()" class="hover:text-indigo-600 transition-colors">{{ breadcrumbPathLabel(item, first) }}</a>
+        } @else if (!last) {
+          <span>{{ breadcrumbPathLabel(item, first) }}</span>
+        } @else {
+          <span>{{ breadcrumbPathLabel(item, first) }}</span>
+        }
+      }
+    </div>
+    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">
+      @if (selectedNode(); as node) {
+        {{ node.label }}
+      } @else {
+        Curriculum Details
+      }
+    </h2>
+    @if (subject(); as selectedSubject) {
+      <p class="text-slate-500 dark:text-slate-500 text-sm">{{ selectedSubject.name }} · {{ selectedSubject.stageName }} · {{ selectedSubject.gradeName }}</p>
+    }
+  </div>
+
+  @if (loading() || curriculumLoading()) {
+    <div class="bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
+      <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+        <mat-icon class="text-slate-500 animate-spin">sync</mat-icon>
+      </div>
+      <h3 class="font-bold text-slate-900 dark:text-white">Loading curriculum details</h3>
+      <p class="text-sm text-slate-500 mt-1">Please wait while the curriculum item is loaded.</p>
+    </div>
+  } @else if (loadError() || curriculumError()) {
+    <div class="bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
+      <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+        <mat-icon class="text-slate-500">error_outline</mat-icon>
+      </div>
+      <h3 class="font-bold text-slate-900 dark:text-white">Unable to load curriculum details</h3>
+      <p class="text-sm text-slate-500 mt-1">{{ loadError() || curriculumError() }}</p>
+      <a [routerLink]="curriculumLink()" class="inline-flex items-center gap-2 mt-5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors">
+        <mat-icon class="text-sm">arrow_back</mat-icon>
+        Back to Curriculum
+      </a>
+    </div>
+  } @else if (selectedNode(); as node) {
+    <div class="curriculum-details-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <div class="curriculum-details-card-header border-b border-slate-200 dark:border-slate-800">
+        <div class="curriculum-details-icon">
+          <mat-icon>{{ node.icon }}</mat-icon>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">{{ curriculumItemLabel() }}</p>
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ node.label }}</h3>
+        </div>
+      </div>
+      <div class="curriculum-details-tabs border-b border-slate-200 dark:border-slate-800" role="tablist" aria-label="Curriculum item sections">
+        <button
+          type="button"
+          class="curriculum-details-tab"
+          [class.curriculum-details-tab--active]="activeTab() === 'questions'"
+          role="tab"
+          [attr.aria-selected]="activeTab() === 'questions'"
+          aria-controls="curriculum-details-questions-panel"
+          id="curriculum-details-questions-tab"
+          (click)="selectTab('questions')"
+        >
+          <mat-icon>quiz</mat-icon>
+          <span>{{ tabLabel('questions') }}</span>
+        </button>
+        <button
+          type="button"
+          class="curriculum-details-tab"
+          [class.curriculum-details-tab--active]="activeTab() === 'material'"
+          role="tab"
+          [attr.aria-selected]="activeTab() === 'material'"
+          aria-controls="curriculum-details-material-panel"
+          id="curriculum-details-material-tab"
+          (click)="selectTab('material')"
+        >
+          <mat-icon>menu_book</mat-icon>
+          <span>{{ tabLabel('material') }}</span>
+        </button>
+      </div>
+      @if (activeTab() === 'questions') {
+        <div
+          class="curriculum-details-section"
+          id="curriculum-details-questions-panel"
+          role="tabpanel"
+          aria-labelledby="curriculum-details-questions-tab"
+        >
+          <div class="curriculum-details-section-toolbar">
+            <div class="curriculum-details-question-tools">
+              <label class="curriculum-details-search">
+                <mat-icon>search</mat-icon>
+                <input
+                  type="search"
+                  [value]="questionSearch()"
+                  (input)="updateQuestionSearch($event)"
+                  [placeholder]="questionSearchPlaceholder()"
+                  [attr.aria-label]="questionSearchPlaceholder()"
+                />
+              </label>
+              <div class="curriculum-details-filter">
+                <button
+                  type="button"
+                  class="curriculum-details-filter-btn"
+                  [class.curriculum-details-filter-btn--active]="selectedQuestionTypeFilter()"
+                  (click)="toggleQuestionTypeFilter($event)"
+                >
+                  <mat-icon>filter_list</mat-icon>
+                  <span>{{ advancedFiltersLabel() }}</span>
+                  @if (selectedQuestionTypeFilter()) {
+                    <span class="curriculum-details-filter-count">1</span>
+                  }
+                </button>
+                @if (questionTypeFilterOpen()) {
+                  <div class="curriculum-details-filter-panel" role="menu" (click)="stopPanelClick($event)">
+                    <div class="curriculum-details-filter-panel-head">
+                      <span>Question Type</span>
+                      <button type="button" (click)="clearQuestionFilters()">Reset</button>
+                    </div>
+                    <button
+                      type="button"
+                      class="curriculum-details-filter-option"
+                      [class.curriculum-details-filter-option--active]="!selectedQuestionTypeFilter()"
+                      (click)="selectQuestionTypeFilter('')"
+                    >
+                      {{ allQuestionTypesLabel() }}
+                    </button>
+                    @if (questionTypesLoading()) {
+                      <div class="curriculum-details-filter-loading">Loading types...</div>
+                    } @else {
+                      @for (type of questionTypes(); track type.id) {
+                        <button
+                          type="button"
+                          class="curriculum-details-filter-option"
+                          [class.curriculum-details-filter-option--active]="selectedQuestionTypeFilter() === type.code"
+                          (click)="selectQuestionTypeFilter(type.code)"
+                        >
+                          {{ type.name }}
+                        </button>
+                      }
+                    }
+                  </div>
+                }
+              </div>
+              @if (questionSearch() || selectedQuestionTypeFilter()) {
+                <button type="button" class="curriculum-details-clear-filters" (click)="clearQuestionFilters()">
+                  <mat-icon>close</mat-icon>
+                  <span>Clear</span>
+                </button>
+              }
+            </div>
+            <a [routerLink]="addQuestionLink()" class="curriculum-details-primary-action">
+              <mat-icon>add</mat-icon>
+              <span>{{ addQuestionLabel() }}</span>
+            </a>
+          </div>
+          <div class="curriculum-details-table-wrap">
+            <table class="curriculum-details-table curriculum-details-tree-table" role="treegrid" aria-label="Questions tree table">
+              <thead>
+                <tr>
+                  <th>{{ tableHeaderLabel('question') }}</th>
+                  <th>{{ tableHeaderLabel('type') }}</th>
+                  <th>{{ tableHeaderLabel('description') }}</th>
+                  <th class="curriculum-details-actions-column">{{ tableHeaderLabel('actions') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (questionsLoading()) {
+                  <tr>
+                    <td colspan="4" class="curriculum-details-empty">Loading questions...</td>
+                  </tr>
+                } @else if (questionsError()) {
+                  <tr>
+                    <td colspan="4" class="curriculum-details-empty">{{ questionsError() }}</td>
+                  </tr>
+                } @else if (questionRows().length) {
+                  <ng-container *ngTemplateOutlet="questionTreeRows; context: { rows: questionRows(), level: 0 }"></ng-container>
+                } @else {
+                  <tr>
+                    <td colspan="4" class="curriculum-details-empty">No questions yet.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="curriculum-details-pagination">
+            <span class="curriculum-details-pagination-range">{{ questionRangeLabel() }}</span>
+            <div class="curriculum-details-pagination-controls">
+              <label class="curriculum-details-page-size">
+                <span>Rows</span>
+                <select [value]="questionPageSize()" (change)="setQuestionPageSize($any($event.target).value)">
+                  <option value="5">5</option>
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                </select>
+              </label>
+              <button
+                type="button"
+                class="curriculum-details-page-btn"
+                [disabled]="questionPageIndex() === 0"
+                (click)="previousQuestionPage()"
+                aria-label="Previous questions page"
+              >
+                <mat-icon>chevron_left</mat-icon>
+              </button>
+              <span class="curriculum-details-page-label">{{ questionPageLabel() }}</span>
+              <button
+                type="button"
+                class="curriculum-details-page-btn"
+                [disabled]="questionPageIndex() >= questionTotalPages() - 1"
+                (click)="nextQuestionPage()"
+                aria-label="Next questions page"
+              >
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      } @else if (activeTab() === 'material') {
+        <div
+          class="curriculum-details-section curriculum-details-material-panel"
+          id="curriculum-details-material-panel"
+          role="tabpanel"
+          aria-labelledby="curriculum-details-material-tab"
+        >
+          <div class="curriculum-material-toolbar">
+            <div>
+              <h4>{{ tabLabel('material') }}</h4>
+              <p>{{ materialFolderCountLabel() }}</p>
+            </div>
+            <button type="button" class="curriculum-details-primary-action" (click)="openCreateFolderModal()">
+              <mat-icon>create_new_folder</mat-icon>
+              <span>{{ createFolderLabel() }}</span>
+            </button>
+          </div>
+          @if (materialLoading()) {
+            <div class="curriculum-details-empty">Loading material folders...</div>
+          } @else if (materialError()) {
+            <div class="curriculum-details-empty">{{ materialError() }}</div>
+          } @else if (materialFolders().length) {
+            <div class="curriculum-material-folder-grid">
+              @for (folder of materialFolders(); track folder.id) {
+                <article class="curriculum-material-folder-card">
+                  <div class="curriculum-material-folder-card-head">
+                    <a
+                      class="curriculum-material-folder-title"
+                      [routerLink]="materialFolderLink(folder.id)"
+                      [attr.aria-label]="'Open ' + folder.name"
+                    >
+                      <div class="curriculum-material-folder-icon">
+                        <mat-icon>folder</mat-icon>
+                      </div>
+                      <div>
+                        <h5>{{ folder.name }}</h5>
+                        <span>{{ materialFolderFilesLabel(folder) }}</span>
+                      </div>
+                    </a>
+                    <div class="curriculum-material-folder-actions" aria-label="Material folder actions">
+                      <a
+                        class="curriculum-details-table-action"
+                        [routerLink]="materialFolderLink(folder.id)"
+                        [attr.aria-label]="'Show ' + folder.name"
+                      >
+                        <mat-icon>visibility</mat-icon>
+                      </a>
+                      <button type="button" class="curriculum-details-table-action" [attr.aria-label]="'Edit ' + folder.name" (click)="openEditFolderModal(folder)">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button
+                        type="button"
+                        class="curriculum-details-table-action curriculum-details-table-action--danger"
+                        [disabled]="materialDeleteBusyId() === folder.id"
+                        [attr.aria-label]="'Delete ' + folder.name"
+                        (click)="confirmDeleteMaterialFolder(folder)"
+                      >
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="curriculum-material-folder-cover" aria-label="Folder file type preview">
+                    @for (slot of materialFolderCoverSlots(folder); track $index) {
+                      <span
+                        class="curriculum-material-folder-cover-slot"
+                        [class.curriculum-material-folder-cover-slot--more]="slot.kind === 'more'"
+                        [class.curriculum-material-folder-cover-slot--empty]="slot.kind === 'empty'"
+                        [attr.aria-label]="slot.kind === 'file' ? slot.type : slot.kind"
+                      >
+                        @if (slot.kind === 'more') {
+                          <span class="curriculum-material-folder-more">
+                            <mat-icon>add</mat-icon>
+                          </span>
+                        } @else {
+                          <mat-icon>{{ slot.kind === 'file' ? materialFolderIcon(slot.type) : 'insert_drive_file' }}</mat-icon>
+                        }
+                      </span>
+                    }
+                  </div>
+                  <div class="curriculum-material-folder-body">
+                    @if (folder.description) {
+                      <p>{{ folder.description }}</p>
+                    }
+                  </div>
+                </article>
+              }
+            </div>
+          } @else {
+            <div class="curriculum-details-empty-state">
+              <div class="curriculum-details-empty-state-icon">
+                <mat-icon>folder_open</mat-icon>
+              </div>
+              <div>
+                <h4>{{ materialEmptyTitle() }}</h4>
+                <p>{{ materialEmptyDescription() }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm text-center">
+      <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+        <mat-icon class="text-slate-500">find_in_page</mat-icon>
+      </div>
+      <h3 class="font-bold text-slate-900 dark:text-white">Curriculum item not found</h3>
+      <p class="text-sm text-slate-500 mt-1">The selected curriculum item could not be found.</p>
+      <a [routerLink]="curriculumLink()" class="inline-flex items-center gap-2 mt-5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors">
+        <mat-icon class="text-sm">arrow_back</mat-icon>
+        Back to Curriculum
+      </a>
+    </div>
+  }
+</div>
+
+<ng-template #questionTreeRows let-rows="rows" let-level="level">
+  @for (row of rows; track row.id) {
+    <tr
+      role="row"
+      class="curriculum-question-tree-row"
+      [class.curriculum-question-tree-row--highlighted]="isQuestionRowHighlighted(row.id)"
+      [attr.aria-selected]="isQuestionRowHighlighted(row.id)"
+      [attr.aria-expanded]="row.children.length ? isQuestionExpanded(row.id) : null"
+      (click)="selectQuestionRow(row.id)"
+    >
+      <td>
+        <div class="curriculum-question-tree-cell" [style.padding-left.rem]="level * 1.5">
+          <button
+            type="button"
+            class="curriculum-question-tree-toggle"
+            [class.curriculum-question-tree-toggle--hidden]="!row.children.length"
+            [disabled]="!row.children.length"
+            [attr.aria-label]="isQuestionExpanded(row.id) ? 'Collapse ' + rowLabel(row) : 'Expand ' + rowLabel(row)"
+            (click)="toggleQuestion(row.id)"
+          >
+            <mat-icon>{{ treeToggleIcon(row) }}</mat-icon>
+          </button>
+          <div class="curriculum-question-tree-content">
+            @if (row.question) {
+              <span class="curriculum-question-text">
+                @for (segment of questionTextSegments(row.question); track $index) {
+                  @if (segment.kind === 'math') {
+                    <math-field
+                      read-only
+                      class="curriculum-question-math"
+                      [value]="segment.value"
+                      [attr.aria-label]="segment.value"
+                    ></math-field>
+                  } @else {
+                    <span>{{ segment.value }}</span>
+                  }
+                }
+              </span>
+            }
+            @if (row.mediaUrl) {
+              @if (isImageMedia(row)) {
+                <button
+                  type="button"
+                  class="curriculum-question-image-preview"
+                  [attr.aria-label]="'Preview image for ' + rowLabel(row)"
+                  (click)="openImagePreview(row)"
+                >
+                  <img [src]="row.mediaUrl" [alt]="rowLabel(row)" loading="lazy" />
+                </button>
+              } @else {
+                <a
+                  [href]="row.mediaUrl"
+                  target="_blank"
+                  rel="noopener"
+                  class="curriculum-question-media-pill"
+                  [attr.aria-label]="'Open media for ' + rowLabel(row)"
+                >
+                  <mat-icon>attach_file</mat-icon>
+                  <span>{{ row.mediaName || 'Question media' }}</span>
+                </a>
+              }
+            }
+          </div>
+        </div>
+      </td>
+      <td>
+        <span
+          class="curriculum-question-type-badge"
+          [class.curriculum-question-type-badge--correct]="row.answerState === 'correct'"
+          [class.curriculum-question-type-badge--wrong]="row.answerState === 'wrong'"
+        >
+          {{ questionTypeLabel(row.type) }}
+        </span>
+      </td>
+      <td>{{ row.description }}</td>
+      <td class="curriculum-details-actions-column">
+        <div class="curriculum-details-table-actions">
+          <a
+            [routerLink]="editQuestionLink(row.id)"
+            class="curriculum-details-table-action"
+            [class.curriculum-details-table-action--hidden]="!row.canDelete"
+            [attr.aria-label]="'Edit ' + row.question"
+            [attr.aria-disabled]="!row.canDelete"
+            [tabIndex]="row.canDelete ? 0 : -1"
+          >
+            <mat-icon>edit</mat-icon>
+          </a>
+          @if (row.canDelete) {
+            <button
+              type="button"
+              class="curriculum-details-table-action curriculum-details-table-action--danger"
+              [attr.aria-label]="'Delete ' + row.question"
+              (click)="confirmDeleteQuestion(row)"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          }
+        </div>
+      </td>
+    </tr>
+    @if (row.children.length && isQuestionExpanded(row.id)) {
+      <ng-container *ngTemplateOutlet="questionTreeRows; context: { rows: row.children, level: level + 1 }"></ng-container>
+    }
+  }
+</ng-template>
+
+@if (questionPendingDelete(); as question) {
+  <div class="curriculum-details-modal-backdrop" role="presentation" (click)="closeDeleteQuestionModal()">
+    <div
+      class="curriculum-details-modal bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="delete-question-modal-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="curriculum-details-modal-header border-b border-slate-200 dark:border-slate-800">
+        <div>
+          <h3 id="delete-question-modal-title" class="text-base font-bold text-slate-900 dark:text-white">Delete Question</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ question.question }}</p>
+        </div>
+        <button type="button" class="curriculum-details-modal-icon-btn" aria-label="Close delete question modal" (click)="closeDeleteQuestionModal()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="curriculum-details-modal-body">
+        <p class="text-sm text-slate-600 dark:text-slate-300">
+          This question will be removed only if it is not used, assigned, or linked to another record.
+        </p>
+        @if (deleteQuestionError()) {
+          <div class="curriculum-details-modal-error">{{ deleteQuestionError() }}</div>
+        }
+      </div>
+      <div class="curriculum-details-modal-footer border-t border-slate-200 dark:border-slate-800">
+        <button type="button" class="curriculum-details-modal-secondary" [disabled]="deletingQuestion()" (click)="closeDeleteQuestionModal()">Cancel</button>
+        <button type="button" class="curriculum-details-modal-danger" [disabled]="deletingQuestion()" (click)="deleteQuestion()">
+          {{ deletingQuestion() ? 'Deleting...' : 'Delete Question' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (materialFolderModal(); as modal) {
+  <div class="curriculum-details-modal-backdrop" role="presentation" (click)="closeFolderModal()">
+    <div
+      class="curriculum-details-modal curriculum-material-folder-modal bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="material-folder-modal-title"
+      [attr.dir]="pageDirection()"
+      [class.curriculum-details-modal--rtl]="isRtl()"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="curriculum-details-modal-header border-b border-slate-200 dark:border-slate-800">
+        <div>
+          <h3 id="material-folder-modal-title" class="text-base font-bold text-slate-900 dark:text-white">
+            {{ folderModalTitle(modal) }}
+          </h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ folderModalDescription() }}</p>
+        </div>
+        <button type="button" class="curriculum-details-modal-icon-btn" aria-label="Close material folder modal" (click)="closeFolderModal()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="curriculum-details-modal-body">
+        <label class="curriculum-material-modal-field">
+          <span>{{ folderNameLabel() }}</span>
+          <input type="text" [value]="modal.name" (input)="updateFolderModalName($event)" />
+        </label>
+        <label class="curriculum-material-modal-field">
+          <span>{{ folderDescriptionLabel() }}</span>
+          <textarea rows="4" [value]="modal.description" (input)="updateFolderModalDescription($event)"></textarea>
+        </label>
+        @if (materialFolderModalError()) {
+          <div class="curriculum-details-modal-error">{{ materialFolderModalError() }}</div>
+        }
+      </div>
+      <div class="curriculum-details-modal-footer border-t border-slate-200 dark:border-slate-800">
+        <button type="button" class="curriculum-details-modal-secondary" [disabled]="materialSaving()" (click)="closeFolderModal()">{{ cancelLabel() }}</button>
+        <button type="button" class="curriculum-details-primary-action" [disabled]="materialSaving()" (click)="saveFolderModal()">
+          {{ materialSaving() ? savingLabel() : saveFolderLabel() }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (materialFolderPendingDelete(); as folder) {
+  <div class="curriculum-details-modal-backdrop" role="presentation" (click)="closeDeleteMaterialFolderModal()">
+    <div
+      class="curriculum-details-modal curriculum-material-folder-modal bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="material-folder-delete-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="curriculum-details-modal-header border-b border-slate-200 dark:border-slate-800">
+        <div>
+          <h3 id="material-folder-delete-title" class="text-base font-bold text-slate-900 dark:text-white">{{ deleteFolderTitle() }}</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ deleteFolderMessage(folder) }}</p>
+        </div>
+        <button type="button" class="curriculum-details-modal-icon-btn" aria-label="Close delete folder modal" (click)="closeDeleteMaterialFolderModal()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="curriculum-details-modal-body">
+        @if (materialFolderDeleteError()) {
+          <div class="curriculum-details-modal-error">{{ materialFolderDeleteError() }}</div>
+        }
+      </div>
+      <div class="curriculum-details-modal-footer border-t border-slate-200 dark:border-slate-800">
+        <button type="button" class="curriculum-details-modal-secondary" [disabled]="materialDeleteBusyId() === folder.id" (click)="closeDeleteMaterialFolderModal()">{{ cancelLabel() }}</button>
+        <button type="button" class="curriculum-details-modal-danger" [disabled]="materialDeleteBusyId() === folder.id" (click)="deleteMaterialFolder()">
+          {{ materialDeleteBusyId() === folder.id ? 'Deleting...' : deleteLabel() }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (previewImage(); as image) {
+  <div class="curriculum-details-modal-backdrop curriculum-image-modal-backdrop" role="presentation" (click)="closeImagePreview()">
+    <div
+      class="curriculum-image-modal bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="curriculum-image-preview-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="curriculum-details-modal-header border-b border-slate-200 dark:border-slate-800">
+        <div>
+          <h3 id="curriculum-image-preview-title" class="text-base font-bold text-slate-900 dark:text-white">{{ image.question || 'Image preview' }}</h3>
+          @if (image.question) {
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Image preview</p>
+          }
+        </div>
+        <button type="button" class="curriculum-details-modal-icon-btn" aria-label="Close image preview" (click)="closeImagePreview()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="curriculum-image-modal-body">
+        <img [src]="image.mediaUrl" [alt]="rowLabel(image)" />
+      </div>
+    </div>
+  </div>
+}

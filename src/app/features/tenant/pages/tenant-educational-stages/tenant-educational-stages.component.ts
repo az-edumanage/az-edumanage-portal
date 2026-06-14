@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { startWith } from 'rxjs';
@@ -10,7 +11,7 @@ import { EducationalStageSort } from '../../state/tenant-educational-stages.stor
 
 @Component({
   selector: 'app-tenant-educational-stages',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, MatIconModule],
+  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule, MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './tenant-educational-stages.component.html',
   styleUrl: './tenant-educational-stages.component.css',

@@ -1,0 +1,1307 @@
+:host {
+  display: block;
+}
+
+.tenant-group-lesson-details {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.tenant-group-lesson-details-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tenant-group-lesson-details-title {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.tenant-group-lesson-details-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.tenant-group-lesson-details-breadcrumb a {
+  transition: color 160ms ease;
+}
+
+.tenant-group-lesson-details-breadcrumb a:hover,
+.tenant-group-lesson-details-breadcrumb a:focus-visible {
+  color: #4f46e5;
+  outline: none;
+}
+
+.tenant-group-lesson-details-breadcrumb mat-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  font-size: 0.75rem;
+  line-height: 0.75rem;
+}
+
+.tenant-group-lesson-details-title h2 {
+  max-width: 48rem;
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.tenant-group-lesson-details-title p {
+  max-width: 60ch;
+  margin: 0;
+  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.tenant-group-lesson-details-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.tenant-group-lesson-details-primary,
+.tenant-group-lesson-details-secondary {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  padding: 0 1rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+button.tenant-group-lesson-details-primary,
+button.tenant-group-lesson-details-secondary {
+  border: 0;
+  cursor: pointer;
+}
+
+.tenant-group-lesson-details-primary {
+  background: #4f46e5;
+  color: #ffffff;
+}
+
+.tenant-group-lesson-details-primary:hover,
+.tenant-group-lesson-details-primary:focus-visible {
+  background: #4338ca;
+  outline: none;
+}
+
+.tenant-group-lesson-details-secondary {
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #334155;
+}
+
+.tenant-group-lesson-details-secondary:hover,
+.tenant-group-lesson-details-secondary:focus-visible {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  color: #4338ca;
+  outline: none;
+}
+
+.tenant-group-lesson-details-primary mat-icon,
+.tenant-group-lesson-details-secondary mat-icon,
+.tenant-group-lesson-details-state mat-icon,
+.tenant-group-lesson-details-card-head mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-lesson-details-card,
+.tenant-group-lesson-details-state {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.tenant-group-lesson-details-card {
+  overflow: hidden;
+}
+
+.tenant-group-lesson-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.tenant-group-lesson-stat-card {
+  display: grid;
+  gap: 0.625rem;
+  min-height: 5.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.tenant-group-lesson-stat-card p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.625rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tenant-group-lesson-stat-card div {
+  display: flex;
+  min-width: 0;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.tenant-group-lesson-stat-card h4 {
+  min-width: 0;
+  overflow: hidden;
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-lesson-stat-card span {
+  flex: 0 0 auto;
+  max-width: 58%;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-align: end;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-lesson-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(19rem, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.tenant-group-lesson-material-card {
+  min-width: 0;
+}
+
+.tenant-group-lesson-sidebar {
+  display: grid;
+  min-width: 0;
+  gap: 1rem;
+}
+
+.tenant-group-lesson-quick-actions {
+  display: grid;
+  gap: 1rem;
+  border-radius: 0.75rem;
+  background: #4f46e5;
+  padding: 1.5rem;
+  color: #ffffff;
+}
+
+.tenant-group-lesson-quick-actions h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.tenant-group-lesson-quick-actions > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.tenant-group-lesson-quick-actions a,
+.tenant-group-lesson-quick-actions button {
+  display: flex;
+  min-height: 4.625rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: rgb(255 255 255 / 0.1);
+  padding: 0.75rem;
+  color: #ffffff;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.tenant-group-lesson-quick-actions a:hover,
+.tenant-group-lesson-quick-actions a:focus-visible,
+.tenant-group-lesson-quick-actions button:hover,
+.tenant-group-lesson-quick-actions button:focus-visible {
+  background: rgb(255 255 255 / 0.2);
+  outline: none;
+}
+
+.tenant-group-lesson-quick-actions mat-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 1.5rem;
+  line-height: 1.5rem;
+}
+
+.tenant-group-lesson-quick-actions span {
+  color: #ffffff;
+  font-size: 0.625rem;
+  font-weight: 900;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.tenant-group-lesson-curriculum-card {
+  display: grid;
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.tenant-group-lesson-details-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1.25rem 1.5rem;
+}
+
+.tenant-group-lesson-details-card-head > span {
+  display: inline-flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.625rem;
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.tenant-group-lesson-details-card-head p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.tenant-group-lesson-details-card-head h3 {
+  margin: 0.125rem 0 0;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.tenant-group-lesson-settings-section {
+  display: grid;
+  gap: 1rem;
+}
+
+.tenant-group-lesson-settings-section + .tenant-group-lesson-settings-section,
+.tenant-group-lesson-settings-actions {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 1.5rem;
+}
+
+.tenant-group-lesson-settings-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.tenant-group-lesson-settings-section h3 {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tenant-group-lesson-status {
+  display: inline-flex;
+  min-height: 1.5rem;
+  align-items: center;
+  border-radius: 999px;
+  background: oklch(93.9% 0.032 270);
+  color: oklch(42% 0.19 270);
+  padding: 0 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 900;
+}
+
+.tenant-group-lesson-settings-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.tenant-group-lesson-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tenant-group-lesson-settings-row > div {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tenant-group-lesson-settings-row mat-icon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  color: #64748b;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-lesson-settings-row span {
+  overflow: hidden;
+  color: #334155;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-lesson-settings-row strong {
+  flex: 0 1 auto;
+  max-width: 60%;
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 0.8125rem;
+  font-weight: 900;
+  text-align: end;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-lesson-settings-path {
+  max-width: 66%;
+}
+
+.tenant-group-lesson-settings-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tenant-group-lesson-settings-actions p {
+  max-width: 64ch;
+  margin: 0;
+  color: #64748b;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.tenant-group-lesson-details-state {
+  display: grid;
+  min-height: 12rem;
+  place-items: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  color: #64748b;
+  text-align: center;
+}
+
+.tenant-group-lesson-details-state p {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.tenant-group-lesson-details-state--error {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.tenant-group-lesson-details-content-state {
+  display: grid;
+  min-height: 5.5rem;
+  place-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.tenant-group-lesson-empty-action {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: #4f46e5;
+  color: #ffffff;
+  padding: 0 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  transition: background-color 160ms ease;
+}
+
+.tenant-group-lesson-empty-action:hover,
+.tenant-group-lesson-empty-action:focus-visible {
+  background: #4338ca;
+  outline: none;
+}
+
+.tenant-group-lesson-details-content-state--error,
+.tenant-group-lesson-insert-error {
+  color: #be123c;
+}
+
+.tenant-group-lesson-content-list {
+  display: grid;
+}
+
+.tenant-group-lesson-material-toolbar {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1fr) minmax(11rem, auto) auto;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.tenant-group-lesson-material-search,
+.tenant-group-lesson-material-filter {
+  display: flex;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  padding: 0 0.75rem;
+  color: #64748b;
+}
+
+.tenant-group-lesson-material-search mat-icon,
+.tenant-group-lesson-material-filter mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-lesson-material-search input,
+.tenant-group-lesson-material-filter select,
+.tenant-group-lesson-material-pagination select {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #0f172a;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  outline: none;
+}
+
+.tenant-group-lesson-material-search input::placeholder {
+  color: #64748b;
+}
+
+.tenant-group-lesson-material-filter select,
+.tenant-group-lesson-material-pagination select {
+  cursor: pointer;
+}
+
+.tenant-group-lesson-material-clear {
+  min-height: 2.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: #4338ca;
+  padding: 0 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.tenant-group-lesson-material-clear:hover,
+.tenant-group-lesson-material-clear:focus-visible {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  outline: none;
+}
+
+.tenant-group-lesson-material-table-shell {
+  overflow-x: auto;
+}
+
+.tenant-group-lesson-material-table {
+  width: 100%;
+  min-width: 44rem;
+  border-collapse: collapse;
+}
+
+.tenant-group-lesson-material-table th {
+  height: 2.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  padding: 0 1rem;
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-align: start;
+}
+
+.tenant-group-lesson-material-table td {
+  height: 4.25rem;
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+  padding: 0.75rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.tenant-group-lesson-material-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.tenant-group-lesson-content-table-row {
+  transition: background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.tenant-group-lesson-content-table-row--clickable {
+  cursor: pointer;
+}
+
+.tenant-group-lesson-content-table-row--clickable:hover,
+.tenant-group-lesson-content-table-row--clickable:focus-visible {
+  background: #f8fafc;
+  box-shadow: inset 0 0 0 2px rgb(79 70 229 / 0.16);
+  outline: none;
+}
+
+.tenant-group-lesson-material-name-cell {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.tenant-group-lesson-material-name-cell strong,
+.tenant-group-lesson-material-name-cell small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-lesson-material-name-cell strong {
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 900;
+}
+
+.tenant-group-lesson-material-name-cell small {
+  margin-top: 0.125rem;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.tenant-group-lesson-material-type-chip {
+  display: inline-flex;
+  min-height: 1.625rem;
+  align-items: center;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4338ca;
+  padding: 0 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.tenant-group-lesson-material-th--action,
+.tenant-group-lesson-material-action-cell {
+  width: 5rem;
+  text-align: center;
+}
+
+.tenant-group-lesson-material-action-cell .tenant-group-lesson-content-open {
+  margin: 0 auto;
+}
+
+.tenant-group-lesson-material-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid #e2e8f0;
+  padding: 0.875rem 1.5rem;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.tenant-group-lesson-material-pagination > div,
+.tenant-group-lesson-material-pagination label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tenant-group-lesson-material-pagination label {
+  color: #475569;
+}
+
+.tenant-group-lesson-material-pagination select {
+  width: auto;
+  min-width: 3.25rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  padding: 0.375rem 0.5rem;
+}
+
+.tenant-group-lesson-material-pagination button {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.tenant-group-lesson-material-pagination button:hover,
+.tenant-group-lesson-material-pagination button:focus-visible {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  color: #4338ca;
+  outline: none;
+}
+
+.tenant-group-lesson-material-pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.tenant-group-lesson-material-pagination mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-lesson-content-row,
+.tenant-group-lesson-material-option {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tenant-group-lesson-content-row {
+  min-height: 4.5rem;
+  border: 0;
+  padding: 0.75rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  background: transparent;
+  color: inherit;
+  text-align: start;
+  transition: background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.tenant-group-lesson-content-row--clickable {
+  cursor: pointer;
+}
+
+.tenant-group-lesson-content-row--clickable:hover,
+.tenant-group-lesson-content-row--clickable:focus-visible {
+  background: #f8fafc;
+  box-shadow: inset 0 0 0 2px rgb(79 70 229 / 0.16);
+  outline: none;
+}
+
+.tenant-group-lesson-content-icon {
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.tenant-group-lesson-content-icon mat-icon,
+.tenant-group-lesson-content-open mat-icon,
+.tenant-group-lesson-modal-close mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-lesson-content-row h4 {
+  margin: 0;
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-lesson-content-row p {
+  margin: 0.125rem 0 0;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-lesson-content-open,
+.tenant-group-lesson-modal-close {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.tenant-group-lesson-content-open:hover,
+.tenant-group-lesson-content-open:focus-visible,
+.tenant-group-lesson-modal-close:hover,
+.tenant-group-lesson-modal-close:focus-visible {
+  background: #eef2ff;
+  color: #4338ca;
+  outline: none;
+}
+
+.tenant-group-lesson-content-row--clickable:hover .tenant-group-lesson-content-open,
+.tenant-group-lesson-content-row--clickable:focus-visible .tenant-group-lesson-content-open {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.tenant-group-lesson-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(15 23 42 / 0.48);
+}
+
+.tenant-group-lesson-modal {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(44rem, 100%);
+  max-height: min(42rem, calc(100vh - 2rem));
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgb(15 23 42 / 0.22);
+}
+
+.tenant-group-lesson-preview-modal {
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(58rem, 100%);
+  max-height: min(46rem, calc(100vh - 2rem));
+}
+
+.tenant-group-lesson-modal-head,
+.tenant-group-lesson-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+}
+
+.tenant-group-lesson-modal-head {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tenant-group-lesson-modal-head h3 {
+  max-width: min(42rem, calc(100vw - 7rem));
+  overflow: hidden;
+  margin: 0;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-lesson-modal-head p {
+  margin: 0.25rem 0 0;
+  color: #64748b;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.tenant-group-lesson-modal-close {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.tenant-group-lesson-modal-body {
+  overflow: auto;
+  padding: 1rem 1.25rem;
+}
+
+.tenant-group-lesson-preview-body {
+  min-height: 20rem;
+  overflow: auto;
+  background: #f8fafc;
+}
+
+.tenant-group-lesson-file-preview,
+.tenant-group-lesson-file-frame {
+  display: block;
+  width: 100%;
+  min-height: min(34rem, calc(100vh - 12rem));
+  border: 0;
+  background: #0f172a;
+}
+
+.tenant-group-lesson-file-preview {
+  height: auto;
+  max-height: min(34rem, calc(100vh - 12rem));
+  object-fit: contain;
+}
+
+video.tenant-group-lesson-file-preview {
+  height: min(34rem, calc(100vh - 12rem));
+}
+
+.tenant-group-lesson-file-frame {
+  height: min(34rem, calc(100vh - 12rem));
+  background: #ffffff;
+}
+
+.tenant-group-lesson-note-preview {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 1.5rem;
+  color: #1e293b;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.7;
+}
+
+.tenant-group-lesson-note-preview p {
+  max-width: 75ch;
+  margin: 0;
+}
+
+.tenant-group-lesson-link-preview {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.875rem;
+  margin: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  padding: 1rem;
+}
+
+.tenant-group-lesson-link-preview h4,
+.tenant-group-lesson-link-preview p {
+  overflow: hidden;
+  margin: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-lesson-link-preview h4 {
+  color: #0f172a;
+  font-size: 0.9375rem;
+  font-weight: 900;
+}
+
+.tenant-group-lesson-link-preview p {
+  margin-top: 0.125rem;
+  color: #64748b;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.tenant-group-lesson-link-preview a {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: #4f46e5;
+  color: #ffffff;
+  padding: 0 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+.tenant-group-lesson-link-preview a:hover,
+.tenant-group-lesson-link-preview a:focus-visible {
+  background: #4338ca;
+  outline: none;
+}
+
+.tenant-group-lesson-modal-footer {
+  border-top: 1px solid #e2e8f0;
+  justify-content: flex-end;
+}
+
+.tenant-group-lesson-material-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.tenant-group-lesson-material-option {
+  width: 100%;
+  min-height: 4rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.625rem;
+  background: #ffffff;
+  padding: 0.75rem;
+  color: inherit;
+  cursor: pointer;
+  text-align: start;
+  transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.tenant-group-lesson-material-option:hover,
+.tenant-group-lesson-material-option:focus-visible,
+.tenant-group-lesson-material-option--selected {
+  border-color: #818cf8;
+  background: #eef2ff;
+  box-shadow: 0 0 0 3px rgb(79 70 229 / 0.12);
+  outline: none;
+}
+
+.tenant-group-lesson-material-option--inserted {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
+.tenant-group-lesson-material-option:disabled:hover,
+.tenant-group-lesson-material-option:disabled:focus-visible {
+  border-color: #e2e8f0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.tenant-group-lesson-material-option strong,
+.tenant-group-lesson-material-option small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-lesson-material-option strong {
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 900;
+}
+
+.tenant-group-lesson-material-option small {
+  margin-top: 0.125rem;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.tenant-group-lesson-material-option em {
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.6875rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.tenant-group-lesson-insert-error {
+  margin-top: 0.75rem;
+  border-radius: 0.5rem;
+  background: #fff1f2;
+  padding: 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+@media (max-width: 720px) {
+  .tenant-group-lesson-details-header {
+    display: grid;
+  }
+
+  .tenant-group-lesson-stats,
+  .tenant-group-lesson-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .tenant-group-lesson-details-actions {
+    justify-content: stretch;
+  }
+
+  .tenant-group-lesson-details-primary,
+  .tenant-group-lesson-details-secondary {
+    flex: 1 1 12rem;
+  }
+
+  .tenant-group-lesson-details-card-head,
+  .tenant-group-lesson-curriculum-card,
+  .tenant-group-lesson-content-row,
+  .tenant-group-lesson-material-toolbar,
+  .tenant-group-lesson-material-pagination {
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+
+  .tenant-group-lesson-material-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .tenant-group-lesson-material-pagination {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tenant-group-lesson-material-pagination > div {
+    flex-wrap: wrap;
+  }
+
+  .tenant-group-lesson-content-row,
+  .tenant-group-lesson-material-option {
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+  }
+
+  .tenant-group-lesson-content-open,
+  .tenant-group-lesson-material-option em {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .tenant-group-lesson-link-preview {
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+  }
+
+  .tenant-group-lesson-link-preview a {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+
+@media (min-width: 721px) and (max-width: 1100px) {
+  .tenant-group-lesson-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tenant-group-lesson-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tenant-group-lesson-details-breadcrumb a,
+  .tenant-group-lesson-details-primary,
+  .tenant-group-lesson-details-secondary,
+  .tenant-group-lesson-quick-actions a,
+  .tenant-group-lesson-quick-actions button,
+  .tenant-group-lesson-content-row,
+  .tenant-group-lesson-content-table-row,
+  .tenant-group-lesson-content-open,
+  .tenant-group-lesson-modal-close,
+  .tenant-group-lesson-material-option,
+  .tenant-group-lesson-material-clear,
+  .tenant-group-lesson-empty-action,
+  .tenant-group-lesson-material-pagination button,
+  .tenant-group-lesson-link-preview a {
+    transition: none;
+  }
+}
+
+:host-context(.dark) .tenant-group-lesson-details-title h2,
+:host-context(.dark) .tenant-group-lesson-stat-card h4,
+:host-context(.dark) .tenant-group-lesson-details-card-head h3,
+:host-context(.dark) .tenant-group-lesson-settings-row strong,
+:host-context(.dark) .tenant-group-lesson-content-row h4,
+:host-context(.dark) .tenant-group-lesson-material-name-cell strong,
+:host-context(.dark) .tenant-group-lesson-modal-head h3,
+:host-context(.dark) .tenant-group-lesson-material-option strong,
+:host-context(.dark) .tenant-group-lesson-link-preview h4 {
+  color: #f8fafc;
+}
+
+:host-context(.dark) .tenant-group-lesson-details-title p,
+:host-context(.dark) .tenant-group-lesson-details-breadcrumb,
+:host-context(.dark) .tenant-group-lesson-stat-card p,
+:host-context(.dark) .tenant-group-lesson-stat-card span,
+:host-context(.dark) .tenant-group-lesson-details-card-head p,
+:host-context(.dark) .tenant-group-lesson-settings-section h3,
+:host-context(.dark) .tenant-group-lesson-settings-row mat-icon,
+:host-context(.dark) .tenant-group-lesson-settings-row span,
+:host-context(.dark) .tenant-group-lesson-settings-actions p,
+:host-context(.dark) .tenant-group-lesson-content-row p,
+:host-context(.dark) .tenant-group-lesson-material-name-cell small,
+:host-context(.dark) .tenant-group-lesson-modal-head p,
+:host-context(.dark) .tenant-group-lesson-material-option small,
+:host-context(.dark) .tenant-group-lesson-link-preview p {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .tenant-group-lesson-details-card,
+:host-context(.dark) .tenant-group-lesson-stat-card,
+:host-context(.dark) .tenant-group-lesson-details-state,
+:host-context(.dark) .tenant-group-lesson-modal,
+:host-context(.dark) .tenant-group-lesson-material-search,
+:host-context(.dark) .tenant-group-lesson-material-filter,
+:host-context(.dark) .tenant-group-lesson-material-clear,
+:host-context(.dark) .tenant-group-lesson-material-pagination select,
+:host-context(.dark) .tenant-group-lesson-material-pagination button,
+:host-context(.dark) .tenant-group-lesson-material-option,
+:host-context(.dark) .tenant-group-lesson-link-preview {
+  border-color: #334155;
+  background: #0f172a;
+}
+
+:host-context(.dark) .tenant-group-lesson-curriculum-card {
+  background: #0f172a;
+}
+
+:host-context(.dark) .tenant-group-lesson-quick-actions {
+  background: #4f46e5;
+}
+
+:host-context(.dark) .tenant-group-lesson-details-card-head,
+:host-context(.dark) .tenant-group-lesson-settings-section + .tenant-group-lesson-settings-section,
+:host-context(.dark) .tenant-group-lesson-settings-actions,
+:host-context(.dark) .tenant-group-lesson-content-row,
+:host-context(.dark) .tenant-group-lesson-material-toolbar,
+:host-context(.dark) .tenant-group-lesson-material-table th,
+:host-context(.dark) .tenant-group-lesson-material-table td,
+:host-context(.dark) .tenant-group-lesson-material-pagination,
+:host-context(.dark) .tenant-group-lesson-modal-head,
+:host-context(.dark) .tenant-group-lesson-modal-footer {
+  border-color: #334155;
+}
+
+:host-context(.dark) .tenant-group-lesson-material-toolbar,
+:host-context(.dark) .tenant-group-lesson-material-table th {
+  background: #111827;
+}
+
+:host-context(.dark) .tenant-group-lesson-material-search input,
+:host-context(.dark) .tenant-group-lesson-material-filter select,
+:host-context(.dark) .tenant-group-lesson-material-pagination select,
+:host-context(.dark) .tenant-group-lesson-material-table td,
+:host-context(.dark) .tenant-group-lesson-material-pagination {
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .tenant-group-lesson-details-secondary,
+:host-context(.dark) .tenant-group-lesson-modal-close {
+  border-color: #334155;
+  background: #111827;
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .tenant-group-lesson-empty-action {
+  background: #6366f1;
+  color: #ffffff;
+}
+
+:host-context(.dark) .tenant-group-lesson-details-secondary:hover,
+:host-context(.dark) .tenant-group-lesson-details-secondary:focus-visible,
+:host-context(.dark) .tenant-group-lesson-empty-action:hover,
+:host-context(.dark) .tenant-group-lesson-empty-action:focus-visible,
+:host-context(.dark) .tenant-group-lesson-content-row--clickable:hover,
+:host-context(.dark) .tenant-group-lesson-content-row--clickable:focus-visible,
+:host-context(.dark) .tenant-group-lesson-content-table-row--clickable:hover,
+:host-context(.dark) .tenant-group-lesson-content-table-row--clickable:focus-visible,
+:host-context(.dark) .tenant-group-lesson-modal-close:hover,
+:host-context(.dark) .tenant-group-lesson-modal-close:focus-visible,
+:host-context(.dark) .tenant-group-lesson-material-clear:hover,
+:host-context(.dark) .tenant-group-lesson-material-clear:focus-visible,
+:host-context(.dark) .tenant-group-lesson-material-pagination button:hover,
+:host-context(.dark) .tenant-group-lesson-material-pagination button:focus-visible,
+:host-context(.dark) .tenant-group-lesson-material-option:hover,
+:host-context(.dark) .tenant-group-lesson-material-option:focus-visible,
+:host-context(.dark) .tenant-group-lesson-material-option--selected {
+  border-color: #6366f1;
+  background: #1e1b4b;
+  color: #e0e7ff;
+}
+
+:host-context(.dark) .tenant-group-lesson-content-icon,
+:host-context(.dark) .tenant-group-lesson-details-card-head > span,
+:host-context(.dark) .tenant-group-lesson-material-type-chip,
+:host-context(.dark) .tenant-group-lesson-content-open,
+:host-context(.dark) .tenant-group-lesson-content-row--clickable:hover .tenant-group-lesson-content-open,
+:host-context(.dark) .tenant-group-lesson-content-table-row--clickable:hover .tenant-group-lesson-content-open,
+:host-context(.dark) .tenant-group-lesson-content-row--clickable:focus-visible .tenant-group-lesson-content-open {
+  background: #1e1b4b;
+  color: #c4b5fd;
+}
+
+:host-context(.dark) .tenant-group-lesson-preview-body {
+  background: #020617;
+}
+
+:host-context(.dark) .tenant-group-lesson-note-preview {
+  color: #e2e8f0;
+}
+
+:host-context(.dark) .tenant-group-lesson-material-option:disabled:hover,
+:host-context(.dark) .tenant-group-lesson-material-option:disabled:focus-visible {
+  border-color: #334155;
+  background: #0f172a;
+}
