@@ -49,6 +49,11 @@ export interface GroupLessonContent {
   sizeBytes?: number | null;
 }
 
+export interface GroupSessionLibraryContent extends Omit<GroupLessonContent, 'curriculumNodeId' | 'curriculumNodeLabel'> {
+  sessionId: string;
+  completed?: boolean;
+}
+
 export interface GroupDetails {
   id: string;
   name: string;
@@ -99,6 +104,20 @@ export interface TenantGroupLessonContentResponse {
   url?: string | null;
   fileContentType?: string | null;
   sizeBytes?: number | null;
+}
+
+export interface TenantGroupSessionLibraryContentResponse {
+  id: string;
+  sessionId: string;
+  folderId: string;
+  folderName: string;
+  contentType: 'FILE' | 'NOTE' | 'LINK';
+  contentId: string;
+  title: string;
+  url?: string | null;
+  fileContentType?: string | null;
+  sizeBytes?: number | null;
+  completed?: boolean;
 }
 
 export interface TenantGroupStudentResponse {

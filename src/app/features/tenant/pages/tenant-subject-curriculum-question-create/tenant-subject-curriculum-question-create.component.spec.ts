@@ -57,6 +57,55 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
   };
   const data = {
     getSubjectCurriculum: vi.fn().mockResolvedValue(curriculumRoot),
+    listBloomLevels: vi.fn().mockResolvedValue([
+      {
+        id: 'bloom-remember',
+        code: 'remember',
+        nameAr: 'التذكر',
+        nameEn: 'Remembering',
+        descriptionAr: null,
+        descriptionEn: null,
+        levelOrder: 1,
+      },
+      {
+        id: 'bloom-understand',
+        code: 'understand',
+        nameAr: 'الفهم',
+        nameEn: 'Understanding',
+        descriptionAr: null,
+        descriptionEn: null,
+        levelOrder: 2,
+      },
+    ]),
+    listQuestionDifficulties: vi.fn().mockResolvedValue([
+      {
+        id: 'difficulty-easy',
+        code: 'easy',
+        nameAr: 'سهل',
+        nameEn: 'Easy',
+        descriptionAr: null,
+        descriptionEn: null,
+        difficultyOrder: 1,
+      },
+      {
+        id: 'difficulty-medium',
+        code: 'medium',
+        nameAr: 'متوسط',
+        nameEn: 'Medium',
+        descriptionAr: null,
+        descriptionEn: null,
+        difficultyOrder: 2,
+      },
+      {
+        id: 'difficulty-hard',
+        code: 'hard',
+        nameAr: 'صعب',
+        nameEn: 'Hard',
+        descriptionAr: null,
+        descriptionEn: null,
+        difficultyOrder: 3,
+      },
+    ]),
     listCurriculumQuestions: vi.fn().mockResolvedValue([
       {
         id: 'question-1',
@@ -64,6 +113,9 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
         type: 'MULTIPLE_CHOICE',
         answer: null,
         description: 'Choose all valid answers',
+        bloomId: 'bloom-understand',
+        difficultyId: 'difficulty-medium',
+        weight: 12,
         answers: [
           {
             id: 'answer-1',
@@ -84,6 +136,9 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       type: 'MULTIPLE_CHOICE',
       answer: null,
       description: null,
+      bloomId: null,
+      difficultyId: null,
+      weight: null,
       answers: [],
       createdAt: '2026-01-01T00:00:00Z',
       updatedAt: '2026-01-01T00:00:00Z',
@@ -94,6 +149,9 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       type: 'MULTIPLE_CHOICE',
       answer: null,
       description: null,
+      bloomId: null,
+      difficultyId: null,
+      weight: null,
       answers: [
         {
           id: 'answer-1',
@@ -176,6 +234,8 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
     expect(facade.loadSubject).toHaveBeenCalledWith('subject-1');
     expect(data.getSubjectCurriculum).toHaveBeenCalledWith('subject-1');
     expect(questionTypeSettings.listQuestionTypes).toHaveBeenCalled();
+    expect(data.listBloomLevels).toHaveBeenCalled();
+    expect(data.listQuestionDifficulties).toHaveBeenCalled();
     expect(text).toContain('Subject');
     expect(text).toContain('Subject Details');
     expect(text).toContain('Curriculum');
@@ -184,6 +244,19 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
     expect(text).toContain('Lesson 1');
     expect(text).toContain('Add Question');
     expect(text).toContain('Question Information');
+    expect(text).toContain('Analytical Data');
+    expect(text).toContain('Inactive');
+    expect(text).toContain('Topic');
+    expect(text).toContain("Bloom's Taxonomy");
+    expect(text).toContain("Select Bloom's Taxonomy level");
+    expect(text).toContain('1. Remembering');
+    expect(text).toContain('2. Understanding');
+    expect(text).toContain('Difficulty');
+    expect(text).toContain('Easy');
+    expect(text).toContain('Medium');
+    expect(text).toContain('Hard');
+    expect(text).toContain('The Weight');
+    expect((fixture.nativeElement.querySelector('#questionWeight') as HTMLInputElement).placeholder).toBe('Enter weight');
     expect(text).toContain('Type');
     const fieldLabels = Array.from(fixture.nativeElement.querySelectorAll('label') as NodeListOf<HTMLLabelElement>)
       .map((label) => label.textContent?.trim());
@@ -218,6 +291,21 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
     expect(text).toContain('Save Question');
   });
 
+  it('toggles the analytical data section state', () => {
+    const switchButton = fixture.nativeElement.querySelector('[role="switch"][aria-label="Toggle Analytical Data"]') as HTMLButtonElement;
+
+    expect(switchButton).toBeTruthy();
+    expect(switchButton.getAttribute('aria-checked')).toBe('false');
+    expect(fixture.nativeElement.textContent).toContain('Inactive');
+
+    switchButton.click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.analyticalDataActive()).toBe(true);
+    expect(switchButton.getAttribute('aria-checked')).toBe('true');
+    expect(fixture.nativeElement.textContent).toContain('Active');
+  });
+
   it('renders Arabic labels and RTL direction when Arabic is selected', () => {
     const i18n = TestBed.inject(I18nService);
     i18n.setLanguage('ar');
@@ -233,6 +321,13 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
     expect(text).toContain('منهج Arabic');
     expect(text).toContain('إضافة سؤال');
     expect(text).toContain('بيانات السؤال');
+    expect(text).toContain('البيانات التحليلية');
+    expect(text).toContain('الموضوع');
+    expect(text).toContain('تصنيف بلوم');
+    expect(text).toContain('1. التذكر');
+    expect(text).toContain('الصعوبة');
+    expect(text).toContain('سهل');
+    expect(text).toContain('الوزن');
     expect(text).toContain('اختر نوع السؤال');
 
     fixture.componentInstance.selectQuestionType('اختيار من متعدد');
@@ -249,7 +344,15 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
     vi.spyOn(router, 'navigate').mockResolvedValue(true);
     const component = fixture.componentInstance;
 
-    component.questionForm.patchValue({ question: 'What is the lesson title?' });
+    component.questionForm.patchValue({ question: 'What is the lesson title?', bloomId: 'bloom-understand', difficultyId: 'difficulty-medium' });
+    component.setQuestionWeightValue('12abc');
+    expect(component.questionForm.controls.weight.value).toBe('12');
+    const letterKeyEvent = new KeyboardEvent('keydown', { key: 'a', cancelable: true });
+    component.preventNonNumericWeightInput(letterKeyEvent);
+    expect(letterKeyEvent.defaultPrevented).toBe(true);
+    const digitKeyEvent = new KeyboardEvent('keydown', { key: '3', cancelable: true });
+    component.preventNonNumericWeightInput(digitKeyEvent);
+    expect(digitKeyEvent.defaultPrevented).toBe(false);
     component.selectQuestionType('Multiple Choice');
     component.selectMultipleChoiceMode('single');
     await component.saveQuestion();
@@ -259,6 +362,9 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       type: 'MULTIPLE_CHOICE',
       answer: null,
       description: '',
+      bloomId: 'bloom-understand',
+      difficultyId: 'difficulty-medium',
+      weight: 12,
       mediaUrl: null,
       mediaFileName: null,
       mediaOriginalName: null,
@@ -285,6 +391,9 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       type: 'MULTIPLE_CHOICE',
       answer: null,
       description: '',
+      bloomId: null,
+      difficultyId: null,
+      weight: null,
       mediaUrl: null,
       mediaFileName: null,
       mediaOriginalName: null,
@@ -425,6 +534,9 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       type: 'MULTIPLE_CHOICE',
       answer: null,
       description: null,
+      bloomId: null,
+      difficultyId: null,
+      weight: null,
       mediaUrl: null,
       mediaFileName: null,
       mediaOriginalName: null,
@@ -436,6 +548,9 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       type: 'MULTIPLE_CHOICE',
       answer: null,
       description: null,
+      bloomId: null,
+      difficultyId: null,
+      weight: null,
       mediaUrl: null,
       mediaFileName: null,
       mediaOriginalName: null,
@@ -484,6 +599,9 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       type: 'MCQ',
       answer: null,
       description: null,
+      bloomId: null,
+      difficultyId: null,
+      weight: null,
       mediaUrl: null,
       mediaFileName: null,
       mediaOriginalName: null,
@@ -536,6 +654,9 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       type: 'SHORT_ANSWER',
       answer: null,
       description: '',
+      bloomId: null,
+      difficultyId: null,
+      weight: null,
       mediaUrl: null,
       mediaFileName: null,
       mediaOriginalName: null,
@@ -594,6 +715,9 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       type: 'SHORT_ANSWER',
       answer: null,
       description: null,
+      bloomId: null,
+      difficultyId: null,
+      weight: null,
       mediaUrl: null,
       mediaFileName: null,
       mediaOriginalName: null,
@@ -637,6 +761,9 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       type: 'ESSAY',
       answer: null,
       description: '',
+      bloomId: null,
+      difficultyId: null,
+      weight: null,
       mediaUrl: null,
       mediaFileName: null,
       mediaOriginalName: null,
@@ -687,6 +814,9 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       type: 'ESSAY',
       answer: null,
       description: null,
+      bloomId: null,
+      difficultyId: null,
+      weight: null,
       mediaUrl: null,
       mediaFileName: null,
       mediaOriginalName: null,
@@ -742,6 +872,9 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       type: 'TRUE_FALSE',
       answer: null,
       description: '',
+      bloomId: null,
+      difficultyId: null,
+      weight: null,
       mediaUrl: null,
       mediaFileName: null,
       mediaOriginalName: null,
@@ -809,6 +942,9 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       type: 'TRUE_FALSE',
       answer: null,
       description: null,
+      bloomId: null,
+      difficultyId: null,
+      weight: null,
       mediaUrl: null,
       mediaFileName: null,
       mediaOriginalName: null,
@@ -820,6 +956,9 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       type: 'TRUE_FALSE',
       answer: null,
       description: null,
+      bloomId: null,
+      difficultyId: null,
+      weight: null,
       mediaUrl: null,
       mediaFileName: null,
       mediaOriginalName: null,
@@ -995,6 +1134,9 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       type: 'MULTIPLE_CHOICE',
       answer: null,
       description: '',
+      bloomId: null,
+      difficultyId: null,
+      weight: null,
       mediaUrl: '/api/v1/public/tenant-curriculum-question-media/tenant-1/media.png',
       mediaFileName: 'media.png',
       mediaOriginalName: 'lesson.png',
@@ -1033,6 +1175,9 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       type: 'MULTIPLE_CHOICE',
       answer: null,
       description: 'Choose all valid answers',
+      bloomId: 'bloom-understand',
+      difficultyId: 'difficulty-medium',
+      weight: 12,
       mediaUrl: null,
       mediaFileName: null,
       mediaOriginalName: null,

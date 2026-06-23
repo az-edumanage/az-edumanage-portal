@@ -447,6 +447,186 @@
           }
           </div>
         </div>
+
+        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 dark:border-slate-800 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h3 class="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                <mat-icon class="text-base text-indigo-600 dark:text-indigo-300">analytics</mat-icon>
+                {{ label('analyticalData') }}
+              </h3>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ label('analyticalDataHint') }}</p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              [attr.aria-checked]="analyticalDataActive()"
+              [attr.aria-label]="label('toggleAnalyticalData')"
+              (click)="analyticalDataActive.set(!analyticalDataActive())"
+              class="analytical-data-switch inline-flex w-fit items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-bold text-slate-600 transition-colors hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+              [class.analytical-data-switch--active]="analyticalDataActive()"
+            >
+              <span
+                class="analytical-data-switch-track inline-flex h-6 w-11 items-center rounded-full bg-slate-300 p-0.5 transition-colors dark:bg-slate-700"
+              >
+                <span
+                  class="analytical-data-switch-knob h-5 w-5 rounded-full bg-white shadow-sm transition-transform dark:bg-slate-100"
+                ></span>
+              </span>
+              <span>{{ analyticalDataActive() ? label('active') : label('inactive') }}</span>
+            </button>
+          </div>
+          <div class="mt-4 space-y-2">
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ label('topic') }}</p>
+            <div class="space-y-2">
+              @for (item of selectedPath(); track item.id) {
+                <div class="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700 dark:bg-slate-800/70 dark:text-slate-200">
+                  <mat-icon class="text-sm text-slate-500">{{ pathItemIcon() }}</mat-icon>
+                  <span class="truncate">{{ item.label }}</span>
+                </div>
+              }
+            </div>
+          </div>
+          <div class="mt-4">
+            <label for="bloomTaxonomy" class="block text-sm font-medium text-slate-700 dark:text-slate-300">{{ label('bloomTaxonomy') }}</label>
+            <select
+              id="bloomTaxonomy"
+              formControlName="bloomId"
+              [attr.disabled]="bloomLevelsLoading() || !!bloomLevelsError() ? '' : null"
+              class="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition-all focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            >
+              <option value="">{{ bloomTaxonomyPlaceholder() }}</option>
+              @for (level of bloomLevels(); track level.id) {
+                <option [value]="level.id">{{ bloomLevelLabel(level) }}</option>
+              }
+            </select>
+            @if (bloomLevelsError()) {
+              <p class="mt-2 text-xs font-medium text-rose-600 dark:text-rose-300">{{ bloomLevelsError() }}</p>
+            }
+          </div>
+          <div class="mt-4 space-y-2">
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ label('difficulty') }}</p>
+            @if (questionDifficultiesLoading()) {
+              <p class="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-500 dark:bg-slate-800/70 dark:text-slate-400">{{ label('loadingQuestionDifficulties') }}</p>
+            } @else if (questionDifficultiesError()) {
+              <p class="rounded-lg bg-rose-50 px-3 py-2 text-sm font-medium text-rose-600 dark:bg-rose-950/30 dark:text-rose-300">{{ questionDifficultiesError() }}</p>
+            } @else {
+              <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                @for (difficulty of questionDifficulties(); track difficulty.id) {
+                  <button
+                    type="button"
+                    (click)="selectQuestionDifficulty(difficulty.id)"
+                    class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700 transition-colors hover:border-indigo-300 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-200 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30"
+                    [class.border-indigo-500]="questionForm.controls.difficultyId.value === difficulty.id"
+                    [class.bg-indigo-50]="questionForm.controls.difficultyId.value === difficulty.id"
+                    [class.text-indigo-700]="questionForm.controls.difficultyId.value === difficulty.id"
+                    [attr.aria-pressed]="questionForm.controls.difficultyId.value === difficulty.id"
+                  >
+                    {{ questionDifficultyLabel(difficulty) }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
+          <div class="mt-4">
+            <label for="questionWeight" class="block text-sm font-medium text-slate-700 dark:text-slate-300">{{ label('theWeight') }}</label>
+            <input
+              id="questionWeight"
+              type="text"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              [value]="questionForm.controls.weight.value"
+              (keydown)="preventNonNumericWeightInput($event)"
+              (input)="setQuestionWeightValue($any($event.target).value)"
+              (paste)="pasteQuestionWeightValue($event)"
+              [placeholder]="label('enterWeight')"
+              class="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition-all focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            >
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div class="border-b border-slate-200 pb-4 dark:border-slate-800">
+            <h3 class="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+              <mat-icon class="text-base text-rose-600 dark:text-rose-300">sell</mat-icon>
+              {{ label('applicationData') }}
+            </h3>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ label('applicationDataHint') }}</p>
+          </div>
+
+          <div class="mt-4 space-y-2">
+            <label for="applicationTagInput" class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+              {{ label('tags') }}
+              <span class="text-xs text-slate-500 dark:text-slate-400">{{ label('optional') }}</span>
+            </label>
+            <div class="flex min-h-12 flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-800">
+              @for (tag of applicationTags(); track tag) {
+                <span class="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-2.5 py-1.5 text-sm font-bold text-white dark:bg-indigo-600">
+                  {{ tag }}
+                  <button
+                    type="button"
+                    (click)="removeApplicationTag(tag)"
+                    class="inline-flex h-4 w-4 items-center justify-center rounded-full text-white/80 transition-colors hover:bg-white/15 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/40"
+                    [attr.aria-label]="'Remove ' + tag"
+                  >
+                    <mat-icon class="text-[14px] leading-none">close</mat-icon>
+                  </button>
+                </span>
+              }
+              <input
+                id="applicationTagInput"
+                type="text"
+                formControlName="applicationTagInput"
+                (keydown)="addApplicationTagFromKeyboard($event)"
+                [placeholder]="label('writeTag')"
+                class="min-w-28 flex-1 border-0 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-100"
+              >
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ label('suggestedTags') }}</span>
+              @for (tag of suggestedApplicationTags(); track tag) {
+                <button
+                  type="button"
+                  (click)="addApplicationTag(tag)"
+                  class="rounded-lg border border-dashed border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-indigo-700 transition-colors hover:border-indigo-300 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-indigo-300 dark:hover:bg-indigo-950/30"
+                >
+                  {{ tag }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <label for="questionSource" class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+              {{ label('questionSource') }}
+              <span class="text-xs text-slate-500 dark:text-slate-400">{{ label('optional') }}</span>
+            </label>
+            <select
+              id="questionSource"
+              formControlName="questionSource"
+              class="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition-all focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            >
+              <option value="">{{ label('selectQuestionSource') }}</option>
+              <option value="formalPreviousExam">{{ label('formalPreviousExam') }}</option>
+              <option value="teacherMade">{{ label('teacherMade') }}</option>
+              <option value="trainingQuestion">{{ label('trainingQuestion') }}</option>
+            </select>
+          </div>
+
+          <div class="mt-4">
+            <label for="answerExplanation" class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+              {{ label('answerExplanation') }}
+              <span class="text-xs text-slate-500 dark:text-slate-400">{{ label('optional') }}</span>
+            </label>
+            <textarea
+              id="answerExplanation"
+              formControlName="answerExplanation"
+              rows="3"
+              [placeholder]="isArabic() ? 'اللون من المجموعة 18 (الخيارات البينية).' : 'The color from group 18 (intermediate options).'"
+              class="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition-all focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            ></textarea>
+          </div>
+        </div>
       </div>
 
       <aside class="space-y-6">

@@ -29,6 +29,16 @@ describe('TenantGroupLessonDetailsComponent', () => {
     status: 'Active',
     monthlyRevenue: 1500,
     currency: 'EGP',
+    calendarEvents: [
+      {
+        id: 'group-123:2026-06-20:11:30',
+        date: '2026-06-20',
+        day: 'Saturday',
+        startTime: '11:30',
+        endTime: '12:30',
+        room: 'Lab 101',
+      },
+    ],
   };
   const lessons: GroupLesson[] = [
     {
@@ -43,6 +53,7 @@ describe('TenantGroupLessonDetailsComponent', () => {
     loadGroupById: vi.fn(),
     loadGroupLessons: vi.fn(),
     loadGroupLessonContent: vi.fn(),
+    addGroupLesson: vi.fn(),
     addGroupLessonContent: vi.fn(),
   };
   const subjectsData = {
@@ -57,9 +68,30 @@ describe('TenantGroupLessonDetailsComponent', () => {
     data.loadGroupById.mockReset();
     data.loadGroupById.mockReturnValue(of(group));
     data.loadGroupLessons.mockReset();
-    data.loadGroupLessons.mockReturnValue(of(lessons));
+    data.loadGroupLessons.mockImplementation((_groupId: string, options?: { sessionId?: string | null }) => {
+      if (options?.sessionId) {
+        return of([
+          {
+            id: 'assigned-lesson-2',
+            curriculumNodeId: '33333333-3333-4333-8333-333333333333',
+            title: 'Already assigned lesson',
+            path: 'Physics Curriculum / Unit two',
+            description: null,
+          },
+        ] satisfies GroupLesson[]);
+      }
+      return of(lessons);
+    });
     data.loadGroupLessonContent.mockReset();
     data.loadGroupLessonContent.mockReturnValue(of([]));
+    data.addGroupLesson.mockReset();
+    data.addGroupLesson.mockReturnValue(of({
+      id: 'assigned-lesson-1',
+      curriculumNodeId: lessonNodeId,
+      title: 'Lesson one',
+      path: 'Physics Curriculum / Unit one',
+      description: 'Intro lesson',
+    } satisfies GroupLesson));
     data.addGroupLessonContent.mockReset();
     data.addGroupLessonContent.mockReturnValue(of({
       id: 'content-1',
@@ -121,6 +153,7 @@ describe('TenantGroupLessonDetailsComponent', () => {
           useValue: {
             snapshot: {
               paramMap: convertToParamMap({ id: 'group-123', lessonId: 'group-lesson-1' }),
+              queryParamMap: convertToParamMap({}),
             },
           },
         },
@@ -160,16 +193,27 @@ describe('TenantGroupLessonDetailsComponent', () => {
     expect(text).toContain('Assign to session');
   });
 
-  it('renders lesson quick actions with lesson and session routes', async () => {
+  it('renders lesson quick actions and opens the assign-to-session drawer', async () => {
     const links = Array.from(fixture.nativeElement.querySelectorAll('.tenant-group-lesson-quick-actions a')) as HTMLAnchorElement[];
     const buttons = Array.from(fixture.nativeElement.querySelectorAll('.tenant-group-lesson-quick-actions button')) as HTMLButtonElement[];
     const backLink = links.find((link) => link.textContent?.includes('Back to lessons'));
-    const assignLink = links.find((link) => link.textContent?.includes('Assign to session'));
+    const assignButton = buttons.find((button) => button.textContent?.includes('Assign to session'));
     const insertButton = buttons.find((button) => button.textContent?.includes('Insert Content'));
 
     expect(backLink?.getAttribute('href')).toBe('/tenant/groups/group-123?tab=lessons');
-    expect(assignLink?.getAttribute('href')).toBe('/tenant/groups/group-123?tab=sessions');
+    expect(assignButton).toBeTruthy();
     expect(insertButton).toBeTruthy();
+
+    assignButton?.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    expect(data.loadGroupLessons).toHaveBeenCalledWith('group-123', { sync: false, sessionId: 'group-123:2026-06-20:11:30' });
+    expect(fixture.nativeElement.textContent).toContain('Physics G12-A sessions');
+    expect(fixture.nativeElement.textContent).toContain('Saturday');
+    expect(fixture.nativeElement.textContent).toContain('Already assigned lesson');
 
     insertButton?.click();
     fixture.detectChanges();
@@ -178,6 +222,28 @@ describe('TenantGroupLessonDetailsComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Select material from the parent directory.');
+  });
+
+  it('assigns the current lesson when a session is clicked', async () => {
+    const assignButton = Array.from(fixture.nativeElement.querySelectorAll('.tenant-group-lesson-quick-actions button'))
+      .find((button) => (button as HTMLButtonElement).textContent?.includes('Assign to session')) as HTMLButtonElement;
+
+    assignButton.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    const sessionButton = fixture.debugElement.query(By.css('.tenant-group-lesson-session-card')).nativeElement as HTMLButtonElement;
+    sessionButton.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    expect(data.addGroupLesson).toHaveBeenCalledWith('group-123', lessonNodeId, { sessionId: 'group-123:2026-06-20:11:30' });
+    expect(fixture.nativeElement.textContent).toContain('Assigned');
+    expect(fixture.nativeElement.textContent).toContain('Lesson one');
   });
 
   it('auto-displays only direct lesson directory material without adding parent directory material', () => {

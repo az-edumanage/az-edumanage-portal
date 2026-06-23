@@ -294,14 +294,29 @@
                       <code>{{ studentBarcodeLabel(student) }}</code>
                     </td>
                     <td>
-                      <span [class]="studentStatusClass(student)">{{ studentStatusLabel(student) }}</span>
+                      <button
+                        type="button"
+                        [class]="studentStatusClass(student)"
+                        [disabled]="!canChangeStudentStatus() || updatingStudentAttendanceId() === student.id"
+                        [attr.aria-label]="'Change ' + student.name + ' attendance status'"
+                        [attr.title]="canChangeStudentStatus() ? 'Change status to ' + (studentStatusLabel(student) === 'Present' ? 'Absent' : 'Present') : 'Status can be changed only while the session is running'"
+                        (click)="toggleStudentStatus(student)"
+                      >
+                        {{ updatingStudentAttendanceId() === student.id ? 'Saving...' : studentStatusLabel(student) }}
+                      </button>
                     </td>
                     <td>{{ studentAttendanceTimeLabel(student) }}</td>
                     <td>
-                      <a [routerLink]="['/tenant/groups', groupId, 'attendance']" class="tenant-group-session-row-action">
-                        <mat-icon>how_to_reg</mat-icon>
-                        Attendance
-                      </a>
+                      <div class="tenant-group-session-student-row-actions">
+                        <a
+                          [routerLink]="['/tenant/groups', groupId, 'sessions', sessionId, 'students', student.id, 'assessment']"
+                          class="tenant-group-session-row-action tenant-group-session-row-action--icon"
+                          aria-label="Student assessment"
+                          title="Student assessment"
+                        >
+                          <mat-icon>assignment_turned_in</mat-icon>
+                        </a>
+                      </div>
                     </td>
                   </tr>
                 }
@@ -339,10 +354,21 @@
             <h3>Lessons</h3>
             <p>{{ lessons().length }} inserted lessons linked to this session</p>
           </div>
-          <button type="button" class="tenant-group-session-insert-lesson-btn" (click)="openLessonPicker()">
-            <mat-icon>add</mat-icon>
-            Insert lesson
-          </button>
+          <div class="flex flex-wrap justify-end gap-2">
+            <button
+              type="button"
+              class="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:focus-visible:ring-slate-800"
+              aria-label="Choose from library"
+              (click)="openLibraryPicker()"
+            >
+              <mat-icon class="!h-4 !w-4 !text-base">local_library</mat-icon>
+              From library
+            </button>
+            <button type="button" class="tenant-group-session-insert-lesson-btn" (click)="openLessonPicker()">
+              <mat-icon>add</mat-icon>
+              Insert lesson
+            </button>
+          </div>
         </div>
 
         @if (lessonsLoading()) {
@@ -355,7 +381,7 @@
             <mat-icon>error</mat-icon>
             <p>{{ lessonsError() }}</p>
           </div>
-        } @else if (visibleSessionLessons().length) {
+        } @else if (visibleSessionLessons().length || sessionLibraryContent().length) {
           <div class="tenant-group-session-table-shell">
             <table class="tenant-group-session-table tenant-group-session-lessons-table">
               <thead>
@@ -474,27 +500,88 @@
                     </tr>
                   }
                 }
+                @for (content of sessionLibraryContent(); track content.id) {
+                  <tr class="tenant-group-session-expansion-row">
+                    <td>
+                      <button
+                        type="button"
+                        class="tenant-group-session-row-toggler"
+                        [attr.aria-label]="'Preview ' + content.title"
+                        (click)="openSessionLibraryContentPreview(content)"
+                      >
+                        <mat-icon>visibility</mat-icon>
+                      </button>
+                    </td>
+                    <td>
+                      <div class="tenant-group-session-lesson-cell">
+                        <mat-icon>{{ materialIcon(content) }}</mat-icon>
+                        <div>
+                          <strong>{{ content.title }}</strong>
+                          <small>Library {{ materialTypeLabel(content.contentType).toLowerCase() }}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{{ formatBytes(content.sizeBytes) || content.fileContentType || materialTypeLabel(content.contentType) }}</td>
+                    <td>{{ content.folderName }}</td>
+                    <td>
+                      <div class="tenant-group-session-row-actions">
+                        <button
+                          type="button"
+                          class="tenant-group-session-icon-action tenant-group-session-icon-action--complete"
+                          [class.tenant-group-session-icon-action--active]="content.completed"
+                          [disabled]="updatingLessonCompletionId() === content.id"
+                          [attr.aria-label]="content.completed ? 'Mark library content as incomplete' : 'Mark library content as complete'"
+                          [attr.title]="content.completed ? 'Mark as incomplete' : 'Mark as complete'"
+                          (click)="toggleSessionLibraryContentCompletion(content)"
+                        >
+                          <mat-icon>{{ updatingLessonCompletionId() === content.id ? 'sync' : content.completed ? 'task_alt' : 'radio_button_unchecked' }}</mat-icon>
+                        </button>
+                        <button
+                          type="button"
+                          class="tenant-group-session-icon-action"
+                          aria-label="Preview library content"
+                          title="Preview content"
+                          (click)="openSessionLibraryContentPreview(content)"
+                        >
+                          <mat-icon>visibility</mat-icon>
+                        </button>
+                        <button
+                          type="button"
+                          class="tenant-group-session-icon-action tenant-group-session-icon-action--danger"
+                          [disabled]="removingLessonId() === content.id || content.completed"
+                          aria-label="Remove library content"
+                          title="Remove library content"
+                          (click)="removeSessionLibraryContent(content)"
+                        >
+                          <mat-icon>{{ removingLessonId() === content.id ? 'sync' : 'delete' }}</mat-icon>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
               </tbody>
             </table>
           </div>
-          <div class="tenant-group-session-table-pagination">
-            <span>Showing {{ lessonPageStart() }}-{{ lessonPageEnd() }} of {{ lessons().length }} lessons</span>
-            <label>
-              Rows
-              <select [value]="lessonPageSize()" (change)="onLessonPageSize($any($event.target).value)">
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-              </select>
-            </label>
-            <button type="button" aria-label="Previous lessons page" [disabled]="lessonPageIndex() === 0" (click)="previousLessonPage()">
-              <mat-icon>chevron_left</mat-icon>
-            </button>
-            <strong>Page {{ lessonPageIndex() + 1 }} of {{ lessonTotalPages() }}</strong>
-            <button type="button" aria-label="Next lessons page" [disabled]="lessonPageIndex() + 1 >= lessonTotalPages()" (click)="nextLessonPage()">
-              <mat-icon>chevron_right</mat-icon>
-            </button>
-          </div>
+          @if (visibleSessionLessons().length) {
+            <div class="tenant-group-session-table-pagination">
+              <span>Showing {{ lessonPageStart() }}-{{ lessonPageEnd() }} of {{ lessons().length }} lessons</span>
+              <label>
+                Rows
+                <select [value]="lessonPageSize()" (change)="onLessonPageSize($any($event.target).value)">
+                  <option value="5">5</option>
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                </select>
+              </label>
+              <button type="button" aria-label="Previous lessons page" [disabled]="lessonPageIndex() === 0" (click)="previousLessonPage()">
+                <mat-icon>chevron_left</mat-icon>
+              </button>
+              <strong>Page {{ lessonPageIndex() + 1 }} of {{ lessonTotalPages() }}</strong>
+              <button type="button" aria-label="Next lessons page" [disabled]="lessonPageIndex() + 1 >= lessonTotalPages()" (click)="nextLessonPage()">
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+            </div>
+          }
         } @else {
           <div class="tenant-group-session-table-empty">
             <mat-icon>menu_book</mat-icon>
@@ -565,6 +652,149 @@
           </div>
         }
       </div>
+    </div>
+  </section>
+}
+
+@if (libraryPickerOpen()) {
+  <section class="tenant-group-session-modal-overlay" role="dialog" aria-modal="true" aria-label="Choose from library">
+    <button type="button" class="tenant-group-session-modal-backdrop" aria-label="Close library picker" (click)="closeLibraryPicker()"></button>
+    <div class="tenant-group-session-modal">
+      <header class="tenant-group-session-modal-head">
+        <div>
+          <span>Library</span>
+          <h3>Choose folder</h3>
+          <p>Select a folder from this group library.</p>
+        </div>
+        <button type="button" aria-label="Close library picker" (click)="closeLibraryPicker()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </header>
+
+      <div class="tenant-group-session-modal-body">
+        @if (libraryPickerLoading()) {
+          <div class="tenant-group-session-material-state">
+            <mat-icon class="animate-spin">sync</mat-icon>
+            <p>Loading library folders...</p>
+          </div>
+        } @else if (libraryPickerError()) {
+          <div class="tenant-group-session-material-state tenant-group-session-material-state--error">
+            <mat-icon>error</mat-icon>
+            <p>{{ libraryPickerError() }}</p>
+          </div>
+        } @else if (libraryFolders().length) {
+          <div class="grid gap-2" aria-label="Library folders">
+            @for (folder of libraryFolders(); track folder.id) {
+              <article class="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+                <button
+                  type="button"
+                  class="grid min-h-16 w-full grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-3 p-3 text-start transition hover:bg-violet-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-100 dark:hover:bg-violet-950/30 dark:focus-visible:ring-violet-950/60"
+                  [class.bg-violet-50]="selectedLibraryFolder()?.id === folder.id"
+                  [attr.aria-expanded]="isLibraryFolderExpanded(folder)"
+                  (click)="toggleLibraryFolder(folder)"
+                >
+                  <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-200">
+                    <mat-icon class="!h-5 !w-5 !text-xl">folder</mat-icon>
+                  </span>
+                  <span class="min-w-0">
+                    <strong class="block truncate text-sm font-black text-slate-950 dark:text-white">{{ folder.name }}</strong>
+                    <small class="block truncate text-xs font-extrabold text-slate-500 dark:text-slate-400">
+                      {{ folder.filesCount }} {{ folder.filesCount === 1 ? 'item' : 'items' }}
+                      @if (folder.description) {
+                        · {{ folder.description }}
+                      }
+                    </small>
+                  </span>
+                  <mat-icon class="text-slate-400">{{ isLibraryFolderExpanded(folder) ? 'expand_less' : 'expand_more' }}</mat-icon>
+                </button>
+
+                @if (isLibraryFolderExpanded(folder)) {
+                  <div class="grid gap-2 border-t border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950/40">
+                    @if (isLibraryFolderLoading(folder)) {
+                      <div class="tenant-group-session-material-state !min-h-20">
+                        <mat-icon class="animate-spin">sync</mat-icon>
+                        <p>Loading folder files...</p>
+                      </div>
+                    } @else if (libraryFolderError(folder)) {
+                      <div class="tenant-group-session-material-state tenant-group-session-material-state--error !min-h-20">
+                        <mat-icon>error</mat-icon>
+                        <p>{{ libraryFolderError(folder) }}</p>
+                      </div>
+                    } @else if (hasLibraryFolderContent(folder)) {
+                      @for (file of libraryFolderFiles(folder); track file.id) {
+                        <button
+                          type="button"
+                          class="grid min-h-14 grid-cols-[auto_2rem_minmax(0,1fr)] items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 text-start transition hover:border-violet-200 hover:bg-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-100 dark:border-slate-700 dark:bg-slate-900 dark:focus-visible:ring-violet-950/60"
+                          [class.border-violet-500]="isLibraryFileSelected(file)"
+                          [class.bg-violet-50]="isLibraryFileSelected(file)"
+                          [attr.aria-pressed]="isLibraryFileSelected(file)"
+                          (click)="toggleLibraryFileSelection(file)"
+                        >
+                          <span class="inline-flex h-5 w-5 items-center justify-center rounded border text-white" [class.border-violet-700]="isLibraryFileSelected(file)" [class.bg-violet-700]="isLibraryFileSelected(file)" [class.border-slate-300]="!isLibraryFileSelected(file)">
+                            @if (isLibraryFileSelected(file)) {
+                              <mat-icon class="!h-4 !w-4 !text-base">check</mat-icon>
+                            }
+                          </span>
+                          <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-200">
+                            <mat-icon class="!h-5 !w-5 !text-xl">{{ libraryFileIcon(file) }}</mat-icon>
+                          </span>
+                          <span class="min-w-0">
+                            <strong class="block truncate text-sm font-black text-slate-950 dark:text-white">{{ file.originalName || file.fileName }}</strong>
+                            <small class="block truncate text-xs font-extrabold text-slate-500 dark:text-slate-400">{{ formatBytes(file.sizeBytes) || file.contentType || 'File' }}</small>
+                          </span>
+                        </button>
+                      }
+                      @for (note of libraryFolderNotes(folder); track note.id) {
+                        <button
+                          type="button"
+                          class="grid min-h-14 grid-cols-[auto_2rem_minmax(0,1fr)] items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 text-start transition hover:border-violet-200 hover:bg-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-100 dark:border-slate-700 dark:bg-slate-900 dark:focus-visible:ring-violet-950/60"
+                          [class.border-violet-500]="isLibraryNoteSelected(note)"
+                          [class.bg-violet-50]="isLibraryNoteSelected(note)"
+                          [attr.aria-pressed]="isLibraryNoteSelected(note)"
+                          (click)="toggleLibraryNoteSelection(note)"
+                        >
+                          <span class="inline-flex h-5 w-5 items-center justify-center rounded border text-white" [class.border-violet-700]="isLibraryNoteSelected(note)" [class.bg-violet-700]="isLibraryNoteSelected(note)" [class.border-slate-300]="!isLibraryNoteSelected(note)">
+                            @if (isLibraryNoteSelected(note)) {
+                              <mat-icon class="!h-4 !w-4 !text-base">check</mat-icon>
+                            }
+                          </span>
+                          <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-200">
+                            <mat-icon class="!h-5 !w-5 !text-xl">sticky_note_2</mat-icon>
+                          </span>
+                          <span class="min-w-0">
+                            <strong class="block truncate text-sm font-black text-slate-950 dark:text-white">{{ note.title }}</strong>
+                            <small class="block truncate text-xs font-extrabold text-slate-500 dark:text-slate-400">Note</small>
+                          </span>
+                        </button>
+                      }
+                    } @else {
+                      <div class="tenant-group-session-material-state !min-h-20">
+                        <mat-icon>draft</mat-icon>
+                        <p>No files or notes in this folder.</p>
+                      </div>
+                    }
+                  </div>
+                }
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="tenant-group-session-material-state">
+            <mat-icon>folder_open</mat-icon>
+            <p>No library folders found for this group.</p>
+          </div>
+        }
+      </div>
+
+      <footer class="flex justify-end gap-3 border-t border-slate-200 p-4 dark:border-slate-800">
+        <button type="button" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-extrabold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:focus-visible:ring-slate-800" (click)="closeLibraryPicker()">Cancel</button>
+        <button type="button" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-violet-700 px-4 text-sm font-extrabold text-white transition hover:bg-violet-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-200 disabled:cursor-not-allowed disabled:opacity-60 dark:focus-visible:ring-violet-950/60" [disabled]="!selectedLibraryItemCount()" (click)="chooseLibraryFolder()">
+          Choose items
+          @if (selectedLibraryItemCount()) {
+            ({{ selectedLibraryItemCount() }})
+          }
+        </button>
+      </footer>
     </div>
   </section>
 }

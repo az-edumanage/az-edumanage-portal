@@ -222,10 +222,10 @@
               <mat-icon>arrow_back</mat-icon>
               <span>Back to lessons</span>
             </a>
-            <a [routerLink]="['/tenant/groups', groupId]" [queryParams]="{ tab: 'sessions' }">
+            <button type="button" (click)="openAssignSessionDrawer()">
               <mat-icon>event_available</mat-icon>
               <span>Assign to session</span>
-            </a>
+            </button>
           </div>
         </section>
 
@@ -393,6 +393,84 @@
         </button>
       </div>
     </div>
+  </div>
+}
+
+@if (assignSessionDrawerOpen()) {
+  <div class="tenant-group-lesson-session-drawer-backdrop" role="presentation" (click)="closeAssignSessionDrawer()">
+    <aside
+      class="tenant-group-lesson-session-drawer"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="assign-session-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="tenant-group-lesson-session-drawer-head">
+        <div>
+          <p>Assign lesson</p>
+          <h3 id="assign-session-title">{{ lesson()?.title || 'Lesson' }}</h3>
+          <span>{{ group()?.name || 'Group' }} sessions</span>
+        </div>
+        <button type="button" class="tenant-group-lesson-modal-close" aria-label="Close assign to session" (click)="closeAssignSessionDrawer()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="tenant-group-lesson-session-drawer-body">
+        @if (sessionLessonsLoading()) {
+          <div class="tenant-group-lesson-details-content-state" aria-live="polite">
+            <mat-icon class="animate-spin">sync</mat-icon>
+            <span>Loading group sessions...</span>
+          </div>
+        } @else if (sessionLessonsError()) {
+          <div class="tenant-group-lesson-details-content-state tenant-group-lesson-details-content-state--error">
+            <mat-icon>error</mat-icon>
+            <span>{{ sessionLessonsError() }}</span>
+          </div>
+        } @else if (sessionRows().length) {
+          <div class="tenant-group-lesson-session-list">
+            @for (session of sessionRows(); track session.id) {
+              <button
+                type="button"
+                class="tenant-group-lesson-session-card"
+                [class.tenant-group-lesson-session-card--assigned]="isLessonAssignedToSession(session)"
+                [disabled]="isLessonAssignedToSession(session) || assigningSessionId() !== null"
+                (click)="assignLessonToSession(session)"
+              >
+                <span class="tenant-group-lesson-session-icon">
+                  <mat-icon>{{ session.kind === 'dated' ? 'event' : 'event_repeat' }}</mat-icon>
+                </span>
+                <span class="tenant-group-lesson-session-main">
+                  <strong>{{ session.day }}</strong>
+                  <small>{{ session.date }} · {{ session.timeRange }} · {{ session.room }}</small>
+                  @if (sessionLessons(session).length) {
+                    <em>
+                      @for (assignedLesson of sessionLessons(session); track assignedLesson.id) {
+                        <span>{{ assignedLesson.title }}</span>
+                      }
+                    </em>
+                  } @else {
+                    <em>No lessons assigned to this session.</em>
+                  }
+                </span>
+                <span class="tenant-group-lesson-session-status">
+                  @if (assigningSessionId() === session.id) {
+                    Assigning...
+                  } @else {
+                    {{ sessionAssignmentLabel(session) }}
+                  }
+                </span>
+              </button>
+            }
+          </div>
+        } @else {
+          <div class="tenant-group-lesson-details-content-state">
+            <mat-icon>event_busy</mat-icon>
+            <span>No group sessions are available for assignment.</span>
+          </div>
+        }
+      </div>
+    </aside>
   </div>
 }
 

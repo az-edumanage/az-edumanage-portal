@@ -225,6 +225,7 @@ export class SidebarComponent {
               { labelKey: 'sidebar.item.schedule', icon: 'calendar_today', route: '/tenant/schedule' },
               { labelKey: 'sidebar.item.attendance', icon: 'fact_check', route: '/tenant/attendance' },
               { labelKey: 'sidebar.item.examsGrades', icon: 'assignment', route: '/tenant/exams' },
+              { labelKey: 'sidebar.item.questionsBank', icon: 'quiz', route: '/tenant/questions-bank' },
             ]
           },
           {

@@ -1,13 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="title">
-  <title id="title">AZ-EduManage</title>
-  <g fill="none" fill-rule="evenodd">
-    <path fill="#06305d" d="M48 8 8 28.7l40 17.5 40-17.5z"/>
-    <path fill="#0f66ff" d="M12 37.8v44.1c13.4 1.2 26.5 4.8 36 12V46.2z"/>
-    <path fill="#062d58" d="M84 37.8v44.1c-13.4 1.2-26.5 4.8-36 12V46.2z"/>
-    <path stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4.4" d="m12 37.8 36 15.8 36-15.8M48 53.6v40.2"/>
-    <path stroke="#062d58" stroke-linecap="round" stroke-width="3.8" d="M84 28.7h11.2v25.9"/>
-    <circle cx="95.2" cy="56.8" r="4.2" fill="#062d58"/>
-    <path fill="#062d58" d="m92.6 61.2-2.7 12.4h10.7l-2.7-12.4z"/>
-    <path stroke="#fff" stroke-linecap="round" stroke-width="3.3" d="M18.5 80.5c12.3 1.5 22.4 4.7 29.5 9.9M77.5 80.5c-12.3 1.5-22.4 4.7-29.5 9.9"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 123 123" role="img" aria-labelledby="title">
+  <title id="title">Edumanage</title>
+  <circle cx="61.5" cy="61.5" r="61.5" fill="#f8fbff"/>
+  <circle cx="61.5" cy="61.5" r="56.5" fill="none" stroke="#0e3554" stroke-width="2"/>
+  <path d="M61.5 12 95 97 75.5 97 61.5 52 47.5 97 28 97z" fill="#0e3554"/>
+  <path d="M61.5 29 82.5 91 72.5 91 61.5 58 50.5 91 40.5 91z" fill="#f8fbff"/>
+  <path d="M46 67h30l-22 23h27" fill="none" stroke="#0e3554" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M21 98c17 1 31 6 40.5 15 9.5-9 23.5-14 40.5-15-13 8-26.5 12-40.5 12S34 106 21 98z" fill="#0e3554"/>
+  <path d="M20 91c14 2 27 7 41.5 17C76 98 89 93 103 91" fill="none" stroke="#0e3554" stroke-width="5" stroke-linecap="round"/>
 </svg>

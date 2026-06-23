@@ -54,6 +54,7 @@ export const EN_TRANSLATIONS = {
   'sidebar.item.settings': 'Settings',
   'sidebar.item.test': 'Test',
   'sidebar.item.questionBank': 'Question Bank',
+  'sidebar.item.questionsBank': 'Questions Bank',
   'sidebar.item.platformSettings': 'Platform Settings',
   'sidebar.item.webSettings': 'Web Settings',
   'sidebar.item.overview': 'Overview',

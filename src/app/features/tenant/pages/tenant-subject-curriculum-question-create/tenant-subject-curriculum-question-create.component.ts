@@ -11,7 +11,7 @@ import { TenantQuestionType, TenantQuestionTypeSettingsService } from '../../dat
 import { TenantCurriculumQuestionMediaPayload, TenantSubjectsDataService } from '../../data-access/tenant-subjects-data.service';
 import { TenantGroupSearchableSelectorComponent } from '../../components/tenant-group-searchable-selector/tenant-group-searchable-selector.component';
 import { TenantGroupSelectorOption } from '../../models/tenant-group-create.models';
-import { TenantCurriculumQuestion, TenantCurriculumQuestionAnswer, TenantSubjectCurriculumNode } from '../../models/tenant-subjects.models';
+import { BloomLevel, QuestionDifficulty, TenantCurriculumQuestion, TenantCurriculumQuestionAnswer, TenantSubjectCurriculumNode } from '../../models/tenant-subjects.models';
 import { TenantSubjectDetailsFacade } from '../../state/tenant-subject-details.facade';
 
 interface CurriculumPathItem {
@@ -64,6 +64,33 @@ type QuestionCreateLabelKey =
   | 'backToCurriculum'
   | 'questionInformation'
   | 'questionInformationHint'
+  | 'analyticalData'
+  | 'analyticalDataHint'
+  | 'toggleAnalyticalData'
+  | 'active'
+  | 'inactive'
+  | 'topic'
+  | 'bloomTaxonomy'
+  | 'selectBloomTaxonomy'
+  | 'loadingBloomTaxonomy'
+  | 'unableToLoadBloomTaxonomy'
+  | 'difficulty'
+  | 'loadingQuestionDifficulties'
+  | 'unableToLoadQuestionDifficulties'
+  | 'theWeight'
+  | 'enterWeight'
+  | 'applicationData'
+  | 'applicationDataHint'
+  | 'tags'
+  | 'suggestedTags'
+  | 'writeTag'
+  | 'optional'
+  | 'questionSource'
+  | 'answerExplanation'
+  | 'selectQuestionSource'
+  | 'formalPreviousExam'
+  | 'teacherMade'
+  | 'trainingQuestion'
   | 'type'
   | 'loadingQuestionTypes'
   | 'unableToLoadQuestionTypes'
@@ -156,6 +183,33 @@ const QUESTION_CREATE_LABELS: Record<QuestionCreateLabelKey, { en: string; ar: s
   backToCurriculum: { en: 'Back to Curriculum', ar: 'العودة إلى المنهج' },
   questionInformation: { en: 'Question Information', ar: 'بيانات السؤال' },
   questionInformationHint: { en: 'Choose the type, write the question, then add answers when needed.', ar: 'اختر النوع، اكتب السؤال، ثم أضف الإجابات عند الحاجة.' },
+  analyticalData: { en: 'Analytical Data', ar: 'البيانات التحليلية' },
+  analyticalDataHint: { en: 'Attach analytical metadata to this question.', ar: 'اربط بيانات تحليلية بهذا السؤال.' },
+  toggleAnalyticalData: { en: 'Toggle Analytical Data', ar: 'تبديل البيانات التحليلية' },
+  active: { en: 'Active', ar: 'مفعل' },
+  inactive: { en: 'Inactive', ar: 'غير مفعل' },
+  topic: { en: 'Topic', ar: 'الموضوع' },
+  bloomTaxonomy: { en: "Bloom's Taxonomy", ar: 'تصنيف بلوم' },
+  selectBloomTaxonomy: { en: "Select Bloom's Taxonomy level", ar: 'اختر مستوى تصنيف بلوم' },
+  loadingBloomTaxonomy: { en: "Loading Bloom's Taxonomy levels...", ar: 'جاري تحميل مستويات تصنيف بلوم...' },
+  unableToLoadBloomTaxonomy: { en: "Unable to load Bloom's Taxonomy levels.", ar: 'تعذر تحميل مستويات تصنيف بلوم.' },
+  difficulty: { en: 'Difficulty', ar: 'الصعوبة' },
+  loadingQuestionDifficulties: { en: 'Loading question difficulties...', ar: 'جاري تحميل مستويات صعوبة السؤال...' },
+  unableToLoadQuestionDifficulties: { en: 'Unable to load question difficulties.', ar: 'تعذر تحميل مستويات صعوبة السؤال.' },
+  theWeight: { en: 'The Weight', ar: 'الوزن' },
+  enterWeight: { en: 'Enter weight', ar: 'أدخل الوزن' },
+  applicationData: { en: 'Application Data', ar: 'بيانات تطبيقية' },
+  applicationDataHint: { en: 'Attach usage, source, and review metadata.', ar: 'حرك - اسحب واستراجع من التحليل.' },
+  tags: { en: 'Tags', ar: 'الوسوم (Tags)' },
+  suggestedTags: { en: 'Suggested tags', ar: 'اقتراحات (لمنع التكرار):' },
+  writeTag: { en: 'Write a tag...', ar: 'اكتب وسم...' },
+  optional: { en: 'Optional', ar: 'اختياري' },
+  questionSource: { en: 'Question Source', ar: 'مصدر السؤال' },
+  answerExplanation: { en: 'Answer Explanation', ar: 'شرح الإجابة (تغذية راجعة)' },
+  selectQuestionSource: { en: 'Select source', ar: 'اختر المصدر' },
+  formalPreviousExam: { en: 'Official previous exam', ar: 'امتحان رسمي ، سابق' },
+  teacherMade: { en: 'Teacher-made', ar: 'من إعداد المعلم' },
+  trainingQuestion: { en: 'Training question', ar: 'سؤال تدريبي' },
   type: { en: 'Type', ar: 'النوع' },
   loadingQuestionTypes: { en: 'Loading question types...', ar: 'جاري تحميل أنواع الأسئلة...' },
   unableToLoadQuestionTypes: { en: 'Unable to load question types', ar: 'تعذر تحميل أنواع الأسئلة' },
@@ -293,6 +347,15 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   readonly mathEditorAnswerDraftId = signal<string | null>(null);
   readonly questionSaving = signal(false);
   readonly questionSaveError = signal<string | null>(null);
+  readonly analyticalDataActive = signal(false);
+  readonly applicationTags = signal<string[]>([]);
+  readonly suggestedApplicationTags = signal<string[]>(['high-yield', 'EXAM 2024 FINAL', 'EXAM 2023', 'مراجعة نهائية', 'متكرر']);
+  readonly bloomLevels = signal<BloomLevel[]>([]);
+  readonly bloomLevelsLoading = signal(false);
+  readonly bloomLevelsError = signal<string | null>(null);
+  readonly questionDifficulties = signal<QuestionDifficulty[]>([]);
+  readonly questionDifficultiesLoading = signal(false);
+  readonly questionDifficultiesError = signal<string | null>(null);
   readonly showAnswerModal = signal(false);
   readonly newAnswer = signal('');
   readonly newAnswerDescription = signal('');
@@ -308,6 +371,12 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     type: ['', Validators.required],
     answer: [''],
     description: [''],
+    bloomId: [''],
+    difficultyId: [''],
+    weight: [''],
+    applicationTagInput: [''],
+    questionSource: ['formalPreviousExam'],
+    answerExplanation: [''],
   });
   readonly subjectDetailsLink = computed(() => {
     const subject = this.subject();
@@ -364,6 +433,15 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     }
     return this.label('selectQuestionType');
   });
+  readonly bloomTaxonomyPlaceholder = computed(() => {
+    if (this.bloomLevelsLoading()) {
+      return this.label('loadingBloomTaxonomy');
+    }
+    if (this.bloomLevelsError()) {
+      return this.label('unableToLoadBloomTaxonomy');
+    }
+    return this.label('selectBloomTaxonomy');
+  });
   readonly hasSelectedQuestionType = computed(() => !!this.selectedQuestionType());
   readonly isMultipleChoice = computed(() => this.selectedQuestionType() === 'MULTIPLE_CHOICE');
   readonly isMcq = computed(() => this.selectedQuestionType() === 'MCQ');
@@ -402,6 +480,8 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
         this.currentQuestionId.set(params.get('questionId'));
         void this.loadSubjectAndCurriculum(params.get('id'));
         void this.loadQuestionTypes();
+        void this.loadBloomLevels();
+        void this.loadQuestionDifficulties();
       });
   }
 
@@ -424,6 +504,66 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
 
   label(key: QuestionCreateLabelKey): string {
     return QUESTION_CREATE_LABELS[key][this.i18n.language()];
+  }
+
+  bloomLevelLabel(level: BloomLevel): string {
+    const name = this.isArabic() ? level.nameAr : level.nameEn;
+    return `${level.levelOrder}. ${name}`;
+  }
+
+  questionDifficultyLabel(difficulty: QuestionDifficulty): string {
+    return this.isArabic() ? difficulty.nameAr : difficulty.nameEn;
+  }
+
+  selectQuestionDifficulty(difficultyId: string): void {
+    const control = this.questionForm.controls.difficultyId;
+    control.setValue(control.value === difficultyId ? '' : difficultyId);
+    control.markAsDirty();
+    control.markAsTouched();
+  }
+
+  setQuestionWeightValue(value: string): void {
+    const digitsOnly = value.replace(/\D/g, '');
+    this.questionForm.controls.weight.setValue(digitsOnly);
+    this.questionForm.controls.weight.markAsDirty();
+  }
+
+  preventNonNumericWeightInput(event: KeyboardEvent): void {
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
+    const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'Tab'];
+    if (allowedKeys.includes(event.key) || /^\d$/.test(event.key)) {
+      return;
+    }
+    event.preventDefault();
+  }
+
+  pasteQuestionWeightValue(event: ClipboardEvent): void {
+    event.preventDefault();
+    this.setQuestionWeightValue(event.clipboardData?.getData('text') ?? '');
+  }
+
+  addApplicationTag(tag: string): void {
+    const normalizedTag = tag.trim();
+    if (!normalizedTag || this.applicationTags().some((item) => item.toLowerCase() === normalizedTag.toLowerCase())) {
+      this.questionForm.controls.applicationTagInput.setValue('');
+      return;
+    }
+    this.applicationTags.update((tags) => [...tags, normalizedTag]);
+    this.questionForm.controls.applicationTagInput.setValue('');
+  }
+
+  removeApplicationTag(tag: string): void {
+    this.applicationTags.update((tags) => tags.filter((item) => item !== tag));
+  }
+
+  addApplicationTagFromKeyboard(event: KeyboardEvent): void {
+    if (event.key !== 'Enter') {
+      return;
+    }
+    event.preventDefault();
+    this.addApplicationTag(this.questionForm.controls.applicationTagInput.value);
   }
 
   breadcrumbSeparatorIcon(): string {
@@ -847,6 +987,10 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
           type: this.selectedQuestionType(),
           answer: null,
           description: null,
+          bloomId: this.questionForm.controls.bloomId.value || null,
+          difficultyId: this.questionForm.controls.difficultyId.value || null,
+          weight: this.questionWeightPayloadValue(),
+          ...this.applicationTagPayloadPart(),
           ...this.emptyMediaPayload(),
         });
         for (const answer of item.answers) {
@@ -1019,7 +1163,11 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
       type: question.type,
       answer: question.answer ?? '',
       description: question.description ?? '',
+      bloomId: question.bloomId ?? '',
+      difficultyId: question.difficultyId ?? '',
+      weight: question.weight == null ? '' : String(question.weight),
     });
+    this.applicationTags.set(question.tags ?? []);
     this.selectedQuestionType.set(question.type);
     this.multipleChoiceMode.set('single');
     const answers = this.isSingleAnswerTypeCode(question.type) ? this.normalizeSingleAnswerQuestions(question.answers) : question.answers;
@@ -1056,6 +1204,30 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     }
   }
 
+  private async loadBloomLevels(): Promise<void> {
+    this.bloomLevelsLoading.set(true);
+    this.bloomLevelsError.set(null);
+    try {
+      this.bloomLevels.set(await this.data.listBloomLevels());
+    } catch (error) {
+      this.bloomLevelsError.set(this.data.toUserMessage(error, this.label('unableToLoadBloomTaxonomy')));
+    } finally {
+      this.bloomLevelsLoading.set(false);
+    }
+  }
+
+  private async loadQuestionDifficulties(): Promise<void> {
+    this.questionDifficultiesLoading.set(true);
+    this.questionDifficultiesError.set(null);
+    try {
+      this.questionDifficulties.set(await this.data.listQuestionDifficulties());
+    } catch (error) {
+      this.questionDifficultiesError.set(this.data.toUserMessage(error, this.label('unableToLoadQuestionDifficulties')));
+    } finally {
+      this.questionDifficultiesLoading.set(false);
+    }
+  }
+
   private async saveQuestionToBackend(): Promise<{ id: string }> {
     const subject = this.subject();
     const nodeId = this.selectedNodeId();
@@ -1067,6 +1239,10 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
       type: this.questionForm.controls.type.value,
       answer: this.isChoiceQuestionType() ? null : this.questionForm.controls.answer.value,
       description: this.questionForm.controls.description.value,
+      bloomId: this.questionForm.controls.bloomId.value || null,
+      difficultyId: this.questionForm.controls.difficultyId.value || null,
+      weight: this.questionWeightPayloadValue(),
+      ...this.applicationTagPayloadPart(),
       ...await this.resolveQuestionMediaPayload(),
     };
     const questionId = this.currentQuestionId();
@@ -1108,6 +1284,30 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     }));
     this.multipleChoiceAnswers.set(updatedAnswers);
     this.answerDrafts.set(this.toAnswerDrafts(updatedAnswers));
+  }
+
+  private questionWeightPayloadValue(): number | null {
+    const value = this.questionForm.controls.weight.value.trim();
+    return value ? Number(value) : null;
+  }
+
+  private applicationTagPayload(): string[] {
+    const pendingTag = this.questionForm.controls.applicationTagInput.value.trim();
+    const tags = pendingTag ? [...this.applicationTags(), pendingTag] : this.applicationTags();
+    const tagsByKey = new Map<string, string>();
+    for (const tag of tags) {
+      const normalizedTag = tag.trim();
+      if (!normalizedTag) {
+        continue;
+      }
+      tagsByKey.set(normalizedTag.toLowerCase(), normalizedTag);
+    }
+    return [...tagsByKey.values()];
+  }
+
+  private applicationTagPayloadPart(): { tags: string[] } | Record<string, never> {
+    const tags = this.applicationTagPayload();
+    return tags.length ? { tags } : {};
   }
 
   private async saveTrueFalseAnswers(questionId: string): Promise<void> {
@@ -1499,6 +1699,14 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   }
 
   private subjectsRootLink(): string {
+    if (this.router.url.startsWith('/tenant/questions-bank/basic-education')) {
+      const stageId = this.route.snapshot.paramMap.get('stageId');
+      const gradeId = this.route.snapshot.paramMap.get('gradeId');
+      if (stageId && gradeId) {
+        return `/tenant/questions-bank/basic-education/${stageId}/grades/${gradeId}/subjects`;
+      }
+    }
+
     return this.router.url.startsWith('/tenant/university-subjects') ? '/tenant/university-subjects' : '/tenant/subjects';
   }
 }

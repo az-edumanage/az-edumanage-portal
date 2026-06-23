@@ -6,7 +6,7 @@
           <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
             <a routerLink="/tenant/groups" class="hover:text-indigo-600 transition-colors">Groups</a>
             <mat-icon class="text-[10px]">chevron_right</mat-icon>
-            <a [routerLink]="['/tenant/groups', groupId()]" class="hover:text-indigo-600 transition-colors">Physics G12-A</a>
+            <a [routerLink]="['/tenant/groups', groupId()]" class="hover:text-indigo-600 transition-colors">{{ groupName() || 'Group' }}</a>
             <mat-icon class="text-[10px]">chevron_right</mat-icon>
             <span>Attendance Tracking</span>
           </div>

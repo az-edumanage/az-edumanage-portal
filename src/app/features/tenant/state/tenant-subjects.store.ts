@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { TenantSubjectsDataService } from '../data-access/tenant-subjects-data.service';
+import { TenantSubjectListFilters, TenantSubjectsDataService } from '../data-access/tenant-subjects-data.service';
 import { TenantSubject } from '../models/tenant-subjects.models';
 
 @Injectable({ providedIn: 'root' })
@@ -80,11 +80,11 @@ export class TenantSubjectsStore {
     return filtered;
   });
 
-  async loadSubjects(): Promise<void> {
+  async loadSubjects(filters: TenantSubjectListFilters = {}): Promise<void> {
     this.loading.set(true);
     this.loadError.set(null);
     try {
-      this.subjects.set(await this.data.listSubjects());
+      this.subjects.set(await this.data.listSubjects(filters));
     } catch (error) {
       this.loadError.set(this.data.toUserMessage(error));
     } finally {

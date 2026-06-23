@@ -8,6 +8,7 @@ export class TenantGroupAttendanceStore {
   private readonly data = inject(TenantGroupAttendanceDataService);
 
   readonly groupId = signal<string | null>(null);
+  readonly groupName = signal<string | null>(null);
   readonly today = new Date();
   readonly students = signal<TenantAttendanceStudent[]>([]);
   readonly isSaving = signal(false);
@@ -31,6 +32,7 @@ export class TenantGroupAttendanceStore {
 
   async loadGroup(groupId: string | null): Promise<void> {
     this.groupId.set(groupId);
+    this.groupName.set(null);
     this.students.set([]);
     this.error.set(null);
     this.attendanceAvailable.set(false);
@@ -38,6 +40,7 @@ export class TenantGroupAttendanceStore {
 
     try {
       const details = await firstValueFrom(this.data.loadGroupAttendance(groupId));
+      this.groupName.set(details.groupName);
       this.students.set(details.students);
       this.attendanceAvailable.set(details.attendanceAvailable);
     } catch (error) {
