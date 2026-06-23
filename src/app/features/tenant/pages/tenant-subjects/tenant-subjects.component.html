@@ -1,4 +1,20 @@
 <div class="tenant-grades-page">
+  @if (isQuestionsBankRoute) {
+    <nav class="flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400" aria-label="Breadcrumb">
+      <a routerLink="/tenant/questions-bank" class="font-medium text-slate-600 transition hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300">Questions Bank</a>
+      <mat-icon class="text-base text-slate-400">chevron_right</mat-icon>
+      <a routerLink="/tenant/questions-bank/basic-education" class="font-medium text-slate-600 transition hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300">Basic Education</a>
+      <mat-icon class="text-base text-slate-400">chevron_right</mat-icon>
+      <a [routerLink]="['/tenant/questions-bank/basic-education', questionsBankStageId]" class="font-medium text-slate-600 transition hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300">{{ questionsBankStageName() }}</a>
+      <mat-icon class="text-base text-slate-400">chevron_right</mat-icon>
+      @if (isQuestionsBankGradeRoute) {
+        <span class="font-medium text-slate-600 dark:text-slate-300">{{ questionsBankGradeName() }}</span>
+        <mat-icon class="text-base text-slate-400">chevron_right</mat-icon>
+      }
+      <span class="font-semibold text-slate-900 dark:text-slate-100">Subjects</span>
+    </nav>
+  }
+
   <div class="tenant-grades-header">
     <div>
       <h2 class="tenant-grades-title">Subjects</h2>
@@ -74,30 +90,34 @@
               </div>
 
               <div class="tenant-grades-filter-fields" [formGroup]="filterForm">
-                <div>
-                  <label for="filter-stage" class="tenant-grades-filter-label">Educational Stage</label>
-                  <select
-                    id="filter-stage"
-                    formControlName="stageId"
-                    (change)="onStageFilterChange()"
-                    class="tenant-grades-filter-select"
-                  >
-                    <option value="">All Stages</option>
-                    @for (stage of stageOptions(); track stage.value) {
-                      <option [value]="stage.value">{{ stage.label }}</option>
-                    }
-                  </select>
-                </div>
+                @if (!isQuestionsBankStageRoute) {
+                  <div>
+                    <label for="filter-stage" class="tenant-grades-filter-label">Educational Stage</label>
+                    <select
+                      id="filter-stage"
+                      formControlName="stageId"
+                      (change)="onStageFilterChange()"
+                      class="tenant-grades-filter-select"
+                    >
+                      <option value="">All Stages</option>
+                      @for (stage of stageOptions(); track stage.value) {
+                        <option [value]="stage.value">{{ stage.label }}</option>
+                      }
+                    </select>
+                  </div>
+                }
 
-                <div>
-                  <label for="filter-grade" class="tenant-grades-filter-label">Grade</label>
-                  <select id="filter-grade" formControlName="gradeId" class="tenant-grades-filter-select">
-                    <option value="">All Grades</option>
-                    @for (grade of gradeOptions(); track grade.value) {
-                      <option [value]="grade.value">{{ grade.label }}</option>
-                    }
-                  </select>
-                </div>
+                @if (!isQuestionsBankGradeRoute) {
+                  <div>
+                    <label for="filter-grade" class="tenant-grades-filter-label">Grade</label>
+                    <select id="filter-grade" formControlName="gradeId" class="tenant-grades-filter-select">
+                      <option value="">All Grades</option>
+                      @for (grade of gradeOptions(); track grade.value) {
+                        <option [value]="grade.value">{{ grade.label }}</option>
+                      }
+                    </select>
+                  </div>
+                }
 
                 <div>
                   <label for="filter-sort" class="tenant-grades-filter-label">Sort By</label>
@@ -121,14 +141,14 @@
         @if (activeFiltersCount() > 0 || searchQuery()) {
           <button type="button" (click)="clearAllFilters()" class="tenant-grades-reset-all">
             <mat-icon class="text-sm">restart_alt</mat-icon>
-            Reset All
+            {{ isQuestionsBankStageRoute && searchQuery() && activeFiltersCount() === 0 ? 'Clear Search' : 'Reset All' }}
           </button>
         }
       </div>
     </div>
   </div>
 
-  @if (deleteError()) {
+  @if (!isQuestionsBankRoute && deleteError()) {
     <div class="tenant-grades-delete-error">
       <mat-icon class="text-sm">error_outline</mat-icon>
       <span>{{ deleteError() }}</span>
@@ -161,15 +181,17 @@
                 <mat-icon class="tenant-grades-card-icon">menu_book</mat-icon>
               </div>
               <div class="tenant-grades-card-actions">
-                <a [routerLink]="['/tenant/subjects', subject.id]" class="tenant-grades-icon-btn" title="View Details">
+                <a [routerLink]="subjectDetailsLink(subject.id)" class="tenant-grades-icon-btn" title="View Details">
                   <mat-icon class="text-sm">visibility</mat-icon>
                 </a>
-                <a [routerLink]="['/tenant/subjects', subject.id, 'edit']" class="tenant-grades-icon-btn" title="Edit">
-                  <mat-icon class="text-sm">edit</mat-icon>
-                </a>
-                <button type="button" (click)="deleteSubject(subject.id)" [disabled]="deletingId() === subject.id" class="tenant-grades-icon-btn tenant-grades-icon-btn--danger" title="Delete">
-                  <mat-icon class="text-sm">{{ deletingId() === subject.id ? 'sync' : 'delete' }}</mat-icon>
-                </button>
+                @if (!isQuestionsBankRoute) {
+                  <a [routerLink]="['/tenant/subjects', subject.id, 'edit']" class="tenant-grades-icon-btn" title="Edit">
+                    <mat-icon class="text-sm">edit</mat-icon>
+                  </a>
+                  <button type="button" (click)="deleteSubject(subject.id)" [disabled]="deletingId() === subject.id" class="tenant-grades-icon-btn tenant-grades-icon-btn--danger" title="Delete">
+                    <mat-icon class="text-sm">{{ deletingId() === subject.id ? 'sync' : 'delete' }}</mat-icon>
+                  </button>
+                }
               </div>
             </div>
 
@@ -181,7 +203,7 @@
                 <mat-icon class="text-sm">groups</mat-icon>
                 <span>{{ subject.assignedGroupsCount }} Groups</span>
               </div>
-              <a [routerLink]="['/tenant/subjects', subject.id]" class="tenant-grades-view-link">
+              <a [routerLink]="subjectDetailsLink(subject.id)" class="tenant-grades-view-link">
                 View Details
               </a>
             </div>
@@ -203,7 +225,15 @@
             </thead>
             <tbody class="tenant-grades-tbody">
               @for (subject of filteredSubjects(); track subject.id) {
-                <tr class="tenant-grades-tr">
+                <tr
+                  class="tenant-grades-tr"
+                  [class.cursor-pointer]="isQuestionsBankGradeRoute"
+                  [attr.role]="isQuestionsBankGradeRoute ? 'link' : null"
+                  [attr.tabindex]="isQuestionsBankGradeRoute ? '0' : null"
+                  (click)="isQuestionsBankGradeRoute && openSubject(subject.id)"
+                  (keydown.enter)="isQuestionsBankGradeRoute && openSubject(subject.id)"
+                  (keydown.space)="isQuestionsBankGradeRoute && openSubject(subject.id); isQuestionsBankGradeRoute && $event.preventDefault()"
+                >
                   <td class="tenant-grades-td">
                     <div class="tenant-grades-row-name-wrap">
                       <div class="tenant-grades-row-icon-wrap">
@@ -224,15 +254,17 @@
                   </td>
                   <td class="tenant-grades-td tenant-grades-td--actions">
                     <div class="tenant-grades-row-actions">
-                      <a [routerLink]="['/tenant/subjects', subject.id]" class="tenant-grades-row-btn tenant-grades-row-btn--view" title="View Details">
+                      <a [routerLink]="subjectDetailsLink(subject.id)" (click)="$event.stopPropagation()" class="tenant-grades-row-btn tenant-grades-row-btn--view" title="View Details">
                         <mat-icon class="text-sm block">visibility</mat-icon>
                       </a>
-                      <a [routerLink]="['/tenant/subjects', subject.id, 'edit']" class="tenant-grades-row-btn tenant-grades-row-btn--edit" title="Edit">
-                        <mat-icon class="text-sm block">edit</mat-icon>
-                      </a>
-                      <button type="button" (click)="deleteSubject(subject.id)" [disabled]="deletingId() === subject.id" class="tenant-grades-row-btn tenant-grades-row-btn--delete" title="Delete">
-                        <mat-icon class="text-sm block">{{ deletingId() === subject.id ? 'sync' : 'delete' }}</mat-icon>
-                      </button>
+                      @if (!isQuestionsBankRoute) {
+                        <a [routerLink]="['/tenant/subjects', subject.id, 'edit']" class="tenant-grades-row-btn tenant-grades-row-btn--edit" title="Edit">
+                          <mat-icon class="text-sm block">edit</mat-icon>
+                        </a>
+                        <button type="button" (click)="deleteSubject(subject.id)" [disabled]="deletingId() === subject.id" class="tenant-grades-row-btn tenant-grades-row-btn--delete" title="Delete">
+                          <mat-icon class="text-sm block">{{ deletingId() === subject.id ? 'sync' : 'delete' }}</mat-icon>
+                        </button>
+                      }
                     </div>
                   </td>
                 </tr>

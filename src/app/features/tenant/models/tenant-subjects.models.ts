@@ -47,9 +47,33 @@ export interface TenantCurriculumQuestion {
   mediaOriginalName: string | null;
   mediaContentType: string | null;
   mediaSizeBytes: number | null;
+  bloomId: string | null;
+  difficultyId: string | null;
+  weight: number | null;
+  tags?: string[];
   answers: TenantCurriculumQuestionAnswer[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface BloomLevel {
+  id: string;
+  code: string;
+  nameAr: string;
+  nameEn: string;
+  descriptionAr: string | null;
+  descriptionEn: string | null;
+  levelOrder: number;
+}
+
+export interface QuestionDifficulty {
+  id: string;
+  code: string;
+  nameAr: string;
+  nameEn: string;
+  descriptionAr: string | null;
+  descriptionEn: string | null;
+  difficultyOrder: number;
 }
 
 export interface TenantCurriculumQuestionPage {

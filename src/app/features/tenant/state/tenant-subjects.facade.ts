@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { TenantSubjectListFilters } from '../data-access/tenant-subjects-data.service';
 import { TenantSubjectsStore } from './tenant-subjects.store';
 
 @Injectable({ providedIn: 'root' })
@@ -21,8 +22,8 @@ export class TenantSubjectsFacade {
   readonly stageOptions = this.store.stageOptions;
   readonly gradeOptions = this.store.gradeOptions;
 
-  loadSubjects(): Promise<void> {
-    return this.store.loadSubjects();
+  loadSubjects(filters: TenantSubjectListFilters = {}): Promise<void> {
+    return this.store.loadSubjects(filters);
   }
 
   deleteSubject(id: string): Promise<boolean> {

@@ -1,4 +1,5 @@
 import { signal } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
@@ -76,9 +77,25 @@ describe('TenantGroupDetailsComponent', () => {
   const groupDetailsData = {
     loadGroupLessons: vi.fn(),
     addGroupLesson: vi.fn(),
+    loadGroupLessonContent: vi.fn(),
+    addGroupLessonContent: vi.fn(),
+    loadGroupLibraryFolders: vi.fn(),
+    createGroupLibraryFolder: vi.fn(),
+    loadGroupLibraryFiles: vi.fn(),
+    uploadGroupLibraryFile: vi.fn(),
+    loadGroupLibraryNotes: vi.fn(),
+    createGroupLibraryNote: vi.fn(),
+    updateGroupLibraryNote: vi.fn(),
+    loadGroupLibraryLinks: vi.fn(),
+    createGroupLibraryLink: vi.fn(),
   };
   const subjectsData = {
     getSubjectCurriculumForCategory: vi.fn(),
+    listCurriculumMaterialFolders: vi.fn(),
+    listCurriculumMaterialFiles: vi.fn(),
+    listCurriculumMaterialNotes: vi.fn(),
+    listCurriculumMaterialLinks: vi.fn(),
+    createCurriculumMaterialFolder: vi.fn(),
     toUserMessage: vi.fn((_error: unknown, fallback: string) => fallback),
   };
   const i18n = {
@@ -107,6 +124,22 @@ describe('TenantGroupDetailsComponent', () => {
       path: 'Unit one',
       description: 'Intro lesson',
     }));
+    groupDetailsData.loadGroupLessonContent.mockReset();
+    groupDetailsData.loadGroupLessonContent.mockReturnValue(of([]));
+    groupDetailsData.addGroupLessonContent.mockReset();
+    groupDetailsData.addGroupLessonContent.mockReturnValue(of({
+      id: 'content-1',
+      curriculumNodeId: 'unit-1',
+      curriculumNodeLabel: 'Unit one',
+      folderId: 'folder-1',
+      folderName: 'Unit material',
+      contentType: 'FILE',
+      contentId: 'file-1',
+      title: 'intro.pdf',
+      url: '/uploads/intro.pdf',
+      fileContentType: 'application/pdf',
+      sizeBytes: 2048,
+    }));
     subjectsData.getSubjectCurriculumForCategory.mockReset();
     subjectsData.getSubjectCurriculumForCategory.mockResolvedValue({
       id: 'curriculum',
@@ -131,6 +164,46 @@ describe('TenantGroupDetailsComponent', () => {
         },
       ],
     });
+    subjectsData.listCurriculumMaterialFolders.mockReset();
+    subjectsData.listCurriculumMaterialFolders.mockResolvedValue([]);
+    subjectsData.listCurriculumMaterialFiles.mockReset();
+    subjectsData.listCurriculumMaterialFiles.mockResolvedValue([]);
+    subjectsData.listCurriculumMaterialNotes.mockReset();
+    subjectsData.listCurriculumMaterialNotes.mockResolvedValue([]);
+    subjectsData.listCurriculumMaterialLinks.mockReset();
+    subjectsData.listCurriculumMaterialLinks.mockResolvedValue([]);
+    subjectsData.createCurriculumMaterialFolder.mockReset();
+    subjectsData.createCurriculumMaterialFolder.mockResolvedValue({
+      id: 'created-folder',
+      name: 'Created material',
+      description: null,
+      fileTypes: [],
+      filesCount: 0,
+      createdAt: '',
+      updatedAt: '',
+    });
+    groupDetailsData.loadGroupLibraryFolders.mockReset();
+    groupDetailsData.loadGroupLibraryFolders.mockReturnValue(of([]));
+    groupDetailsData.createGroupLibraryFolder.mockReset();
+    groupDetailsData.createGroupLibraryFolder.mockReturnValue(of({
+      id: 'created-folder',
+      name: 'Created material',
+      description: null,
+      fileTypes: [],
+      filesCount: 0,
+      createdAt: '',
+      updatedAt: '',
+    }));
+    groupDetailsData.loadGroupLibraryFiles.mockReset();
+    groupDetailsData.loadGroupLibraryFiles.mockReturnValue(of([]));
+    groupDetailsData.uploadGroupLibraryFile.mockReset();
+    groupDetailsData.loadGroupLibraryNotes.mockReset();
+    groupDetailsData.loadGroupLibraryNotes.mockReturnValue(of([]));
+    groupDetailsData.createGroupLibraryNote.mockReset();
+    groupDetailsData.updateGroupLibraryNote.mockReset();
+    groupDetailsData.loadGroupLibraryLinks.mockReset();
+    groupDetailsData.loadGroupLibraryLinks.mockReturnValue(of([]));
+    groupDetailsData.createGroupLibraryLink.mockReset();
     await TestBed.configureTestingModule({
       imports: [TenantGroupDetailsComponent],
       providers: [
@@ -148,6 +221,7 @@ describe('TenantGroupDetailsComponent', () => {
         { provide: TenantGroupDetailsDataService, useValue: groupDetailsData },
         { provide: TenantSubjectsDataService, useValue: subjectsData },
         { provide: I18nService, useValue: i18n },
+        provideHttpClient(),
       ],
     }).compileComponents();
 
@@ -196,6 +270,7 @@ describe('TenantGroupDetailsComponent', () => {
         attendanceRate: 92,
         lastAttendance: '2026-06-01',
         attendanceState: 'Present',
+        attendanceTime: '2026-06-17T17:05:00+03:00',
       },
       {
         id: 'student-2',
@@ -233,12 +308,270 @@ describe('TenantGroupDetailsComponent', () => {
     const tabs = fixture.nativeElement.querySelector('.tenant-group-detail-tabs') as HTMLElement;
     const sessionsPanel = fixture.nativeElement.querySelector('#tenant-group-sessions-panel') as HTMLElement;
 
-    expect(tabButtons).toEqual(['Sessions', 'Enrolled Students', 'Lessons', 'Overview']);
+    expect(tabButtons).toEqual(['Sessions', 'Enrolled Students', 'Lessons', 'Library', 'Overview']);
     expect(tabs.compareDocumentPosition(sessionsPanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(fixture.componentInstance.activeTab()).toBe('sessions');
   });
 
+  it('switches to the library tab and renders the library panel', async () => {
+    const libraryTab = Array.from(fixture.nativeElement.querySelectorAll('.tenant-group-detail-tab'))
+      .find((button) => (button as HTMLButtonElement).textContent?.includes('Library')) as HTMLButtonElement;
+
+    libraryTab.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(fixture.componentInstance.activeTab()).toBe('library');
+    expect(fixture.nativeElement.querySelector('#tenant-group-library-panel')).toBeTruthy();
+    expect(text).toContain('Group learning resources and shared materials');
+    expect(text).toContain('No library resources added yet.');
+  });
+
+  it('loads group library folders after a refreshed library tab waits for group details', async () => {
+    groupDetailsData.loadGroupLibraryFolders.mockClear();
+    groupDetailsData.loadGroupLibraryFolders.mockReturnValue(of([
+      {
+        id: 'folder-1',
+        name: 'Saved folder',
+        description: null,
+        fileTypes: [],
+        filesCount: 0,
+        createdAt: '',
+        updatedAt: '',
+      },
+    ]));
+
+    group.set(null);
+    fixture.componentInstance.selectTab('library');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(groupDetailsData.loadGroupLibraryFolders).not.toHaveBeenCalled();
+
+    group.set(initialGroup);
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    expect(groupDetailsData.loadGroupLibraryFolders).toHaveBeenCalledWith('group-123');
+    expect(fixture.nativeElement.textContent).toContain('Saved folder');
+  });
+
+  it('keeps curriculum material folders hidden in the library tab', async () => {
+    const unitId = '05e26664-b450-471c-a122-03acef617dbe';
+    const lessonId = '5c384997-1aa9-4298-8da0-5188b8a6d662';
+    subjectsData.getSubjectCurriculumForCategory.mockResolvedValue({
+      id: 'curriculum',
+      label: 'Physics Curriculum',
+      icon: 'folder',
+      description: null,
+      children: [
+        {
+          id: unitId,
+          label: 'Unit one',
+          icon: 'folder',
+          description: null,
+          children: [
+            {
+              id: lessonId,
+              label: 'Lesson one',
+              icon: 'description',
+              description: 'Intro lesson',
+              children: [],
+            },
+          ],
+        },
+      ],
+    });
+    groupDetailsData.loadGroupLessons.mockReturnValue(of([
+      {
+        id: 'group-lesson-1',
+        curriculumNodeId: lessonId,
+        title: 'Lesson one',
+        path: 'Unit one',
+        description: 'Intro lesson',
+      },
+    ]));
+    subjectsData.listCurriculumMaterialFolders.mockResolvedValue([
+      { id: 'folder-1', name: 'Unit material', description: 'Shared lesson files', fileTypes: [], filesCount: 0, createdAt: '', updatedAt: '' },
+    ]);
+
+    fixture.componentInstance.selectTab('library');
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(subjectsData.listCurriculumMaterialFolders).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector('.tenant-group-library-folder-card')).toBeFalsy();
+    expect(text).not.toContain('Unit material');
+    expect(text).toContain('No library resources added yet.');
+  });
+
+  it('creates and opens a library material folder from name and description only', async () => {
+    groupDetailsData.createGroupLibraryFolder.mockReturnValue(of({
+      id: 'created-folder',
+      name: 'Created material',
+      description: 'Shared files',
+      fileTypes: [],
+      filesCount: 0,
+      createdAt: '',
+      updatedAt: '',
+    }));
+
+    fixture.componentInstance.selectTab('library');
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    const createButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .find((button) => (button as HTMLButtonElement).textContent?.includes('Create folder')) as HTMLButtonElement;
+    createButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).not.toContain('Curriculum directory');
+    const nameInput = fixture.nativeElement.querySelector('input[placeholder="Folder name"]') as HTMLInputElement;
+    nameInput.value = 'Created material';
+    nameInput.dispatchEvent(new Event('input', { bubbles: true }));
+    const descriptionInput = fixture.nativeElement.querySelector('textarea[placeholder="Optional description"]') as HTMLTextAreaElement;
+    descriptionInput.value = 'Shared files';
+    descriptionInput.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    const modalCreateButton = Array.from(fixture.nativeElement.querySelectorAll('.tenant-group-insert-content-modal-footer button'))
+      .find((button) => (button as HTMLButtonElement).textContent?.includes('Create folder')) as HTMLButtonElement;
+    modalCreateButton.click();
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    expect(subjectsData.createCurriculumMaterialFolder).not.toHaveBeenCalled();
+    expect(groupDetailsData.createGroupLibraryFolder).toHaveBeenCalledWith('group-123', {
+      name: 'Created material',
+      description: 'Shared files',
+    });
+    expect(groupDetailsData.loadGroupLibraryFiles).toHaveBeenCalledWith('group-123', 'created-folder');
+    expect(groupDetailsData.loadGroupLibraryNotes).toHaveBeenCalledWith('group-123', 'created-folder');
+    expect(groupDetailsData.loadGroupLibraryLinks).toHaveBeenCalledWith('group-123', 'created-folder');
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Created material');
+    expect(text).toContain('Add note');
+    expect(text).toContain('Add external link');
+    expect(text).toContain('Upload file');
+    expect(text).toContain('No files have been uploaded to this folder yet.');
+    expect(fixture.nativeElement.querySelector('a[href*="/tenant/subjects/"]')).toBeFalsy();
+  });
+
+  it('opens library note content in the editor and saves changes when the card is clicked', async () => {
+    const folder = {
+      nodeId: 'group-123',
+      nodeLabel: 'Group Library',
+      folder: {
+        id: 'folder-1',
+        name: 'Shared folder',
+        description: null,
+        fileTypes: [],
+        filesCount: 1,
+        createdAt: '',
+        updatedAt: '',
+      },
+    };
+    groupDetailsData.loadGroupLibraryNotes.mockReturnValue(of([
+      {
+        id: 'note-1',
+        title: 'Opening note',
+        contentJson: JSON.stringify({ blocks: [{ data: { text: 'Preview body' } }] }),
+        createdAt: '',
+        updatedAt: '',
+      },
+    ]));
+    groupDetailsData.updateGroupLibraryNote.mockReturnValue(of({
+      id: 'note-1',
+      title: 'Opening note',
+      contentJson: JSON.stringify({ blocks: [{ data: { text: 'Updated body' } }] }),
+      createdAt: '',
+      updatedAt: '',
+    }));
+
+    fixture.componentInstance.libraryFolders.set([folder]);
+    fixture.componentInstance.activeTab.set('library');
+    await fixture.componentInstance.openLibraryFolder(folder);
+    fixture.detectChanges();
+
+    const noteCard = Array.from(fixture.nativeElement.querySelectorAll('.tenant-group-library-content-card'))
+      .find((card) => (card as HTMLElement).textContent?.includes('Opening note')) as HTMLButtonElement;
+    noteCard.click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.editingLibraryNote()?.id).toBe('note-1');
+    expect(fixture.nativeElement.textContent).toContain('Edit Note');
+    expect((fixture.nativeElement.querySelector('#group-library-note-content') as HTMLTextAreaElement).value).toBe('Preview body');
+
+    fixture.componentInstance.setLibraryNoteContent('Updated body');
+    await fixture.componentInstance.saveLibraryNote();
+    fixture.detectChanges();
+
+    expect(groupDetailsData.updateGroupLibraryNote).toHaveBeenCalledWith('group-123', 'folder-1', 'note-1', {
+      title: 'Opening note',
+      contentJson: expect.stringContaining('Updated body'),
+    });
+    expect(fixture.componentInstance.notePreview(fixture.componentInstance.libraryNotes()[0])).toBe('Updated body');
+    expect(fixture.componentInstance.libraryNoteModalOpen()).toBe(false);
+  });
+
   it('switches to the overview tab and renders group summary fields', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-17T17:15:00'));
+    group.set({
+      ...initialGroup,
+      calendarEvents: [
+        {
+          id: 'last-session',
+          date: '2026-06-17',
+          day: 'Wednesday',
+          startTime: '14:00',
+          endTime: '15:00',
+          room: 'Lab 101',
+        },
+        {
+          id: 'current-session',
+          date: '2026-06-17',
+          day: 'Wednesday',
+          startTime: '17:00',
+          endTime: '18:00',
+          room: 'Lab 102',
+        },
+      ],
+    });
+    students.set([
+      {
+        id: 'student-1',
+        name: 'Ahmed Ali',
+        email: 'ahmed@example.com',
+        attendanceRate: 92,
+        lastAttendance: '2026-06-17',
+        attendanceState: 'Present',
+        attendanceTime: '2026-06-17T17:05:00+03:00',
+      },
+      {
+        id: 'student-2',
+        name: 'Sara Mohamed',
+        email: 'sara@example.com',
+        attendanceRate: 70,
+        lastAttendance: '2026-06-17',
+        attendanceState: 'Absent',
+      },
+      {
+        id: 'student-3',
+        name: 'Omar Hassan',
+        email: 'omar@example.com',
+        attendanceRate: 0,
+        lastAttendance: '',
+      },
+    ]);
+    fixture.detectChanges();
     const overviewTab = Array.from(fixture.nativeElement.querySelectorAll('.tenant-group-detail-tab'))
       .find((button) => (button as HTMLButtonElement).textContent?.includes('Overview')) as HTMLButtonElement;
 
@@ -249,10 +582,22 @@ describe('TenantGroupDetailsComponent', () => {
     expect(fixture.componentInstance.activeTab()).toBe('overview');
     expect(fixture.nativeElement.querySelector('#tenant-group-overview-panel')).toBeTruthy();
     expect(text).toContain('Group academic and operational summary');
-    expect(text).toContain('Subject');
-    expect(text).toContain('Teacher');
-    expect(text).toContain('Room');
-    expect(text).toContain('Schedule');
+    expect(text).toContain('Current session');
+    expect(text).toContain('Wednesday · 2026-06-17 · 17:00 - 18:00');
+    expect(text).toContain('Lab 102');
+    expect(text).toContain('Last session');
+    expect(text).toContain('Wednesday · 2026-06-17 · 14:00 - 15:00');
+    expect(text).toContain('Lab 101');
+    expect(text).toContain('Attendance 33%');
+    expect(text).toContain('Marked');
+    expect(text).toContain('Attendance Trend');
+    expect(text).toContain('1 present, 1 absent, 1 not marked');
+    expect(text).toContain('Current session');
+    expect(fixture.nativeElement.querySelector('canvas[aria-label="Current session attendance trend"]')).toBeTruthy();
+    expect(text).toContain('2 / 3');
+    expect(text).toContain('Present');
+    expect(text).toContain('Absent');
+    expect(text).toContain('Not marked');
   });
 
   it('switches to the sessions tab and renders the group schedule rows', () => {
@@ -276,6 +621,55 @@ describe('TenantGroupDetailsComponent', () => {
     expect(text).toContain('Rows');
     expect(text).toContain('Page 1 of 1');
     expect(fixture.nativeElement.querySelector('#tenant-group-enrolled-students-panel')).toBeFalsy();
+  });
+
+  it('displays assigned lessons in the matching session row', async () => {
+    groupDetailsData.loadGroupLessons.mockReset();
+    groupDetailsData.loadGroupLessons.mockImplementation((_groupId: string, options?: { sessionId?: string | null }) => {
+      if (options?.sessionId === 'schedule-Monday') {
+        return of([
+          {
+            id: 'session-lesson-1',
+            curriculumNodeId: 'lesson-1',
+            title: 'Motion intro',
+            path: 'Unit one',
+            description: null,
+          },
+          {
+            id: 'session-lesson-2',
+            curriculumNodeId: 'lesson-2',
+            title: 'Forces practice',
+            path: 'Unit one',
+            description: null,
+          },
+          {
+            id: 'session-lesson-3',
+            curriculumNodeId: 'lesson-3',
+            title: 'Energy review',
+            path: 'Unit two',
+            description: null,
+          },
+        ]);
+      }
+      return of([]);
+    });
+    fixture.componentInstance.sessionLessonsLoadedKey.set(null);
+    group.set({ ...initialGroup });
+
+    fixture.componentInstance.selectTab('sessions');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    const rows = Array.from(fixture.nativeElement.querySelectorAll('.tenant-group-session-row')) as HTMLElement[];
+
+    expect(groupDetailsData.loadGroupLessons).toHaveBeenCalledWith('group-123', { sync: false, sessionId: 'schedule-Monday' });
+    expect(rows[0].textContent).toContain('Assigned lessons');
+    expect(rows[0].textContent).toContain('Motion intro');
+    expect(rows[0].textContent).toContain('Forces practice');
+    expect(rows[0].textContent).toContain('+1');
+    expect(rows[1].textContent).toContain('No lessons assigned');
   });
 
   it('opens the session details page when a session row is clicked', () => {
@@ -552,6 +946,138 @@ describe('TenantGroupDetailsComponent', () => {
 
     expect(lessonRow.getAttribute('role')).toBe('link');
     expect(navigateSpy).toHaveBeenCalledWith(['/tenant/groups', 'group-123', 'lessons', 'group-lesson-1']);
+  });
+
+  it('opens lesson session assignment in place from the lesson row icon', async () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    groupDetailsData.loadGroupLessons.mockImplementation((_groupId: string, options?: { sessionId?: string | null }) => {
+      if (options?.sessionId) {
+        return of([
+          {
+            id: 'assigned-lesson-2',
+            curriculumNodeId: 'lesson-2',
+            title: 'Already assigned lesson',
+            path: 'Unit two',
+            description: null,
+          },
+        ]);
+      }
+      return of([
+        {
+          id: 'group-lesson-1',
+          curriculumNodeId: 'lesson-1',
+          title: 'Lesson one',
+          path: 'Unit one',
+          description: 'Intro lesson',
+        },
+      ]);
+    });
+
+    fixture.componentInstance.selectTab('lessons');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const assignButton = fixture.nativeElement.querySelector('[aria-label="Assign lesson to session"]') as HTMLButtonElement;
+    assignButton.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    expect(navigateSpy).not.toHaveBeenCalled();
+    expect(groupDetailsData.loadGroupLessons).toHaveBeenCalledWith('group-123', { sync: false, sessionId: 'schedule-Monday' });
+    expect(fixture.nativeElement.textContent).toContain('Physics G12-A sessions');
+    expect(fixture.nativeElement.textContent).toContain('Already assigned lesson');
+
+    const sessionButton = fixture.nativeElement.querySelector('.tenant-group-assign-session-card') as HTMLButtonElement;
+    sessionButton.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    expect(assignButton).toBeTruthy();
+    expect(groupDetailsData.addGroupLesson).toHaveBeenCalledWith('group-123', 'lesson-1', { sessionId: 'schedule-Monday' });
+    expect(fixture.nativeElement.textContent).toContain('Assigned');
+  });
+
+  it('opens lesson insert content from the lesson row icon', async () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const unitId = '11111111-1111-4111-8111-111111111111';
+    const lessonId = '22222222-2222-4222-8222-222222222222';
+    groupDetailsData.loadGroupLessons.mockReturnValue(of([
+      {
+        id: 'group-lesson-1',
+        curriculumNodeId: lessonId,
+        title: 'Lesson one',
+        path: 'Unit one',
+        description: 'Intro lesson',
+      },
+    ]));
+    subjectsData.getSubjectCurriculumForCategory.mockResolvedValue({
+      id: 'curriculum',
+      label: 'Physics Curriculum',
+      icon: 'folder',
+      description: null,
+      children: [
+        {
+          id: unitId,
+          label: 'Unit one',
+          icon: 'folder',
+          description: null,
+          children: [
+            {
+              id: lessonId,
+              label: 'Lesson one',
+              icon: 'description',
+              description: 'Intro lesson',
+              children: [],
+            },
+          ],
+        },
+      ],
+    });
+    subjectsData.listCurriculumMaterialFolders.mockResolvedValue([
+      { id: 'folder-1', name: 'Unit material', description: null, fileTypes: ['pdf'], filesCount: 1, createdAt: '', updatedAt: '' },
+    ]);
+    subjectsData.listCurriculumMaterialFiles.mockResolvedValue([
+      { id: 'file-1', url: '/uploads/intro.pdf', fileName: 'intro.pdf', originalName: 'intro.pdf', contentType: 'application/pdf', sizeBytes: 2048, createdAt: '', updatedAt: '' },
+    ]);
+
+    fixture.componentInstance.selectTab('lessons');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const insertButton = fixture.nativeElement.querySelector('[aria-label="Insert content"]') as HTMLButtonElement;
+    insertButton.click();
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    expect(navigateSpy).not.toHaveBeenCalled();
+    expect(groupDetailsData.loadGroupLessonContent).toHaveBeenCalledWith('group-123', 'group-lesson-1');
+    expect(subjectsData.listCurriculumMaterialFolders).toHaveBeenCalledWith('subject-1', unitId, 'BASIC_EDUCATION');
+    expect(fixture.nativeElement.textContent).toContain('Insert content');
+    expect(fixture.nativeElement.textContent).toContain('intro.pdf');
+
+    const materialOption = fixture.nativeElement.querySelector('.tenant-group-insert-content-option') as HTMLButtonElement;
+    materialOption.click();
+    fixture.detectChanges();
+
+    const insertSelectedButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .find((button) => (button as HTMLButtonElement).textContent?.includes('Insert selected')) as HTMLButtonElement;
+    insertSelectedButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(groupDetailsData.addGroupLessonContent).toHaveBeenCalledWith('group-123', 'group-lesson-1', {
+      curriculumNodeId: unitId,
+      folderId: 'folder-1',
+      contentType: 'FILE',
+      contentId: 'file-1',
+    });
   });
 
   it('renders curriculum lessons in a searchable paginated table', async () => {

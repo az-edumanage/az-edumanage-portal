@@ -50,6 +50,7 @@ describe('SidebarComponent', () => {
       .flatMap((section) => section.items)
       .find((item) => item.labelKey === 'sidebar.item.basicEducation');
     const mainItems = sections.find((section) => section.titleKey === 'sidebar.section.main')?.items ?? [];
+    const academicItems = sections.find((section) => section.titleKey === 'sidebar.section.academic')?.items ?? [];
     const universityEducation = mainItems.find((item) => item.labelKey === 'sidebar.item.universityEducation');
 
     expect(routes).toContain('/tenant/overview');
@@ -62,6 +63,9 @@ describe('SidebarComponent', () => {
     expect(basicEducation?.children?.map((child) => child.route)).toEqual(educationRoutes);
     expect(mainItems.findIndex((item) => item.labelKey === 'sidebar.item.universityEducation'))
       .toBe(mainItems.findIndex((item) => item.labelKey === 'sidebar.item.basicEducation') + 1);
+    expect(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.questionsBank'))
+      .toBe(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.examsGrades') + 1);
+    expect(academicItems.find((item) => item.labelKey === 'sidebar.item.questionsBank')?.route).toBe('/tenant/questions-bank');
     expect(universityEducation?.route).toBeUndefined();
     expect(universityEducation?.children?.map((child) => child.route)).toEqual(universityEducationRoutes);
     educationRoutes.forEach((route) => expect(routes).not.toContain(route));

@@ -80,6 +80,7 @@ export class TenantGroupAttendanceDataService {
       switchMap((group) =>
         this.withStudentDetailBarcodes((group.students ?? []).map((student) => this.toAttendanceStudent(student))).pipe(
           map((students) => ({
+            groupName: group.name,
             attendanceAvailable: group.attendanceAvailable,
             students,
           })),

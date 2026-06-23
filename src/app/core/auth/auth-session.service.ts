@@ -18,10 +18,15 @@ export class AuthSessionService {
   private readonly router = inject(Router);
   private expiryTimer: ReturnType<typeof setTimeout> | null = null;
   private handlingSessionExpiry = false;
+  private refreshPromise: Promise<string | null> | null = null;
 
   async hydrateFromBackend(): Promise<void> {
     const token = this.tokenService.getToken();
     if (!token) {
+      if (this.isExpiredLoginUrl(this.router.url)) {
+        await this.refreshSession(this.router.url, false);
+        return;
+      }
       this.tenantImpersonationService.clear();
       this.dashboardService.syncRoleFromUrl(this.router.url);
       this.clearExpiryTimer();
@@ -29,21 +34,14 @@ export class AuthSessionService {
     }
 
     if (isJwtExpired(token)) {
-      this.handleSessionExpired(this.router.url);
+      await this.refreshSession(this.router.url);
       return;
     }
 
     this.scheduleExpiry(token);
 
     try {
-      await this.authApi.me();
-      if (this.tenantImpersonationService.canAccessTenantWorkspace()) {
-        this.tenantImpersonationService.syncWorkspaceRole();
-      } else {
-        const routeWorkspace = this.dashboardService.resolveWorkspaceFromUrl(this.router.url);
-        const workspace = routeWorkspace ?? this.identityService.currentWorkspace();
-        this.dashboardService.setRole(workspace, false);
-      }
+      await this.syncIdentityFromBackend();
     } catch {
       this.clearLocalAuthState();
     }
@@ -58,14 +56,26 @@ export class AuthSessionService {
     }
     const delay = expiresAt - Date.now();
     if (delay <= 0) {
-      this.handleSessionExpired(this.router.url);
+      void this.refreshSession(this.router.url);
       return;
     }
-    this.expiryTimer = setTimeout(() => this.handleSessionExpired(this.router.url), delay);
+    this.expiryTimer = setTimeout(() => void this.refreshSession(this.router.url), delay);
   }
 
   isTokenExpired(token: string | null = this.tokenService.getToken()): boolean {
     return isJwtExpired(token);
+  }
+
+  async refreshSession(currentUrl: string | null = this.router.url, navigateToLoginOnFailure = true): Promise<string | null> {
+    if (this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    this.refreshPromise = this.refreshSessionInternal(currentUrl, navigateToLoginOnFailure)
+      .finally(() => {
+        this.refreshPromise = null;
+      });
+    return this.refreshPromise;
   }
 
   handleSessionExpired(currentUrl?: string | null): void {
@@ -97,6 +107,43 @@ export class AuthSessionService {
       clearTimeout(this.expiryTimer);
       this.expiryTimer = null;
     }
+  }
+
+  private async refreshSessionInternal(currentUrl: string | null, navigateToLoginOnFailure: boolean): Promise<string | null> {
+    try {
+      const token = await this.authApi.refresh();
+      this.handlingSessionExpiry = false;
+      this.scheduleExpiry(token);
+      await this.syncIdentityFromBackend();
+      return token;
+    } catch {
+      if (navigateToLoginOnFailure) {
+        this.handleSessionExpired(currentUrl);
+      } else {
+        this.clearLocalAuthState();
+      }
+      return null;
+    }
+  }
+
+  private async syncIdentityFromBackend(): Promise<void> {
+    await this.authApi.me();
+    if (this.tenantImpersonationService.canAccessTenantWorkspace()) {
+      this.tenantImpersonationService.syncWorkspaceRole();
+      return;
+    }
+
+    const routeWorkspace = this.dashboardService.resolveWorkspaceFromUrl(this.router.url);
+    const workspace = routeWorkspace ?? this.identityService.currentWorkspace();
+    this.dashboardService.setRole(workspace, false);
+  }
+
+  private isExpiredLoginUrl(url: string): boolean {
+    const [path, query = ''] = url.split('?');
+    if (!path.endsWith('/login')) {
+      return false;
+    }
+    return new URLSearchParams(query).get('expired') === '1';
   }
 
   private roleForUrl(url: string | null): UserRole {

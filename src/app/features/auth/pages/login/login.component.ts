@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -17,7 +17,7 @@ import { DashboardService, UserRole } from '../../../../core/services/dashboard.
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly authApi = inject(AuthApiService);
   private readonly dashboardService = inject(DashboardService);
@@ -44,6 +44,12 @@ export class LoginComponent {
       );
     } else if (this.route.snapshot.queryParamMap.get('expired') === '1') {
       this.infoMessage.set('Your session expired. Please sign in again.');
+    }
+  }
+
+  ngOnInit(): void {
+    if (this.route.snapshot.queryParamMap.get('expired') === '1') {
+      void this.recoverExpiredSession();
     }
   }
 
@@ -106,6 +112,33 @@ export class LoginComponent {
       return '/tenant/change-password';
     }
     return null;
+  }
+
+  private async recoverExpiredSession(): Promise<void> {
+    const role = this.getRoleFromUrl();
+    const redirect = this.workspaceRedirect(role);
+    if (redirect) {
+      this.dashboardService.returnUrl.set(redirect);
+    }
+
+    this.submitting.set(true);
+    const token = await this.authSession.refreshSession(this.router.url, false);
+    if (!token) {
+      this.submitting.set(false);
+      return;
+    }
+
+    await this.dashboardService.setRole(role);
+    this.submitting.set(false);
+  }
+
+  private workspaceRedirect(role: UserRole): string | null {
+    const redirect = safeRedirect(this.route.snapshot.queryParamMap.get('redirect'))
+      ?? safeRedirect(this.route.snapshot.queryParamMap.get('returnUrl'));
+    if (!redirect || redirect === '/') {
+      return null;
+    }
+    return redirect.startsWith(`/${role}/`) ? redirect : null;
   }
 
   private getRoleFromUrl(): UserRole {

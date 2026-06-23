@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { startWith } from 'rxjs';
+import { TenantSubjectsDataService } from '../../data-access/tenant-subjects-data.service';
 import { TenantSubjectsFacade } from '../../state/tenant-subjects.facade';
 
 @Component({
@@ -18,6 +19,9 @@ export class TenantSubjectsComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
   private readonly facade = inject(TenantSubjectsFacade);
+  private readonly subjectsData = inject(TenantSubjectsDataService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly searchQuery = this.facade.searchQuery;
   readonly showFilterPanel = this.facade.showFilterPanel;
@@ -31,6 +35,31 @@ export class TenantSubjectsComponent implements OnInit {
   readonly filteredSubjects = this.facade.filteredSubjects;
   readonly stageOptions = this.facade.stageOptions;
   readonly gradeOptions = this.facade.gradeOptions;
+  readonly isQuestionsBankRoute = this.router.url.startsWith('/tenant/questions-bank');
+  readonly questionsBankStageId = this.route.snapshot.paramMap.get('stageId') ?? '';
+  readonly questionsBankGradeId = this.route.snapshot.paramMap.get('gradeId') ?? '';
+  readonly isQuestionsBankStageRoute = this.isQuestionsBankRoute && !!this.questionsBankStageId;
+  readonly isQuestionsBankGradeRoute = this.isQuestionsBankStageRoute && !!this.questionsBankGradeId;
+  readonly loadedQuestionsBankStageName = signal('');
+  readonly loadedQuestionsBankGradeName = signal('');
+  readonly questionsBankStageName = computed(() => {
+    if (!this.questionsBankStageId) {
+      return '';
+    }
+
+    return this.loadedQuestionsBankStageName()
+      || this.stageOptions().find((stage) => stage.value === this.questionsBankStageId)?.label
+      || this.questionsBankStageId;
+  });
+  readonly questionsBankGradeName = computed(() => {
+    if (!this.questionsBankGradeId) {
+      return '';
+    }
+
+    return this.loadedQuestionsBankGradeName()
+      || this.gradeOptions().find((grade) => grade.value === this.questionsBankGradeId)?.label
+      || this.questionsBankGradeId;
+  });
 
   readonly filterForm = this.fb.group({
     stageId: [''],
@@ -39,14 +68,37 @@ export class TenantSubjectsComponent implements OnInit {
   });
 
   constructor() {
+    if (this.isQuestionsBankRoute) {
+      this.viewMode.set('list');
+    }
+
     this.filterForm.valueChanges
       .pipe(startWith(this.filterForm.value), takeUntilDestroyed(this.destroyRef))
       .subscribe((value) => {
-        this.facade.setFilters(value.stageId ?? '', value.gradeId ?? '', value.sortBy ?? 'name');
+        const stageId = this.isQuestionsBankStageRoute ? '' : value.stageId ?? '';
+        const gradeId = this.isQuestionsBankGradeRoute ? '' : value.gradeId ?? '';
+        this.facade.setFilters(stageId, gradeId, value.sortBy ?? 'name');
       });
   }
 
   ngOnInit(): void {
+    if (this.isQuestionsBankStageRoute) {
+      this.filterForm.patchValue({
+        stageId: this.questionsBankStageId,
+        gradeId: this.questionsBankGradeId,
+        sortBy: 'name',
+      }, {
+        emitEvent: false,
+      });
+      this.facade.setFilters('', '', 'name');
+      void this.loadQuestionsBankBreadcrumbNames();
+      void this.facade.loadSubjects({
+        stageId: this.questionsBankStageId,
+        ...(this.questionsBankGradeId ? { gradeId: this.questionsBankGradeId } : {}),
+      });
+      return;
+    }
+
     void this.facade.loadSubjects();
   }
 
@@ -59,6 +111,18 @@ export class TenantSubjectsComponent implements OnInit {
   }
 
   clearAdvancedFilters(): void {
+    if (this.isQuestionsBankStageRoute) {
+      this.facade.setFilters('', '', 'name');
+      this.filterForm.reset({
+        stageId: this.questionsBankStageId,
+        gradeId: this.questionsBankGradeId,
+        sortBy: 'name',
+      }, {
+        emitEvent: false,
+      });
+      return;
+    }
+
     this.facade.clearAdvancedFilters();
     this.filterForm.reset({
       stageId: '',
@@ -68,11 +132,45 @@ export class TenantSubjectsComponent implements OnInit {
   }
 
   clearAllFilters(): void {
+    if (this.isQuestionsBankStageRoute) {
+      this.searchQuery.set('');
+      this.clearAdvancedFilters();
+      return;
+    }
+
     this.facade.clearAllFilters();
     this.clearAdvancedFilters();
   }
 
   deleteSubject(id: string): void {
     void this.facade.deleteSubject(id);
+  }
+
+  subjectDetailsLink(subjectId: string): unknown[] {
+    return this.isQuestionsBankGradeRoute
+      ? ['/tenant/questions-bank/basic-education', this.questionsBankStageId, 'grades', this.questionsBankGradeId, 'subjects', subjectId, 'curriculum']
+      : ['/tenant/subjects', subjectId];
+  }
+
+  openSubject(subjectId: string): void {
+    void this.router.navigate(this.subjectDetailsLink(subjectId));
+  }
+
+  private async loadQuestionsBankBreadcrumbNames(): Promise<void> {
+    try {
+      const [stages, grades] = await Promise.all([
+        this.subjectsData.listStageOptions(),
+        this.subjectsData.listGradeOptions(),
+      ]);
+      this.loadedQuestionsBankStageName.set(
+        stages.find((stage) => stage.value === this.questionsBankStageId)?.label ?? '',
+      );
+      this.loadedQuestionsBankGradeName.set(
+        grades.find((grade) => grade.value === this.questionsBankGradeId)?.label ?? '',
+      );
+    } catch {
+      this.loadedQuestionsBankStageName.set('');
+      this.loadedQuestionsBankGradeName.set('');
+    }
   }
 }

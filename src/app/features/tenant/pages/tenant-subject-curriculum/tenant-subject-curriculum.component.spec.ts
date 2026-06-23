@@ -237,6 +237,81 @@ describe('TenantSubjectCurriculumComponent', () => {
     expect(navigate).toHaveBeenCalledWith(['/tenant/university-subjects', 'subject-1', 'curriculum', 'node-1']);
   });
 
+  it('uses the curriculum page as the questions bank subject step before opening questions', async () => {
+    await addRootChild('First Term');
+    const router = TestBed.inject(Router);
+    const route = TestBed.inject(ActivatedRoute);
+    const originalUrlDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(router), 'url');
+    const originalSnapshotDescriptor = Object.getOwnPropertyDescriptor(route, 'snapshot');
+    Object.defineProperty(router, 'url', {
+      configurable: true,
+      get: () => '/tenant/questions-bank/basic-education/stage-1/grades/grade-1/subjects/subject-1/curriculum',
+    });
+    Object.defineProperty(route, 'snapshot', {
+      configurable: true,
+      value: {
+        paramMap: convertToParamMap({ stageId: 'stage-1', gradeId: 'grade-1', id: 'subject-1' }),
+      },
+    });
+
+    const questionsBankFixture = TestBed.createComponent(TenantSubjectCurriculumComponent);
+    questionsBankFixture.detectChanges();
+    await questionsBankFixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    questionsBankFixture.detectChanges();
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const firstTermTableLink = questionsBankFixture.debugElement
+      .queryAll(By.css('.curriculum-content-link'))
+      .find((button) => (button.nativeElement as HTMLButtonElement).textContent?.includes('First Term'));
+    const actionLabels = questionsBankFixture.debugElement
+      .queryAll(By.css('.curriculum-table-action'))
+      .map((button) => button.attributes['aria-label']);
+    const questionsButton = questionsBankFixture.debugElement
+      .queryAll(By.css('.curriculum-table-action'))
+      .find((button) => button.attributes['aria-label'] === 'Open questions for First Term');
+    const breadcrumbText = (questionsBankFixture.debugElement.query(By.css('.curriculum-page-breadcrumb')).nativeElement as HTMLElement).textContent ?? '';
+    const breadcrumbLinks = Array.from(questionsBankFixture.nativeElement.querySelectorAll('.curriculum-page-breadcrumb a'))
+      .map((anchor) => (anchor as HTMLAnchorElement).pathname);
+
+    expect(breadcrumbText).toContain('Questions Bank');
+    expect(breadcrumbText).toContain('Basic Education');
+    expect(breadcrumbText).toContain('Secondary');
+    expect(breadcrumbText).toContain('Grade 10');
+    expect(breadcrumbText).toContain('Mathematics');
+    expect(breadcrumbText).toContain('Curriculum');
+    expect(breadcrumbLinks).toEqual([
+      '/tenant/questions-bank',
+      '/tenant/questions-bank/basic-education',
+      '/tenant/questions-bank/basic-education/stage-1',
+      '/tenant/questions-bank/basic-education/stage-1/grades/grade-1',
+    ]);
+    expect(actionLabels).toEqual(['Open questions for First Term']);
+    expect(questionsButton?.injector.get(RouterLink).href).toContain('/tenant/questions-bank/basic-education/stage-1/grades/grade-1/subjects/subject-1/curriculum/node-1');
+
+    firstTermTableLink?.triggerEventHandler('click');
+    questionsBankFixture.detectChanges();
+
+    expect(navigate).toHaveBeenCalledWith([
+      '/tenant/questions-bank/basic-education',
+      'stage-1',
+      'grades',
+      'grade-1',
+      'subjects',
+      'subject-1',
+      'curriculum',
+      'node-1',
+    ]);
+
+    if (originalUrlDescriptor) {
+      Object.defineProperty(router, 'url', originalUrlDescriptor);
+    }
+    if (originalSnapshotDescriptor) {
+      Object.defineProperty(route, 'snapshot', originalSnapshotDescriptor);
+    } else {
+      delete (route as Partial<ActivatedRoute>).snapshot;
+    }
+  });
+
   it('renders the selected curriculum node direct children in the content table', async () => {
     await addRootChild('First Term');
     await addRootChild('Second Term');

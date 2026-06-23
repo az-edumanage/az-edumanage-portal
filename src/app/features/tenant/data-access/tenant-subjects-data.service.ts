@@ -7,6 +7,8 @@ import { AuthApiService } from '../../../core/auth/auth-api.service';
 import { Grade } from '../models/tenant-grades.models';
 import { EducationalStage } from '../models/tenant-educational-stages.models';
 import {
+  BloomLevel,
+  QuestionDifficulty,
   TenantSubject,
   TenantCurriculumMaterialFile,
   TenantCurriculumMaterialFolder,
@@ -41,6 +43,10 @@ export type TenantCurriculumQuestionPayload = {
   type: string;
   answer: string | null;
   description: string | null;
+  bloomId: string | null;
+  difficultyId: string | null;
+  weight: number | null;
+  tags?: string[];
 } & TenantCurriculumQuestionMediaPayload;
 
 export type TenantCurriculumQuestionAnswerPayload = {
@@ -94,6 +100,36 @@ export class TenantSubjectsDataService {
   private readonly universitySubjectsUrl = `${environment.apiBaseUrl}/tenant/platform-settings/university-subjects`;
   private readonly stagesUrl = `${environment.apiBaseUrl}/tenant/platform-settings/stages`;
   private readonly gradesUrl = `${environment.apiBaseUrl}/tenant/platform-settings/grades`;
+  private readonly bloomsUrl = `${environment.apiBaseUrl}/blooms`;
+  private readonly questionDifficultiesUrl = `${environment.apiBaseUrl}/question-difficulties`;
+
+  async listBloomLevels(): Promise<BloomLevel[]> {
+    await this.authApi.ensureLoggedIn();
+    const response = await firstValueFrom(this.http.get<BloomLevel[]>(this.bloomsUrl));
+    return (response ?? []).map((bloom) => ({
+      id: bloom.id,
+      code: bloom.code,
+      nameAr: bloom.nameAr,
+      nameEn: bloom.nameEn,
+      descriptionAr: bloom.descriptionAr ?? null,
+      descriptionEn: bloom.descriptionEn ?? null,
+      levelOrder: bloom.levelOrder,
+    }));
+  }
+
+  async listQuestionDifficulties(): Promise<QuestionDifficulty[]> {
+    await this.authApi.ensureLoggedIn();
+    const response = await firstValueFrom(this.http.get<QuestionDifficulty[]>(this.questionDifficultiesUrl));
+    return (response ?? []).map((difficulty) => ({
+      id: difficulty.id,
+      code: difficulty.code,
+      nameAr: difficulty.nameAr,
+      nameEn: difficulty.nameEn,
+      descriptionAr: difficulty.descriptionAr ?? null,
+      descriptionEn: difficulty.descriptionEn ?? null,
+      difficultyOrder: difficulty.difficultyOrder,
+    }));
+  }
 
   async listSubjects(filters: TenantSubjectListFilters = {}): Promise<TenantSubject[]> {
     await this.authApi.ensureLoggedIn();
@@ -323,10 +359,11 @@ export class TenantSubjectsDataService {
     subjectId: string,
     nodeId: string,
     payload: TenantCurriculumMaterialFolderPayload,
+    educationCategory?: string | null,
   ): Promise<TenantCurriculumMaterialFolder> {
     await this.authApi.ensureLoggedIn();
     const response = await firstValueFrom(this.http.post<TenantCurriculumMaterialFolder>(
-      `${this.subjectsBaseUrl()}/${subjectId}/curriculum/nodes/${nodeId}/material-folders`,
+      `${this.subjectsBaseUrlForCategory(educationCategory)}/${subjectId}/curriculum/nodes/${nodeId}/material-folders`,
       this.toCurriculumMaterialFolderBody(payload),
     ));
     return this.normalizeCurriculumMaterialFolder(response);
@@ -557,6 +594,10 @@ export class TenantSubjectsDataService {
       mediaOriginalName: question.mediaOriginalName ?? null,
       mediaContentType: question.mediaContentType ?? null,
       mediaSizeBytes: question.mediaSizeBytes ?? null,
+      bloomId: question.bloomId ?? null,
+      difficultyId: question.difficultyId ?? null,
+      weight: question.weight ?? null,
+      tags: question.tags ?? [],
       answers: (question.answers ?? []).map((answer) => this.normalizeCurriculumQuestionAnswer(answer)),
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
@@ -574,8 +615,8 @@ export class TenantSubjectsDataService {
     return `${apiOrigin}${url.startsWith('/') ? url : `/${url}`}`;
   }
 
-  private toCurriculumQuestionBody(payload: TenantCurriculumQuestionPayload): Record<string, string | number | null> {
-    return {
+  private toCurriculumQuestionBody(payload: TenantCurriculumQuestionPayload): Record<string, string | number | string[] | null> {
+    const body: Record<string, string | number | string[] | null> = {
       question: payload.question.trim(),
       type: payload.type,
       answer: payload.answer?.trim() || null,
@@ -585,7 +626,14 @@ export class TenantSubjectsDataService {
       mediaOriginalName: payload.mediaOriginalName,
       mediaContentType: payload.mediaContentType,
       mediaSizeBytes: payload.mediaSizeBytes,
+      bloomId: payload.bloomId || null,
+      difficultyId: payload.difficultyId || null,
+      weight: payload.weight,
     };
+    if (payload.tags !== undefined) {
+      body['tags'] = payload.tags;
+    }
+    return body;
   }
 
   private toCurriculumQuestionAnswerBody(payload: TenantCurriculumQuestionAnswerPayload): Record<string, string | number | boolean | null> {

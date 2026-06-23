@@ -14,6 +14,7 @@ export interface TenantAttendanceStudent {
 }
 
 export interface TenantGroupAttendanceDetails {
+  groupName: string;
   attendanceAvailable: boolean;
   students: TenantAttendanceStudent[];
 }

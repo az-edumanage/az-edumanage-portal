@@ -1,17 +1,33 @@
 <div class="space-y-6" [attr.dir]="pageDirection()">
   <div class="space-y-1">
-    <div class="curriculum-page-breadcrumb flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
-      <a [routerLink]="subjectsListLink()" class="hover:text-indigo-600 transition-colors">{{ breadcrumbLabel('subject') }}</a>
-      <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
-      <a
-        [routerLink]="subjectDetailsLink()"
-        class="hover:text-indigo-600 transition-colors"
-      >
-        {{ breadcrumbLabel('subjectDetails') }}
-      </a>
-      <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
-      <span>{{ curriculumTitle() }}</span>
-    </div>
+    @if (isQuestionsBankRoute()) {
+      <div class="curriculum-page-breadcrumb flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+        <a routerLink="/tenant/questions-bank" class="hover:text-indigo-600 transition-colors">{{ questionsBankBreadcrumbLabel('questionsBank') }}</a>
+        <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+        <a routerLink="/tenant/questions-bank/basic-education" class="hover:text-indigo-600 transition-colors">{{ questionsBankBreadcrumbLabel('basicEducation') }}</a>
+        <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+        <a [routerLink]="questionsBankStageLink()" class="hover:text-indigo-600 transition-colors">{{ subject()?.stageName || questionsBankBreadcrumbLabel('stage') }}</a>
+        <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+        <a [routerLink]="questionsBankSubjectsLink()" class="hover:text-indigo-600 transition-colors">{{ subject()?.gradeName || questionsBankBreadcrumbLabel('grade') }}</a>
+        <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+        <span class="text-slate-700 dark:text-slate-300">{{ subject()?.name || questionsBankBreadcrumbLabel('subject') }}</span>
+        <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+        <span>{{ questionsBankBreadcrumbLabel('curriculum') }}</span>
+      </div>
+    } @else {
+      <div class="curriculum-page-breadcrumb flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+        <a [routerLink]="subjectsListLink()" class="hover:text-indigo-600 transition-colors">{{ breadcrumbLabel('subject') }}</a>
+        <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+        <a
+          [routerLink]="subjectDetailsLink()"
+          class="hover:text-indigo-600 transition-colors"
+        >
+          {{ breadcrumbLabel('subjectDetails') }}
+        </a>
+        <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+        <span>{{ curriculumTitle() }}</span>
+      </div>
+    }
     <h2 class="text-2xl font-bold text-slate-900 dark:text-white">
       {{ curriculumTitle() }}
     </h2>
@@ -105,30 +121,34 @@
                   </td>
                   <td class="px-6 py-4 curriculum-content-table-actions-cell">
                     <div class="curriculum-table-actions">
-                      <button type="button" class="curriculum-table-action" [attr.aria-label]="'Add sub under ' + item.label" (click)="openAddNode(item.id)">
-                        <mat-icon>add</mat-icon>
-                        <span class="curriculum-action-tooltip" role="tooltip">{{ actionTooltipLabel('add') }}</span>
-                      </button>
-                      <a class="curriculum-table-action" [routerLink]="curriculumNodeDetailsLink(item.id)" [attr.aria-label]="'Show details for ' + item.label">
-                        <mat-icon>visibility</mat-icon>
-                        <span class="curriculum-action-tooltip" role="tooltip">{{ actionTooltipLabel('details') }}</span>
-                      </a>
-                      <button type="button" class="curriculum-table-action" [attr.aria-label]="'Edit ' + item.label" (click)="openEditNode(item.id)">
-                        <mat-icon>edit</mat-icon>
-                        <span class="curriculum-action-tooltip" role="tooltip">{{ actionTooltipLabel('edit') }}</span>
-                      </button>
-                      <a class="curriculum-table-action" [routerLink]="curriculumNodeMaterialLink(item.id)" [queryParams]="{ tab: 'material' }" [attr.aria-label]="'Open materials for ' + item.label">
-                        <mat-icon>menu_book</mat-icon>
-                        <span class="curriculum-action-tooltip" role="tooltip">{{ actionTooltipLabel('materials') }}</span>
-                      </a>
+                      @if (!isQuestionsBankRoute()) {
+                        <button type="button" class="curriculum-table-action" [attr.aria-label]="'Add sub under ' + item.label" (click)="openAddNode(item.id)">
+                          <mat-icon>add</mat-icon>
+                          <span class="curriculum-action-tooltip" role="tooltip">{{ actionTooltipLabel('add') }}</span>
+                        </button>
+                        <a class="curriculum-table-action" [routerLink]="curriculumNodeDetailsLink(item.id)" [attr.aria-label]="'Show details for ' + item.label">
+                          <mat-icon>visibility</mat-icon>
+                          <span class="curriculum-action-tooltip" role="tooltip">{{ actionTooltipLabel('details') }}</span>
+                        </a>
+                        <button type="button" class="curriculum-table-action" [attr.aria-label]="'Edit ' + item.label" (click)="openEditNode(item.id)">
+                          <mat-icon>edit</mat-icon>
+                          <span class="curriculum-action-tooltip" role="tooltip">{{ actionTooltipLabel('edit') }}</span>
+                        </button>
+                        <a class="curriculum-table-action" [routerLink]="curriculumNodeMaterialLink(item.id)" [queryParams]="{ tab: 'material' }" [attr.aria-label]="'Open materials for ' + item.label">
+                          <mat-icon>menu_book</mat-icon>
+                          <span class="curriculum-action-tooltip" role="tooltip">{{ actionTooltipLabel('materials') }}</span>
+                        </a>
+                      }
                       <a class="curriculum-table-action" [routerLink]="curriculumNodeQuestionsLink(item.id)" [attr.aria-label]="'Open questions for ' + item.label">
                         <mat-icon>quiz</mat-icon>
                         <span class="curriculum-action-tooltip" role="tooltip">{{ actionTooltipLabel('questions') }}</span>
                       </a>
-                      <button type="button" class="curriculum-table-action curriculum-table-action--danger" [attr.aria-label]="'Delete ' + item.label" (click)="openDeleteNode(item.id)">
-                        <mat-icon>delete</mat-icon>
-                        <span class="curriculum-action-tooltip curriculum-action-tooltip--danger" role="tooltip">{{ actionTooltipLabel('delete') }}</span>
-                      </button>
+                      @if (!isQuestionsBankRoute()) {
+                        <button type="button" class="curriculum-table-action curriculum-table-action--danger" [attr.aria-label]="'Delete ' + item.label" (click)="openDeleteNode(item.id)">
+                          <mat-icon>delete</mat-icon>
+                          <span class="curriculum-action-tooltip curriculum-action-tooltip--danger" role="tooltip">{{ actionTooltipLabel('delete') }}</span>
+                        </button>
+                      }
                     </div>
                   </td>
                 </tr>
@@ -174,26 +194,28 @@
         >
           {{ nodeDisplayLabel(node) }}
         </button>
-        <div class="curriculum-tree-actions">
-          <button
-            type="button"
-            class="curriculum-tree-action"
-            [attr.aria-label]="'Add sub under ' + node.label"
-            (click)="openAddNode(node.id)"
-          >
-            <mat-icon>add</mat-icon>
-          </button>
-          @if (node.id !== 'curriculum') {
+        @if (!isQuestionsBankRoute()) {
+          <div class="curriculum-tree-actions">
             <button
               type="button"
               class="curriculum-tree-action"
-              [attr.aria-label]="'Edit ' + node.label"
-              (click)="openEditNode(node.id)"
+              [attr.aria-label]="'Add sub under ' + node.label"
+              (click)="openAddNode(node.id)"
             >
-              <mat-icon>edit</mat-icon>
+              <mat-icon>add</mat-icon>
             </button>
-          }
-        </div>
+            @if (node.id !== 'curriculum') {
+              <button
+                type="button"
+                class="curriculum-tree-action"
+                [attr.aria-label]="'Edit ' + node.label"
+                (click)="openEditNode(node.id)"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+            }
+          </div>
+        }
       </div>
 
       @if (node.children?.length && isExpanded(node.id)) {
