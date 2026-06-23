@@ -17,6 +17,7 @@ describe('LoginComponent', () => {
   };
   let authSession: {
     scheduleExpiry: ReturnType<typeof vi.fn>;
+    refreshSession: ReturnType<typeof vi.fn>;
   };
 
   function configure(url = '/tenant/login', queryParams: Record<string, string> = {}): void {
@@ -29,6 +30,7 @@ describe('LoginComponent', () => {
     };
     authSession = {
       scheduleExpiry: vi.fn(),
+      refreshSession: vi.fn().mockResolvedValue(null),
     };
 
     TestBed.configureTestingModule({
@@ -222,5 +224,43 @@ describe('LoginComponent', () => {
     expect(component.errorMessage()).not.toBe('Unable to sign in right now. Please try again.');
 
     consoleError.mockRestore();
+  });
+
+  it('tries refresh-token recovery on expired owner login URLs', async () => {
+    configure('/owner/login?expired=1&redirect=%2F', { expired: '1', redirect: '/' });
+    authSession.refreshSession.mockResolvedValue('fresh-token');
+
+    const fixture = TestBed.createComponent(LoginComponent);
+    fixture.detectChanges();
+    await Promise.resolve();
+
+    expect(dashboardService.returnUrl()).toBeNull();
+    expect(authSession.refreshSession).toHaveBeenCalledWith('/owner/login?expired=1&redirect=%2F', false);
+    expect(dashboardService.setRole).toHaveBeenCalledWith('owner');
+  });
+
+  it('tries refresh-token recovery on expired tenant login URLs without using root redirect', async () => {
+    configure('/tenant/login?expired=1&redirect=%2F', { expired: '1', redirect: '/' });
+    authSession.refreshSession.mockResolvedValue('fresh-token');
+
+    const fixture = TestBed.createComponent(LoginComponent);
+    fixture.detectChanges();
+    await Promise.resolve();
+
+    expect(dashboardService.returnUrl()).toBeNull();
+    expect(authSession.refreshSession).toHaveBeenCalledWith('/tenant/login?expired=1&redirect=%2F', false);
+    expect(dashboardService.setRole).toHaveBeenCalledWith('tenant');
+  });
+
+  it('preserves same-workspace redirects during expired tenant refresh recovery', async () => {
+    configure('/tenant/login?expired=1&redirect=%2Ftenant%2Fgroups', { expired: '1', redirect: '/tenant/groups' });
+    authSession.refreshSession.mockResolvedValue('fresh-token');
+
+    const fixture = TestBed.createComponent(LoginComponent);
+    fixture.detectChanges();
+    await Promise.resolve();
+
+    expect(dashboardService.returnUrl()).toBe('/tenant/groups');
+    expect(dashboardService.setRole).toHaveBeenCalledWith('tenant');
   });
 });

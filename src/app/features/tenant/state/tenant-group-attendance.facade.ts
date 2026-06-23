@@ -6,6 +6,7 @@ export class TenantGroupAttendanceFacade {
   private readonly store = inject(TenantGroupAttendanceStore);
 
   readonly groupId = this.store.groupId;
+  readonly groupName = this.store.groupName;
   readonly today = this.store.today;
   readonly students = this.store.students;
   readonly isSaving = this.store.isSaving;

@@ -18,6 +18,7 @@ export class TenantGroupAttendanceComponent implements OnInit {
   private readonly facade = inject(TenantGroupAttendanceFacade);
 
   readonly groupId = this.facade.groupId;
+  readonly groupName = this.facade.groupName;
   readonly today = this.facade.today;
   readonly students = this.facade.students;
   readonly isLoading = this.facade.isLoading;

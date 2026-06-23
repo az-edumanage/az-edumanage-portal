@@ -20,6 +20,7 @@ describe('TenantGroupAttendanceComponent', () => {
   const attendanceAvailable = signal(true);
   const facade = {
     groupId: signal('group-123'),
+    groupName: signal('Science Group A'),
     today: new Date('2026-06-11T10:00:00+03:00'),
     students,
     isLoading: signal(false),
@@ -84,6 +85,15 @@ describe('TenantGroupAttendanceComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Ahmed Ali');
     expect(fixture.nativeElement.textContent).toContain('10001');
     expect(fixture.nativeElement.textContent).toContain('Showing 1-5 of 6 students');
+  });
+
+  it('renders the selected group name in the breadcrumb', () => {
+    const text = fixture.nativeElement.textContent;
+
+    expect(text).toContain('Groups');
+    expect(text).toContain('Science Group A');
+    expect(text).toContain('Attendance Tracking');
+    expect(text).not.toContain('Physics G12-A');
   });
 
   it('searches and filters the attendance table', () => {

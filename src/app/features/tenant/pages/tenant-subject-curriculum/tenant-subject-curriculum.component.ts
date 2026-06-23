@@ -26,6 +26,8 @@ interface CurriculumPathItem {
   label: string;
 }
 
+type QuestionsBankBreadcrumbKey = 'questionsBank' | 'basicEducation' | 'stage' | 'grade' | 'subject' | 'curriculum';
+
 @Component({
   selector: 'app-tenant-subject-curriculum',
   imports: [CommonModule, FormsModule, RouterModule, MatIconModule],
@@ -58,6 +60,9 @@ export class TenantSubjectCurriculumComponent implements OnInit {
   readonly nodeDescription = signal('');
   readonly subjectDetailsLink = computed(() => {
     const subject = this.subject();
+    if (this.isQuestionsBankRoute()) {
+      return subject ? this.questionsBankSubjectLink(subject.id) : this.questionsBankSubjectsLink();
+    }
     return subject ? [this.subjectsRootLink(), subject.id] : [this.subjectsRootLink()];
   });
   readonly curriculumTree = computed<CurriculumTreeNode[]>(() => {
@@ -81,6 +86,10 @@ export class TenantSubjectCurriculumComponent implements OnInit {
       });
   }
 
+  isQuestionsBankRoute(): boolean {
+    return this.router.url.startsWith('/tenant/questions-bank/basic-education');
+  }
+
   isExpanded(nodeId: string): boolean {
     return this.expandedNodeIds().has(nodeId);
   }
@@ -98,6 +107,11 @@ export class TenantSubjectCurriculumComponent implements OnInit {
   selectTreeNode(nodeId: string): void {
     const node = this.findNode(this.curriculumTree(), nodeId);
     if (!node) {
+      return;
+    }
+
+    if (this.isQuestionsBankRoute() && node.id !== 'curriculum' && !node.children.length) {
+      void this.router.navigate(this.curriculumNodeDetailsLink(node.id));
       return;
     }
 
@@ -126,6 +140,14 @@ export class TenantSubjectCurriculumComponent implements OnInit {
   }
 
   breadcrumbLabel(key: 'subject' | 'subjectDetails'): string {
+    if (this.isQuestionsBankRoute()) {
+      const labels = {
+        subject: { en: 'Questions Bank', ar: 'بنك الأسئلة' },
+        subjectDetails: { en: 'Subjects', ar: 'المواد' },
+      } as const;
+      return labels[key][this.i18n.language()];
+    }
+
     const labels = {
       subject: { en: 'Subject', ar: 'المادة' },
       subjectDetails: { en: 'Subject Details', ar: 'تفاصيل المادة' },
@@ -133,7 +155,22 @@ export class TenantSubjectCurriculumComponent implements OnInit {
     return labels[key][this.i18n.language()];
   }
 
+  questionsBankBreadcrumbLabel(key: QuestionsBankBreadcrumbKey): string {
+    const labels = {
+      questionsBank: { en: 'Questions Bank', ar: 'بنك الأسئلة' },
+      basicEducation: { en: 'Basic Education', ar: 'التعليم الأساسي' },
+      stage: { en: 'Stage', ar: 'المرحلة' },
+      grade: { en: 'Grade', ar: 'الصف' },
+      subject: { en: 'Subject', ar: 'المادة' },
+      curriculum: { en: 'Curriculum', ar: 'المنهج' },
+    } as const;
+    return labels[key][this.i18n.language()];
+  }
+
   subjectsListLink(): unknown[] {
+    if (this.isQuestionsBankRoute()) {
+      return this.questionsBankSubjectsLink();
+    }
     return [this.subjectsRootLink()];
   }
 
@@ -232,6 +269,9 @@ export class TenantSubjectCurriculumComponent implements OnInit {
 
   curriculumNodeDetailsLink(nodeId: string): unknown[] {
     const subject = this.subject();
+    if (this.isQuestionsBankRoute()) {
+      return subject ? [...this.questionsBankSubjectLink(subject.id), 'curriculum', nodeId] : this.questionsBankSubjectsLink();
+    }
     return subject ? [this.subjectsRootLink(), subject.id, 'curriculum', nodeId] : [this.subjectsRootLink()];
   }
 
@@ -241,7 +281,25 @@ export class TenantSubjectCurriculumComponent implements OnInit {
 
   curriculumNodeQuestionsLink(nodeId: string): unknown[] {
     const subject = this.subject();
+    if (this.isQuestionsBankRoute()) {
+      return subject ? [...this.questionsBankSubjectLink(subject.id), 'curriculum', nodeId] : this.questionsBankSubjectsLink();
+    }
     return subject ? [this.subjectsRootLink(), subject.id, 'curriculum', nodeId, 'addQuestion'] : [this.subjectsRootLink()];
+  }
+
+  questionsBankStageLink(): unknown[] {
+    const stageId = this.questionsBankStageId();
+    return stageId
+      ? ['/tenant/questions-bank/basic-education', stageId]
+      : ['/tenant/questions-bank/basic-education'];
+  }
+
+  questionsBankSubjectsLink(): unknown[] {
+    const stageId = this.questionsBankStageId();
+    const gradeId = this.questionsBankGradeId();
+    return stageId && gradeId
+      ? ['/tenant/questions-bank/basic-education', stageId, 'grades', gradeId]
+      : this.questionsBankStageLink();
   }
 
   openAddNode(parentId: string): void {
@@ -438,6 +496,18 @@ export class TenantSubjectCurriculumComponent implements OnInit {
 
   private subjectsRootLink(): string {
     return this.router.url.startsWith('/tenant/university-subjects') ? '/tenant/university-subjects' : '/tenant/subjects';
+  }
+
+  private questionsBankStageId(): string {
+    return this.route.snapshot?.paramMap.get('stageId') ?? this.subject()?.stageId ?? '';
+  }
+
+  private questionsBankGradeId(): string {
+    return this.route.snapshot?.paramMap.get('gradeId') ?? this.subject()?.gradeId ?? '';
+  }
+
+  private questionsBankSubjectLink(subjectId: string): unknown[] {
+    return [...this.questionsBankSubjectsLink(), 'subjects', subjectId];
   }
 
 }

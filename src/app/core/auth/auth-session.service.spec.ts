@@ -15,8 +15,10 @@ describe('AuthSessionService', () => {
     returnUrl: { set: ReturnType<typeof vi.fn> };
   };
   let identityService: { currentWorkspace: ReturnType<typeof vi.fn>; clearIdentity: ReturnType<typeof vi.fn> };
+  let authApi: { me: ReturnType<typeof vi.fn>; refresh: ReturnType<typeof vi.fn> };
+  let tokenService: { getToken: ReturnType<typeof vi.fn>; clearToken: ReturnType<typeof vi.fn> };
 
-  function configure(url: string): AuthSessionService {
+  function configure(url: string, token = 'token'): AuthSessionService {
     dashboardService = {
       setRole: vi.fn(),
       syncRoleFromUrl: vi.fn(),
@@ -27,12 +29,20 @@ describe('AuthSessionService', () => {
       currentWorkspace: vi.fn().mockReturnValue('owner'),
       clearIdentity: vi.fn(),
     };
+    authApi = {
+      me: vi.fn().mockResolvedValue({}),
+      refresh: vi.fn().mockResolvedValue('fresh-token'),
+    };
+    tokenService = {
+      getToken: vi.fn().mockReturnValue(token),
+      clearToken: vi.fn(),
+    };
 
     TestBed.configureTestingModule({
       providers: [
         AuthSessionService,
-        { provide: AuthApiService, useValue: { me: vi.fn().mockResolvedValue({}) } },
-        { provide: AuthTokenService, useValue: { getToken: vi.fn().mockReturnValue('token'), clearToken: vi.fn() } },
+        { provide: AuthApiService, useValue: authApi },
+        { provide: AuthTokenService, useValue: tokenService },
         { provide: AuthIdentityService, useValue: identityService },
         { provide: DashboardService, useValue: dashboardService },
         {
@@ -69,4 +79,33 @@ describe('AuthSessionService', () => {
 
     expect(dashboardService.setRole).toHaveBeenCalledWith('owner', false);
   });
+
+  it('refreshes an expired access token before hydrating identity', async () => {
+    const service = configure('/owner/overview', expiredToken());
+
+    await service.hydrateFromBackend();
+
+    expect(authApi.refresh).toHaveBeenCalled();
+    expect(authApi.me).toHaveBeenCalled();
+    expect(tokenService.clearToken).not.toHaveBeenCalled();
+    expect(dashboardService.setRole).toHaveBeenCalledWith('owner', false);
+  });
+
+  it('navigates to login only when refresh fails for an expired access token', async () => {
+    const service = configure('/owner/overview', expiredToken());
+    const router = TestBed.inject(Router);
+    authApi.refresh.mockRejectedValue(new Error('refresh expired'));
+
+    await service.hydrateFromBackend();
+
+    expect(tokenService.clearToken).toHaveBeenCalled();
+    expect(router.navigate).toHaveBeenCalledWith(['/owner/login'], {
+      queryParams: { expired: '1', redirect: '/owner/overview' },
+      replaceUrl: true,
+    });
+  });
 });
+
+function expiredToken(): string {
+  return 'eyJhbGciOiJub25lIn0.eyJleHAiOjF9.';
+}

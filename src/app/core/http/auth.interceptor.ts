@@ -24,8 +24,20 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   if (authSession.isTokenExpired(token)) {
-    authSession.handleSessionExpired(router.url);
-    return EMPTY;
+    return from(authSession.refreshSession(router.url)).pipe(
+      switchMap((newToken) => {
+        if (!newToken) {
+          return EMPTY;
+        }
+        return next(req.clone({
+          setHeaders: {
+            Authorization: `Bearer ${newToken}`,
+            'x-refresh-retry': '1',
+            ...(tenantImpersonation.impersonatedTenantId() ? { 'X-Impersonated-Tenant-Id': tenantImpersonation.impersonatedTenantId() ?? '' } : {}),
+          },
+        }));
+      }),
+    );
   }
 
   const impersonatedTenantId = tenantImpersonation.impersonatedTenantId();

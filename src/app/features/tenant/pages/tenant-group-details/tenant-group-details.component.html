@@ -1,4 +1,54 @@
+@if (libraryNoteModalOpen()) {
+  <section class="min-h-[calc(100vh-5rem)] text-slate-950 dark:text-white" aria-labelledby="group-library-note-page-title">
+    <header class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <h1 id="group-library-note-page-title" class="text-2xl font-black text-slate-950 dark:text-white">{{ editingLibraryNote() ? 'Edit Note' : 'Add Note' }}</h1>
+        <p class="mt-1 text-sm font-bold text-slate-600 dark:text-slate-400">
+          Inside {{ selectedLibraryFolder()?.folder?.name || 'library folder' }}
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button
+          type="button"
+          class="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-extrabold text-slate-900 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+          [disabled]="libraryNoteSaving()"
+          (click)="closeLibraryNoteModal()"
+        >
+          <mat-icon class="text-base">close</mat-icon>
+          <span>Cancel</span>
+        </button>
+        <button
+          type="button"
+          class="inline-flex h-10 items-center gap-2 rounded-lg bg-purple-700 px-5 text-sm font-extrabold text-white shadow-lg shadow-purple-700/20 transition hover:bg-purple-800 disabled:cursor-not-allowed disabled:opacity-60"
+          [disabled]="libraryNoteSaving()"
+          (click)="saveLibraryNote()"
+        >
+          <mat-icon class="text-base">save</mat-icon>
+          <span>{{ libraryNoteSaving() ? 'Saving...' : 'Save Note' }}</span>
+        </button>
+      </div>
+    </header>
 
+    @if (libraryNoteError()) {
+      <p class="mb-3 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-bold text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200" role="alert">
+        {{ libraryNoteError() }}
+      </p>
+    }
+
+    <div class="min-h-[calc(100vh-10rem)] rounded-xl border border-slate-200 bg-slate-100 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-8">
+      <label class="sr-only" for="group-library-note-content">Note content</label>
+      <div class="mx-auto min-h-[calc(100vh-14rem)] w-full max-w-3xl rounded-md border border-slate-200 bg-white px-8 py-10 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:px-12">
+        <textarea
+          id="group-library-note-content"
+          class="min-h-[calc(100vh-20rem)] w-full resize-none border-0 bg-transparent text-base font-semibold leading-7 text-slate-700 outline-none placeholder:text-slate-500 focus:ring-0 dark:text-slate-100 dark:placeholder:text-slate-500"
+          placeholder="Write your note here..."
+          [value]="libraryNoteContent()"
+          (input)="setLibraryNoteContent($any($event.target).value)"
+        ></textarea>
+      </div>
+    </div>
+  </section>
+} @else {
     <div class="space-y-6 relative min-h-screen">
       <!-- Header -->
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -126,6 +176,19 @@
         <button
           type="button"
           class="tenant-group-detail-tab"
+          [class.tenant-group-detail-tab--active]="activeTab() === 'library'"
+          role="tab"
+          [attr.aria-selected]="activeTab() === 'library'"
+          aria-controls="tenant-group-library-panel"
+          id="tenant-group-library-tab"
+          (click)="selectTab('library')"
+        >
+          <mat-icon>local_library</mat-icon>
+          <span>{{ tabLabel('library') }}</span>
+        </button>
+        <button
+          type="button"
+          class="tenant-group-detail-tab"
           [class.tenant-group-detail-tab--active]="activeTab() === 'overview'"
           role="tab"
           [attr.aria-selected]="activeTab() === 'overview'"
@@ -228,6 +291,25 @@
                       <span class="tenant-group-session-number">{{ sessionNumberLabel(sessionIndex) }}</span>
                       <p>{{ session.day }}</p>
                       <span>{{ session.date }}</span>
+                    </div>
+                    <div class="tenant-group-session-lessons" aria-label="Assigned lessons">
+                      <span class="tenant-group-session-lessons-label">Assigned lessons</span>
+                      @if (sessionLessonsLoading() && !sessionLessonsLoadedKey()) {
+                        <span class="tenant-group-session-lessons-muted">Loading lessons...</span>
+                      } @else if (visibleSessionLessons(session).length) {
+                        <span class="tenant-group-session-lesson-chips">
+                          @for (lesson of visibleSessionLessons(session); track lesson.id) {
+                            <span class="tenant-group-session-lesson-chip">{{ lesson.title }}</span>
+                          }
+                          @if (hiddenSessionLessonsCount(session) > 0) {
+                            <span class="tenant-group-session-lesson-chip tenant-group-session-lesson-chip--more">
+                              +{{ hiddenSessionLessonsCount(session) }}
+                            </span>
+                          }
+                        </span>
+                      } @else {
+                        <span class="tenant-group-session-lessons-muted">No lessons assigned</span>
+                      }
                     </div>
                     <div class="tenant-group-session-meta">
                       @if (sessionRelativeStatus(session); as relativeStatus) {
@@ -427,9 +509,31 @@
                               <td>{{ lesson.path }}</td>
                               <td>{{ lesson.description || 'No description' }}</td>
                               <td class="tenant-group-lesson-material-action-cell">
-                                <span class="tenant-group-lesson-content-open" aria-hidden="true">
-                                  <mat-icon>chevron_right</mat-icon>
-                                </span>
+                                <div class="tenant-group-lesson-row-actions">
+                                  <button
+                                    type="button"
+                                    class="tenant-group-lesson-row-action tenant-group-lesson-row-action--insert"
+                                    aria-label="Insert content"
+                                    title="Insert content"
+                                    (click)="openLessonInsertContent($event, lesson)"
+                                    (keydown)="$event.stopPropagation()"
+                                  >
+                                    <mat-icon>note_add</mat-icon>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="tenant-group-lesson-row-action tenant-group-lesson-row-action--assign"
+                                    aria-label="Assign lesson to session"
+                                    title="Assign to session"
+                                    (click)="openLessonSessionAssignment($event, lesson)"
+                                    (keydown)="$event.stopPropagation()"
+                                  >
+                                    <mat-icon>event_available</mat-icon>
+                                  </button>
+                                  <span class="tenant-group-lesson-content-open" aria-hidden="true">
+                                    <mat-icon>chevron_right</mat-icon>
+                                  </span>
+                                </div>
                               </td>
                             </tr>
                           }
@@ -470,6 +574,249 @@
                 }
               </div>
             </section>
+          } @else if (activeTab() === 'library') {
+            <section
+              class="tenant-group-library-panel bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden"
+              id="tenant-group-library-panel"
+              role="tabpanel"
+              aria-labelledby="tenant-group-library-tab"
+            >
+              <div class="p-4 border-b border-slate-200 dark:border-slate-800">
+                <div class="tenant-group-library-head">
+                  <div>
+                    <h3 class="font-bold text-slate-900 dark:text-white">Library</h3>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-500">
+                      {{ selectedLibraryFolder()?.folder?.name || 'Group learning resources and shared materials' }}
+                    </p>
+                  </div>
+                  @if (selectedLibraryFolder()) {
+                    <button type="button" class="tenant-group-library-back" (click)="closeLibraryFolder()">
+                      <mat-icon>arrow_back</mat-icon>
+                      <span>Back to folders</span>
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      class="tenant-group-library-back"
+                      [disabled]="libraryLoading()"
+                      (click)="openCreateLibraryFolderModal()"
+                    >
+                      <mat-icon>create_new_folder</mat-icon>
+                      <span>Create folder</span>
+                    </button>
+                  }
+                </div>
+              </div>
+              @if (libraryLoading()) {
+                <div class="tenant-group-sessions-empty">
+                  <mat-icon>sync</mat-icon>
+                  <p>Loading library material...</p>
+                </div>
+              } @else if (libraryError()) {
+                <div class="tenant-group-sessions-empty">
+                  <mat-icon>error_outline</mat-icon>
+                  <p>{{ libraryError() }}</p>
+                </div>
+              } @else if (selectedLibraryFolder(); as libraryFolder) {
+                <div class="tenant-group-library-folder">
+                  <div class="tenant-group-library-folder-summary">
+                    <span class="tenant-group-library-folder-icon">
+                      <mat-icon>folder</mat-icon>
+                    </span>
+                    <div>
+                      <p>Material</p>
+                      <h4>{{ libraryFolder.folder.name }}</h4>
+                      @if (libraryFolder.folder.description) {
+                        <span>{{ libraryFolder.folder.description }}</span>
+                      }
+                    </div>
+                    <strong>{{ libraryVisibleContentLabel() }}</strong>
+                  </div>
+
+                  <div class="grid grid-cols-1 gap-4 px-5 pb-5 lg:grid-cols-[16rem_minmax(0,1fr)]">
+                    <aside class="rounded-xl bg-gradient-to-br from-violet-700 to-purple-700 p-4 text-white shadow-lg shadow-purple-900/10" aria-label="Quick Actions">
+                      <div class="mb-4 flex items-center justify-between gap-3">
+                        <h3 class="text-sm font-extrabold">Quick Actions</h3>
+                        <mat-icon class="text-base">apps</mat-icon>
+                      </div>
+                      <div class="grid gap-3">
+                        <button type="button" class="flex min-h-12 items-center gap-3 rounded-lg bg-white/10 px-4 text-start text-xs font-extrabold uppercase text-white transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70" (click)="openLibraryNoteModal()">
+                          <mat-icon class="text-base">edit_note</mat-icon>
+                          <span>Add note</span>
+                        </button>
+                        <button type="button" class="flex min-h-12 items-center gap-3 rounded-lg bg-white/10 px-4 text-start text-xs font-extrabold uppercase text-white transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70" (click)="openLibraryLinkModal()">
+                          <mat-icon class="text-base">add_link</mat-icon>
+                          <span>Add external link</span>
+                        </button>
+                        <label class="flex min-h-12 cursor-pointer items-center gap-3 rounded-lg bg-white/10 px-4 text-start text-xs font-extrabold uppercase text-white transition hover:bg-white/15 focus-within:outline-none focus-within:ring-2 focus-within:ring-white/70">
+                          <mat-icon class="text-base">upload_file</mat-icon>
+                          <span>{{ libraryFileUploading() ? 'Uploading...' : 'Upload file' }}</span>
+                          <input type="file" class="sr-only" [disabled]="libraryFileUploading()" (change)="uploadLibraryFile($event)" />
+                        </label>
+                      </div>
+                    </aside>
+
+                    <div class="min-w-0">
+                      <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p class="text-xs font-extrabold uppercase text-slate-500 dark:text-slate-400">{{ libraryFilterLabel(libraryContentFilter()) }}</p>
+                          <h4 class="text-base font-extrabold text-slate-900 dark:text-white">{{ libraryVisibleContentLabel() }}</h4>
+                        </div>
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                          <label class="tenant-group-lesson-material-search">
+                            <mat-icon>search</mat-icon>
+                            <input
+                              type="search"
+                              [value]="librarySearchTerm()"
+                              (input)="setLibrarySearchTerm($any($event.target).value)"
+                              placeholder="Search material"
+                              aria-label="Search library material"
+                            />
+                          </label>
+                          <label class="tenant-group-lesson-material-filter">
+                            <mat-icon>filter_list</mat-icon>
+                            <select
+                              [value]="libraryContentFilter()"
+                              (change)="setLibraryContentFilter($any($event.target).value)"
+                              aria-label="Filter library material"
+                            >
+                              <option value="all">Advanced Filters</option>
+                              <option value="files">Files</option>
+                              <option value="notes">Notes</option>
+                              <option value="links">External Links</option>
+                            </select>
+                          </label>
+                          @if (librarySearchTerm() || libraryContentFilter() !== 'all') {
+                            <button type="button" class="tenant-group-lesson-material-clear" (click)="clearLibraryFilters()">
+                              <mat-icon>close</mat-icon>
+                              <span>Clear</span>
+                            </button>
+                          }
+                        </div>
+                      </div>
+
+                      @if (libraryContentLoading()) {
+                        <div class="tenant-group-sessions-empty">
+                          <mat-icon>sync</mat-icon>
+                          <p>Loading folder content...</p>
+                        </div>
+                      } @else if (libraryContentError()) {
+                        <div class="tenant-group-sessions-empty">
+                          <mat-icon>error_outline</mat-icon>
+                          <p>{{ libraryContentError() }}</p>
+                        </div>
+                      } @else if (hasLibraryContent()) {
+                        <div class="tenant-group-library-content-grid !p-0">
+                          @for (note of filteredLibraryNotes(); track note.id) {
+                            <button type="button" class="tenant-group-library-content-card text-start" (click)="openLibraryNoteEditor(note)">
+                              <span class="tenant-group-library-content-icon">
+                                <mat-icon>sticky_note_2</mat-icon>
+                              </span>
+                              <div>
+                                <p>Note</p>
+                                <h4>{{ note.title }}</h4>
+                                <span>{{ notePreview(note) }}</span>
+                              </div>
+                            </button>
+                          }
+                          @for (link of filteredLibraryLinks(); track link.id) {
+                            <a class="tenant-group-library-content-card" [href]="link.url" target="_blank" rel="noopener">
+                              <span class="tenant-group-library-content-icon">
+                                <mat-icon>link</mat-icon>
+                              </span>
+                              <div>
+                                <p>External Link</p>
+                                <h4>{{ link.title }}</h4>
+                                <span>{{ link.url }}</span>
+                              </div>
+                            </a>
+                          }
+                          @for (file of filteredLibraryFiles(); track file.id) {
+                            <button type="button" class="tenant-group-library-content-card text-start" (click)="openLibraryFilePreview(file)">
+                              <span class="tenant-group-library-content-icon">
+                                <mat-icon>{{ materialIcon('FILE', file.contentType) }}</mat-icon>
+                              </span>
+                              <div>
+                                <p>File</p>
+                                <h4>{{ file.originalName }}</h4>
+                                <span>{{ formatBytes(file.sizeBytes) || file.contentType || 'File' }}</span>
+                              </div>
+                            </button>
+                          }
+                        </div>
+                      } @else {
+                        <div class="tenant-group-sessions-empty min-h-28 border border-dashed border-slate-300 bg-slate-50 dark:border-slate-700 dark:bg-slate-950/40">
+                          <mat-icon>upload_file</mat-icon>
+                          <p>No files have been uploaded to this folder yet.</p>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              } @else if (libraryFolders().length) {
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 p-5">
+                  @for (libraryFolder of libraryFolders(); track libraryFolder.folder.id) {
+                    <article class="tenant-group-library-folder-card grid min-h-44 grid-rows-[auto_auto_1fr] gap-3 rounded-xl border border-slate-200 bg-white p-4 text-start transition hover:border-indigo-200 dark:border-slate-800 dark:bg-slate-900">
+                      <div class="flex items-start justify-between gap-3">
+                        <button
+                          type="button"
+                          class="flex min-w-0 items-center gap-2.5 rounded-xl text-start outline-none transition focus-visible:ring-2 focus-visible:ring-indigo-400"
+                          [attr.aria-label]="'Open ' + libraryFolder.folder.name"
+                          (click)="openLibraryFolder(libraryFolder)"
+                        >
+                          <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300">
+                            <mat-icon>folder</mat-icon>
+                          </span>
+                          <span class="min-w-0">
+                            <strong class="block truncate text-sm font-extrabold text-slate-900 dark:text-white">{{ libraryFolder.folder.name }}</strong>
+                            <small class="block text-xs font-extrabold text-slate-500 dark:text-slate-400">{{ libraryFolderFilesLabel(libraryFolder.folder) }}</small>
+                          </span>
+                        </button>
+                        <div class="inline-flex shrink-0 items-center gap-1" aria-label="Library folder actions">
+                          <button
+                            type="button"
+                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-indigo-50 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                            [attr.aria-label]="'Show ' + libraryFolder.folder.name"
+                            (click)="openLibraryFolder(libraryFolder)"
+                          >
+                            <mat-icon class="text-base">visibility</mat-icon>
+                          </button>
+                          <button
+                            type="button"
+                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-indigo-50 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                            [attr.aria-label]="'Edit ' + libraryFolder.folder.name"
+                          >
+                            <mat-icon class="text-base">edit</mat-icon>
+                          </button>
+                          <button
+                            type="button"
+                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                            [attr.aria-label]="'Delete ' + libraryFolder.folder.name"
+                          >
+                            <mat-icon class="text-base">delete</mat-icon>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="grid min-h-20 grid-cols-2 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/40" aria-label="Folder file type preview">
+                        @for (slot of libraryFolderPreviewSlots(libraryFolder.folder); track $index) {
+                          <span
+                            class="inline-flex min-h-10 items-center justify-center border-slate-200 text-slate-400 odd:border-r [&:nth-child(-n+2)]:border-b dark:border-slate-800"
+                            [class.opacity-50]="slot.empty"
+                          >
+                            <mat-icon class="text-lg">{{ materialFolderIcon(slot.type) }}</mat-icon>
+                          </span>
+                        }
+                      </div>
+                    </article>
+                  }
+                </div>
+              } @else {
+                <div class="tenant-group-sessions-empty">
+                  <mat-icon>local_library</mat-icon>
+                  <p>No library resources added yet.</p>
+                </div>
+              }
+            </section>
           } @else if (activeTab() === 'overview') {
             <section
               class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden"
@@ -481,64 +828,69 @@
                 <h3 class="font-bold text-slate-900 dark:text-white">Overview</h3>
                 <p class="mt-1 text-xs text-slate-500 dark:text-slate-500">Group academic and operational summary</p>
               </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4">
-                <div class="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 p-4">
-                  <div class="flex items-center gap-3">
-                    <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300">
-                      <mat-icon class="text-base">menu_book</mat-icon>
-                    </span>
-                    <div>
-                      <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Subject</p>
-                      <h4 class="mt-1 text-sm font-bold text-slate-900 dark:text-white">{{ group()?.subject || 'Not linked' }}</h4>
+              <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 p-4">
+                @for (stats of [overviewCurrentSessionStats(), overviewLastSessionStats()]; track stats.title) {
+                  <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/40">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div class="flex items-start gap-3">
+                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300">
+                          <mat-icon class="text-base">query_stats</mat-icon>
+                        </span>
+                        <div>
+                          <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">{{ stats.title }}</p>
+                          <h4 class="mt-1 text-base font-black text-slate-900 dark:text-white">{{ overviewSessionSubtitle(stats) }}</h4>
+                          <p class="mt-1 text-xs font-semibold text-slate-500">{{ overviewSessionRoomLabel(stats) }}</p>
+                        </div>
+                      </div>
+                      <span class="inline-flex min-h-8 items-center justify-center rounded-full bg-indigo-50 px-3 text-xs font-black text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-200">
+                        Attendance {{ stats.attendanceRate }}%
+                      </span>
                     </div>
-                  </div>
-                </div>
-                <div class="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 p-4">
-                  <div class="flex items-center gap-3">
-                    <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300">
-                      <mat-icon class="text-base">person</mat-icon>
-                    </span>
-                    <div>
-                      <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Teacher</p>
-                      <h4 class="mt-1 text-sm font-bold text-slate-900 dark:text-white">{{ group()?.teacher || 'Not assigned' }}</h4>
+                    <div class="mt-4 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800" aria-hidden="true">
+                      <div class="h-full rounded-full bg-indigo-600 dark:bg-indigo-400" [style.width.%]="stats.attendanceRate"></div>
                     </div>
-                  </div>
-                </div>
-                <div class="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 p-4">
-                  <div class="flex items-center gap-3">
-                    <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300">
-                      <mat-icon class="text-base">meeting_room</mat-icon>
-                    </span>
-                    <div>
-                      <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Room</p>
-                      <h4 class="mt-1 text-sm font-bold text-slate-900 dark:text-white">{{ group()?.room || 'Not set' }}</h4>
+                    <div class="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-5">
+                      <div class="rounded-lg bg-slate-50 p-3 dark:bg-slate-900">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Total</p>
+                        <strong class="mt-1 block text-lg text-slate-950 dark:text-white">{{ stats.total }}</strong>
+                      </div>
+                      <div class="rounded-lg bg-indigo-50 p-3 dark:bg-indigo-950/30">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-200">Marked</p>
+                        <strong class="mt-1 block text-lg text-indigo-700 dark:text-indigo-200">{{ stats.marked }} / {{ stats.total }}</strong>
+                      </div>
+                      <div class="rounded-lg bg-emerald-50 p-3 dark:bg-emerald-950/30">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-200">Present</p>
+                        <strong class="mt-1 block text-lg text-emerald-700 dark:text-emerald-200">{{ stats.present }}</strong>
+                      </div>
+                      <div class="rounded-lg bg-rose-50 p-3 dark:bg-rose-950/30">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-200">Absent</p>
+                        <strong class="mt-1 block text-lg text-rose-700 dark:text-rose-200">{{ stats.absent }}</strong>
+                      </div>
+                      <div class="rounded-lg bg-amber-50 p-3 dark:bg-amber-950/30">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-200">Not marked</p>
+                        <strong class="mt-1 block text-lg text-amber-700 dark:text-amber-200">{{ stats.notMarked }}</strong>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                <div class="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 p-4">
-                  <div class="flex items-center gap-3">
-                    <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300">
-                      <mat-icon class="text-base">event</mat-icon>
-                    </span>
-                    <div>
-                      <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Schedule</p>
-                      <h4 class="mt-1 text-sm font-bold text-slate-900 dark:text-white">{{ group()?.schedule || 'Not scheduled' }}</h4>
-                    </div>
-                  </div>
-                </div>
+                  </article>
+                }
               </div>
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-slate-200 dark:border-slate-800 p-4">
-                <div>
-                  <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Capacity</p>
-                  <h4 class="mt-1 text-lg font-bold text-slate-900 dark:text-white">{{ group()?.enrolled || 0 }} / {{ group()?.capacity || 0 }}</h4>
-                </div>
-                <div>
-                  <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Avg. Attendance</p>
-                  <h4 class="mt-1 text-lg font-bold text-slate-900 dark:text-white">{{ avgAttendanceLabel() }}</h4>
-                </div>
-                <div>
-                  <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Monthly Revenue</p>
-                  <h4 class="mt-1 text-lg font-bold text-slate-900 dark:text-white">{{ monthlyRevenueLabel() }}</h4>
+              <div class="border-t border-slate-200 p-4 dark:border-slate-800">
+                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950/40">
+                  <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <h3 class="flex items-center gap-2 font-semibold text-slate-900 dark:text-white">
+                        <mat-icon class="text-indigo-600">show_chart</mat-icon>
+                        Attendance Trend
+                      </h3>
+                      <p class="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-500">{{ overviewAttendanceChartSubtitle() }}</p>
+                    </div>
+                    <span class="inline-flex min-h-8 items-center rounded-md bg-slate-50 px-2 text-xs font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                      Current session
+                    </span>
+                  </div>
+                  <div class="relative h-[250px]">
+                    <canvas #overviewAttendanceChart aria-label="Current session attendance trend"></canvas>
+                  </div>
                 </div>
               </div>
             </section>
@@ -824,6 +1176,303 @@
         </div>
       }
 
+      @if (libraryFolderModalOpen()) {
+        <div class="tenant-group-insert-content-modal-backdrop" role="presentation" (click)="closeCreateLibraryFolderModal()">
+          <div
+            class="tenant-group-insert-content-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="group-library-folder-title"
+            (click)="$event.stopPropagation()"
+          >
+            <div class="tenant-group-insert-content-modal-head">
+              <div>
+                <p>Create folder</p>
+                <h3 id="group-library-folder-title">Library folder</h3>
+                <span>Add a folder name and optional description.</span>
+              </div>
+              <button type="button" aria-label="Close create folder" (click)="closeCreateLibraryFolderModal()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <div class="tenant-group-insert-content-modal-body grid gap-4">
+              <label class="grid gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
+                Folder name
+                <input
+                  type="text"
+                  class="min-h-11 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-900 outline-none focus:border-violet-400 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                  [value]="libraryFolderName()"
+                  (input)="setLibraryFolderName($any($event.target).value)"
+                  placeholder="Folder name"
+                />
+              </label>
+              <label class="grid gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
+                Description
+                <textarea
+                  class="min-h-24 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-violet-400 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                  [value]="libraryFolderDescription()"
+                  (input)="setLibraryFolderDescription($any($event.target).value)"
+                  placeholder="Optional description"
+                ></textarea>
+              </label>
+              @if (libraryFolderModalError()) {
+                <p class="rounded-lg bg-red-50 px-3 py-2 text-sm font-bold text-red-700 dark:bg-red-950/30 dark:text-red-200" role="alert">
+                  {{ libraryFolderModalError() }}
+                </p>
+              }
+            </div>
+
+            <div class="tenant-group-insert-content-modal-footer">
+              <button type="button" class="tenant-group-insert-content-secondary" [disabled]="libraryFolderSaving()" (click)="closeCreateLibraryFolderModal()">Cancel</button>
+              <button type="button" class="tenant-group-insert-content-primary" [disabled]="libraryFolderSaving() || !libraryFolderTargetNodeId()" (click)="createLibraryFolder()">
+                {{ libraryFolderSaving() ? 'Creating...' : 'Create folder' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (libraryLinkModalOpen()) {
+        <div class="fixed inset-0 z-[145] flex items-center justify-center bg-slate-950/55 p-4" role="presentation" (click)="closeLibraryLinkModal()">
+          <section class="grid w-[min(32rem,100%)] gap-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900" role="dialog" aria-modal="true" aria-labelledby="group-library-link-title" (click)="$event.stopPropagation()">
+            <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-200">
+              <mat-icon>add_link</mat-icon>
+            </div>
+            <div>
+              <h3 id="group-library-link-title" class="m-0 text-base font-extrabold text-slate-950 dark:text-white">Add External Link</h3>
+              <label class="mt-3.5 grid gap-1.5">
+                <span class="text-sm font-extrabold text-slate-700 dark:text-slate-200">Title</span>
+                <input class="min-h-11 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-slate-950 outline-none focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:bg-slate-900 dark:focus:ring-indigo-950/50" type="text" [value]="libraryLinkTitle()" (input)="setLibraryLinkTitle($any($event.target).value)" />
+              </label>
+              <label class="mt-3.5 grid gap-1.5">
+                <span class="text-sm font-extrabold text-slate-700 dark:text-slate-200">Link</span>
+                <input class="min-h-11 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-slate-950 outline-none placeholder:text-slate-500 focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-400 dark:focus:bg-slate-900 dark:focus:ring-indigo-950/50" type="url" placeholder="https://..." [value]="libraryLinkUrl()" (input)="setLibraryLinkUrl($any($event.target).value)" />
+              </label>
+              @if (libraryLinkError()) {
+                <div class="mt-3.5 rounded-lg bg-rose-50 px-3 py-2 text-sm font-extrabold text-rose-700 dark:bg-rose-950/30 dark:text-rose-200">{{ libraryLinkError() }}</div>
+              }
+            </div>
+            <footer class="flex justify-end gap-3">
+              <button type="button" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-extrabold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-100 disabled:cursor-not-allowed disabled:opacity-70 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:focus-visible:ring-slate-800" [disabled]="libraryLinkSaving()" (click)="closeLibraryLinkModal()">Cancel</button>
+              <button type="button" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-violet-700 bg-violet-700 px-4 text-sm font-extrabold text-white transition hover:border-violet-800 hover:bg-violet-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-200 disabled:cursor-not-allowed disabled:opacity-70 dark:focus-visible:ring-violet-950/60" [disabled]="libraryLinkSaving()" (click)="createLibraryLink()">
+                {{ libraryLinkSaving() ? 'Saving...' : 'Save' }}
+              </button>
+            </footer>
+          </section>
+        </div>
+      }
+
+      @if (libraryPreviewContent(); as preview) {
+        <section class="fixed inset-0 z-[80] flex justify-end" role="dialog" aria-modal="true" [attr.aria-label]="'Preview ' + preview.title">
+          <button type="button" class="absolute inset-0 border-0 bg-slate-950/50" aria-label="Close preview" (click)="closeLibraryContentPreview()"></button>
+          <aside class="relative z-[1] grid h-dvh w-[min(72rem,calc(100vw-3rem))] grid-rows-[auto_minmax(0,1fr)] border-l border-slate-200 bg-white shadow-[-8px_0_24px_rgb(15_23_42_/_0.14)] dark:border-slate-800 dark:bg-slate-950">
+            <header class="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+              <div class="min-w-0">
+                <span class="text-[0.6875rem] font-black uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ materialTypeLabel(preview.contentType) }}</span>
+                <h3 class="mt-1 truncate text-lg font-black leading-tight text-slate-950 dark:text-white">{{ preview.title }}</h3>
+                <p class="mt-1 text-sm font-extrabold text-slate-500 dark:text-slate-400">{{ preview.folderName }}</p>
+              </div>
+              <div class="flex shrink-0 gap-2">
+                @if (preview.url) {
+                  <a class="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-indigo-50 px-3 text-sm font-black text-indigo-700 transition hover:bg-indigo-600 hover:text-white focus-visible:bg-indigo-600 focus-visible:text-white focus-visible:outline-none dark:bg-indigo-950/50 dark:text-indigo-200" [href]="preview.url" target="_blank" rel="noopener">
+                    <mat-icon class="!h-4 !w-4 !text-base">open_in_new</mat-icon>
+                    Open
+                  </a>
+                }
+                <button type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-indigo-600 hover:text-white focus-visible:bg-indigo-600 focus-visible:text-white focus-visible:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300" aria-label="Close preview" (click)="closeLibraryContentPreview()">
+                  <mat-icon class="!h-4 !w-4 !text-base">close</mat-icon>
+                </button>
+              </div>
+            </header>
+
+            <div class="min-h-0 overflow-auto bg-slate-50 p-4 dark:bg-slate-950/60">
+              @if (libraryPreviewLoading()) {
+                <div class="grid min-h-[calc(100dvh-8rem)] place-items-center gap-2 rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400" aria-live="polite">
+                  <mat-icon class="animate-spin">sync</mat-icon>
+                  <p class="text-sm font-extrabold">Loading content...</p>
+                </div>
+              } @else if (libraryPreviewError()) {
+                <div class="grid min-h-[calc(100dvh-8rem)] place-items-center gap-2 rounded-xl border border-dashed border-rose-200 bg-rose-50 p-8 text-center text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-200">
+                  <mat-icon>error</mat-icon>
+                  <p class="text-sm font-extrabold">{{ libraryPreviewError() }}</p>
+                </div>
+              } @else if (preview.contentType === 'NOTE') {
+                <article class="grid min-h-[calc(100dvh-8rem)] content-start gap-4 rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+                  @for (line of notePreviewBlocks(libraryPreviewNote()); track $index) {
+                    <p class="max-w-[72ch] text-base font-bold leading-7 text-slate-950 dark:text-slate-100">{{ line }}</p>
+                  }
+                </article>
+              } @else if (libraryPreviewObjectUrl() && isImageContent(preview)) {
+                <img class="max-h-[calc(100dvh-7rem)] min-h-full w-full rounded-xl border border-slate-200 bg-white object-contain dark:border-slate-800 dark:bg-slate-900" [src]="libraryPreviewObjectUrl()" [alt]="preview.title" />
+              } @else if (libraryPreviewObjectUrl() && isVideoContent(preview)) {
+                <video class="aspect-video w-full rounded-xl border border-slate-200 bg-slate-950 object-contain dark:border-slate-800" [src]="libraryPreviewObjectUrl()" controls playsinline preload="metadata" [attr.title]="preview.title"></video>
+              } @else if (libraryPreviewSafeObjectUrl() && isPdfContent(preview)) {
+                <iframe class="h-[calc(100dvh-7rem)] w-full rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900" [src]="libraryPreviewSafeObjectUrl()" [title]="preview.title"></iframe>
+              } @else {
+                <div class="grid min-h-[calc(100dvh-8rem)] place-items-center gap-2 rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                  <mat-icon>{{ preview.url ? 'open_in_new' : 'visibility_off' }}</mat-icon>
+                  <p class="text-sm font-extrabold">{{ preview.url ? 'Preview is not available for this file type. Use Open to view it.' : 'This material does not have a file preview.' }}</p>
+                </div>
+              }
+            </div>
+          </aside>
+        </section>
+      }
+
+      @if (insertContentModalOpen()) {
+        <div class="tenant-group-insert-content-modal-backdrop" role="presentation" (click)="closeInsertContentModal()">
+          <div
+            class="tenant-group-insert-content-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="group-insert-content-title"
+            (click)="$event.stopPropagation()"
+          >
+            <div class="tenant-group-insert-content-modal-head">
+              <div>
+                <p>Insert content</p>
+                <h3 id="group-insert-content-title">{{ insertContentLesson()?.title || 'Lesson' }}</h3>
+                <span>Select material from the parent curriculum directory.</span>
+              </div>
+              <button type="button" aria-label="Close insert content" (click)="closeInsertContentModal()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <div class="tenant-group-insert-content-modal-body">
+              @if (insertContentLoading()) {
+                <div class="tenant-group-sessions-empty" aria-live="polite">
+                  <mat-icon class="animate-spin">sync</mat-icon>
+                  <p>Loading material...</p>
+                </div>
+              } @else if (insertContentError()) {
+                <div class="tenant-group-sessions-empty tenant-group-sessions-empty--error">
+                  <mat-icon>error</mat-icon>
+                  <p>{{ insertContentError() }}</p>
+                </div>
+              } @else if (insertContentOptions().length) {
+                <div class="tenant-group-insert-content-list" role="listbox" aria-label="Available lesson material">
+                  @for (option of insertContentOptions(); track option.type + option.id) {
+                    <button
+                      type="button"
+                      class="tenant-group-insert-content-option"
+                      [class.tenant-group-insert-content-option--selected]="selectedInsertContent()?.id === option.id && selectedInsertContent()?.type === option.type"
+                      [class.tenant-group-insert-content-option--inserted]="isInsertContentAlreadyAdded(option)"
+                      role="option"
+                      [attr.aria-selected]="selectedInsertContent()?.id === option.id && selectedInsertContent()?.type === option.type"
+                      [disabled]="isInsertContentAlreadyAdded(option)"
+                      (click)="selectInsertContent(option)"
+                    >
+                      <span class="tenant-group-lesson-row-icon">
+                        <mat-icon>{{ materialIcon(option.type, option.fileContentType) }}</mat-icon>
+                      </span>
+                      <span class="tenant-group-insert-content-option-main">
+                        <strong>{{ option.title }}</strong>
+                        <small>{{ option.source.nodeLabel }} · {{ option.source.folder.name }} · {{ option.subtitle || materialTypeLabel(option.type) }}</small>
+                      </span>
+                      @if (isInsertContentAlreadyAdded(option)) {
+                        <em>Inserted</em>
+                      }
+                    </button>
+                  }
+                </div>
+              } @else {
+                <div class="tenant-group-sessions-empty">
+                  <mat-icon>folder_open</mat-icon>
+                  <p>No material found in the parent directory.</p>
+                </div>
+              }
+            </div>
+
+            <div class="tenant-group-insert-content-modal-footer">
+              <button type="button" class="tenant-group-insert-content-secondary" [disabled]="insertingContent()" (click)="closeInsertContentModal()">Cancel</button>
+              <button type="button" class="tenant-group-insert-content-primary" [disabled]="!selectedInsertContent() || insertingContent()" (click)="insertSelectedContent()">
+                {{ insertingContent() ? 'Inserting...' : 'Insert selected' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (assignSessionDrawerOpen()) {
+        <div class="tenant-group-assign-session-drawer-backdrop" role="presentation" (click)="closeAssignSessionDrawer()">
+          <aside
+            class="tenant-group-assign-session-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="assign-session-title"
+            (click)="$event.stopPropagation()"
+          >
+            <div class="tenant-group-assign-session-drawer-head">
+              <div>
+                <p>Assign lesson</p>
+                <h3 id="assign-session-title">{{ assignSessionLesson()?.title || 'Lesson' }}</h3>
+                <span>{{ group()?.name || 'Group' }} sessions</span>
+              </div>
+              <button type="button" aria-label="Close assign to session" (click)="closeAssignSessionDrawer()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <div class="tenant-group-assign-session-drawer-body">
+              @if (sessionLessonsLoading()) {
+                <div class="tenant-group-sessions-empty" aria-live="polite">
+                  <mat-icon class="animate-spin">sync</mat-icon>
+                  <p>Loading group sessions...</p>
+                </div>
+              } @else if (sessionLessonsError()) {
+                <div class="tenant-group-sessions-empty tenant-group-sessions-empty--error">
+                  <mat-icon>error</mat-icon>
+                  <p>{{ sessionLessonsError() }}</p>
+                </div>
+              } @else if (sessionRows().length) {
+                <div class="tenant-group-assign-session-list">
+                  @for (session of sessionRows(); track session.id) {
+                    <button
+                      type="button"
+                      class="tenant-group-assign-session-card"
+                      [class.tenant-group-assign-session-card--assigned]="isLessonAssignedToSession(session)"
+                      [disabled]="isLessonAssignedToSession(session) || assigningSessionId() !== null"
+                      (click)="assignLessonToSession(session)"
+                    >
+                      <span class="tenant-group-assign-session-icon">
+                        <mat-icon>{{ session.kind === 'dated' ? 'event' : 'event_repeat' }}</mat-icon>
+                      </span>
+                      <span class="tenant-group-assign-session-main">
+                        <strong>{{ session.day }}</strong>
+                        <small>{{ session.date }} · {{ session.timeRange }} · {{ session.room }}</small>
+                        @if (sessionLessons(session).length) {
+                          <em>
+                            @for (assignedLesson of sessionLessons(session); track assignedLesson.id) {
+                              <span>{{ assignedLesson.title }}</span>
+                            }
+                          </em>
+                        } @else {
+                          <em>No lessons assigned to this session.</em>
+                        }
+                      </span>
+                      <span class="tenant-group-assign-session-status">
+                        @if (assigningSessionId() === session.id) {
+                          Assigning...
+                        } @else {
+                          {{ sessionAssignmentLabel(session) }}
+                        }
+                      </span>
+                    </button>
+                  }
+                </div>
+              } @else {
+                <div class="tenant-group-sessions-empty">
+                  <mat-icon>event_busy</mat-icon>
+                  <p>No group sessions are available for assignment.</p>
+                </div>
+              }
+            </div>
+          </aside>
+        </div>
+      }
+
       <!-- Student Details Overlay Panel -->
       @if (selectedStudent(); as student) {
         <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[150] flex justify-end animate-in fade-in duration-300">
@@ -957,4 +1606,5 @@
         </div>
       }
     </div>
+}
   

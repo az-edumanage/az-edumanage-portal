@@ -6,7 +6,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { firstValueFrom } from 'rxjs';
 import { TenantGroupAttendanceDataService } from '../../data-access/tenant-group-attendance-data.service';
-import { GroupDetails, GroupLesson, GroupLessonContent, GroupStudent } from '../../models/tenant-group-details.models';
+import { GroupDetails, GroupLesson, GroupLessonContent, GroupSessionLibraryContent, GroupStudent } from '../../models/tenant-group-details.models';
 import { TenantBarcodeAttendanceScanResponse } from '../../models/tenant-group-attendance.models';
 import { TenantGroupDetailsDataService } from '../../data-access/tenant-group-details-data.service';
 import { TenantSubjectsDataService } from '../../data-access/tenant-subjects-data.service';
@@ -68,6 +68,7 @@ type SessionStatusTone = 'info' | 'success' | 'muted';
 type StudentStatusFilter = 'all' | 'present' | 'absent';
 type LessonPickerStatusFilter = 'all' | 'available' | 'inserted';
 type SessionLiveStatus = 'coming' | 'running' | 'ended';
+type PreviewableLessonContent = GroupLessonContent | GroupSessionLibraryContent;
 
 @Component({
   selector: 'app-tenant-group-session-details',
@@ -111,10 +112,23 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
   readonly lessonCurriculumRoot = signal<TenantSubjectCurriculumNode | null>(null);
   readonly lessonPickerSearch = signal('');
   readonly lessonPickerStatusFilter = signal<LessonPickerStatusFilter>('all');
+  readonly libraryPickerOpen = signal(false);
+  readonly libraryPickerLoading = signal(false);
+  readonly libraryPickerError = signal<string | null>(null);
+  readonly libraryFolders = signal<TenantCurriculumMaterialFolder[]>([]);
+  readonly selectedLibraryFolder = signal<TenantCurriculumMaterialFolder | null>(null);
+  readonly expandedLibraryFolderIds = signal<ReadonlySet<string>>(new Set());
+  readonly libraryFilesByFolderId = signal<ReadonlyMap<string, TenantCurriculumMaterialFile[]>>(new Map());
+  readonly libraryNotesByFolderId = signal<ReadonlyMap<string, TenantCurriculumMaterialNote[]>>(new Map());
+  readonly libraryFileLoadingIds = signal<ReadonlySet<string>>(new Set());
+  readonly libraryFileErrors = signal<ReadonlyMap<string, string>>(new Map());
+  readonly selectedLibraryFileIds = signal<ReadonlySet<string>>(new Set());
+  readonly selectedLibraryNoteIds = signal<ReadonlySet<string>>(new Set());
+  readonly sessionLibraryContent = signal<GroupSessionLibraryContent[]>([]);
   readonly savingLessonNodeId = signal<string | null>(null);
   readonly removingLessonId = signal<string | null>(null);
   readonly updatingLessonCompletionId = signal<string | null>(null);
-  readonly previewContent = signal<GroupLessonContent | null>(null);
+  readonly previewContent = signal<PreviewableLessonContent | null>(null);
   readonly previewNote = signal<TenantCurriculumMaterialNote | null>(null);
   readonly previewLoading = signal(false);
   readonly previewError = signal<string | null>(null);
@@ -123,6 +137,7 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
   readonly barcodeInputValue = signal('');
   readonly barcodeScanInProgress = signal(false);
   readonly barcodeScanNotification = signal<{ message: string; state: 'success' | 'error' } | null>(null);
+  readonly updatingStudentAttendanceId = signal<string | null>(null);
   readonly currentTime = signal(new Date());
   readonly session = computed(() => this.sessionRows().find((row) => row.id === this.sessionId) ?? null);
   readonly sessionRows = computed<SessionDetailsRow[]>(() => this.buildSessionRows(this.group()));
@@ -149,6 +164,7 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
   readonly filteredCurriculumLessonOptions = computed<CurriculumLessonOption[]>(() =>
     this.filterCurriculumLessonOptions(this.curriculumLessonOptions()),
   );
+  readonly selectedLibraryItemCount = computed(() => this.selectedLibraryFileIds().size + this.selectedLibraryNoteIds().size);
   private readonly groupRefreshIntervalMs = 5000;
   private clockIntervalId: ReturnType<typeof setInterval> | null = null;
   private groupRefreshIntervalId: ReturnType<typeof setInterval> | null = null;
@@ -159,6 +175,7 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     this.groupRefreshIntervalId = setInterval(() => void this.refreshGroup(), this.groupRefreshIntervalMs);
     void this.loadGroup();
     void this.loadLessons();
+    void this.loadSessionLibraryContent();
   }
 
   ngOnDestroy(): void {
@@ -334,6 +351,46 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     return this.extractAttendanceTime(student.lastAttendance) ?? 'Not recorded';
   }
 
+  canChangeStudentStatus(): boolean {
+    const selectedSession = this.session();
+    return !!selectedSession && this.sessionLiveStatus(selectedSession) === 'running';
+  }
+
+  async toggleStudentStatus(student: GroupStudent): Promise<void> {
+    if (!this.groupId || this.updatingStudentAttendanceId() === student.id) {
+      return;
+    }
+    if (!this.canChangeStudentStatus()) {
+      this.barcodeScanNotification.set({
+        message: 'Attendance status can only be changed while this session is running',
+        state: 'error',
+      });
+      return;
+    }
+
+    const attendanceState = this.studentStatusLabel(student) === 'Present' ? 'Absent' : 'Present';
+    this.updatingStudentAttendanceId.set(student.id);
+    this.barcodeScanNotification.set(null);
+    try {
+      const response = await firstValueFrom(
+        this.attendanceData.saveManualAttendance({
+          groupId: this.groupId,
+          studentId: student.id,
+          attendanceState,
+        }),
+      );
+      this.mergeManualStudentAttendance(response.studentId, response.attendanceState, response.source, response.scanTime);
+      this.barcodeScanNotification.set({ message: response.message, state: 'success' });
+    } catch (error) {
+      this.barcodeScanNotification.set({
+        message: error instanceof Error ? error.message : 'Unable to update student attendance',
+        state: 'error',
+      });
+    } finally {
+      this.updatingStudentAttendanceId.set(null);
+    }
+  }
+
   onStudentSearch(value: string): void {
     this.studentSearch.set(value);
     this.studentPageIndex.set(0);
@@ -398,6 +455,191 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
   closeLessonPicker(): void {
     this.lessonPickerOpen.set(false);
     this.lessonPickerError.set(null);
+  }
+
+  async openLibraryPicker(): Promise<void> {
+    this.libraryPickerOpen.set(true);
+    this.libraryPickerError.set(null);
+    if (this.libraryFolders().length || this.libraryPickerLoading()) {
+      return;
+    }
+
+    this.libraryPickerLoading.set(true);
+    try {
+      this.libraryFolders.set(await firstValueFrom(this.data.loadGroupLibraryFolders(this.groupId)));
+    } catch (error) {
+      this.libraryPickerError.set(error instanceof Error ? error.message : 'Unable to load library folders');
+      this.libraryFolders.set([]);
+    } finally {
+      this.libraryPickerLoading.set(false);
+    }
+  }
+
+  closeLibraryPicker(): void {
+    this.libraryPickerOpen.set(false);
+    this.libraryPickerError.set(null);
+  }
+
+  async selectLibraryFolder(folder: TenantCurriculumMaterialFolder): Promise<void> {
+    this.selectedLibraryFolder.set(folder);
+    await this.expandLibraryFolder(folder);
+  }
+
+  async chooseLibraryFolder(): Promise<void> {
+    if (!this.selectedLibraryItemCount()) {
+      return;
+    }
+    this.libraryPickerError.set(null);
+    try {
+      const savedContent = await Promise.all(
+        this.selectedLibraryItemsAsContent().map((content) =>
+          firstValueFrom(this.data.addGroupSessionLibraryContent(this.groupId, {
+            sessionId: this.sessionId,
+            folderId: content.folderId,
+            contentType: content.contentType,
+            contentId: content.contentId,
+          })),
+        ),
+      );
+      this.sessionLibraryContent.update((content) => this.mergeSessionLibraryContent(content, savedContent));
+      this.selectedLibraryFileIds.set(new Set());
+      this.selectedLibraryNoteIds.set(new Set());
+      this.libraryPickerOpen.set(false);
+    } catch (error) {
+      this.libraryPickerError.set(error instanceof Error ? error.message : 'Unable to insert library content');
+    }
+  }
+
+  async toggleLibraryFolder(folder: TenantCurriculumMaterialFolder): Promise<void> {
+    this.selectedLibraryFolder.set(folder);
+    if (this.isLibraryFolderExpanded(folder)) {
+      this.collapseLibraryFolder(folder);
+      return;
+    }
+    await this.expandLibraryFolder(folder);
+  }
+
+  async expandLibraryFolder(folder: TenantCurriculumMaterialFolder): Promise<void> {
+    this.expandedLibraryFolderIds.update((folderIds) => {
+      const next = new Set(folderIds);
+      next.add(folder.id);
+      return next;
+    });
+    await this.loadLibraryFolderContent(folder.id);
+  }
+
+  collapseLibraryFolder(folder: TenantCurriculumMaterialFolder): void {
+    this.expandedLibraryFolderIds.update((folderIds) => {
+      const next = new Set(folderIds);
+      next.delete(folder.id);
+      return next;
+    });
+  }
+
+  isLibraryFolderExpanded(folder: TenantCurriculumMaterialFolder): boolean {
+    return this.expandedLibraryFolderIds().has(folder.id);
+  }
+
+  libraryFolderFiles(folder: TenantCurriculumMaterialFolder): TenantCurriculumMaterialFile[] {
+    return this.libraryFilesByFolderId().get(folder.id) ?? [];
+  }
+
+  libraryFolderNotes(folder: TenantCurriculumMaterialFolder): TenantCurriculumMaterialNote[] {
+    return this.libraryNotesByFolderId().get(folder.id) ?? [];
+  }
+
+  hasLibraryFolderContent(folder: TenantCurriculumMaterialFolder): boolean {
+    return Boolean(this.libraryFolderFiles(folder).length || this.libraryFolderNotes(folder).length);
+  }
+
+  isLibraryFolderLoading(folder: TenantCurriculumMaterialFolder): boolean {
+    return this.libraryFileLoadingIds().has(folder.id);
+  }
+
+  libraryFolderError(folder: TenantCurriculumMaterialFolder): string | null {
+    return this.libraryFileErrors().get(folder.id) ?? null;
+  }
+
+  toggleLibraryFileSelection(file: TenantCurriculumMaterialFile): void {
+    this.selectedLibraryFileIds.update((fileIds) => {
+      const next = new Set(fileIds);
+      if (next.has(file.id)) {
+        next.delete(file.id);
+      } else {
+        next.add(file.id);
+      }
+      return next;
+    });
+  }
+
+  isLibraryFileSelected(file: TenantCurriculumMaterialFile): boolean {
+    return this.selectedLibraryFileIds().has(file.id);
+  }
+
+  toggleLibraryNoteSelection(note: TenantCurriculumMaterialNote): void {
+    this.selectedLibraryNoteIds.update((noteIds) => {
+      const next = new Set(noteIds);
+      if (next.has(note.id)) {
+        next.delete(note.id);
+      } else {
+        next.add(note.id);
+      }
+      return next;
+    });
+  }
+
+  isLibraryNoteSelected(note: TenantCurriculumMaterialNote): boolean {
+    return this.selectedLibraryNoteIds().has(note.id);
+  }
+
+  openSessionLibraryContentPreview(content: GroupSessionLibraryContent): void {
+    this.clearPreviewObjectUrl();
+    this.previewContent.set(content);
+    this.previewNote.set(null);
+    this.previewError.set(null);
+    if (content.contentType === 'NOTE') {
+      void this.loadSessionLibraryNotePreview(content);
+      return;
+    }
+    if (this.canPreviewContent(content)) {
+      void this.loadPreviewFile(content);
+      return;
+    }
+    this.previewLoading.set(false);
+  }
+
+  async removeSessionLibraryContent(content: GroupSessionLibraryContent): Promise<void> {
+    if (this.removingLessonId() || content.completed) {
+      return;
+    }
+
+    this.removingLessonId.set(content.id);
+    this.lessonsError.set(null);
+    try {
+      await firstValueFrom(this.data.deleteGroupSessionLibraryContent(this.groupId, content.id));
+      this.sessionLibraryContent.update((items) => items.filter((item) => item.id !== content.id));
+    } catch (error) {
+      this.lessonsError.set(error instanceof Error ? error.message : 'Unable to remove library content');
+    } finally {
+      this.removingLessonId.set(null);
+    }
+  }
+
+  async toggleSessionLibraryContentCompletion(content: GroupSessionLibraryContent): Promise<void> {
+    if (this.updatingLessonCompletionId()) {
+      return;
+    }
+
+    this.updatingLessonCompletionId.set(content.id);
+    this.lessonsError.set(null);
+    try {
+      const updatedContent = await firstValueFrom(this.data.updateGroupSessionLibraryContentCompletion(this.groupId, content.id, !content.completed));
+      this.sessionLibraryContent.update((items) => this.mergeSessionLibraryContent(items, [updatedContent]));
+    } catch (error) {
+      this.lessonsError.set(error instanceof Error ? error.message : 'Unable to update library content');
+    } finally {
+      this.updatingLessonCompletionId.set(null);
+    }
   }
 
   onLessonPickerSearch(value: string): void {
@@ -525,7 +767,7 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     return this.lessonContentErrors().get(lesson.id) ?? null;
   }
 
-  materialIcon(content: GroupLessonContent): string {
+  materialIcon(content: Pick<GroupLessonContent, 'contentType' | 'fileContentType' | 'title'>): string {
     if (content.contentType === 'NOTE') {
       return 'sticky_note_2';
     }
@@ -533,6 +775,20 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
       return 'link';
     }
     const contentType = content.fileContentType?.toLowerCase() ?? '';
+    if (contentType.startsWith('image/')) {
+      return 'image';
+    }
+    if (contentType.includes('pdf')) {
+      return 'picture_as_pdf';
+    }
+    if (contentType.includes('video')) {
+      return 'movie';
+    }
+    return 'description';
+  }
+
+  libraryFileIcon(file: TenantCurriculumMaterialFile): string {
+    const contentType = file.contentType?.toLowerCase() ?? '';
     if (contentType.startsWith('image/')) {
       return 'image';
     }
@@ -608,28 +864,28 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     return this.selectedLessonContent(lesson)?.id === content.id;
   }
 
-  canPreviewContent(content: GroupLessonContent): boolean {
+  canPreviewContent(content: Pick<PreviewableLessonContent, 'url' | 'fileContentType' | 'title'>): boolean {
     return Boolean(content.url && (this.isImageContent(content) || this.isVideoContent(content) || this.isPdfContent(content)));
   }
 
-  isImageContent(content: GroupLessonContent): boolean {
+  isImageContent(content: Pick<PreviewableLessonContent, 'fileContentType' | 'title'>): boolean {
     const type = content.fileContentType?.toLowerCase() ?? '';
     const title = content.title.toLowerCase();
     return type.startsWith('image/') || /\.(avif|gif|jpe?g|png|svg|webp)$/i.test(title);
   }
 
-  isVideoContent(content: GroupLessonContent): boolean {
+  isVideoContent(content: Pick<PreviewableLessonContent, 'fileContentType' | 'title'>): boolean {
     const type = content.fileContentType?.toLowerCase() ?? '';
     const title = content.title.toLowerCase();
     return type.startsWith('video/') || /\.(m4v|mov|mp4|mpeg|mpg|ogg|ogv|webm)$/i.test(title);
   }
 
-  isPdfContent(content: GroupLessonContent): boolean {
+  isPdfContent(content: Pick<PreviewableLessonContent, 'fileContentType' | 'title'>): boolean {
     const type = content.fileContentType?.toLowerCase() ?? '';
     return type.includes('pdf') || content.title.toLowerCase().endsWith('.pdf');
   }
 
-  safeContentUrl(content: GroupLessonContent): SafeResourceUrl {
+  safeContentUrl(content: Pick<PreviewableLessonContent, 'url'>): SafeResourceUrl {
     return this.sanitizer.bypassSecurityTrustResourceUrl(content.url ?? '');
   }
 
@@ -711,6 +967,145 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
       this.lessonsError.set(error instanceof Error ? error.message : 'Unable to load lessons');
     } finally {
       this.lessonsLoading.set(false);
+    }
+  }
+
+  private async loadSessionLibraryContent(): Promise<void> {
+    if (!this.sessionId) {
+      return;
+    }
+
+    try {
+      this.sessionLibraryContent.set(await firstValueFrom(this.data.loadGroupSessionLibraryContent(this.groupId, this.sessionId)));
+    } catch (error) {
+      this.lessonsError.set(error instanceof Error ? error.message : 'Unable to load library content');
+    }
+  }
+
+  private async loadLibraryFolderContent(folderId: string): Promise<void> {
+    if ((this.libraryFilesByFolderId().has(folderId) && this.libraryNotesByFolderId().has(folderId)) || this.libraryFileLoadingIds().has(folderId)) {
+      return;
+    }
+
+    this.libraryFileLoadingIds.update((folderIds) => new Set(folderIds).add(folderId));
+    this.libraryFileErrors.update((errors) => {
+      const next = new Map(errors);
+      next.delete(folderId);
+      return next;
+    });
+    try {
+      const [files, notes] = await Promise.all([
+        firstValueFrom(this.data.loadGroupLibraryFiles(this.groupId, folderId)),
+        firstValueFrom(this.data.loadGroupLibraryNotes(this.groupId, folderId)),
+      ]);
+      this.libraryFilesByFolderId.update((filesByFolderId) => {
+        const next = new Map(filesByFolderId);
+        next.set(folderId, files);
+        return next;
+      });
+      this.libraryNotesByFolderId.update((notesByFolderId) => {
+        const next = new Map(notesByFolderId);
+        next.set(folderId, notes);
+        return next;
+      });
+    } catch (error) {
+      this.libraryFileErrors.update((errors) => {
+        const next = new Map(errors);
+        next.set(folderId, error instanceof Error ? error.message : 'Unable to load folder content');
+        return next;
+      });
+    } finally {
+      this.libraryFileLoadingIds.update((folderIds) => {
+        const next = new Set(folderIds);
+        next.delete(folderId);
+        return next;
+      });
+    }
+  }
+
+  private selectedLibraryItemsAsContent(): GroupSessionLibraryContent[] {
+    const selectedFileIds = this.selectedLibraryFileIds();
+    const selectedNoteIds = this.selectedLibraryNoteIds();
+    if (!selectedFileIds.size && !selectedNoteIds.size) {
+      return [];
+    }
+
+    const folderById = new Map(this.libraryFolders().map((folder) => [folder.id, folder]));
+    const content: GroupSessionLibraryContent[] = [];
+    for (const [folderId, files] of this.libraryFilesByFolderId()) {
+      const folder = folderById.get(folderId);
+      for (const file of files) {
+        if (!selectedFileIds.has(file.id)) {
+          continue;
+        }
+        content.push({
+          id: `library-file-${file.id}`,
+          sessionId: this.sessionId ?? '',
+          folderId,
+          folderName: folder?.name ?? 'Library',
+          contentType: 'FILE',
+          contentId: file.id,
+          title: file.originalName || file.fileName,
+          url: file.url,
+          fileContentType: file.contentType,
+          sizeBytes: file.sizeBytes,
+          completed: false,
+        });
+      }
+    }
+    for (const [folderId, notes] of this.libraryNotesByFolderId()) {
+      const folder = folderById.get(folderId);
+      for (const note of notes) {
+        if (!selectedNoteIds.has(note.id)) {
+          continue;
+        }
+        content.push({
+          id: `library-note-${note.id}`,
+          sessionId: this.sessionId ?? '',
+          folderId,
+          folderName: folder?.name ?? 'Library',
+          contentType: 'NOTE',
+          contentId: note.id,
+          title: note.title,
+          url: null,
+          fileContentType: null,
+          sizeBytes: null,
+          completed: false,
+        });
+      }
+    }
+    return content;
+  }
+
+  private findLibraryNote(content: GroupSessionLibraryContent): TenantCurriculumMaterialNote | null {
+    return this.libraryNotesByFolderId().get(content.folderId)?.find((note) => note.id === content.contentId) ?? null;
+  }
+
+  private async loadSessionLibraryNotePreview(content: GroupSessionLibraryContent): Promise<void> {
+    const cachedNote = this.findLibraryNote(content);
+    if (cachedNote) {
+      this.previewNote.set(cachedNote);
+      this.previewLoading.set(false);
+      return;
+    }
+
+    this.previewLoading.set(true);
+    try {
+      const notes = await firstValueFrom(this.data.loadGroupLibraryNotes(this.groupId, content.folderId));
+      this.libraryNotesByFolderId.update((notesByFolderId) => {
+        const next = new Map(notesByFolderId);
+        next.set(content.folderId, notes);
+        return next;
+      });
+      const note = notes.find((candidate) => candidate.id === content.contentId) ?? null;
+      this.previewNote.set(note);
+      if (!note) {
+        this.previewError.set('Unable to find this note in the library folder.');
+      }
+    } catch (error) {
+      this.previewError.set(error instanceof Error ? error.message : 'Unable to load note content');
+    } finally {
+      this.previewLoading.set(false);
     }
   }
 
@@ -860,6 +1255,20 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     return Array.from(merged.values());
   }
 
+  private mergeSessionLibraryContent(
+      primary: GroupSessionLibraryContent[],
+      material: GroupSessionLibraryContent[]
+  ): GroupSessionLibraryContent[] {
+    const merged = new Map<string, GroupSessionLibraryContent>();
+    for (const content of primary) {
+      merged.set(content.id, content);
+    }
+    for (const content of material) {
+      merged.set(content.id, content);
+    }
+    return Array.from(merged.values());
+  }
+
   private contentKey(content: Pick<GroupLessonContent, 'contentType' | 'contentId'>): string {
     return `${content.contentType}:${content.contentId}`;
   }
@@ -890,7 +1299,7 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  private async loadPreviewFile(content: GroupLessonContent): Promise<void> {
+  private async loadPreviewFile(content: Pick<PreviewableLessonContent, 'url' | 'title' | 'fileContentType'>): Promise<void> {
     if (!content.url) {
       this.previewLoading.set(false);
       return;
@@ -965,6 +1374,32 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
                 }
               : student,
           );
+
+    this.group.set({ ...currentGroup, students: updatedStudents });
+  }
+
+  private mergeManualStudentAttendance(
+    studentId: string,
+    attendanceState: 'Present' | 'Absent',
+    attendanceSource: 'Manual',
+    scanTime: string,
+  ): void {
+    const currentGroup = this.group();
+    if (!currentGroup) {
+      return;
+    }
+
+    const updatedStudents = (currentGroup.students ?? []).map((student) =>
+      student.id === studentId
+        ? {
+            ...student,
+            lastAttendance: scanTime,
+            attendanceTime: scanTime,
+            attendanceState,
+            attendanceSource,
+          }
+        : student,
+    );
 
     this.group.set({ ...currentGroup, students: updatedStudents });
   }

@@ -48,6 +48,17 @@ interface LessonNoteContent {
   blocks?: LessonNoteBlock[];
 }
 
+interface LessonSessionRow {
+  id: string;
+  day: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  timeRange: string;
+  room: string;
+  kind: 'dated' | 'recurring';
+}
+
 @Component({
   selector: 'app-tenant-group-lesson-details',
   standalone: true,
@@ -85,11 +96,17 @@ export class TenantGroupLessonDetailsComponent implements OnInit, OnDestroy {
   readonly previewNote = signal<TenantCurriculumMaterialNote | null>(null);
   readonly previewLoading = signal(false);
   readonly previewError = signal<string | null>(null);
+  readonly assignSessionDrawerOpen = signal(false);
+  readonly sessionLessonsLoading = signal(false);
+  readonly sessionLessonsError = signal<string | null>(null);
+  readonly sessionLessonsBySessionId = signal<ReadonlyMap<string, GroupLesson[]>>(new Map());
+  readonly assigningSessionId = signal<string | null>(null);
   readonly contentSearchTerm = signal('');
   readonly contentFilter = signal<LessonContentFilter>('all');
   readonly contentPageIndex = signal(0);
   readonly contentPageSize = signal(5);
   readonly lesson = computed(() => this.lessons().find((row) => row.id === this.lessonId) ?? null);
+  readonly sessionRows = computed<LessonSessionRow[]>(() => this.buildSessionRows(this.group()));
   readonly fileMaterialCount = computed(() => this.lessonContent().filter((content) => content.contentType === 'FILE').length);
   readonly noteMaterialCount = computed(() => this.lessonContent().filter((content) => content.contentType === 'NOTE').length);
   readonly linkMaterialCount = computed(() => this.lessonContent().filter((content) => content.contentType === 'LINK').length);
@@ -135,6 +152,10 @@ export class TenantGroupLessonDetailsComponent implements OnInit, OnDestroy {
       this.closeContentPreview();
       return;
     }
+    if (this.assignSessionDrawerOpen()) {
+      this.closeAssignSessionDrawer();
+      return;
+    }
     if (this.insertModalOpen()) {
       this.closeInsertContentModal();
     }
@@ -152,6 +173,12 @@ export class TenantGroupLessonDetailsComponent implements OnInit, OnDestroy {
       this.lessons.set(lessons);
       await this.loadLessonContent();
       this.startLessonMaterialRefresh();
+      if (this.route.snapshot.queryParamMap.get('insertContent') === 'true') {
+        await this.openInsertContentModal();
+      }
+      if (this.route.snapshot.queryParamMap.get('assignSession') === 'true') {
+        await this.openAssignSessionDrawer();
+      }
     } catch (error) {
       this.error.set(error instanceof Error ? error.message : 'Unable to load lesson details');
     } finally {
@@ -204,6 +231,58 @@ export class TenantGroupLessonDetailsComponent implements OnInit, OnDestroy {
       this.insertError.set(error instanceof Error ? error.message : 'Unable to insert content');
     } finally {
       this.insertingContent.set(false);
+    }
+  }
+
+  async openAssignSessionDrawer(): Promise<void> {
+    this.assignSessionDrawerOpen.set(true);
+    this.sessionLessonsError.set(null);
+    await this.loadSessionLessons();
+  }
+
+  closeAssignSessionDrawer(): void {
+    if (this.assigningSessionId()) {
+      return;
+    }
+    this.assignSessionDrawerOpen.set(false);
+    this.sessionLessonsError.set(null);
+  }
+
+  sessionLessons(session: LessonSessionRow): GroupLesson[] {
+    return this.sessionLessonsBySessionId().get(session.id) ?? [];
+  }
+
+  isLessonAssignedToSession(session: LessonSessionRow): boolean {
+    const lesson = this.lesson();
+    if (!lesson) {
+      return false;
+    }
+    return this.sessionLessons(session).some((assignedLesson) => assignedLesson.curriculumNodeId === lesson.curriculumNodeId);
+  }
+
+  sessionAssignmentLabel(session: LessonSessionRow): string {
+    return this.isLessonAssignedToSession(session) ? 'Assigned' : 'Click to assign';
+  }
+
+  async assignLessonToSession(session: LessonSessionRow): Promise<void> {
+    const lesson = this.lesson();
+    if (!lesson || this.isLessonAssignedToSession(session) || this.assigningSessionId()) {
+      return;
+    }
+
+    this.assigningSessionId.set(session.id);
+    this.sessionLessonsError.set(null);
+    try {
+      const assignedLesson = await firstValueFrom(this.data.addGroupLesson(this.groupId, lesson.curriculumNodeId, { sessionId: session.id }));
+      this.sessionLessonsBySessionId.update((lessonsBySessionId) => {
+        const next = new Map(lessonsBySessionId);
+        next.set(session.id, this.mergeGroupLessons(next.get(session.id) ?? [], [assignedLesson]));
+        return next;
+      });
+    } catch (error) {
+      this.sessionLessonsError.set(error instanceof Error ? error.message : 'Unable to assign lesson to session');
+    } finally {
+      this.assigningSessionId.set(null);
     }
   }
 
@@ -494,6 +573,30 @@ export class TenantGroupLessonDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  private async loadSessionLessons(): Promise<void> {
+    const sessions = this.sessionRows();
+    if (!sessions.length) {
+      this.sessionLessonsBySessionId.set(new Map());
+      return;
+    }
+
+    this.sessionLessonsLoading.set(true);
+    this.sessionLessonsError.set(null);
+    try {
+      const rows = await Promise.all(
+        sessions.map(async (session) => ({
+          sessionId: session.id,
+          lessons: await firstValueFrom(this.data.loadGroupLessons(this.groupId, { sync: false, sessionId: session.id })),
+        })),
+      );
+      this.sessionLessonsBySessionId.set(new Map(rows.map((row) => [row.sessionId, row.lessons])));
+    } catch (error) {
+      this.sessionLessonsError.set(error instanceof Error ? error.message : 'Unable to load session lessons');
+    } finally {
+      this.sessionLessonsLoading.set(false);
+    }
+  }
+
   private async loadDirectLessonMaterialSources(
     subjectId: string,
     educationCategory: string | null | undefined,
@@ -611,12 +714,117 @@ export class TenantGroupLessonDetailsComponent implements OnInit, OnDestroy {
     return Array.from(merged.values());
   }
 
+  private mergeGroupLessons(current: GroupLesson[], incoming: GroupLesson[]): GroupLesson[] {
+    const merged = new Map<string, GroupLesson>();
+    for (const lesson of current) {
+      merged.set(lesson.curriculumNodeId, lesson);
+    }
+    for (const lesson of incoming) {
+      merged.set(lesson.curriculumNodeId, lesson);
+    }
+    return Array.from(merged.values());
+  }
+
   private contentKey(content: Pick<GroupLessonContent, 'contentType' | 'contentId'>): string {
     return `${content.contentType}:${content.contentId}`;
   }
 
   private isContentFilter(value: string): value is LessonContentFilter {
     return value === 'all' || value === 'FILE' || value === 'NOTE' || value === 'LINK';
+  }
+
+  private buildSessionRows(group: GroupDetails | null): LessonSessionRow[] {
+    if (!group) {
+      return [];
+    }
+
+    if (group.calendarEvents?.length) {
+      return group.calendarEvents.map((event) => ({
+        id: event.id,
+        day: event.day || this.weekdayLabel(event.date),
+        date: event.date || 'Scheduled',
+        startTime: event.startTime,
+        endTime: event.endTime,
+        timeRange: this.timeRange(event.startTime, event.endTime),
+        room: event.room || group.room || 'No room',
+        kind: 'dated',
+      }));
+    }
+
+    const daySchedules = Object.entries(group.daySchedules ?? {});
+    if (daySchedules.length) {
+      return daySchedules.map(([day, schedule]) => ({
+        id: `schedule-${day}`,
+        day,
+        date: 'Recurring',
+        startTime: schedule.startTime ?? '',
+        endTime: schedule.endTime ?? '',
+        timeRange: this.timeRange(schedule.startTime ?? '', schedule.endTime ?? ''),
+        room: schedule.room || group.room || 'No room',
+        kind: 'recurring',
+      }));
+    }
+
+    const startAt = group.startAt ?? '';
+    const endAt = group.duration && group.duration > 0 ? this.addMinutes(startAt, group.duration) : '';
+    return (group.scheduleDays ?? []).map((day) => ({
+      id: `schedule-${day}`,
+      day,
+      date: 'Recurring',
+      startTime: startAt,
+      endTime: endAt,
+      timeRange: this.timeRange(startAt, endAt),
+      room: group.room || 'No room',
+      kind: 'recurring',
+    }));
+  }
+
+  private weekdayLabel(date: string): string {
+    const value = new Date(`${date}T00:00:00`);
+    return Number.isNaN(value.getTime()) ? 'Scheduled' : value.toLocaleDateString('en-US', { weekday: 'long' });
+  }
+
+  private timeRange(start: string, end: string): string {
+    const startTime = this.displayMeridiemTime(start);
+    const endTime = this.displayMeridiemTime(end);
+    if (startTime && endTime) {
+      return `${startTime} - ${endTime}`;
+    }
+    return startTime || endTime || 'Time not set';
+  }
+
+  private displayMeridiemTime(time: string): string {
+    const normalized = this.fullCalendarTime(time);
+    if (!normalized) {
+      return '';
+    }
+
+    const [hourValue, minuteValue] = normalized.split(':').map(Number);
+    const period = hourValue >= 12 ? 'PM' : 'AM';
+    const hour = hourValue % 12 || 12;
+    return `${hour}:${String(minuteValue).padStart(2, '0')} ${period}`;
+  }
+
+  private addMinutes(time: string, minutes: number): string {
+    const normalized = this.fullCalendarTime(time);
+    if (!normalized) {
+      return '';
+    }
+    const [hourPart, minutePart] = normalized.split(':');
+    const total = Number(hourPart) * 60 + Number(minutePart) + minutes;
+    const nextHour = Math.floor(total / 60) % 24;
+    const nextMinute = total % 60;
+    return `${String(nextHour).padStart(2, '0')}:${String(nextMinute).padStart(2, '0')}`;
+  }
+
+  private fullCalendarTime(time: string): string | null {
+    const [hourPart, minutePart = '0'] = time.trim().split(':');
+    const hour = Number(hourPart);
+    const minute = Number(minutePart);
+    if (!Number.isInteger(hour) || !Number.isInteger(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+      return null;
+    }
+    return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00`;
   }
 
   private findNodePath(nodes: TenantSubjectCurriculumNode[], nodeId: string, parents: TenantSubjectCurriculumNode[] = []): TenantSubjectCurriculumNode[] {

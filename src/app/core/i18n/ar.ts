@@ -79,6 +79,7 @@ export const AR_TRANSLATIONS: Record<I18nKey, string> = {
   'sidebar.item.settings': 'الإعدادات',
   'sidebar.item.test': 'اختبار',
   'sidebar.item.questionBank': 'بنك الأسئلة',
+  'sidebar.item.questionsBank': 'بنك الأسئلة',
   'sidebar.item.platformSettings': 'إعدادات المنصة',
   'sidebar.item.webSettings': 'إعدادات الويب',
   'sidebar.item.overview': 'نظرة عامة',

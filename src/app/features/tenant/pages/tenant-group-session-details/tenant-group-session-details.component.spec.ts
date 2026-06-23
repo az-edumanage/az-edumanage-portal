@@ -73,9 +73,17 @@ describe('TenantGroupSessionDetailsComponent', () => {
     addGroupLesson: vi.fn(),
     deleteGroupLesson: vi.fn(),
     updateGroupLessonCompletion: vi.fn(),
+    loadGroupLibraryFolders: vi.fn(),
+    loadGroupLibraryFiles: vi.fn(),
+    loadGroupLibraryNotes: vi.fn(),
+    loadGroupSessionLibraryContent: vi.fn(),
+    addGroupSessionLibraryContent: vi.fn(),
+    deleteGroupSessionLibraryContent: vi.fn(),
+    updateGroupSessionLibraryContentCompletion: vi.fn(),
   };
   const attendanceData = {
     scanBarcode: vi.fn(),
+    saveManualAttendance: vi.fn(),
   };
   const http = {
     get: vi.fn(),
@@ -178,9 +186,104 @@ describe('TenantGroupSessionDetailsComponent', () => {
         completed,
       }),
     );
+    data.loadGroupLibraryFolders.mockReset();
+    data.loadGroupLibraryFolders.mockReturnValue(of([
+      {
+        id: 'library-folder-1',
+        name: 'Session resources',
+        description: 'Shared group files',
+        fileTypes: ['file'],
+        filesCount: 3,
+        createdAt: '2026-06-11T00:00:00',
+        updatedAt: '2026-06-11T00:00:00',
+      },
+    ]));
+    data.loadGroupLibraryFiles.mockReset();
+    data.loadGroupLibraryFiles.mockReturnValue(of([
+      {
+        id: 'library-file-1',
+        url: '/media/session-brief.pdf',
+        fileName: 'session-brief.pdf',
+        originalName: 'Session brief.pdf',
+        contentType: 'application/pdf',
+        sizeBytes: 2048,
+        createdAt: '2026-06-11T00:00:00',
+        updatedAt: '2026-06-11T00:00:00',
+      },
+      {
+        id: 'library-file-2',
+        url: '/media/session-image.png',
+        fileName: 'session-image.png',
+        originalName: 'Session image.png',
+        contentType: 'image/png',
+        sizeBytes: 1024,
+        createdAt: '2026-06-11T00:00:00',
+        updatedAt: '2026-06-11T00:00:00',
+      },
+    ]));
+    data.loadGroupLibraryNotes.mockReset();
+    data.loadGroupLibraryNotes.mockReturnValue(of([
+      {
+        id: 'library-note-1',
+        title: 'Session note',
+        contentJson: JSON.stringify({ blocks: [{ data: { text: 'Session note body' } }] }),
+        createdAt: '2026-06-11T00:00:00',
+        updatedAt: '2026-06-11T00:00:00',
+      },
+    ]));
+    data.loadGroupSessionLibraryContent.mockReset();
+    data.loadGroupSessionLibraryContent.mockReturnValue(of([]));
+    data.addGroupSessionLibraryContent.mockReset();
+    data.addGroupSessionLibraryContent.mockImplementation((_groupId: string, payload: { sessionId: string | null; folderId: string; contentType: 'FILE' | 'NOTE' | 'LINK'; contentId: string }) => {
+      const isNote = payload.contentType === 'NOTE';
+      const isImage = payload.contentId === 'library-file-2';
+      return of({
+        id: `session-library-${payload.contentId}`,
+        sessionId: payload.sessionId,
+        folderId: payload.folderId,
+        folderName: 'Session resources',
+        contentType: payload.contentType,
+        contentId: payload.contentId,
+        title: isNote ? 'Session note' : isImage ? 'Session image.png' : 'Session brief.pdf',
+        url: isNote ? null : isImage ? '/media/session-image.png' : '/media/session-brief.pdf',
+        fileContentType: isNote ? null : isImage ? 'image/png' : 'application/pdf',
+        sizeBytes: isNote ? null : isImage ? 1024 : 2048,
+        completed: false,
+      });
+    });
+    data.deleteGroupSessionLibraryContent.mockReset();
+    data.deleteGroupSessionLibraryContent.mockReturnValue(of(null));
+    data.updateGroupSessionLibraryContentCompletion.mockReset();
+    data.updateGroupSessionLibraryContentCompletion.mockImplementation((_groupId: string, contentId: string, completed: boolean) =>
+      of({
+        id: contentId,
+        sessionId: 'event-1',
+        folderId: 'library-folder-1',
+        folderName: 'Session resources',
+        contentType: 'FILE',
+        contentId: 'library-file-1',
+        title: 'Session brief.pdf',
+        url: '/media/session-brief.pdf',
+        fileContentType: 'application/pdf',
+        sizeBytes: 2048,
+        completed,
+      }),
+    );
     http.get.mockReset();
     http.get.mockReturnValue(of(new Blob(['pdf'], { type: 'application/pdf' })));
     attendanceData.scanBarcode.mockReset();
+    attendanceData.saveManualAttendance.mockReset();
+    attendanceData.saveManualAttendance.mockImplementation((request: { groupId: string; studentId: string; attendanceState: 'Present' | 'Absent' }) =>
+      of({
+        groupId: request.groupId,
+        studentId: request.studentId,
+        attendanceState: request.attendanceState,
+        source: 'Manual',
+        scanTime: '2026-06-11T05:07:00',
+        sessionDate: '2026-06-11',
+        message: 'Manual attendance saved',
+      }),
+    );
     subjectsData.getSubjectCurriculumForCategory.mockReset();
     subjectsData.getSubjectCurriculumForCategory.mockResolvedValue({
       id: 'root',
@@ -287,6 +390,7 @@ describe('TenantGroupSessionDetailsComponent', () => {
 
     expect(data.loadGroupById).toHaveBeenCalledWith('group-123');
     expect(data.loadGroupLessons).toHaveBeenCalledWith('group-123', { sync: false, sessionId: 'event-1' });
+    expect(data.loadGroupSessionLibraryContent).toHaveBeenCalledWith('group-123', 'event-1');
     expect(text).toContain('Physics G12-A');
     expect(text).toContain('Saturday');
     expect(text).toContain('Physics');
@@ -327,8 +431,13 @@ describe('TenantGroupSessionDetailsComponent', () => {
     expect(text).toContain('Sara Mohamed');
     expect(text).toContain('Absent');
     expect(text).toContain('Not recorded');
+    expect(text).not.toContain('Attendance\n');
+    const assessmentLink = fixture.nativeElement.querySelector('[aria-label="Student assessment"]') as HTMLAnchorElement;
+    expect(assessmentLink).toBeTruthy();
+    expect(assessmentLink.getAttribute('href')).toContain('/tenant/groups/group-123/sessions/event-1/students/student-1/assessment');
     expect(text).toContain('Lessons');
     expect(text).toContain('2 inserted lessons linked to this session');
+    expect(text).toContain('From library');
     expect(text).toContain('Insert lesson');
     expect(text).toContain('Showing 1-2 of 2 lessons');
     expect(text).toContain('Page 1 of 1');
@@ -338,6 +447,7 @@ describe('TenantGroupSessionDetailsComponent', () => {
     expect(text).toContain('No description');
     expect(fixture.nativeElement.querySelector('[aria-label="Remove lesson"]')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('[aria-label="Mark lesson as complete"]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('[aria-label="Choose from library"]')).toBeTruthy();
 
     const lessonToggle: HTMLButtonElement = fixture.nativeElement.querySelector('.tenant-group-session-row-toggler');
     expect(lessonToggle.getAttribute('aria-expanded')).toBe('false');
@@ -408,6 +518,143 @@ describe('TenantGroupSessionDetailsComponent', () => {
     expect(data.updateGroupLessonCompletion).toHaveBeenCalledWith('group-123', 'lesson-1', true);
     expect(updatedCompleteButton.getAttribute('aria-label')).toBe('Mark lesson as incomplete');
     expect(removeButton.disabled).toBe(true);
+  });
+
+  it('opens the from library modal, expands a folder, and selects multiple files and notes', async () => {
+    const libraryButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .find((button) => (button as HTMLButtonElement).textContent?.includes('From library')) as HTMLButtonElement;
+
+    libraryButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(data.loadGroupLibraryFolders).toHaveBeenCalledWith('group-123');
+    expect(fixture.nativeElement.textContent).toContain('Choose folder');
+    expect(fixture.nativeElement.textContent).toContain('Session resources');
+    expect(fixture.nativeElement.textContent).toContain('3 items');
+
+    const folderOption = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .find((option) => (option as HTMLElement).textContent?.includes('Session resources')) as HTMLButtonElement;
+    folderOption.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(data.loadGroupLibraryFiles).toHaveBeenCalledWith('group-123', 'library-folder-1');
+    expect(data.loadGroupLibraryNotes).toHaveBeenCalledWith('group-123', 'library-folder-1');
+    expect(fixture.componentInstance.selectedLibraryFolder()?.id).toBe('library-folder-1');
+    expect(fixture.nativeElement.textContent).toContain('Session brief.pdf');
+    expect(fixture.nativeElement.textContent).toContain('Session image.png');
+    expect(fixture.nativeElement.textContent).toContain('Session note');
+
+    folderOption.click();
+    fixture.detectChanges();
+    expect(folderOption.getAttribute('aria-expanded')).toBe('false');
+    expect(fixture.nativeElement.textContent).not.toContain('Session brief.pdf');
+    expect(fixture.nativeElement.textContent).not.toContain('Session note');
+
+    folderOption.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(folderOption.getAttribute('aria-expanded')).toBe('true');
+
+    const contentButtons = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .filter((button) => {
+        const text = (button as HTMLButtonElement).textContent ?? '';
+        return text.includes('Session brief.pdf') || text.includes('Session image.png') || text.includes('Session note');
+      }) as HTMLButtonElement[];
+    contentButtons[0].click();
+    contentButtons[1].click();
+    contentButtons[2].click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.selectedLibraryItemCount()).toBe(3);
+    const chooseButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .find((button) => (button as HTMLButtonElement).textContent?.includes('Choose items')) as HTMLButtonElement;
+    expect(chooseButton.disabled).toBe(false);
+    expect(chooseButton.textContent).toContain('(3)');
+
+    chooseButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(data.addGroupSessionLibraryContent).toHaveBeenCalledTimes(3);
+    expect(data.addGroupSessionLibraryContent).toHaveBeenCalledWith('group-123', {
+      sessionId: 'event-1',
+      folderId: 'library-folder-1',
+      contentType: 'FILE',
+      contentId: 'library-file-1',
+    });
+    expect(data.addGroupSessionLibraryContent).toHaveBeenCalledWith('group-123', {
+      sessionId: 'event-1',
+      folderId: 'library-folder-1',
+      contentType: 'NOTE',
+      contentId: 'library-note-1',
+    });
+    expect(fixture.componentInstance.sessionLibraryContent().map((content) => content.title)).toEqual(['Session brief.pdf', 'Session image.png', 'Session note']);
+    expect(fixture.componentInstance.selectedLibraryItemCount()).toBe(0);
+    const tableRows = Array.from(fixture.nativeElement.querySelectorAll('.tenant-group-session-lessons-table tbody tr')) as HTMLElement[];
+    expect(tableRows.some((row) => row.textContent?.includes('Session brief.pdf') && row.textContent.includes('Library file'))).toBe(true);
+    expect(tableRows.some((row) => row.textContent?.includes('Session image.png') && row.textContent.includes('Library file'))).toBe(true);
+    expect(tableRows.some((row) => row.textContent?.includes('Session note') && row.textContent.includes('Library note'))).toBe(true);
+    expect(fixture.nativeElement.querySelector('[aria-label="Preview library content"]')).toBeTruthy();
+    const completeButton = fixture.nativeElement.querySelector('[aria-label="Mark library content as complete"]') as HTMLButtonElement;
+    const deleteButton = fixture.nativeElement.querySelector('[aria-label="Remove library content"]') as HTMLButtonElement;
+    expect(completeButton).toBeTruthy();
+    expect(deleteButton).toBeTruthy();
+
+    completeButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(data.updateGroupSessionLibraryContentCompletion).toHaveBeenCalledWith('group-123', 'session-library-library-file-1', true);
+    expect((fixture.nativeElement.querySelector('[aria-label="Remove library content"]') as HTMLButtonElement).disabled).toBe(true);
+
+    await fixture.componentInstance.removeSessionLibraryContent(fixture.componentInstance.sessionLibraryContent()[1]);
+    fixture.detectChanges();
+    expect(data.deleteGroupSessionLibraryContent).toHaveBeenCalledWith('group-123', 'session-library-library-file-2');
+    expect(fixture.componentInstance.sessionLibraryContent().map((content) => content.title)).toEqual(['Session brief.pdf', 'Session note']);
+  });
+
+  it('loads persisted library note body when previewing after refresh', async () => {
+    data.loadGroupSessionLibraryContent.mockReturnValue(of([
+      {
+        id: 'session-library-note-1',
+        sessionId: 'event-1',
+        folderId: 'library-folder-1',
+        folderName: 'Session resources',
+        contentType: 'NOTE',
+        contentId: 'library-note-1',
+        title: 'Session note',
+        url: null,
+        fileContentType: null,
+        sizeBytes: null,
+        completed: false,
+      },
+    ]));
+    data.loadGroupLibraryNotes.mockReturnValue(of([
+      {
+        id: 'library-note-1',
+        title: 'Session note',
+        contentJson: JSON.stringify({ blocks: [{ data: { text: 'Persisted note body' } }] }),
+        createdAt: '2026-06-11T00:00:00',
+        updatedAt: '2026-06-11T00:00:00',
+      },
+    ]));
+
+    fixture.destroy();
+    fixture = TestBed.createComponent(TenantGroupSessionDetailsComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const previewButton = fixture.nativeElement.querySelector('[aria-label="Preview library content"]') as HTMLButtonElement;
+    previewButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(data.loadGroupLibraryNotes).toHaveBeenCalledWith('group-123', 'library-folder-1');
+    expect(fixture.componentInstance.previewError()).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Persisted note body');
   });
 
   it('inserts a selected curriculum lesson without auto syncing session lessons', async () => {
@@ -506,6 +753,51 @@ describe('TenantGroupSessionDetailsComponent', () => {
     expect(rows[1].textContent).toContain('05:05');
     expect(rows[1].textContent).not.toContain('2026-06-11T05:05:00');
     expect(rows[1].textContent).not.toContain('Absent');
+  });
+
+  it('changes student status from the table and saves manual attendance', async () => {
+    fixture.componentInstance.currentTime.set(new Date('2026-06-06T10:15:00'));
+    fixture.detectChanges();
+
+    const rows = fixture.nativeElement.querySelectorAll('.tenant-group-session-table-card:first-child tbody tr');
+    const saraStatusButton = Array.from(rows[1].querySelectorAll('button')).find((button) =>
+      (button as HTMLButtonElement).textContent?.includes('Absent'),
+    ) as HTMLButtonElement;
+
+    saraStatusButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const updatedRows = fixture.nativeElement.querySelectorAll('.tenant-group-session-table-card:first-child tbody tr');
+    expect(attendanceData.saveManualAttendance).toHaveBeenCalledWith({
+      groupId: 'group-123',
+      studentId: 'student-2',
+      attendanceState: 'Present',
+    });
+    expect(fixture.nativeElement.textContent).toContain('Manual attendance saved');
+    expect(updatedRows[1].textContent).toContain('Sara Mohamed');
+    expect(updatedRows[1].textContent).toContain('Present');
+    expect(updatedRows[1].textContent).toContain('05:07');
+    expect(updatedRows[1].textContent).not.toContain('Absent');
+  });
+
+  it('does not change student status when the selected session is not running', async () => {
+    fixture.componentInstance.currentTime.set(new Date('2026-06-06T09:15:00'));
+    fixture.detectChanges();
+
+    const rows = fixture.nativeElement.querySelectorAll('.tenant-group-session-table-card:first-child tbody tr');
+    const saraStatusButton = Array.from(rows[1].querySelectorAll('button')).find((button) =>
+      (button as HTMLButtonElement).textContent?.includes('Absent'),
+    ) as HTMLButtonElement;
+
+    expect(saraStatusButton.disabled).toBe(true);
+    await fixture.componentInstance.toggleStudentStatus(group.students?.[1] as NonNullable<typeof group.students>[number]);
+    fixture.detectChanges();
+
+    expect(attendanceData.saveManualAttendance).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Attendance status can only be changed while this session is running');
+    expect(rows[1].textContent).toContain('Sara Mohamed');
+    expect(rows[1].textContent).toContain('Absent');
   });
 
   it('keeps persisted attendance visible after background group refreshes', async () => {

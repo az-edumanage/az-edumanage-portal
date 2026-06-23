@@ -279,7 +279,7 @@
 
 .tenant-group-session-row {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) minmax(10rem, auto) auto;
+  grid-template-columns: auto minmax(0, 1fr) minmax(11rem, 1fr) minmax(10rem, auto) auto;
   gap: 0.875rem;
   align-items: center;
   padding: 1rem 1.5rem;
@@ -354,6 +354,7 @@
 }
 
 .tenant-group-session-main,
+.tenant-group-session-lessons,
 .tenant-group-session-meta {
   min-width: 0;
 }
@@ -376,6 +377,62 @@
   font-weight: 900;
   letter-spacing: 0;
   line-height: 1rem;
+}
+
+.tenant-group-session-lessons {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.tenant-group-session-lessons-label {
+  color: #64748b;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1rem;
+}
+
+.tenant-group-session-lesson-chips {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.tenant-group-session-lesson-chip {
+  display: inline-flex;
+  max-width: 100%;
+  min-height: 1.5rem;
+  align-items: center;
+  border: 1px solid #c7d2fe;
+  border-radius: 999px;
+  background: #eef2ff;
+  padding: 0.1875rem 0.5rem;
+  color: #4338ca;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  line-height: 1rem;
+}
+
+.tenant-group-session-lesson-chip:not(.tenant-group-session-lesson-chip--more) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-session-lesson-chip--more {
+  border-color: #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+}
+
+.tenant-group-session-lessons-muted {
+  overflow: hidden;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tenant-group-session-main > span:not(.tenant-group-session-number),
@@ -412,6 +469,21 @@
 .tenant-group-session-status--next {
   background: #eef2ff;
   color: #4338ca;
+}
+
+.tenant-group-session-row--current .tenant-group-session-lessons-label {
+  color: #047857;
+}
+
+.tenant-group-session-row--current .tenant-group-session-lesson-chip {
+  border-color: #a7f3d0;
+  background: #d1fae5;
+  color: #047857;
+}
+
+.tenant-group-session-row--current .tenant-group-session-lesson-chip--more {
+  border-color: #bbf7d0;
+  background: #ecfdf5;
 }
 
 .tenant-group-session-meta span:first-child:not(.tenant-group-session-status) {
@@ -901,10 +973,18 @@
 
 .tenant-group-lesson-material-th--action,
 .tenant-group-lesson-material-action-cell {
-  width: 5rem;
+  width: 6.5rem;
   text-align: center;
 }
 
+.tenant-group-lesson-row-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+}
+
+.tenant-group-lesson-row-action,
 .tenant-group-lesson-content-open {
   display: inline-flex;
   width: 2rem;
@@ -917,11 +997,670 @@
   transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
 }
 
+.tenant-group-lesson-row-action {
+  border: 0;
+  cursor: pointer;
+}
+
+.tenant-group-lesson-row-action--assign {
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.tenant-group-lesson-row-action--insert {
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
+.tenant-group-library-head,
+.tenant-group-library-folder-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tenant-group-library-count,
+.tenant-group-library-folder-summary strong {
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4338ca;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.tenant-group-library-back {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  gap: 0.375rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: #4338ca;
+  padding: 0 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.tenant-group-library-back mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+.tenant-group-library-back:hover,
+.tenant-group-library-back:focus-visible {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  outline: none;
+}
+
+.tenant-group-library-folder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.tenant-group-library-folder-card {
+  display: grid;
+  gap: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  padding: 1rem;
+  text-align: start;
+  cursor: pointer;
+}
+
+.tenant-group-library-folder-card:hover,
+.tenant-group-library-folder-card:focus-visible {
+  border-color: #c7d2fe;
+  box-shadow: 0 16px 36px rgb(15 23 42 / 0.08);
+  outline: none;
+}
+
+.tenant-group-library-folder-title {
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.tenant-group-library-folder-title strong,
+.tenant-group-library-folder-title small,
+.tenant-group-library-content-card h4,
+.tenant-group-library-content-card span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tenant-group-library-folder-title strong {
+  display: block;
+  color: #0f172a;
+  font-size: 0.9375rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.tenant-group-library-folder-title small {
+  display: block;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.tenant-group-library-folder-icon,
+.tenant-group-library-content-icon {
+  display: inline-flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
+.tenant-group-library-folder-cover {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.tenant-group-library-folder-cover span {
+  display: flex;
+  min-height: 3.25rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #cbd5e1;
+  border-radius: 0.625rem;
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.tenant-group-library-folder {
+  display: grid;
+  gap: 1rem;
+}
+
+.tenant-group-library-folder-summary {
+  margin: 1.25rem 1.5rem 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  padding: 1rem;
+}
+
+.tenant-group-library-folder-summary > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.tenant-group-library-folder-summary p {
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.tenant-group-library-folder-summary h4 {
+  margin-top: 0.125rem;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.tenant-group-library-folder-summary span {
+  display: block;
+  margin-top: 0.125rem;
+  color: #64748b;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.tenant-group-library-content-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 0.875rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.tenant-group-library-content-card {
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.875rem;
+  min-height: 5.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  padding: 0.875rem;
+  text-decoration: none;
+}
+
+.tenant-group-library-content-card:hover,
+.tenant-group-library-content-card:focus-visible {
+  border-color: #c7d2fe;
+  background: #f8fafc;
+  outline: none;
+}
+
+.tenant-group-library-content-card p {
+  color: #64748b;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.tenant-group-library-content-card h4 {
+  margin-top: 0.125rem;
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.tenant-group-library-content-card span {
+  display: block;
+  margin-top: 0.125rem;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tenant-group-lesson-row-action--assign:hover,
+.tenant-group-lesson-row-action--assign:focus-visible {
+  background: #16a34a;
+  color: #ffffff;
+  outline: none;
+}
+
+.tenant-group-lesson-row-action--insert:hover,
+.tenant-group-lesson-row-action--insert:focus-visible {
+  background: #7c3aed;
+  color: #ffffff;
+  outline: none;
+}
+
 .tenant-group-lesson-content-table-row--clickable:hover .tenant-group-lesson-content-open,
 .tenant-group-lesson-content-table-row--clickable:focus-visible .tenant-group-lesson-content-open {
   background: #4f46e5;
   color: #ffffff;
   transform: translateX(0.125rem);
+}
+
+.tenant-group-assign-session-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  display: flex;
+  justify-content: flex-end;
+  background: rgb(15 23 42 / 0.48);
+}
+
+.tenant-group-assign-session-drawer {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(45rem, 100%);
+  height: 100%;
+  border-left: 1px solid #e2e8f0;
+  background: #ffffff;
+  box-shadow: -16px 0 40px rgb(15 23 42 / 0.18);
+}
+
+.tenant-group-assign-session-drawer-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1.25rem;
+}
+
+.tenant-group-assign-session-drawer-head p,
+.tenant-group-assign-session-drawer-head h3,
+.tenant-group-assign-session-drawer-head span {
+  margin: 0;
+}
+
+.tenant-group-assign-session-drawer-head p {
+  color: #4f46e5;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.tenant-group-assign-session-drawer-head h3 {
+  margin-top: 0.25rem;
+  color: #0f172a;
+  font-size: 1.125rem;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.tenant-group-assign-session-drawer-head span {
+  display: block;
+  margin-top: 0.25rem;
+  color: #64748b;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.tenant-group-assign-session-drawer-head button {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+}
+
+.tenant-group-assign-session-drawer-head button:hover,
+.tenant-group-assign-session-drawer-head button:focus-visible {
+  border-color: #4f46e5;
+  color: #4f46e5;
+  outline: none;
+}
+
+.tenant-group-assign-session-drawer-body {
+  overflow: auto;
+  padding: 1rem;
+  background: #f8fafc;
+}
+
+.tenant-group-assign-session-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.tenant-group-assign-session-card {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 0.875rem;
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  padding: 0.875rem;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.tenant-group-assign-session-card:hover:not(:disabled),
+.tenant-group-assign-session-card:focus-visible:not(:disabled) {
+  border-color: #4f46e5;
+  background: #eef2ff;
+  outline: none;
+}
+
+.tenant-group-assign-session-card:disabled {
+  cursor: default;
+}
+
+.tenant-group-assign-session-card--assigned {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.tenant-group-assign-session-icon {
+  display: inline-flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.625rem;
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.tenant-group-assign-session-main {
+  display: grid;
+  min-width: 0;
+  gap: 0.25rem;
+}
+
+.tenant-group-assign-session-main strong,
+.tenant-group-assign-session-main small,
+.tenant-group-assign-session-main em span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-assign-session-main strong {
+  color: #0f172a;
+  font-size: 0.9375rem;
+  font-weight: 900;
+}
+
+.tenant-group-assign-session-main small {
+  color: #64748b;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.tenant-group-assign-session-main em {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  color: #475569;
+  font-size: 0.75rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.tenant-group-assign-session-main em span {
+  max-width: 14rem;
+  border-radius: 999px;
+  background: #f1f5f9;
+  padding: 0.25rem 0.5rem;
+}
+
+.tenant-group-assign-session-status {
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4f46e5;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.tenant-group-assign-session-card--assigned .tenant-group-assign-session-status {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.tenant-group-insert-content-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 145;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(15 23 42 / 0.48);
+}
+
+.tenant-group-insert-content-modal {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(44rem, 100%);
+  max-height: min(42rem, calc(100vh - 2rem));
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgb(15 23 42 / 0.22);
+}
+
+.tenant-group-insert-content-modal-head,
+.tenant-group-insert-content-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+}
+
+.tenant-group-insert-content-modal-head {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tenant-group-insert-content-modal-head p,
+.tenant-group-insert-content-modal-head h3,
+.tenant-group-insert-content-modal-head span {
+  margin: 0;
+}
+
+.tenant-group-insert-content-modal-head p {
+  color: #6d28d9;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.tenant-group-insert-content-modal-head h3 {
+  max-width: min(38rem, calc(100vw - 7rem));
+  overflow: hidden;
+  margin-top: 0.25rem;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-insert-content-modal-head span {
+  display: block;
+  margin-top: 0.25rem;
+  color: #64748b;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.tenant-group-insert-content-modal-head button {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+}
+
+.tenant-group-insert-content-modal-head button:hover,
+.tenant-group-insert-content-modal-head button:focus-visible {
+  border-color: #7c3aed;
+  color: #6d28d9;
+  outline: none;
+}
+
+.tenant-group-insert-content-modal-body {
+  overflow: auto;
+  padding: 1rem 1.25rem;
+}
+
+.tenant-group-insert-content-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.tenant-group-insert-content-option {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+  min-height: 4rem;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.625rem;
+  background: #ffffff;
+  padding: 0.75rem;
+  color: inherit;
+  cursor: pointer;
+  text-align: start;
+  transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.tenant-group-insert-content-option:hover,
+.tenant-group-insert-content-option:focus-visible,
+.tenant-group-insert-content-option--selected {
+  border-color: #a78bfa;
+  background: #f5f3ff;
+  box-shadow: 0 0 0 3px rgb(124 58 237 / 0.12);
+  outline: none;
+}
+
+.tenant-group-insert-content-option--inserted {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
+.tenant-group-insert-content-option:disabled:hover,
+.tenant-group-insert-content-option:disabled:focus-visible {
+  border-color: #e2e8f0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.tenant-group-insert-content-option-main {
+  min-width: 0;
+}
+
+.tenant-group-insert-content-option-main strong,
+.tenant-group-insert-content-option-main small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-insert-content-option-main strong {
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 900;
+}
+
+.tenant-group-insert-content-option-main small {
+  margin-top: 0.125rem;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.tenant-group-insert-content-option em {
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.6875rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.tenant-group-insert-content-modal-footer {
+  border-top: 1px solid #e2e8f0;
+  justify-content: flex-end;
+}
+
+.tenant-group-insert-content-primary,
+.tenant-group-insert-content-secondary {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  padding: 0 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.tenant-group-insert-content-primary {
+  border: 0;
+  background: #6d28d9;
+  color: #ffffff;
+}
+
+.tenant-group-insert-content-secondary {
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #475569;
+}
+
+.tenant-group-insert-content-primary:hover:not(:disabled),
+.tenant-group-insert-content-primary:focus-visible:not(:disabled) {
+  background: #5b21b6;
+  outline: none;
+}
+
+.tenant-group-insert-content-secondary:hover:not(:disabled),
+.tenant-group-insert-content-secondary:focus-visible:not(:disabled) {
+  border-color: #7c3aed;
+  color: #6d28d9;
+  outline: none;
+}
+
+.tenant-group-insert-content-primary:disabled,
+.tenant-group-insert-content-secondary:disabled {
+  cursor: not-allowed;
+  opacity: 0.64;
 }
 
 .tenant-group-lesson-material-pagination {
@@ -1373,6 +2112,10 @@
     text-align: left;
   }
 
+  .tenant-group-session-lessons {
+    grid-column: 2;
+  }
+
   .tenant-group-calendar-backdrop {
     align-items: stretch;
     padding: 0;
@@ -1515,8 +2258,35 @@
 
 :host-context(.dark) .tenant-group-session-main span,
 :host-context(.dark) .tenant-group-session-meta span,
+:host-context(.dark) .tenant-group-session-lessons-label,
 :host-context(.dark) .tenant-group-sessions-empty {
   color: #94a3b8;
+}
+
+:host-context(.dark) .tenant-group-session-lessons-muted {
+  color: #64748b;
+}
+
+:host-context(.dark) .tenant-group-session-lesson-chip {
+  border-color: #3730a3;
+  background: rgb(79 70 229 / 0.16);
+  color: #c7d2fe;
+}
+
+:host-context(.dark) .tenant-group-session-lesson-chip--more {
+  border-color: #334155;
+  background: #1e293b;
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .tenant-group-session-row--current .tenant-group-session-lessons-label,
+:host-context(.dark) .tenant-group-session-row--current .tenant-group-session-lesson-chip {
+  color: #86efac;
+}
+
+:host-context(.dark) .tenant-group-session-row--current .tenant-group-session-lesson-chip {
+  border-color: #047857;
+  background: rgb(16 185 129 / 0.16);
 }
 
 :host-context(.dark) .tenant-group-sessions-pagination {
@@ -1626,6 +2396,107 @@
 :host-context(.dark) .tenant-group-lesson-content-open {
   background: rgb(79 70 229 / 0.16);
   color: #c7d2fe;
+}
+
+:host-context(.dark) .tenant-group-lesson-row-action--assign {
+  background: #052e16;
+  color: #86efac;
+}
+
+:host-context(.dark) .tenant-group-lesson-row-action--insert {
+  background: rgb(109 40 217 / 0.22);
+  color: #ddd6fe;
+}
+
+:host-context(.dark) .tenant-group-lesson-row-action--assign:hover,
+:host-context(.dark) .tenant-group-lesson-row-action--assign:focus-visible {
+  background: #15803d;
+  color: #ffffff;
+}
+
+:host-context(.dark) .tenant-group-lesson-row-action--insert:hover,
+:host-context(.dark) .tenant-group-lesson-row-action--insert:focus-visible {
+  background: #7c3aed;
+  color: #ffffff;
+}
+
+:host-context(.dark) .tenant-group-assign-session-drawer,
+:host-context(.dark) .tenant-group-assign-session-card,
+:host-context(.dark) .tenant-group-assign-session-drawer-head button {
+  border-color: #334155;
+  background: #0f172a;
+}
+
+:host-context(.dark) .tenant-group-assign-session-drawer-body {
+  background: #020617;
+}
+
+:host-context(.dark) .tenant-group-assign-session-drawer-head {
+  border-color: #334155;
+}
+
+:host-context(.dark) .tenant-group-assign-session-drawer-head h3,
+:host-context(.dark) .tenant-group-assign-session-main strong {
+  color: #f8fafc;
+}
+
+:host-context(.dark) .tenant-group-assign-session-drawer-head span,
+:host-context(.dark) .tenant-group-assign-session-main small,
+:host-context(.dark) .tenant-group-assign-session-main em {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .tenant-group-assign-session-card:hover:not(:disabled),
+:host-context(.dark) .tenant-group-assign-session-card:focus-visible:not(:disabled) {
+  border-color: #6366f1;
+  background: #1e1b4b;
+}
+
+:host-context(.dark) .tenant-group-assign-session-card--assigned {
+  border-color: #166534;
+  background: #052e16;
+}
+
+:host-context(.dark) .tenant-group-assign-session-icon,
+:host-context(.dark) .tenant-group-assign-session-main em span {
+  background: #111827;
+}
+
+:host-context(.dark) .tenant-group-insert-content-modal,
+:host-context(.dark) .tenant-group-insert-content-modal-head button,
+:host-context(.dark) .tenant-group-insert-content-option,
+:host-context(.dark) .tenant-group-insert-content-secondary {
+  border-color: #334155;
+  background: #0f172a;
+}
+
+:host-context(.dark) .tenant-group-insert-content-modal-head,
+:host-context(.dark) .tenant-group-insert-content-modal-footer {
+  border-color: #334155;
+}
+
+:host-context(.dark) .tenant-group-insert-content-modal-head h3,
+:host-context(.dark) .tenant-group-insert-content-option-main strong {
+  color: #f8fafc;
+}
+
+:host-context(.dark) .tenant-group-insert-content-modal-head span,
+:host-context(.dark) .tenant-group-insert-content-option-main small,
+:host-context(.dark) .tenant-group-insert-content-secondary {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .tenant-group-insert-content-option:hover,
+:host-context(.dark) .tenant-group-insert-content-option:focus-visible,
+:host-context(.dark) .tenant-group-insert-content-option--selected {
+  border-color: #7c3aed;
+  background: rgb(109 40 217 / 0.18);
+}
+
+:host-context(.dark) .tenant-group-insert-content-option:disabled:hover,
+:host-context(.dark) .tenant-group-insert-content-option:disabled:focus-visible {
+  border-color: #334155;
+  background: #0f172a;
 }
 
 :host-context(.dark) .tenant-group-student-avatar,

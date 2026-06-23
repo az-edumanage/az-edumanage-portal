@@ -28,3 +28,31 @@ textarea {
   background: rgb(30 41 59);
   color: white;
 }
+
+.analytical-data-switch--active {
+  border-color: rgb(165 180 252);
+  background: rgb(238 242 255);
+  color: rgb(67 56 202);
+}
+
+.analytical-data-switch--active .analytical-data-switch-track {
+  background: rgb(79 70 229);
+}
+
+.analytical-data-switch--active .analytical-data-switch-knob {
+  transform: translateX(1.25rem);
+}
+
+[dir="rtl"] .analytical-data-switch--active .analytical-data-switch-knob {
+  transform: translateX(-1.25rem);
+}
+
+:host-context(.dark) .analytical-data-switch--active {
+  border-color: rgb(49 46 129);
+  background: rgb(49 46 129 / 0.35);
+  color: rgb(199 210 254);
+}
+
+:host-context(.dark) .analytical-data-switch--active .analytical-data-switch-track {
+  background: rgb(99 102 241);
+}

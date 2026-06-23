@@ -6,10 +6,18 @@ import {
   GroupDetails,
   GroupLesson,
   GroupLessonContent,
+  GroupSessionLibraryContent,
   TenantGroupDetailsResponse,
   TenantGroupLessonContentResponse,
   TenantGroupLessonResponse,
+  TenantGroupSessionLibraryContentResponse,
 } from '../models/tenant-group-details.models';
+import {
+  TenantCurriculumMaterialFile,
+  TenantCurriculumMaterialFolder,
+  TenantCurriculumMaterialLink,
+  TenantCurriculumMaterialNote,
+} from '../models/tenant-subjects.models';
 
 @Injectable({ providedIn: 'root' })
 export class TenantGroupDetailsDataService {
@@ -155,6 +163,172 @@ export class TenantGroupDetailsDataService {
     );
   }
 
+  loadGroupSessionLibraryContent(groupId: string | null, sessionId: string | null): Observable<GroupSessionLibraryContent[]> {
+    const selectedGroupId = groupId?.trim();
+    const selectedSessionId = sessionId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    if (!selectedSessionId) {
+      return throwError(() => new Error('Session is required'));
+    }
+    const params = new HttpParams().set('sessionId', selectedSessionId);
+    return this.http.get<TenantGroupSessionLibraryContentResponse[]>(`${this.groupDetailsUrl(selectedGroupId)}/session-library-content`, { params }).pipe(
+      map((response) => (response ?? []).map((content) => this.toGroupSessionLibraryContent(content))),
+      catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load library content')),
+    );
+  }
+
+  addGroupSessionLibraryContent(
+    groupId: string | null,
+    payload: { sessionId: string | null; folderId: string; contentType: 'FILE' | 'NOTE' | 'LINK'; contentId: string },
+  ): Observable<GroupSessionLibraryContent> {
+    const selectedGroupId = groupId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    return this.http.post<TenantGroupSessionLibraryContentResponse>(
+      `${this.groupDetailsUrl(selectedGroupId)}/session-library-content`,
+      payload,
+    ).pipe(
+      map((response) => this.toGroupSessionLibraryContent(response)),
+      catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to insert library content')),
+    );
+  }
+
+  deleteGroupSessionLibraryContent(groupId: string | null, contentId: string | null): Observable<void> {
+    const selectedGroupId = groupId?.trim();
+    const selectedContentId = contentId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    if (!selectedContentId) {
+      return throwError(() => new Error('Library content is required'));
+    }
+    return this.http
+      .delete<void>(`${this.groupDetailsUrl(selectedGroupId)}/session-library-content/${encodeURIComponent(selectedContentId)}`)
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to remove library content')));
+  }
+
+  updateGroupSessionLibraryContentCompletion(groupId: string | null, contentId: string | null, completed: boolean): Observable<GroupSessionLibraryContent> {
+    const selectedGroupId = groupId?.trim();
+    const selectedContentId = contentId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    if (!selectedContentId) {
+      return throwError(() => new Error('Library content is required'));
+    }
+    return this.http
+      .patch<TenantGroupSessionLibraryContentResponse>(
+        `${this.groupDetailsUrl(selectedGroupId)}/session-library-content/${encodeURIComponent(selectedContentId)}/completion`,
+        { completed },
+      )
+      .pipe(
+        map((response) => this.toGroupSessionLibraryContent(response)),
+        catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to update library content')),
+      );
+  }
+
+  loadGroupLibraryFolders(groupId: string | null): Observable<TenantCurriculumMaterialFolder[]> {
+    const selectedGroupId = groupId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    return this.http.get<TenantCurriculumMaterialFolder[]>(`${this.groupDetailsUrl(selectedGroupId)}/library/folders`).pipe(
+      map((response) => (response ?? []).map((folder) => this.toMaterialFolder(folder))),
+      catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load library folders')),
+    );
+  }
+
+  createGroupLibraryFolder(groupId: string | null, payload: { name: string; description?: string | null }): Observable<TenantCurriculumMaterialFolder> {
+    const selectedGroupId = groupId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    return this.http.post<TenantCurriculumMaterialFolder>(`${this.groupDetailsUrl(selectedGroupId)}/library/folders`, payload).pipe(
+      map((response) => this.toMaterialFolder(response)),
+      catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to create library folder')),
+    );
+  }
+
+  loadGroupLibraryFiles(groupId: string | null, folderId: string): Observable<TenantCurriculumMaterialFile[]> {
+    const selectedGroupId = groupId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    return this.http.get<TenantCurriculumMaterialFile[]>(`${this.groupDetailsUrl(selectedGroupId)}/library/folders/${encodeURIComponent(folderId)}/files`).pipe(
+      map((response) => (response ?? []).map((file) => this.toMaterialFile(file))),
+      catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load library files')),
+    );
+  }
+
+  uploadGroupLibraryFile(groupId: string | null, folderId: string, file: File): Observable<TenantCurriculumMaterialFile> {
+    const selectedGroupId = groupId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    const body = new FormData();
+    body.append('file', file);
+    return this.http.post<TenantCurriculumMaterialFile>(`${this.groupDetailsUrl(selectedGroupId)}/library/folders/${encodeURIComponent(folderId)}/files`, body).pipe(
+      map((response) => this.toMaterialFile(response)),
+      catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to upload file')),
+    );
+  }
+
+  loadGroupLibraryNotes(groupId: string | null, folderId: string): Observable<TenantCurriculumMaterialNote[]> {
+    const selectedGroupId = groupId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    return this.http.get<TenantCurriculumMaterialNote[]>(`${this.groupDetailsUrl(selectedGroupId)}/library/folders/${encodeURIComponent(folderId)}/notes`).pipe(
+      catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load library notes')),
+    );
+  }
+
+  createGroupLibraryNote(groupId: string | null, folderId: string, payload: { title: string; contentJson: string }): Observable<TenantCurriculumMaterialNote> {
+    const selectedGroupId = groupId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    return this.http.post<TenantCurriculumMaterialNote>(`${this.groupDetailsUrl(selectedGroupId)}/library/folders/${encodeURIComponent(folderId)}/notes`, payload).pipe(
+      catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to create note')),
+    );
+  }
+
+  updateGroupLibraryNote(groupId: string | null, folderId: string, noteId: string, payload: { title: string; contentJson: string }): Observable<TenantCurriculumMaterialNote> {
+    const selectedGroupId = groupId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    return this.http.put<TenantCurriculumMaterialNote>(
+      `${this.groupDetailsUrl(selectedGroupId)}/library/folders/${encodeURIComponent(folderId)}/notes/${encodeURIComponent(noteId)}`,
+      payload,
+    ).pipe(
+      catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to update note')),
+    );
+  }
+
+  loadGroupLibraryLinks(groupId: string | null, folderId: string): Observable<TenantCurriculumMaterialLink[]> {
+    const selectedGroupId = groupId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    return this.http.get<TenantCurriculumMaterialLink[]>(`${this.groupDetailsUrl(selectedGroupId)}/library/folders/${encodeURIComponent(folderId)}/links`).pipe(
+      catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load library links')),
+    );
+  }
+
+  createGroupLibraryLink(groupId: string | null, folderId: string, payload: { title: string; url: string }): Observable<TenantCurriculumMaterialLink> {
+    const selectedGroupId = groupId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    return this.http.post<TenantCurriculumMaterialLink>(`${this.groupDetailsUrl(selectedGroupId)}/library/folders/${encodeURIComponent(folderId)}/links`, payload).pipe(
+      catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to create link')),
+    );
+  }
+
   private toGroupDetails(response: TenantGroupDetailsResponse): GroupDetails {
     return {
       id: response.id,
@@ -220,6 +394,40 @@ export class TenantGroupDetailsDataService {
       url: this.mediaUrlToAbsolute(response.url) ?? response.url ?? null,
       fileContentType: response.fileContentType ?? null,
       sizeBytes: response.sizeBytes ?? null,
+    };
+  }
+
+  private toGroupSessionLibraryContent(response: TenantGroupSessionLibraryContentResponse): GroupSessionLibraryContent {
+    return {
+      id: response.id,
+      sessionId: response.sessionId,
+      folderId: response.folderId,
+      folderName: response.folderName,
+      contentType: response.contentType,
+      contentId: response.contentId,
+      title: response.title,
+      url: this.mediaUrlToAbsolute(response.url) ?? response.url ?? null,
+      fileContentType: response.fileContentType ?? null,
+      sizeBytes: response.sizeBytes ?? null,
+      completed: response.completed ?? false,
+    };
+  }
+
+  private toMaterialFolder(folder: TenantCurriculumMaterialFolder): TenantCurriculumMaterialFolder {
+    return {
+      ...folder,
+      description: folder.description ?? null,
+      fileTypes: folder.fileTypes ?? [],
+      filesCount: folder.filesCount ?? 0,
+    };
+  }
+
+  private toMaterialFile(file: TenantCurriculumMaterialFile): TenantCurriculumMaterialFile {
+    return {
+      ...file,
+      url: this.mediaUrlToAbsolute(file.url) ?? file.url,
+      contentType: file.contentType ?? null,
+      sizeBytes: file.sizeBytes ?? null,
     };
   }
 
