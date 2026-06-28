@@ -56,6 +56,7 @@ export class OwnerTenantCreateDataService {
       contactPhone: string | null;
       provisioningStatus?: string | null;
       isActive?: boolean | null;
+      active?: boolean | null;
     }[]>(`${environment.apiBaseUrl}/tenant-catalog/tenants`));
     const existingTenants = (tenants ?? []).map((tenant) => ({
       name: tenant.centerName ?? '',
@@ -63,7 +64,7 @@ export class OwnerTenantCreateDataService {
       email: tenant.contactEmail ?? '',
       phone: tenant.contactPhone ?? '',
       provisioningStatus: tenant.provisioningStatus ?? '',
-      isActive: tenant.isActive === true,
+      isActive: tenant.isActive === true || tenant.active === true,
     }));
     this.existingTenants.set(existingTenants);
     return existingTenants;
