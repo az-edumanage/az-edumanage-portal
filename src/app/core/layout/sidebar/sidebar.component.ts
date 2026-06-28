@@ -230,7 +230,7 @@ export class SidebarComponent {
               { labelKey: 'sidebar.item.schedule', icon: 'calendar_today', route: '/tenant/schedule', permission: 'tenant.attendance.view' },
               { labelKey: 'sidebar.item.attendance', icon: 'fact_check', route: '/tenant/attendance', permission: 'tenant.attendance.view' },
               { labelKey: 'sidebar.item.examsGrades', icon: 'assignment', route: '/tenant/exams', permission: 'tenant.exams.manage' },
-              { labelKey: 'sidebar.item.examsEvaluation', icon: 'grades', route: '/tenant/grades', permission: 'tenant.grades.view' },
+              { labelKey: 'sidebar.item.examsEvaluation', icon: 'grades', route: '/tenant/evaluation', permission: 'tenant.grades.view' },
               { labelKey: 'sidebar.item.questionsBank', icon: 'quiz', route: '/tenant/questions-bank', permission: 'tenant.questionBank.manage' },
             ]
           },
