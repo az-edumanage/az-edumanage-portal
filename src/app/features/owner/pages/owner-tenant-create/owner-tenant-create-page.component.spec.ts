@@ -46,6 +46,7 @@ describe('OwnerTenantCreatePageComponent', () => {
     showCustomizationMenu: signal(false),
     submitAttempted: signal(false),
     submitStatus: signal<{ success: boolean; message: string } | null>(null),
+    showSuccessModal: signal(false),
     subscriptionTemplates: signal([]),
     planLoadError: signal(null),
     tenantTypes: ['Center', 'Teacher'],
@@ -196,6 +197,16 @@ describe('OwnerTenantCreatePageComponent', () => {
     expect(labels.indexOf('temporaryPassword')).toBeGreaterThan(-1);
     expect(labels.indexOf('temporaryPassword')).toBeLessThan(labels.indexOf('subdomain'));
     expect(temporaryPasswordInput.compareDocumentPosition(subdomainInput) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('renders the tenant provisioned success modal', () => {
+    mockFacade.showSuccessModal.set(true);
+    const fixture = TestBed.createComponent(OwnerTenantCreatePageComponent);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('owner.tenantCreate.successModal.title');
+    expect(fixture.nativeElement.querySelector('[role="dialog"]')).toBeTruthy();
+    mockFacade.showSuccessModal.set(false);
   });
 
 });

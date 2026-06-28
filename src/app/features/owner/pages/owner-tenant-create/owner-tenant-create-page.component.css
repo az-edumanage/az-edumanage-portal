@@ -188,6 +188,14 @@
   z-index: var(--ds-layer-overlay);
 }
 
+.owner-tenant-create-success-backdrop {
+  z-index: var(--ds-layer-modal, 100);
+}
+
+.owner-tenant-create-success-modal {
+  max-height: calc(100vh - 2rem);
+}
+
 .owner-tenant-create-drawer {
   background: var(--color-bg-card);
   box-shadow:

@@ -25,7 +25,9 @@ export class OwnerTenantCreateFacade {
   private readonly data = inject(OwnerTenantCreateDataService);
 
   private isSuccess = false;
+  private redirectTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly taskId = 'create-tenant-task';
+  private readonly successRedirectDelayMs = 1600;
 
   readonly isSubmitting = this.store.isSubmitting;
   readonly showTenantTypeDropdown = this.store.showTenantTypeDropdown;
@@ -40,6 +42,7 @@ export class OwnerTenantCreateFacade {
   readonly showCustomizationMenu = this.store.showCustomizationMenu;
   readonly submitAttempted = signal(false);
   readonly submitStatus = signal<{ success: boolean; message: string } | null>(null);
+  readonly showSuccessModal = signal(false);
 
   readonly subscriptionTemplates = this.data.subscriptionTemplates;
   readonly planLoadError = this.data.planLoadError;
@@ -153,6 +156,12 @@ export class OwnerTenantCreateFacade {
   }
 
   onDestroy(): void {
+    if (this.redirectTimer) {
+      clearTimeout(this.redirectTimer);
+      this.redirectTimer = null;
+    }
+    this.showSuccessModal.set(false);
+
     const value = this.tenantForm.getRawValue();
     const taskValue: Partial<typeof value> = { ...value };
     delete taskValue.temporaryPassword;
@@ -214,6 +223,7 @@ export class OwnerTenantCreateFacade {
     }
 
     this.store.setSubmitting(true);
+    this.showSuccessModal.set(false);
     const rawValue = this.tenantForm.getRawValue();
     const payload = {
       ...rawValue,
@@ -228,7 +238,11 @@ export class OwnerTenantCreateFacade {
           this.submitStatus.set({ success: true, message: 'Tenant provisioning verified successfully.' });
           this.isSuccess = true;
           this.taskService.removeTask(this.taskId);
-          this.router.navigate(['/owner/tenants']);
+          this.showSuccessModal.set(true);
+          this.redirectTimer = setTimeout(() => {
+            this.redirectTimer = null;
+            void this.router.navigate(['/owner/tenants']);
+          }, this.successRedirectDelayMs);
         },
         error: (error: unknown) => {
           this.submitStatus.set({ success: false, message: this.extractErrorMessage(error) });
