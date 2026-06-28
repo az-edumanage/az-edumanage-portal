@@ -152,4 +152,24 @@ describe('OwnerTenantCreateDataService', () => {
 
     await expect(promise).resolves.toBe(true);
   });
+
+  it('accepts active boolean from backend tenant list responses', async () => {
+    const promise = service.hasProvisionedTenant('ABC Center', 'abc');
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const tenantsRequest = httpTesting.expectOne((req) => req.url.endsWith('/tenant-catalog/tenants'));
+    tenantsRequest.flush([
+      {
+        centerName: 'ABC Center',
+        subdomain: 'abc',
+        contactEmail: 'abc@example.com',
+        contactPhone: '+100',
+        provisioningStatus: 'PROVISIONED',
+        active: true,
+      },
+    ]);
+
+    await expect(promise).resolves.toBe(true);
+  });
 });
