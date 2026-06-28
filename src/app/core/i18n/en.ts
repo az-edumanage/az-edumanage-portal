@@ -66,7 +66,7 @@ export const EN_TRANSLATIONS = {
   'sidebar.item.schedule': 'Schedule',
   'sidebar.item.attendance': 'Attendance',
   'sidebar.item.examsGrades': 'Exams',
-  'sidebar.item.examsEvaluation': 'Exams evaluation',
+  'sidebar.item.examsEvaluation': 'Exams Evaluation',
   'sidebar.item.reports': 'Reports',
   'sidebar.item.designSystem': 'Design System',
   'sidebar.item.mySchedule': 'My Schedule',
