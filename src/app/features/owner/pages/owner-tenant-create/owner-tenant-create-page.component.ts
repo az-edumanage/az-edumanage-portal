@@ -51,6 +51,7 @@ export class OwnerTenantCreatePageComponent implements OnInit, OnDestroy {
   readonly showCustomizationMenu = this.facade.showCustomizationMenu;
   readonly submitAttempted = this.facade.submitAttempted;
   readonly submitStatus = this.facade.submitStatus;
+  readonly showSuccessModal = this.facade.showSuccessModal;
 
   readonly subscriptionTemplates = this.facade.subscriptionTemplates;
   readonly planLoadError = this.facade.planLoadError;

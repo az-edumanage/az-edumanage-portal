@@ -14,6 +14,7 @@ describe('OwnerTenantCreateFacade', () => {
     removeTask: ReturnType<typeof vi.fn>;
     addTask: ReturnType<typeof vi.fn>;
   };
+  let router: { navigate: ReturnType<typeof vi.fn> };
   let dataService: {
     subscriptionTemplates: WritableSignal<TenantPlanOption[]>;
     planLoadError: WritableSignal<string | null>;
@@ -55,12 +56,13 @@ describe('OwnerTenantCreateFacade', () => {
       findExisting: vi.fn().mockReturnValue(null),
       createTenant: vi.fn().mockReturnValue(of(void 0)),
     };
+    router = { navigate: vi.fn().mockResolvedValue(true) };
 
     TestBed.configureTestingModule({
       providers: [
         {
           provide: Router,
-          useValue: { navigate: vi.fn().mockResolvedValue(true) },
+          useValue: router,
         },
         { provide: TaskService, useValue: taskService },
         { provide: OwnerTenantCreateDataService, useValue: dataService },
@@ -245,5 +247,42 @@ describe('OwnerTenantCreateFacade', () => {
     facade.onSubmit();
 
     expect(dataService.createTenant).toHaveBeenCalledWith(payload);
+  });
+
+  it('should show success modal before redirecting to tenants list', () => {
+    vi.useFakeTimers();
+    facade.tenantForm.setValue({
+      centerName: 'ABC Center',
+      tenantType: 'Center',
+      tenantUsername: 'abc-admin',
+      temporaryPassword: 'TempPass123!',
+      subdomain: 'abc-center',
+      domain: '.az-edumanage.com',
+      contactName: 'Tenant Admin',
+      contactEmail: 'admin@example.com',
+      contactPhone: '+1555012345',
+      address: '123 Street',
+      countryId: 1,
+      cityId: 10,
+      planId: 'plan-1',
+      isTrial: true,
+      trialDays: 14,
+      region: 'me-south-1',
+      autoProvision: true,
+      sendInvite: true,
+      onboardingLink: false,
+      sendOnboardingWhatsapp: false,
+      sendOnboardingEmail: false,
+    });
+
+    facade.onSubmit();
+
+    expect(facade.showSuccessModal()).toBe(true);
+    expect(router.navigate).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(1600);
+
+    expect(router.navigate).toHaveBeenCalledWith(['/owner/tenants']);
+    vi.useRealTimers();
   });
 });
