@@ -36,27 +36,37 @@ export class OwnerTenantCreateDataService {
   async loadBootstrapData(): Promise<void> {
     await this.authApi.ensureLoggedIn();
 
-    const [tenants, templates, countries] = await Promise.all([
-      firstValueFrom(this.http.get<{
-        centerName: string;
-        subdomain: string;
-        contactEmail: string | null;
-        contactPhone: string | null;
-      }[]>(`${environment.apiBaseUrl}/tenant-catalog/tenants`)),
+    const [, templates, countries] = await Promise.all([
+      this.loadExistingTenants(),
       this.loadPlanOptions(),
       this.locationSettings.listCountries(true),
     ]);
 
-    this.existingTenants.set((tenants ?? []).map((tenant) => ({
+    this.subscriptionTemplates.set(templates);
+    this.countryOptions.set((countries ?? []).map((country) => this.toCountryOption(country)));
+    this.cityOptions.set([]);
+  }
+
+  async loadExistingTenants(): Promise<ExistingTenant[]> {
+    await this.authApi.ensureLoggedIn();
+    const tenants = await firstValueFrom(this.http.get<{
+      centerName: string;
+      subdomain: string;
+      contactEmail: string | null;
+      contactPhone: string | null;
+      provisioningStatus?: string | null;
+      isActive?: boolean | null;
+    }[]>(`${environment.apiBaseUrl}/tenant-catalog/tenants`));
+    const existingTenants = (tenants ?? []).map((tenant) => ({
       name: tenant.centerName ?? '',
       subdomain: tenant.subdomain ?? '',
       email: tenant.contactEmail ?? '',
       phone: tenant.contactPhone ?? '',
-    })));
-
-    this.subscriptionTemplates.set(templates);
-    this.countryOptions.set((countries ?? []).map((country) => this.toCountryOption(country)));
-    this.cityOptions.set([]);
+      provisioningStatus: tenant.provisioningStatus ?? '',
+      isActive: tenant.isActive === true,
+    }));
+    this.existingTenants.set(existingTenants);
+    return existingTenants;
   }
 
   async loadCities(countryId: number): Promise<void> {
@@ -94,6 +104,22 @@ export class OwnerTenantCreateDataService {
       this.existingTenants().find(
         (tenant) => tenant[field].trim().toLowerCase() === normalized,
       ) ?? null
+    );
+  }
+
+  async hasProvisionedTenant(name: string, subdomain: string): Promise<boolean> {
+    const normalizedName = name.trim().toLowerCase();
+    const normalizedSubdomain = subdomain.trim().toLowerCase();
+    if (!normalizedName || !normalizedSubdomain) {
+      return false;
+    }
+
+    const tenants = await this.loadExistingTenants();
+    return tenants.some((tenant) =>
+      tenant.name.trim().toLowerCase() === normalizedName
+      && tenant.subdomain.trim().toLowerCase() === normalizedSubdomain
+      && tenant.isActive
+      && tenant.provisioningStatus.trim().toUpperCase() === 'PROVISIONED',
     );
   }
 

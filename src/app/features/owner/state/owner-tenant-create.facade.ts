@@ -235,17 +235,10 @@ export class OwnerTenantCreateFacade {
       .pipe(finalize(() => this.store.setSubmitting(false)))
       .subscribe({
         next: () => {
-          this.submitStatus.set({ success: true, message: 'Tenant provisioning verified successfully.' });
-          this.isSuccess = true;
-          this.taskService.removeTask(this.taskId);
-          this.showSuccessModal.set(true);
-          this.redirectTimer = setTimeout(() => {
-            this.redirectTimer = null;
-            void this.router.navigate(['/owner/tenants']);
-          }, this.successRedirectDelayMs);
+          this.completeProvisioningSuccess();
         },
         error: (error: unknown) => {
-          this.submitStatus.set({ success: false, message: this.extractErrorMessage(error) });
+          void this.handleSubmitError(error, payload);
         },
       });
   }
@@ -393,6 +386,44 @@ export class OwnerTenantCreateFacade {
     }
 
     return 'Tenant could not be provisioned.';
+  }
+
+  private async handleSubmitError(error: unknown, payload: TenantCreatePayload): Promise<void> {
+    const message = this.extractErrorMessage(error);
+    if (this.isAlreadyExistsError(message)) {
+      try {
+        const tenantWasProvisioned = await this.data.hasProvisionedTenant(
+          payload.centerName,
+          payload.subdomain,
+        );
+        if (tenantWasProvisioned) {
+          this.completeProvisioningSuccess();
+          return;
+        }
+      } catch {
+        // Fall through to the original backend error when verification is unavailable.
+      }
+    }
+
+    this.submitStatus.set({ success: false, message });
+  }
+
+  private completeProvisioningSuccess(): void {
+    this.submitStatus.set({ success: true, message: 'Tenant provisioning verified successfully.' });
+    this.isSuccess = true;
+    this.taskService.removeTask(this.taskId);
+    this.showSuccessModal.set(true);
+    if (this.redirectTimer) {
+      clearTimeout(this.redirectTimer);
+    }
+    this.redirectTimer = setTimeout(() => {
+      this.redirectTimer = null;
+      void this.router.navigate(['/owner/tenants']);
+    }, this.successRedirectDelayMs);
+  }
+
+  private isAlreadyExistsError(message: string): boolean {
+    return message.trim().toLowerCase().includes('already exists');
   }
 
   private checkExisting(field: TenantDuplicateField): ValidatorFn {

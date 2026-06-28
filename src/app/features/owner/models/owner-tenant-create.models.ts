@@ -5,6 +5,8 @@ export interface ExistingTenant {
   subdomain: string;
   email: string;
   phone: string;
+  provisioningStatus: string;
+  isActive: boolean;
 }
 
 export interface TenantPlanOption {
