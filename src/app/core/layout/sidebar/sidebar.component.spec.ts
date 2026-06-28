@@ -99,7 +99,7 @@ describe('SidebarComponent', () => {
     expect(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.questionsBank'))
       .toBe(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.examsEvaluation') + 1);
     expect(academicItems.find((item) => item.labelKey === 'sidebar.item.examsGrades')?.route).toBe('/tenant/exams');
-    expect(academicItems.find((item) => item.labelKey === 'sidebar.item.examsEvaluation')?.route).toBe('/tenant/grades');
+    expect(academicItems.find((item) => item.labelKey === 'sidebar.item.examsEvaluation')?.route).toBe('/tenant/evaluation');
     expect(academicItems.find((item) => item.labelKey === 'sidebar.item.questionsBank')?.route).toBe('/tenant/questions-bank');
     expect(settingsItems.find((item) => item.labelKey === 'sidebar.item.lms')?.route).toBe('/tenant/web-settings');
     expect(sections.some((section) => section.titleKey === 'sidebar.section.development')).toBe(false);
@@ -125,7 +125,7 @@ describe('SidebarComponent', () => {
   it.each([
     ['tenant.rooms.view', '/tenant/rooms'],
     ['tenant.basicEducation.view', '/tenant/educational-stages'],
-    ['tenant.grades.view', '/tenant/grades'],
+    ['tenant.grades.view', '/tenant/evaluation'],
     ['tenant.universityEducation.view', '/tenant/universities'],
     ['tenant.attendance.view', '/tenant/attendance'],
     ['tenant.reports.view', '/tenant/reports'],

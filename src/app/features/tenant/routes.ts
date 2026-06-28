@@ -133,6 +133,7 @@ export const TENANT_ROUTES: Routes = [
       { path: 'rooms/:id/book', component: TenantRoomBookingComponent, data: { requiredPermission: 'tenant.rooms.manage' } },
       { path: 'educational-stages', component: TenantEducationalStagesComponent, data: { requiredPermission: 'tenant.basicEducation.view' } },
       { path: 'educational-stages/create', component: TenantEducationalStageCreateComponent, data: { requiredPermission: 'tenant.basicEducation.manage' } },
+      { path: 'evaluation', component: TenantGradesComponent, data: { requiredPermission: 'tenant.grades.view' } },
       { path: 'grades', component: TenantGradesComponent, data: { requiredPermission: 'tenant.grades.view' } },
       { path: 'grades/create', component: TenantGradeCreateComponent, data: { requiredPermission: 'tenant.grades.manage' } },
       { path: 'grades/:id/edit', component: TenantGradeCreateComponent, data: { requiredPermission: 'tenant.grades.manage' } },
