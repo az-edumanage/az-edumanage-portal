@@ -23,6 +23,25 @@
             <mat-icon class="text-sm">refresh</mat-icon>
             Refresh
           </button>
+          <button (click)="runTenantMigrations()" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors">
+            <mat-icon class="text-sm">upgrade</mat-icon>
+            Run Migrations
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4">
+        <h3 class="text-sm font-semibold text-slate-900 dark:text-white mb-3">Tenant Migration Status</h3>
+        <div class="grid gap-2">
+          @for (migration of migrationStatuses(); track migration.tenantId) {
+            <div class="flex flex-wrap items-center justify-between gap-3 text-sm border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2">
+              <span class="font-medium text-slate-900 dark:text-white">{{ migration.schemaName }}</span>
+              <span class="text-slate-500">Current {{ migration.currentVersion || '-' }} / Target {{ migration.targetVersion || '-' }}</span>
+              <span class="text-slate-500">{{ migration.status }}</span>
+            </div>
+          } @empty {
+            <p class="text-sm text-slate-500">No tenant migration statuses recorded yet.</p>
+          }
         </div>
       </div>
 

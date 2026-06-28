@@ -1,0 +1,64 @@
+@if (open) {
+  <div
+    class="fixed inset-0 z-50 bg-slate-950/35 backdrop-blur-[2px]"
+    tabindex="0"
+    role="presentation"
+    (click)="close()"
+    (keydown)="onBackdropKeydown($event)"
+  ></div>
+  <section
+    class="fixed left-1/2 top-24 z-[60] w-[min(680px,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 dark:border-slate-800 dark:bg-slate-950"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Dashboard actions"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="flex items-center gap-3 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+      <mat-icon class="text-slate-500">search</mat-icon>
+      <input
+        class="h-11 flex-1 bg-transparent text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400 dark:text-white"
+        type="text"
+        autocomplete="off"
+        placeholder="Search dashboard actions"
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event)"
+        (keydown.escape)="close()"
+      />
+      <button
+        type="button"
+        class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-900 dark:hover:text-white"
+        aria-label="Close action picker"
+        (click)="close()"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="max-h-[420px] overflow-y-auto p-2">
+      @for (action of actions(); track action.id) {
+        <button
+          type="button"
+          class="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left transition hover:bg-slate-50 focus:bg-slate-50 focus:outline-none dark:hover:bg-slate-900 dark:focus:bg-slate-900"
+          (click)="selectAction(action)"
+        >
+          <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700 dark:bg-slate-900 dark:text-slate-300">
+            <mat-icon>{{ action.icon }}</mat-icon>
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block text-sm font-semibold text-slate-900 dark:text-white">{{ action.labelKey }}</span>
+            <span class="block truncate text-xs text-slate-500 dark:text-slate-500">{{ action.descriptionKey }}</span>
+          </span>
+          <span class="hidden rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase text-slate-500 sm:inline-flex dark:bg-slate-900">
+            {{ action.categoryKey }}
+          </span>
+        </button>
+      } @empty {
+        <div class="px-4 py-12 text-center">
+          <mat-icon class="mb-2 text-4xl text-slate-300 dark:text-slate-700">manage_search</mat-icon>
+          <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">No available actions</p>
+          <p class="mt-1 text-xs text-slate-500">Try another search or ask an admin to adjust permissions.</p>
+        </div>
+      }
+    </div>
+  </section>
+}

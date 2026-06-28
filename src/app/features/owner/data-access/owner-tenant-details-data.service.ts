@@ -66,6 +66,17 @@ export class OwnerTenantDetailsDataService {
     );
   }
 
+  retryProvisioning(tenantId: string): Observable<unknown> {
+    return from(this.authApi.ensureLoggedIn()).pipe(
+      switchMap(() =>
+        this.http.post(
+          environment.apiBaseUrl + '/owner/tenants/' + encodeURIComponent(tenantId) + '/provisioning/retry',
+          {},
+        ),
+      ),
+    );
+  }
+
   getPlanOptions(tenant: OwnerTenantDetails | null): OwnerTenantPlanOption[] {
     if (!tenant || tenant.planId === EMPTY_VALUE) {
       return [];

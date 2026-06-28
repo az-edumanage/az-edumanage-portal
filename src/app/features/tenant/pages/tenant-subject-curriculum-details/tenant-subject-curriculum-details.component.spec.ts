@@ -127,6 +127,22 @@ describe('TenantSubjectCurriculumDetailsComponent', () => {
       updatedAt: '2026-01-01T00:00:00Z',
     }),
     deleteCurriculumMaterialFolder: vi.fn().mockResolvedValue(undefined),
+    listCurriculumSkills: vi.fn().mockResolvedValue([]),
+    createCurriculumSkill: vi.fn().mockResolvedValue({
+      id: 'skill-1',
+      name: 'Critical reading',
+      description: 'Identify arguments and supporting evidence.',
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    }),
+    updateCurriculumSkill: vi.fn().mockResolvedValue({
+      id: 'skill-1',
+      name: 'Analytical reading',
+      description: 'Identify arguments and supporting evidence.',
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    }),
+    deleteCurriculumSkill: vi.fn().mockResolvedValue(undefined),
     deleteCurriculumQuestion: vi.fn().mockResolvedValue(undefined),
     mediaUrlToAbsolute: vi.fn((url: string | null | undefined) => url ? `http://localhost:18080${url}` : null),
     toUserMessage: vi.fn((_error: unknown, fallback: string) => fallback),
@@ -192,6 +208,7 @@ describe('TenantSubjectCurriculumDetailsComponent', () => {
     expect(text).toContain('Lesson 1');
     expect(text).toContain('Questions');
     expect(text).toContain('Material');
+    expect(text).toContain('Skills');
     expect(text).toContain('Add Question');
     expect(text).toContain('Advanced Filters');
     expect(text).toContain('Showing 1-1 of 21 questions');
@@ -236,6 +253,8 @@ describe('TenantSubjectCurriculumDetailsComponent', () => {
     expect(tabs[0].attributes['aria-controls']).toBe('curriculum-details-questions-panel');
     expect(tabs[1].attributes['aria-selected']).toBe('false');
     expect(tabs[1].attributes['aria-controls']).toBe('curriculum-details-material-panel');
+    expect(tabs[2].attributes['aria-selected']).toBe('false');
+    expect(tabs[2].attributes['aria-controls']).toBe('curriculum-details-skills-panel');
 
     fixture.componentInstance.toggleQuestion('question-1');
     fixture.detectChanges();
@@ -301,6 +320,104 @@ describe('TenantSubjectCurriculumDetailsComponent', () => {
     const showLink = fixture.debugElement.query(By.css('a[aria-label="Show Lecture Files"]'));
     expect(showLink.nativeElement.getAttribute('href')).toBe('/tenant/subjects/subject-1/curriculum/lesson-1/material/folder-1');
     expect(fixture.debugElement.query(By.css('#curriculum-details-questions-panel'))).toBeNull();
+  });
+
+  it('adds, edits, and deletes skills from the Skills tab panel', async () => {
+    const tabs = fixture.debugElement.queryAll(By.css('.curriculum-details-tab'));
+
+    tabs[2].triggerEventHandler('click');
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    let text = fixture.nativeElement.textContent as string;
+
+    expect(tabs[2].classes['curriculum-details-tab--active']).toBe(true);
+    expect(tabs[2].attributes['aria-selected']).toBe('true');
+    expect(fixture.debugElement.query(By.css('#curriculum-details-skills-panel'))).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('#curriculum-details-questions-panel'))).toBeNull();
+    expect(fixture.debugElement.query(By.css('#curriculum-details-material-panel'))).toBeNull();
+    expect(text).toContain('No skills yet');
+
+    const addButton = fixture.debugElement.query(By.css('#curriculum-details-skills-panel .curriculum-details-primary-action'));
+    addButton.triggerEventHandler('click');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Add new skill');
+
+    const nameInput = fixture.debugElement.query(By.css('.curriculum-skill-modal input'));
+    const descriptionInput = fixture.debugElement.query(By.css('.curriculum-skill-modal textarea'));
+    nameInput.nativeElement.value = 'Critical reading';
+    nameInput.triggerEventHandler('input', { target: nameInput.nativeElement });
+    descriptionInput.nativeElement.value = 'Identify arguments and supporting evidence.';
+    descriptionInput.triggerEventHandler('input', { target: descriptionInput.nativeElement });
+    fixture.detectChanges();
+
+    data.listCurriculumSkills.mockResolvedValueOnce([
+      {
+        id: 'skill-1',
+        name: 'Critical reading',
+        description: 'Identify arguments and supporting evidence.',
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      },
+    ]);
+    const saveButton = fixture.debugElement.query(By.css('.curriculum-skill-modal .curriculum-details-modal-primary'));
+    saveButton.triggerEventHandler('click');
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    expect(data.createCurriculumSkill).toHaveBeenCalledWith('subject-1', 'lesson-1', {
+      name: 'Critical reading',
+      description: 'Identify arguments and supporting evidence.',
+    });
+    text = fixture.nativeElement.textContent as string;
+    expect(data.listCurriculumSkills).toHaveBeenLastCalledWith('subject-1', 'lesson-1');
+    expect(text).toContain('Critical reading');
+    expect(text).toContain('Identify arguments and supporting evidence.');
+    expect(fixture.debugElement.query(By.css('.curriculum-skills-table'))).toBeTruthy();
+
+    const editButton = fixture.debugElement.query(By.css('button[aria-label="Edit Critical reading"]'));
+    editButton.triggerEventHandler('click');
+    fixture.detectChanges();
+
+    const editNameInput = fixture.debugElement.query(By.css('.curriculum-skill-modal input'));
+    editNameInput.nativeElement.value = 'Analytical reading';
+    editNameInput.triggerEventHandler('input', { target: editNameInput.nativeElement });
+    data.listCurriculumSkills.mockResolvedValueOnce([
+      {
+        id: 'skill-1',
+        name: 'Analytical reading',
+        description: 'Identify arguments and supporting evidence.',
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      },
+    ]);
+    fixture.debugElement.query(By.css('.curriculum-skill-modal .curriculum-details-modal-primary')).triggerEventHandler('click');
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    expect(data.updateCurriculumSkill).toHaveBeenCalledWith('subject-1', 'lesson-1', 'skill-1', {
+      name: 'Analytical reading',
+      description: 'Identify arguments and supporting evidence.',
+    });
+    text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Analytical reading');
+    expect(text).not.toContain('Critical reading');
+
+    const deleteButton = fixture.debugElement.query(By.css('button[aria-label="Delete Analytical reading"]'));
+    data.listCurriculumSkills.mockResolvedValueOnce([]);
+    deleteButton.triggerEventHandler('click');
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    expect(data.deleteCurriculumSkill).toHaveBeenCalledWith('subject-1', 'lesson-1', 'skill-1');
+    text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('No skills yet');
+    expect(fixture.debugElement.query(By.css('.curriculum-skills-table'))).toBeNull();
   });
 
   it('reloads questions with search, type filter, and pagination', async () => {
@@ -430,6 +547,7 @@ describe('TenantSubjectCurriculumDetailsComponent', () => {
     expect(text).toContain('اضافة سؤال');
     expect(text).not.toContain('Add Question');
     expect(text).toContain('الملحقات');
+    expect(text).toContain('المهارات');
     expect(text).toContain('عناصر المنهج');
     expect(text).toContain('الفلتر');
     expect(text).toContain('اختيار من متعدد');

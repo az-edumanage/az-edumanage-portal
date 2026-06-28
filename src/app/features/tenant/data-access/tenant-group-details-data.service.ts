@@ -4,13 +4,17 @@ import { Observable, catchError, map, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import {
   GroupDetails,
+  GroupExamRow,
   GroupLesson,
   GroupLessonContent,
+  GroupSessionPublication,
   GroupSessionLibraryContent,
   TenantGroupDetailsResponse,
   TenantGroupLessonContentResponse,
   TenantGroupLessonResponse,
+  TenantGroupPublishedSessionContentResponse,
   TenantGroupSessionLibraryContentResponse,
+  TenantGroupSessionPublicationResponse,
 } from '../models/tenant-group-details.models';
 import {
   TenantCurriculumMaterialFile,
@@ -50,6 +54,45 @@ export class TenantGroupDetailsDataService {
         `${this.groupDetailsUrl(selectedGroupId)}/enrollments/${encodeURIComponent(studentId)}`,
       )
       .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to exit group')));
+  }
+
+  loadGroupExams(groupId: string | null): Observable<GroupExamRow[]> {
+    const selectedGroupId = groupId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    return this.http.get<GroupExamRow[]>(`${this.groupDetailsUrl(selectedGroupId)}/exams`).pipe(
+      map((response) => (response ?? []).map((exam) => this.toGroupExamRow(exam))),
+      catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load exams')),
+    );
+  }
+
+  unpublishGroupExam(groupId: string | null, assignmentId: string | null): Observable<void> {
+    const selectedGroupId = groupId?.trim();
+    const selectedAssignmentId = assignmentId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    if (!selectedAssignmentId) {
+      return throwError(() => new Error('Exam assignment is required'));
+    }
+    return this.http
+      .patch<void>(`${this.groupDetailsUrl(selectedGroupId)}/exams/${encodeURIComponent(selectedAssignmentId)}/unpublish`, {})
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to unpublish exam')));
+  }
+
+  deleteGroupExam(groupId: string | null, assignmentId: string | null): Observable<void> {
+    const selectedGroupId = groupId?.trim();
+    const selectedAssignmentId = assignmentId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    if (!selectedAssignmentId) {
+      return throwError(() => new Error('Exam assignment is required'));
+    }
+    return this.http
+      .delete<void>(`${this.groupDetailsUrl(selectedGroupId)}/exams/${encodeURIComponent(selectedAssignmentId)}`)
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to delete exam')));
   }
 
   loadGroupLessons(groupId: string | null, options: { sync?: boolean; sessionId?: string | null } = {}): Observable<GroupLesson[]> {
@@ -230,6 +273,45 @@ export class TenantGroupDetailsDataService {
       );
   }
 
+  loadGroupSessionPublication(groupId: string | null, sessionId: string | null): Observable<GroupSessionPublication> {
+    const selectedGroupId = groupId?.trim();
+    const selectedSessionId = sessionId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    if (!selectedSessionId) {
+      return throwError(() => new Error('Session is required'));
+    }
+    return this.http
+      .get<TenantGroupSessionPublicationResponse>(
+        `${this.groupDetailsUrl(selectedGroupId)}/sessions/${encodeURIComponent(selectedSessionId)}/publication`,
+      )
+      .pipe(
+        map((response) => this.toGroupSessionPublication(response)),
+        catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load session publication')),
+      );
+  }
+
+  publishGroupSession(groupId: string | null, sessionId: string | null): Observable<GroupSessionPublication> {
+    const selectedGroupId = groupId?.trim();
+    const selectedSessionId = sessionId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    if (!selectedSessionId) {
+      return throwError(() => new Error('Session is required'));
+    }
+    return this.http
+      .post<TenantGroupSessionPublicationResponse>(
+        `${this.groupDetailsUrl(selectedGroupId)}/sessions/${encodeURIComponent(selectedSessionId)}/publish`,
+        {},
+      )
+      .pipe(
+        map((response) => this.toGroupSessionPublication(response)),
+        catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to publish session')),
+      );
+  }
+
   loadGroupLibraryFolders(groupId: string | null): Observable<TenantCurriculumMaterialFolder[]> {
     const selectedGroupId = groupId?.trim();
     if (!selectedGroupId) {
@@ -335,7 +417,9 @@ export class TenantGroupDetailsDataService {
       name: response.name,
       subjectId: response.subjectId ?? null,
       educationCategory: response.educationCategory ?? null,
+      stageId: response.stageId ?? null,
       stageName: response.stageName ?? null,
+      gradeId: response.gradeId ?? null,
       gradeName: response.gradeName ?? null,
       subject: response.subject,
       teacher: response.teacher,
@@ -381,6 +465,26 @@ export class TenantGroupDetailsDataService {
     };
   }
 
+  private toGroupExamRow(response: GroupExamRow): GroupExamRow {
+    return {
+      id: response.id,
+      groupId: response.groupId,
+      examId: response.examId,
+      title: response.title,
+      status: response.status,
+      date: response.date,
+      startTime: response.startTime ?? null,
+      duration: response.duration,
+      questionCount: response.questionCount ?? null,
+      instructions: response.instructions ?? null,
+      updatedAt: response.updatedAt ?? null,
+      settings: {
+        showResultsImmediately: response.settings?.showResultsImmediately ?? false,
+        allowRetakes: response.settings?.allowRetakes ?? false,
+      },
+    };
+  }
+
   private toGroupLessonContent(response: TenantGroupLessonContentResponse): GroupLessonContent {
     return {
       id: response.id,
@@ -410,6 +514,34 @@ export class TenantGroupDetailsDataService {
       fileContentType: response.fileContentType ?? null,
       sizeBytes: response.sizeBytes ?? null,
       completed: response.completed ?? false,
+    };
+  }
+
+  private toGroupSessionPublication(response: TenantGroupSessionPublicationResponse): GroupSessionPublication {
+    return {
+      id: response.id ?? null,
+      groupId: response.groupId,
+      sessionId: response.sessionId,
+      published: response.published,
+      publishedAt: response.publishedAt ?? null,
+      mediaCount: response.mediaCount ?? response.media?.length ?? 0,
+      media: (response.media ?? []).map((content) => this.toGroupPublishedSessionContent(content)),
+    };
+  }
+
+  private toGroupPublishedSessionContent(response: TenantGroupPublishedSessionContentResponse) {
+    return {
+      source: response.source,
+      lessonId: response.lessonId ?? null,
+      lessonTitle: response.lessonTitle ?? null,
+      folderId: response.folderId,
+      folderName: response.folderName,
+      contentType: response.contentType,
+      contentId: response.contentId,
+      title: response.title,
+      url: this.mediaUrlToAbsolute(response.url) ?? response.url ?? null,
+      fileContentType: response.fileContentType ?? null,
+      sizeBytes: response.sizeBytes ?? null,
     };
   }
 

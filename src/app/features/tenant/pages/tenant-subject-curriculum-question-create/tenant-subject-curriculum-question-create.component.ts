@@ -7,11 +7,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import 'mathlive';
 import type { MathfieldElement } from 'mathlive';
 import { I18nService } from '../../../../core/services/i18n.service';
+import { TenantQuestionSource, TenantQuestionSourceSettingsService } from '../../data-access/tenant-question-source-settings.service';
 import { TenantQuestionType, TenantQuestionTypeSettingsService } from '../../data-access/tenant-question-type-settings.service';
 import { TenantCurriculumQuestionMediaPayload, TenantSubjectsDataService } from '../../data-access/tenant-subjects-data.service';
 import { TenantGroupSearchableSelectorComponent } from '../../components/tenant-group-searchable-selector/tenant-group-searchable-selector.component';
 import { TenantGroupSelectorOption } from '../../models/tenant-group-create.models';
-import { BloomLevel, QuestionDifficulty, TenantCurriculumQuestion, TenantCurriculumQuestionAnswer, TenantSubjectCurriculumNode } from '../../models/tenant-subjects.models';
+import { BloomLevel, QuestionDifficulty, TenantCurriculumQuestion, TenantCurriculumQuestionAnswer, TenantCurriculumSkill, TenantSubjectCurriculumNode } from '../../models/tenant-subjects.models';
 import { TenantSubjectDetailsFacade } from '../../state/tenant-subject-details.facade';
 
 interface CurriculumPathItem {
@@ -66,17 +67,26 @@ type QuestionCreateLabelKey =
   | 'questionInformationHint'
   | 'analyticalData'
   | 'analyticalDataHint'
-  | 'toggleAnalyticalData'
-  | 'active'
-  | 'inactive'
   | 'topic'
   | 'bloomTaxonomy'
   | 'selectBloomTaxonomy'
+  | 'searchBloomTaxonomy'
+  | 'noBloomTaxonomyFound'
   | 'loadingBloomTaxonomy'
   | 'unableToLoadBloomTaxonomy'
   | 'difficulty'
+  | 'skill'
+  | 'selectSkill'
+  | 'searchSkills'
+  | 'noSkillsFound'
+  | 'loadingSkills'
+  | 'unableToLoadSkills'
+  | 'addSkillValue'
+  | 'enterSkillBeforeAdd'
+  | 'unableToSaveSkill'
   | 'loadingQuestionDifficulties'
   | 'unableToLoadQuestionDifficulties'
+  | 'selected'
   | 'theWeight'
   | 'enterWeight'
   | 'applicationData'
@@ -88,9 +98,12 @@ type QuestionCreateLabelKey =
   | 'questionSource'
   | 'answerExplanation'
   | 'selectQuestionSource'
-  | 'formalPreviousExam'
-  | 'teacherMade'
-  | 'trainingQuestion'
+  | 'searchQuestionSources'
+  | 'noQuestionSourcesFound'
+  | 'loadingQuestionSources'
+  | 'unableToLoadQuestionSources'
+  | 'addQuestionSourceValue'
+  | 'enterQuestionSourceBeforeAdd'
   | 'type'
   | 'loadingQuestionTypes'
   | 'unableToLoadQuestionTypes'
@@ -103,6 +116,7 @@ type QuestionCreateLabelKey =
   | 'singleQuestion'
   | 'singleQuestionHint'
   | 'question'
+  | 'questionEditor'
   | 'enterQuestion'
   | 'openMathEditor'
   | 'uploadMediaOption'
@@ -185,17 +199,26 @@ const QUESTION_CREATE_LABELS: Record<QuestionCreateLabelKey, { en: string; ar: s
   questionInformationHint: { en: 'Choose the type, write the question, then add answers when needed.', ar: 'اختر النوع، اكتب السؤال، ثم أضف الإجابات عند الحاجة.' },
   analyticalData: { en: 'Analytical Data', ar: 'البيانات التحليلية' },
   analyticalDataHint: { en: 'Attach analytical metadata to this question.', ar: 'اربط بيانات تحليلية بهذا السؤال.' },
-  toggleAnalyticalData: { en: 'Toggle Analytical Data', ar: 'تبديل البيانات التحليلية' },
-  active: { en: 'Active', ar: 'مفعل' },
-  inactive: { en: 'Inactive', ar: 'غير مفعل' },
   topic: { en: 'Topic', ar: 'الموضوع' },
   bloomTaxonomy: { en: "Bloom's Taxonomy", ar: 'تصنيف بلوم' },
   selectBloomTaxonomy: { en: "Select Bloom's Taxonomy level", ar: 'اختر مستوى تصنيف بلوم' },
+  searchBloomTaxonomy: { en: "Search Bloom's Taxonomy...", ar: 'بحث في تصنيف بلوم...' },
+  noBloomTaxonomyFound: { en: "No Bloom's Taxonomy levels found", ar: 'لا توجد مستويات تصنيف بلوم' },
   loadingBloomTaxonomy: { en: "Loading Bloom's Taxonomy levels...", ar: 'جاري تحميل مستويات تصنيف بلوم...' },
   unableToLoadBloomTaxonomy: { en: "Unable to load Bloom's Taxonomy levels.", ar: 'تعذر تحميل مستويات تصنيف بلوم.' },
   difficulty: { en: 'Difficulty', ar: 'الصعوبة' },
+  skill: { en: 'Skill', ar: 'المهارة' },
+  selectSkill: { en: 'Select skill', ar: 'اختر المهارة' },
+  searchSkills: { en: 'Search skills...', ar: 'بحث في المهارات...' },
+  noSkillsFound: { en: 'No skills found', ar: 'لا توجد مهارات' },
+  loadingSkills: { en: 'Loading skills...', ar: 'جاري تحميل المهارات...' },
+  unableToLoadSkills: { en: 'Unable to load skills.', ar: 'تعذر تحميل المهارات.' },
+  addSkillValue: { en: 'Add skill', ar: 'إضافة مهارة' },
+  enterSkillBeforeAdd: { en: 'Type a skill name before adding it.', ar: 'اكتب اسم المهارة قبل إضافتها.' },
+  unableToSaveSkill: { en: 'Unable to save skill. Please try again.', ar: 'تعذر حفظ المهارة. حاول مرة أخرى.' },
   loadingQuestionDifficulties: { en: 'Loading question difficulties...', ar: 'جاري تحميل مستويات صعوبة السؤال...' },
   unableToLoadQuestionDifficulties: { en: 'Unable to load question difficulties.', ar: 'تعذر تحميل مستويات صعوبة السؤال.' },
+  selected: { en: 'Selected', ar: 'محدد' },
   theWeight: { en: 'The Weight', ar: 'الوزن' },
   enterWeight: { en: 'Enter weight', ar: 'أدخل الوزن' },
   applicationData: { en: 'Application Data', ar: 'بيانات تطبيقية' },
@@ -207,9 +230,12 @@ const QUESTION_CREATE_LABELS: Record<QuestionCreateLabelKey, { en: string; ar: s
   questionSource: { en: 'Question Source', ar: 'مصدر السؤال' },
   answerExplanation: { en: 'Answer Explanation', ar: 'شرح الإجابة (تغذية راجعة)' },
   selectQuestionSource: { en: 'Select source', ar: 'اختر المصدر' },
-  formalPreviousExam: { en: 'Official previous exam', ar: 'امتحان رسمي ، سابق' },
-  teacherMade: { en: 'Teacher-made', ar: 'من إعداد المعلم' },
-  trainingQuestion: { en: 'Training question', ar: 'سؤال تدريبي' },
+  searchQuestionSources: { en: 'Search sources...', ar: 'بحث في المصادر...' },
+  noQuestionSourcesFound: { en: 'No sources found', ar: 'لا توجد مصادر' },
+  loadingQuestionSources: { en: 'Loading question sources...', ar: 'جاري تحميل مصادر الأسئلة...' },
+  unableToLoadQuestionSources: { en: 'Unable to load question sources.', ar: 'تعذر تحميل مصادر الأسئلة.' },
+  addQuestionSourceValue: { en: 'Add source', ar: 'إضافة مصدر' },
+  enterQuestionSourceBeforeAdd: { en: 'Type a source name before adding it.', ar: 'اكتب اسم المصدر قبل إضافته.' },
   type: { en: 'Type', ar: 'النوع' },
   loadingQuestionTypes: { en: 'Loading question types...', ar: 'جاري تحميل أنواع الأسئلة...' },
   unableToLoadQuestionTypes: { en: 'Unable to load question types', ar: 'تعذر تحميل أنواع الأسئلة' },
@@ -222,6 +248,7 @@ const QUESTION_CREATE_LABELS: Record<QuestionCreateLabelKey, { en: string; ar: s
   singleQuestion: { en: 'Single Question', ar: 'سؤال واحد' },
   singleQuestionHint: { en: 'Use the current question and answer form.', ar: 'استخدم نموذج السؤال والإجابة الحالي.' },
   question: { en: 'Question', ar: 'السؤال' },
+  questionEditor: { en: 'Question editor', ar: 'محرر السؤال' },
   enterQuestion: { en: 'Enter the question', ar: 'أدخل السؤال' },
   openMathEditor: { en: 'Open MathLive editor', ar: 'فتح محرر MathLive' },
   uploadMediaOption: { en: 'Upload media option', ar: 'رفع ملف للسؤال' },
@@ -314,6 +341,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   private readonly facade = inject(TenantSubjectDetailsFacade);
   private readonly data = inject(TenantSubjectsDataService);
   private readonly questionTypeSettings = inject(TenantQuestionTypeSettingsService);
+  private readonly questionSourceSettings = inject(TenantQuestionSourceSettingsService);
   private readonly i18n = inject(I18nService);
 
   readonly subject = this.facade.subject;
@@ -324,9 +352,24 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   readonly questionTypes = signal<TenantQuestionType[]>([]);
   readonly questionTypesLoading = signal(false);
   readonly questionTypeError = signal<string | null>(null);
+  readonly questionSources = signal<TenantQuestionSource[]>([]);
+  readonly questionSourcesLoading = signal(false);
+  readonly questionSourcesError = signal<string | null>(null);
+  readonly questionSourceSaving = signal(false);
+  readonly questionSourceInlineError = signal<string | null>(null);
   readonly selectedQuestionType = signal('');
+  readonly selectedBloomTaxonomyId = signal('');
+  readonly selectedSkillId = signal('');
+  readonly selectedQuestionSource = signal('');
+  readonly selectedQuestionDifficultyId = signal('');
   readonly typeSelectorOpen = signal(false);
   readonly typeSearchQuery = signal('');
+  readonly bloomTaxonomySelectorOpen = signal(false);
+  readonly bloomTaxonomySearchQuery = signal('');
+  readonly skillSelectorOpen = signal(false);
+  readonly skillSearchQuery = signal('');
+  readonly questionSourceSelectorOpen = signal(false);
+  readonly questionSourceSearchQuery = signal('');
   readonly currentQuestionId = signal<string | null>(null);
   readonly editingQuestionId = signal<string | null>(null);
   readonly multipleChoiceAnswers = signal<TenantCurriculumQuestionAnswer[]>([]);
@@ -347,15 +390,29 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   readonly mathEditorAnswerDraftId = signal<string | null>(null);
   readonly questionSaving = signal(false);
   readonly questionSaveError = signal<string | null>(null);
-  readonly analyticalDataActive = signal(false);
   readonly applicationTags = signal<string[]>([]);
-  readonly suggestedApplicationTags = signal<string[]>(['high-yield', 'EXAM 2024 FINAL', 'EXAM 2023', 'مراجعة نهائية', 'متكرر']);
+  readonly suggestedApplicationTags = signal<string[]>([
+    'high-yield',
+    'EXAM 2024 FINAL',
+    'EXAM 2023',
+    'امتحان شهر',
+    'مراجعة نهائية',
+    'امتحان تيرم',
+    'امتحان نهائي',
+    'اسئلة درس',
+    'متكرر',
+  ]);
   readonly bloomLevels = signal<BloomLevel[]>([]);
   readonly bloomLevelsLoading = signal(false);
   readonly bloomLevelsError = signal<string | null>(null);
   readonly questionDifficulties = signal<QuestionDifficulty[]>([]);
   readonly questionDifficultiesLoading = signal(false);
   readonly questionDifficultiesError = signal<string | null>(null);
+  readonly skills = signal<TenantCurriculumSkill[]>([]);
+  readonly skillsLoading = signal(false);
+  readonly skillsError = signal<string | null>(null);
+  readonly skillSaving = signal(false);
+  readonly skillInlineError = signal<string | null>(null);
   readonly showAnswerModal = signal(false);
   readonly newAnswer = signal('');
   readonly newAnswerDescription = signal('');
@@ -365,6 +422,8 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   readonly answerSavingError = signal<string | null>(null);
   readonly answerUpdatingId = signal<string | null>(null);
   readonly selectedNodeId = signal<string | null>(null);
+  readonly routeStageId = signal<string | null>(null);
+  readonly routeGradeId = signal<string | null>(null);
   readonly curriculumRoot = signal<TenantSubjectCurriculumNode | null>(null);
   readonly questionForm = this.fb.nonNullable.group({
     question: [''],
@@ -373,9 +432,10 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     description: [''],
     bloomId: [''],
     difficultyId: [''],
+    skillId: [''],
     weight: [''],
     applicationTagInput: [''],
-    questionSource: ['formalPreviousExam'],
+    questionSource: [''],
     answerExplanation: [''],
   });
   readonly subjectDetailsLink = computed(() => {
@@ -389,7 +449,25 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   readonly detailsLink = computed(() => {
     const subject = this.subject();
     const nodeId = this.selectedNodeId();
+    if (this.isExamQuestionRoute()) {
+      return this.curriculumLink();
+    }
     return subject && nodeId ? [this.subjectsRootLink(), subject.id, 'curriculum', nodeId] : this.curriculumLink();
+  });
+  readonly examCreateLink = computed(() => {
+    const stageId = this.routeStageId();
+    const gradeId = this.routeGradeId();
+    return stageId && gradeId
+      ? ['/tenant/exams/basic-education', stageId, 'grades', gradeId, 'create', 'new']
+      : ['/tenant/exams/basic-education'];
+  });
+  readonly examCreateQueryParams = computed(() => {
+    const subjectId = this.subject()?.id ?? null;
+    if (!subjectId) {
+      return null;
+    }
+    const examId = this.route.snapshot?.queryParamMap?.get('examId') ?? null;
+    return examId ? { subjectId, examId } : { subjectId };
   });
   readonly isEditMode = computed(() => !!this.editingQuestionId());
   readonly pageTitle = computed(() => this.isEditMode() ? this.label('editQuestion') : this.label('addQuestion'));
@@ -403,6 +481,39 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     const root = this.curriculumRoot();
     const nodeId = this.selectedNodeId();
     return root && nodeId ? this.findNodePath([root], nodeId) : [];
+  });
+  readonly curriculumScopeLabel = computed(() => {
+    const root = this.curriculumRoot();
+    const subject = this.subject();
+    if (root?.label) {
+      return this.breadcrumbPathLabel(root, true);
+    }
+    if (subject) {
+      return this.isArabic() ? `منهج ${subject.name}` : `${subject.name} Curriculum`;
+    }
+    return this.label('curriculum');
+  });
+  readonly curriculumContextPath = computed<CurriculumPathItem[]>(() => {
+    if (this.isExamQuestionRoute()) {
+      const root = this.curriculumRoot();
+      return [{
+        id: root?.id ?? 'curriculum',
+        label: this.curriculumScopeLabel(),
+      }];
+    }
+    return this.selectedPath();
+  });
+  readonly curriculumContextTitle = computed(() => {
+    if (this.isExamQuestionRoute()) {
+      return this.curriculumScopeLabel();
+    }
+    return this.selectedNode()?.label ?? this.curriculumScopeLabel();
+  });
+  readonly curriculumContextDescription = computed(() => {
+    if (this.isExamQuestionRoute()) {
+      return this.curriculumRoot()?.description ?? null;
+    }
+    return this.selectedNode()?.description ?? null;
   });
   readonly questionTypeOptions = computed<TenantGroupSelectorOption[]>(() => {
     const query = this.typeSearchQuery().trim().toLowerCase();
@@ -424,6 +535,76 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     const type = this.questionTypes().find((item) => item.code === code);
     return type ? this.questionTypeLabel(type.code, type.name) : '';
   });
+  readonly bloomTaxonomyOptions = computed<TenantGroupSelectorOption[]>(() => {
+    const query = this.bloomTaxonomySearchQuery().trim().toLowerCase();
+    return this.bloomLevels()
+      .filter((level) => {
+        if (!query) {
+          return true;
+        }
+        return [level.code, level.nameEn, level.nameAr, String(level.levelOrder)]
+          .some((value) => value.toLowerCase().includes(query));
+      })
+      .map((level) => ({
+        id: level.id,
+        name: this.bloomLevelLabel(level),
+        subtitle: level.code,
+      }));
+  });
+  readonly selectedBloomTaxonomyLabel = computed(() => {
+    const selectedId = this.selectedBloomTaxonomyId();
+    const level = this.bloomLevels().find((item) => item.id === selectedId);
+    return level ? this.bloomLevelLabel(level) : '';
+  });
+  readonly skillOptions = computed<TenantGroupSelectorOption[]>(() => {
+    const query = this.skillSearchQuery().trim().toLowerCase();
+    return this.skills()
+      .filter((skill) => {
+        if (!query) {
+          return true;
+        }
+        return skill.name.toLowerCase().includes(query) || (skill.description ?? '').toLowerCase().includes(query);
+      })
+      .map((skill) => ({
+        id: skill.id,
+        name: skill.name,
+        subtitle: skill.description ?? undefined,
+      }));
+  });
+  readonly selectedSkillLabel = computed(() => {
+    const selectedId = this.selectedSkillId();
+    return this.skills().find((item) => item.id === selectedId)?.name ?? '';
+  });
+  readonly selectedQuestionDifficultyLabel = computed(() => {
+    const selectedId = this.selectedQuestionDifficultyId();
+    const difficulty = this.questionDifficulties().find((item) => item.id === selectedId);
+    return difficulty ? this.questionDifficultyLabel(difficulty) : '';
+  });
+  readonly questionSourceOptions = computed<TenantGroupSelectorOption[]>(() => {
+    const query = this.questionSourceSearchQuery().trim().toLowerCase();
+    return this.questionSources()
+      .filter((source) => {
+        if (!query) {
+          return true;
+        }
+        return source.source.toLowerCase().includes(query) || (source.description ?? '').toLowerCase().includes(query);
+      })
+      .map((source) => ({
+        id: source.id,
+        name: source.source,
+        subtitle: source.description ?? undefined,
+      }));
+  });
+  readonly selectedQuestionSourceLabel = computed(() => this.selectedQuestionSource());
+  readonly questionSourceOptionalLabel = computed(() => `${this.label('questionSource')} (${this.label('optional')})`);
+  readonly addSkillFooterLabel = computed(() => {
+    const value = this.skillSearchQuery().trim();
+    return value ? `${this.label('addSkillValue')}: ${value}` : this.label('addSkillValue');
+  });
+  readonly addQuestionSourceFooterLabel = computed(() => {
+    const value = this.questionSourceSearchQuery().trim();
+    return value ? `${this.label('addQuestionSourceValue')}: ${value}` : this.label('addQuestionSourceValue');
+  });
   readonly typeSelectorPlaceholder = computed(() => {
     if (this.questionTypesLoading()) {
       return this.label('loadingQuestionTypes');
@@ -441,6 +622,24 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
       return this.label('unableToLoadBloomTaxonomy');
     }
     return this.label('selectBloomTaxonomy');
+  });
+  readonly skillPlaceholder = computed(() => {
+    if (this.skillsLoading()) {
+      return this.label('loadingSkills');
+    }
+    if (this.skillsError()) {
+      return this.label('unableToLoadSkills');
+    }
+    return this.label('selectSkill');
+  });
+  readonly questionSourcePlaceholder = computed(() => {
+    if (this.questionSourcesLoading()) {
+      return this.label('loadingQuestionSources');
+    }
+    if (this.questionSourcesError()) {
+      return this.label('unableToLoadQuestionSources');
+    }
+    return this.label('selectQuestionSource');
   });
   readonly hasSelectedQuestionType = computed(() => !!this.selectedQuestionType());
   readonly isMultipleChoice = computed(() => this.selectedQuestionType() === 'MULTIPLE_CHOICE');
@@ -465,21 +664,43 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   @HostListener('document:click')
   closeOpenPanels(): void {
     this.typeSelectorOpen.set(false);
+    this.bloomTaxonomySelectorOpen.set(false);
+    this.skillSelectorOpen.set(false);
+    this.questionSourceSelectorOpen.set(false);
   }
 
   ngOnInit(): void {
     this.selectedQuestionType.set(this.questionForm.controls.type.value);
+    this.selectedBloomTaxonomyId.set(this.questionForm.controls.bloomId.value);
+    this.selectedSkillId.set(this.questionForm.controls.skillId.value);
+    this.selectedQuestionSource.set(this.questionForm.controls.questionSource.value);
+    this.selectedQuestionDifficultyId.set(this.questionForm.controls.difficultyId.value);
     this.questionForm.controls.type.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((value) => this.selectedQuestionType.set(value));
+    this.questionForm.controls.bloomId.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((value) => this.selectedBloomTaxonomyId.set(value));
+    this.questionForm.controls.skillId.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((value) => this.selectedSkillId.set(value));
+    this.questionForm.controls.questionSource.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((value) => this.selectedQuestionSource.set(value));
+    this.questionForm.controls.difficultyId.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((value) => this.selectedQuestionDifficultyId.set(value));
     this.route.paramMap
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((params) => {
+        this.routeStageId.set(params.get('stageId'));
+        this.routeGradeId.set(params.get('gradeId'));
         this.selectedNodeId.set(params.get('nodeId'));
         this.editingQuestionId.set(params.get('questionId'));
         this.currentQuestionId.set(params.get('questionId'));
         void this.loadSubjectAndCurriculum(params.get('id'));
         void this.loadQuestionTypes();
+        void this.loadQuestionSources();
         void this.loadBloomLevels();
         void this.loadQuestionDifficulties();
       });
@@ -491,7 +712,20 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   }
 
   cancel(): void {
+    if (this.isExamQuestionRoute()) {
+      void this.router.navigate(this.examCreateLink(), { queryParams: this.examCreateQueryParams() });
+      return;
+    }
+
     void this.router.navigate(this.detailsLink());
+  }
+
+  usesBasicEducationQuestionBankStore(): boolean {
+    return this.isExamQuestionRoute() || this.router.url.startsWith('/tenant/questions-bank/basic-education');
+  }
+
+  isExamQuestionRoute(): boolean {
+    return this.router.url.startsWith('/tenant/exams/basic-education');
   }
 
   isArabic(): boolean {
@@ -513,6 +747,10 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
 
   questionDifficultyLabel(difficulty: QuestionDifficulty): string {
     return this.isArabic() ? difficulty.nameAr : difficulty.nameEn;
+  }
+
+  questionDifficultyDescription(difficulty: QuestionDifficulty): string {
+    return (this.isArabic() ? difficulty.descriptionAr : difficulty.descriptionEn) ?? difficulty.code;
   }
 
   selectQuestionDifficulty(difficultyId: string): void {
@@ -690,7 +928,9 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
       } else if (this.isEditMode() && this.isChoiceQuestionType()) {
         await this.saveAnswerDrafts(saved.id);
       }
-      void this.router.navigate(this.detailsLink());
+      this.rememberExamQuestion(saved.id);
+      await this.attachQuestionToEditingExam(saved.id);
+      this.navigateAfterQuestionSave();
     } catch (error) {
       this.questionSaveError.set(
         error instanceof Error && error.message === 'Answer is required.'
@@ -777,6 +1017,130 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
 
   setTypeSearchQuery(value: string): void {
     this.typeSearchQuery.set(value);
+  }
+
+  toggleBloomTaxonomySelector(): void {
+    this.bloomTaxonomySelectorOpen.update((isOpen) => !isOpen);
+  }
+
+  setBloomTaxonomySearchQuery(value: string): void {
+    this.bloomTaxonomySearchQuery.set(value);
+  }
+
+  selectBloomTaxonomy(name: string): void {
+    const selected = this.bloomLevels().find((level) => level.id === name || this.bloomLevelLabel(level) === name);
+    if (!selected) {
+      return;
+    }
+    this.questionForm.controls.bloomId.setValue(selected.id);
+    this.questionForm.controls.bloomId.markAsDirty();
+    this.questionForm.controls.bloomId.markAsTouched();
+    this.bloomTaxonomySearchQuery.set('');
+    this.bloomTaxonomySelectorOpen.set(false);
+  }
+
+  toggleSkillSelector(): void {
+    this.skillSelectorOpen.update((isOpen) => !isOpen);
+  }
+
+  setSkillSearchQuery(value: string): void {
+    this.skillSearchQuery.set(value);
+    this.skillInlineError.set(null);
+  }
+
+  selectSkill(name: string): void {
+    const selected = this.skills().find((skill) => skill.id === name || skill.name === name);
+    if (!selected) {
+      return;
+    }
+    this.questionForm.controls.skillId.setValue(selected.id);
+    this.questionForm.controls.skillId.markAsDirty();
+    this.questionForm.controls.skillId.markAsTouched();
+    this.skillSearchQuery.set('');
+    this.skillSelectorOpen.set(false);
+  }
+
+  async addSkillFromSearch(): Promise<void> {
+    const name = this.skillSearchQuery().trim();
+    if (!name) {
+      this.skillInlineError.set(this.label('enterSkillBeforeAdd'));
+      return;
+    }
+    const existing = this.skills().find((skill) => skill.name.trim().toLowerCase() === name.toLowerCase());
+    if (existing) {
+      this.selectSkill(existing.id);
+      return;
+    }
+    const subject = this.subject();
+    const nodeId = this.selectedNodeId();
+    if (!subject || !nodeId) {
+      this.skillInlineError.set(this.label('missingCurriculumContext'));
+      return;
+    }
+    this.skillSaving.set(true);
+    this.skillInlineError.set(null);
+    try {
+      const created = await this.data.createCurriculumSkill(subject.id, nodeId, { name, description: null });
+      this.skills.update((skills) => [...skills, created]);
+      this.questionForm.controls.skillId.setValue(created.id);
+      this.questionForm.controls.skillId.markAsDirty();
+      this.questionForm.controls.skillId.markAsTouched();
+      this.skillSearchQuery.set('');
+      this.skillSelectorOpen.set(false);
+    } catch (error) {
+      this.skillInlineError.set(this.data.toUserMessage(error, this.label('unableToSaveSkill')));
+    } finally {
+      this.skillSaving.set(false);
+    }
+  }
+
+  toggleQuestionSourceSelector(): void {
+    this.questionSourceSelectorOpen.update((isOpen) => !isOpen);
+  }
+
+  setQuestionSourceSearchQuery(value: string): void {
+    this.questionSourceSearchQuery.set(value);
+    this.questionSourceInlineError.set(null);
+  }
+
+  selectQuestionSource(name: string): void {
+    const selected = this.questionSources().find((source) => source.source === name || source.id === name);
+    if (!selected) {
+      return;
+    }
+    this.questionForm.controls.questionSource.setValue(selected.source);
+    this.questionForm.controls.questionSource.markAsDirty();
+    this.questionForm.controls.questionSource.markAsTouched();
+    this.questionSourceSearchQuery.set('');
+    this.questionSourceSelectorOpen.set(false);
+  }
+
+  async addQuestionSourceFromSearch(): Promise<void> {
+    const source = this.questionSourceSearchQuery().trim();
+    if (!source) {
+      this.questionSourceInlineError.set(this.label('enterQuestionSourceBeforeAdd'));
+      return;
+    }
+    const existing = this.questionSources().find((item) => item.source.trim().toLowerCase() === source.toLowerCase());
+    if (existing) {
+      this.selectQuestionSource(existing.id);
+      return;
+    }
+    this.questionSourceSaving.set(true);
+    this.questionSourceInlineError.set(null);
+    try {
+      const created = await this.questionSourceSettings.createQuestionSource({ source, description: null });
+      this.questionSources.update((sources) => [...sources, created]);
+      this.questionForm.controls.questionSource.setValue(created.source);
+      this.questionForm.controls.questionSource.markAsDirty();
+      this.questionForm.controls.questionSource.markAsTouched();
+      this.questionSourceSearchQuery.set('');
+      this.questionSourceSelectorOpen.set(false);
+    } catch (error) {
+      this.questionSourceInlineError.set(this.questionSourceSettings.toUserMessage(error));
+    } finally {
+      this.questionSourceSaving.set(false);
+    }
   }
 
   selectQuestionType(name: string): void {
@@ -960,7 +1324,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     }
     const subject = this.subject();
     const nodeId = this.selectedNodeId();
-    if (!subject || !nodeId) {
+    if (!subject || (!nodeId && !this.isExamQuestionRoute())) {
       this.bulkQuestionError.set(this.label('missingCurriculumContext'));
       return;
     }
@@ -982,26 +1346,29 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     this.bulkQuestionError.set(null);
     try {
       for (const item of questions) {
-        const savedQuestion = await this.data.createCurriculumQuestion(subject.id, nodeId, {
+        const savedQuestion = await this.createQuestionForCurrentContext(subject.id, nodeId ?? '', {
           question: item.question,
           type: this.selectedQuestionType(),
           answer: null,
           description: null,
           bloomId: this.questionForm.controls.bloomId.value || null,
           difficultyId: this.questionForm.controls.difficultyId.value || null,
+          skillId: this.questionForm.controls.skillId.value || null,
           weight: this.questionWeightPayloadValue(),
+          ...this.applicationDataPayloadPart(),
           ...this.applicationTagPayloadPart(),
           ...this.emptyMediaPayload(),
         });
+        this.rememberExamQuestion(savedQuestion.id);
         for (const answer of item.answers) {
-          await this.data.createCurriculumQuestionAnswer(subject.id, nodeId, savedQuestion.id, {
+          await this.createQuestionAnswerForCurrentContext(subject.id, nodeId ?? '', savedQuestion.id, {
             answer: answer.answer,
             correct: answer.correct,
             description: null,
           });
         }
       }
-      void this.router.navigate(this.detailsLink());
+      this.navigateAfterQuestionSave();
     } catch (error) {
       this.bulkQuestionError.set(this.data.toUserMessage(error, this.label('unableToSaveQuestions')));
     } finally {
@@ -1045,10 +1412,10 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
       const question = await this.saveQuestionToBackend();
       const subject = this.subject();
       const nodeId = this.selectedNodeId();
-      if (!subject || !nodeId) {
+      if (!subject || (!nodeId && !this.isExamQuestionRoute())) {
         throw new Error(this.label('missingCurriculumContext'));
       }
-      const savedAnswer = await this.data.createCurriculumQuestionAnswer(subject.id, nodeId, question.id, {
+      const savedAnswer = await this.createQuestionAnswerForCurrentContext(subject.id, nodeId ?? '', question.id, {
         answer,
         correct: this.isTrueFalse() ? answer.toLowerCase() === 'true' : this.isSingleAnswerQuestionType(),
         description: this.newAnswerDescription(),
@@ -1086,7 +1453,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     const subject = this.subject();
     const nodeId = this.selectedNodeId();
     const questionId = this.currentQuestionId();
-    if (!subject || !nodeId || !questionId) {
+    if (!subject || (!nodeId && !this.isExamQuestionRoute()) || !questionId) {
       input.checked = answer.correct;
       return;
     }
@@ -1094,11 +1461,11 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     this.answerUpdatingId.set(answer.id);
     this.questionSaveError.set(null);
     try {
-      const updated = await this.data.updateCurriculumQuestionAnswer(subject.id, nodeId, questionId, answer.id, { correct });
+      const updated = await this.updateQuestionAnswerForCurrentContext(subject.id, nodeId ?? '', questionId, answer.id, { correct });
       if (this.isSingleCorrectType() && correct) {
         const otherCorrectAnswers = this.multipleChoiceAnswers().filter((item) => item.id !== answer.id && item.correct);
         const updatedOtherAnswers = await Promise.all(otherCorrectAnswers.map((item) =>
-          this.data.updateCurriculumQuestionAnswer(subject.id, nodeId, questionId, item.id, { correct: false }),
+          this.updateQuestionAnswerForCurrentContext(subject.id, nodeId ?? '', questionId, item.id, { correct: false }),
         ));
         const updatedById = new Map([updated, ...updatedOtherAnswers].map((item) => [item.id, item]));
         this.multipleChoiceAnswers.update((answers) => answers.map((item) => updatedById.get(item.id) ?? item));
@@ -1122,8 +1489,13 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
       await this.loadCurriculum(subject.id);
       const nodeId = this.selectedNodeId();
       const questionId = this.editingQuestionId();
-      if (nodeId && questionId) {
-        await this.loadQuestionForEdit(subject.id, nodeId, questionId);
+      if (nodeId) {
+        await this.loadSkills(subject.id, nodeId);
+      } else if (this.isExamQuestionRoute()) {
+        await this.loadSkills(subject.id, '');
+      }
+      if ((nodeId || this.isExamQuestionRoute()) && questionId) {
+        await this.loadQuestionForEdit(subject.id, nodeId ?? '', questionId);
       }
     }
   }
@@ -1143,7 +1515,14 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     this.curriculumLoading.set(true);
     this.curriculumError.set(null);
     try {
-      const questions = await this.data.listCurriculumQuestions(subjectId, nodeId);
+      const stageId = this.routeStageId();
+      const gradeId = this.routeGradeId();
+      const examId = this.route.snapshot?.queryParamMap?.get('examId') ?? null;
+      const questions = this.isExamQuestionRoute() && stageId && gradeId && examId
+        ? await this.data.listBasicEducationExamLinkedQuestions(stageId, gradeId, subjectId, examId)
+        : this.usesBasicEducationQuestionBankStore() && stageId && gradeId
+          ? await this.data.listBasicEducationExamQuestions(stageId, gradeId, subjectId)
+          : await this.data.listCurriculumQuestions(subjectId, nodeId);
       const question = questions.find((item) => item.id === questionId);
       if (!question) {
         throw new Error(this.isArabic() ? 'السؤال غير موجود.' : 'Question not found.');
@@ -1165,7 +1544,10 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
       description: question.description ?? '',
       bloomId: question.bloomId ?? '',
       difficultyId: question.difficultyId ?? '',
+      skillId: question.skillId ?? '',
       weight: question.weight == null ? '' : String(question.weight),
+      questionSource: question.questionSource ?? '',
+      answerExplanation: question.answerExplanation ?? '',
     });
     this.applicationTags.set(question.tags ?? []);
     this.selectedQuestionType.set(question.type);
@@ -1204,6 +1586,18 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     }
   }
 
+  private async loadQuestionSources(): Promise<void> {
+    this.questionSourcesLoading.set(true);
+    this.questionSourcesError.set(null);
+    try {
+      this.questionSources.set(await this.questionSourceSettings.listQuestionSources());
+    } catch (error) {
+      this.questionSourcesError.set(this.questionSourceSettings.toUserMessage(error));
+    } finally {
+      this.questionSourcesLoading.set(false);
+    }
+  }
+
   private async loadBloomLevels(): Promise<void> {
     this.bloomLevelsLoading.set(true);
     this.bloomLevelsError.set(null);
@@ -1228,10 +1622,112 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     }
   }
 
-  private async saveQuestionToBackend(): Promise<{ id: string }> {
+  private async loadSkills(subjectId: string, nodeId: string): Promise<void> {
+    this.skillsLoading.set(true);
+    this.skillsError.set(null);
+    try {
+      this.skills.set(await this.loadAllCurriculumSkills(subjectId, nodeId));
+    } catch (error) {
+      this.skillsError.set(this.data.toUserMessage(error, this.label('unableToLoadSkills')));
+    } finally {
+      this.skillsLoading.set(false);
+    }
+  }
+
+  private async loadAllCurriculumSkills(subjectId: string, fallbackNodeId: string): Promise<TenantCurriculumSkill[]> {
+    const root = this.curriculumRoot();
+    const nodeIds = root ? this.collectCurriculumNodeIds(root) : [fallbackNodeId];
+    const uniqueNodeIds = Array.from(new Set([fallbackNodeId, ...nodeIds].filter((id) => !!id && id !== 'curriculum')));
+    if (uniqueNodeIds.length === 0) {
+      return [];
+    }
+    const results = await Promise.allSettled(uniqueNodeIds.map((id) => this.data.listCurriculumSkills(subjectId, id)));
+    const firstRejected = results.find((result): result is PromiseRejectedResult => result.status === 'rejected');
+    if (firstRejected && results.every((result) => result.status === 'rejected')) {
+      throw firstRejected.reason;
+    }
+    const skills = results.flatMap((result) => result.status === 'fulfilled' ? result.value : []);
+    const byKey = new Map<string, TenantCurriculumSkill>();
+    for (const skill of skills) {
+      byKey.set(skill.id || skill.name.trim().toLowerCase(), skill);
+    }
+    return Array.from(byKey.values());
+  }
+
+  private collectCurriculumNodeIds(node: TenantSubjectCurriculumNode): string[] {
+    return [node.id, ...node.children.flatMap((child) => this.collectCurriculumNodeIds(child))];
+  }
+
+  private rememberExamQuestion(questionId: string): void {
+    if (!this.isExamQuestionRoute()) {
+      return;
+    }
+    const subject = this.subject();
+    const stageId = this.routeStageId();
+    const gradeId = this.routeGradeId();
+    if (!subject || !stageId || !gradeId || !questionId) {
+      return;
+    }
+    const key = this.examQuestionDraftStorageKey(stageId, gradeId, subject.id);
+    const current = this.readStoredExamQuestionIds(key);
+    if (!current.includes(questionId)) {
+      sessionStorage.setItem(key, JSON.stringify([...current, questionId]));
+    }
+  }
+
+  private async attachQuestionToEditingExam(questionId: string): Promise<void> {
+    if (!this.isExamQuestionRoute()) {
+      return;
+    }
+    const subject = this.subject();
+    const stageId = this.routeStageId();
+    const gradeId = this.routeGradeId();
+    const examId = this.route.snapshot?.queryParamMap?.get('examId') ?? null;
+    if (!subject || !stageId || !gradeId || !examId || !questionId) {
+      return;
+    }
+
+    const key = this.examQuestionDraftStorageKey(stageId, gradeId, subject.id);
+    const mergedIds = this.readStoredExamQuestionIds(key);
+    if (!mergedIds.includes(questionId)) {
+      mergedIds.push(questionId);
+      sessionStorage.setItem(key, JSON.stringify(mergedIds));
+    }
+
+    const exams = await this.data.listBasicEducationExams(stageId, gradeId, subject.id);
+    const exam = exams.find((item) => item.id === examId);
+    if (!exam) {
+      return;
+    }
+
+    await this.data.updateBasicEducationExam(stageId, gradeId, subject.id, examId, {
+      title: exam.title,
+      instructions: exam.instructions,
+      shuffleQuestions: exam.shuffleQuestions,
+      showResultsImmediately: exam.showResultsImmediately,
+      allowRetakes: exam.allowRetakes,
+      questionIds: mergedIds,
+    });
+  }
+
+  private readStoredExamQuestionIds(key: string): string[] {
+    try {
+      const value = sessionStorage.getItem(key);
+      const parsed = value ? JSON.parse(value) : [];
+      return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string' && !!item) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private examQuestionDraftStorageKey(stageId: string, gradeId: string, subjectId: string): string {
+    return `tenant.exam-draft.questions.basic.${stageId}.${gradeId}.${subjectId}`;
+  }
+
+  private async saveQuestionToBackend(): Promise<TenantCurriculumQuestion> {
     const subject = this.subject();
     const nodeId = this.selectedNodeId();
-    if (!subject || !nodeId) {
+    if (!subject || (!nodeId && !this.isExamQuestionRoute())) {
       throw new Error(this.label('missingCurriculumContext'));
     }
     const payload = {
@@ -1241,23 +1737,101 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
       description: this.questionForm.controls.description.value,
       bloomId: this.questionForm.controls.bloomId.value || null,
       difficultyId: this.questionForm.controls.difficultyId.value || null,
+      skillId: this.questionForm.controls.skillId.value || null,
       weight: this.questionWeightPayloadValue(),
+      ...this.applicationDataPayloadPart(),
       ...this.applicationTagPayloadPart(),
       ...await this.resolveQuestionMediaPayload(),
     };
     const questionId = this.currentQuestionId();
     const saved = questionId
-      ? await this.data.updateCurriculumQuestion(subject.id, nodeId, questionId, payload)
-      : await this.data.createCurriculumQuestion(subject.id, nodeId, payload);
+      ? await this.updateQuestionForCurrentContext(subject.id, nodeId ?? '', questionId, payload)
+      : await this.createQuestionForCurrentContext(subject.id, nodeId ?? '', payload);
     this.currentQuestionId.set(saved.id);
     this.multipleChoiceAnswers.set(saved.answers);
     return saved;
   }
 
+  private async createQuestionForCurrentContext(
+    subjectId: string,
+    nodeId: string,
+    payload: Parameters<TenantSubjectsDataService['createCurriculumQuestion']>[2],
+  ): Promise<TenantCurriculumQuestion> {
+    if (!this.usesBasicEducationQuestionBankStore()) {
+      return await this.data.createCurriculumQuestion(subjectId, nodeId, payload);
+    }
+    const stageId = this.routeStageId();
+    const gradeId = this.routeGradeId();
+    if (!stageId || !gradeId) {
+      throw new Error(this.label('missingCurriculumContext'));
+    }
+    return await this.data.createBasicEducationExamQuestion(stageId, gradeId, subjectId, { ...payload, curriculumNodeId: nodeId || null });
+  }
+
+  private async updateQuestionForCurrentContext(
+    subjectId: string,
+    nodeId: string,
+    questionId: string,
+    payload: Parameters<TenantSubjectsDataService['createCurriculumQuestion']>[2],
+  ): Promise<TenantCurriculumQuestion> {
+    if (!this.usesBasicEducationQuestionBankStore()) {
+      return await this.data.updateCurriculumQuestion(subjectId, nodeId, questionId, payload);
+    }
+    const stageId = this.routeStageId();
+    const gradeId = this.routeGradeId();
+    if (!stageId || !gradeId) {
+      throw new Error(this.label('missingCurriculumContext'));
+    }
+    return await this.data.updateBasicEducationExamQuestion(stageId, gradeId, subjectId, questionId, { ...payload, curriculumNodeId: nodeId || null });
+  }
+
+  private async createQuestionAnswerForCurrentContext(
+    subjectId: string,
+    nodeId: string,
+    questionId: string,
+    payload: Parameters<TenantSubjectsDataService['createCurriculumQuestionAnswer']>[3],
+  ): Promise<TenantCurriculumQuestionAnswer> {
+    if (!this.usesBasicEducationQuestionBankStore()) {
+      return await this.data.createCurriculumQuestionAnswer(subjectId, nodeId, questionId, payload);
+    }
+    const stageId = this.routeStageId();
+    const gradeId = this.routeGradeId();
+    if (!stageId || !gradeId) {
+      throw new Error(this.label('missingCurriculumContext'));
+    }
+    return await this.data.createBasicEducationExamQuestionAnswer(stageId, gradeId, subjectId, questionId, payload);
+  }
+
+  private async updateQuestionAnswerForCurrentContext(
+    subjectId: string,
+    nodeId: string,
+    questionId: string,
+    answerId: string,
+    payload: Parameters<TenantSubjectsDataService['updateCurriculumQuestionAnswer']>[4],
+  ): Promise<TenantCurriculumQuestionAnswer> {
+    if (!this.usesBasicEducationQuestionBankStore()) {
+      return await this.data.updateCurriculumQuestionAnswer(subjectId, nodeId, questionId, answerId, payload);
+    }
+    const stageId = this.routeStageId();
+    const gradeId = this.routeGradeId();
+    if (!stageId || !gradeId) {
+      throw new Error(this.label('missingCurriculumContext'));
+    }
+    return await this.data.updateBasicEducationExamQuestionAnswer(stageId, gradeId, subjectId, questionId, answerId, payload);
+  }
+
+  private navigateAfterQuestionSave(): void {
+    if (this.isExamQuestionRoute()) {
+      void this.router.navigate(this.examCreateLink(), { queryParams: this.examCreateQueryParams() });
+      return;
+    }
+    void this.router.navigate(this.detailsLink());
+  }
+
   private async saveAnswerDrafts(questionId: string): Promise<void> {
     const subject = this.subject();
     const nodeId = this.selectedNodeId();
-    if (!subject || !nodeId) {
+    if (!subject || (!nodeId && !this.isExamQuestionRoute())) {
       throw new Error(this.label('missingCurriculumContext'));
     }
 
@@ -1271,7 +1845,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
           throw new Error(validationError);
         }
       }
-      return this.data.updateCurriculumQuestionAnswer(subject.id, nodeId, questionId, answer.id, {
+      return this.updateQuestionAnswerForCurrentContext(subject.id, nodeId ?? '', questionId, answer.id, {
         answer: draft.answer,
         correct: this.isSingleAnswerQuestionType() ? true : draft.correct,
         description: draft.description,
@@ -1310,11 +1884,20 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     return tags.length ? { tags } : {};
   }
 
+  private applicationDataPayloadPart(): { questionSource?: string; answerExplanation?: string } {
+    const questionSource = this.questionForm.controls.questionSource.value.trim();
+    const answerExplanation = this.questionForm.controls.answerExplanation.value.trim();
+    return {
+      ...(questionSource ? { questionSource } : {}),
+      ...(answerExplanation ? { answerExplanation } : {}),
+    };
+  }
+
   private async saveTrueFalseAnswers(questionId: string): Promise<void> {
     const subject = this.subject();
     const nodeId = this.selectedNodeId();
     const correctAnswer = this.trueFalseAnswer();
-    if (!subject || !nodeId) {
+    if (!subject || (!nodeId && !this.isExamQuestionRoute())) {
       throw new Error(this.label('missingCurriculumContext'));
     }
     if (correctAnswer === null) {
@@ -1332,8 +1915,8 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
         description: null,
       };
       const saved = existing
-        ? await this.data.updateCurriculumQuestionAnswer(subject.id, nodeId, questionId, existing.id, payload)
-        : await this.data.createCurriculumQuestionAnswer(subject.id, nodeId, questionId, payload);
+        ? await this.updateQuestionAnswerForCurrentContext(subject.id, nodeId ?? '', questionId, existing.id, payload)
+        : await this.createQuestionAnswerForCurrentContext(subject.id, nodeId ?? '', questionId, payload);
       savedAnswers.push(saved);
     }
     this.multipleChoiceAnswers.set(savedAnswers);
@@ -1699,12 +2282,28 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   }
 
   private subjectsRootLink(): string {
+    if (this.router.url.startsWith('/tenant/exams/basic-education')) {
+      const stageId = this.routeStageId();
+      const gradeId = this.routeGradeId();
+      if (stageId && gradeId) {
+        return `/tenant/exams/basic-education/${stageId}/grades/${gradeId}/create/new/subjects`;
+      }
+    }
+
     if (this.router.url.startsWith('/tenant/questions-bank/basic-education')) {
       const stageId = this.route.snapshot.paramMap.get('stageId');
       const gradeId = this.route.snapshot.paramMap.get('gradeId');
       if (stageId && gradeId) {
         return `/tenant/questions-bank/basic-education/${stageId}/grades/${gradeId}/subjects`;
       }
+    }
+
+    if (this.router.url.startsWith('/tenant/questions-bank/university-education')) {
+      const collegeId = this.route.snapshot.paramMap.get('collegeId');
+      if (collegeId) {
+        return `/tenant/questions-bank/university-education/colleges/${collegeId}/subjects`;
+      }
+      return '/tenant/questions-bank/university-education';
     }
 
     return this.router.url.startsWith('/tenant/university-subjects') ? '/tenant/university-subjects' : '/tenant/subjects';

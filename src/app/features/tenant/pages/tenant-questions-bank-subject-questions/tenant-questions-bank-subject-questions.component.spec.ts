@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { TenantSubjectsDataService } from '../../data-access/tenant-subjects-data.service';
 import { TenantSubject, TenantSubjectCurriculumNode } from '../../models/tenant-subjects.models';
 import { TenantQuestionsBankSubjectQuestionsComponent } from './tenant-questions-bank-subject-questions.component';
@@ -57,6 +57,7 @@ describe('TenantQuestionsBankSubjectQuestionsComponent', () => {
     getSubjectDetails: ReturnType<typeof vi.fn>;
     getSubjectCurriculum: ReturnType<typeof vi.fn>;
     listCurriculumQuestionsPage: ReturnType<typeof vi.fn>;
+    deleteCurriculumQuestion: ReturnType<typeof vi.fn>;
     toUserMessage: ReturnType<typeof vi.fn>;
   };
 
@@ -78,6 +79,13 @@ describe('TenantQuestionsBankSubjectQuestionsComponent', () => {
                 mediaOriginalName: null,
                 mediaContentType: null,
                 mediaSizeBytes: null,
+                bloomId: 'bloom-1',
+                difficultyId: 'difficulty-1',
+                weight: 5,
+                skillId: 'skill-1',
+                questionSource: 'Official previous exam',
+                answerExplanation: 'Official answer key.',
+                tags: ['exam'],
                 answers: [],
                 createdAt: '2026-01-01T00:00:00Z',
                 updatedAt: '2026-01-01T00:00:00Z',
@@ -96,6 +104,13 @@ describe('TenantQuestionsBankSubjectQuestionsComponent', () => {
                   mediaOriginalName: null,
                   mediaContentType: null,
                   mediaSizeBytes: null,
+                  bloomId: null,
+                  difficultyId: null,
+                  weight: null,
+                  skillId: null,
+                  questionSource: null,
+                  answerExplanation: null,
+                  tags: [],
                   answers: [],
                   createdAt: '2026-01-01T00:00:00Z',
                   updatedAt: '2026-01-01T00:00:00Z',
@@ -113,6 +128,13 @@ describe('TenantQuestionsBankSubjectQuestionsComponent', () => {
                 mediaOriginalName: null,
                 mediaContentType: null,
                 mediaSizeBytes: null,
+                bloomId: null,
+                difficultyId: null,
+                weight: null,
+                skillId: null,
+                questionSource: null,
+                answerExplanation: null,
+                tags: [],
                 answers: [],
                 createdAt: '2026-01-01T00:00:00Z',
                 updatedAt: '2026-01-01T00:00:00Z',
@@ -123,6 +145,7 @@ describe('TenantQuestionsBankSubjectQuestionsComponent', () => {
         page: 0,
         size: 100,
       })),
+      deleteCurriculumQuestion: vi.fn().mockResolvedValue(undefined),
       toUserMessage: vi.fn().mockReturnValue('Unable to load questions.'),
     };
 
@@ -166,6 +189,7 @@ describe('TenantQuestionsBankSubjectQuestionsComponent', () => {
     expect(dataService.listCurriculumQuestionsPage).toHaveBeenCalledWith('subject-1', 'node-2', { page: 0, size: 100 });
     expect(text).toContain('Mathematics');
     expect(text).toContain('What is 2 + 2?');
+    expect(text).toContain('Actions');
     expect(text).not.toContain('What is the child topic?');
     expect(text).not.toContain('What is 3 + 3?');
     expect(text).toContain('First Term');
@@ -188,6 +212,38 @@ describe('TenantQuestionsBankSubjectQuestionsComponent', () => {
       '/tenant/questions-bank/basic-education/stage-1/grades/grade-1/subjects/subject-1/curriculum',
     ]);
     expect(addLink.pathname).toBe('/tenant/questions-bank/basic-education/stage-1/grades/grade-1/subjects/subject-1/curriculum/node-1/addQuestion');
+    expect((fixture.nativeElement.querySelector('a[aria-label="Edit question What is 2 + 2?"]') as HTMLAnchorElement).pathname)
+      .toBe('/tenant/questions-bank/basic-education/stage-1/grades/grade-1/subjects/subject-1/curriculum/node-1/editQuestion/question-1');
+  });
+
+  it('opens overview when a question row is clicked and deletes from the backend with the delete icon', async () => {
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const row = fixture.nativeElement.querySelector('tbody tr[role="button"]') as HTMLTableRowElement;
+    const deleteButton = fixture.nativeElement.querySelector('button[aria-label="Delete question What is 2 + 2?"]') as HTMLButtonElement;
+
+    row.click();
+    expect(navigate).toHaveBeenCalledWith([
+      '/tenant/questions-bank/basic-education',
+      'stage-1',
+      'grades',
+      'grade-1',
+      'subjects',
+      'subject-1',
+      'curriculum',
+      'node-1',
+      'questions',
+      'question-1',
+    ]);
+
+    deleteButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(confirm).toHaveBeenCalledWith('Delete question "What is 2 + 2?"?');
+    expect(dataService.deleteCurriculumQuestion).toHaveBeenCalledWith('subject-1', 'node-1', 'question-1');
+    expect(fixture.nativeElement.textContent).not.toContain('What is 2 + 2?');
   });
 
   it('shows all questions when All Item is selected', async () => {

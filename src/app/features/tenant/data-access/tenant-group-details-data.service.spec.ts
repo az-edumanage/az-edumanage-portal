@@ -27,6 +27,8 @@ describe('TenantGroupDetailsDataService', () => {
       expect(group.capacity).toBe(25);
       expect(group.fees).toBe(500);
       expect(group.pricePerStudent).toBe(500);
+      expect(group.stageId).toBe('stage-1');
+      expect(group.gradeId).toBe('grade-1');
       expect(group.avgAttendanceRate).toBeNull();
       expect(group.absenceRate).toBeNull();
       expect(group.attendanceAvailable).toBe(false);
@@ -56,6 +58,8 @@ describe('TenantGroupDetailsDataService', () => {
       id: 'group-123',
       name: 'Physics G12-A',
       subject: 'Physics',
+      stageId: 'stage-1',
+      gradeId: 'grade-1',
       teacher: 'Sarah Nabil',
       room: 'Lab 101',
       schedule: 'Monday 10:00',
@@ -282,6 +286,54 @@ describe('TenantGroupDetailsDataService', () => {
     const request = httpTesting.expectOne(`${environment.apiBaseUrl}/tenant/groups/missing-group`);
     expect(request.request.method).toBe('GET');
     request.flush({ message: 'Group not found' }, { status: 404, statusText: 'Not Found' });
+
+    actual.unsubscribe();
+  });
+
+  it('requests and maps group exam rows from the group exams endpoint', () => {
+    const actual = service.loadGroupExams('group-123').subscribe((exams) => {
+      expect(exams).toEqual([
+        {
+          id: 'assignment-1',
+          groupId: 'group-123',
+          examId: 'exam-1',
+          title: 'Physics Midterm',
+          status: 'PUBLISHED',
+          date: '2026-07-01',
+          startTime: '09:30',
+          duration: 60,
+          questionCount: 24,
+          instructions: 'Read carefully',
+          updatedAt: '2026-06-27T08:45:00Z',
+          settings: {
+            showResultsImmediately: false,
+            allowRetakes: false,
+          },
+        },
+      ]);
+    });
+
+    const request = httpTesting.expectOne(`${environment.apiBaseUrl}/tenant/groups/group-123/exams`);
+    expect(request.request.method).toBe('GET');
+    request.flush([
+      {
+        id: 'assignment-1',
+        groupId: 'group-123',
+        examId: 'exam-1',
+        title: 'Physics Midterm',
+        status: 'PUBLISHED',
+        date: '2026-07-01',
+        startTime: '09:30',
+        duration: 60,
+        questionCount: 24,
+        instructions: 'Read carefully',
+        updatedAt: '2026-06-27T08:45:00Z',
+        settings: {
+          showResultsImmediately: false,
+          allowRetakes: false,
+        },
+      },
+    ]);
 
     actual.unsubscribe();
   });

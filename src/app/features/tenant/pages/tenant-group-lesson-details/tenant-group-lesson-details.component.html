@@ -331,7 +331,7 @@
       <div class="tenant-group-lesson-modal-head">
         <div>
           <h3 id="insert-content-title">Insert Content</h3>
-          <p>Select material from the parent directory.</p>
+          <p>Select material from this group library.</p>
         </div>
         <button type="button" class="tenant-group-lesson-modal-close" aria-label="Close insert content" (click)="closeInsertContentModal()">
           <mat-icon>close</mat-icon>
@@ -378,7 +378,7 @@
         } @else {
           <div class="tenant-group-lesson-details-content-state">
             <mat-icon>folder_open</mat-icon>
-            <span>No material found in the parent directory.</span>
+            <span>No material found in the group library.</span>
           </div>
         }
         @if (insertError()) {

@@ -411,6 +411,16 @@
   background: var(--color-bg-muted, #f8fafc);
 }
 
+.tenant-colleges-tr--interactive {
+  cursor: pointer;
+}
+
+.tenant-colleges-tr--interactive:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-action-primary, #4f46e5) 70%, transparent);
+  outline-offset: -2px;
+  background: var(--color-bg-muted, #f8fafc);
+}
+
 .tenant-colleges-td {
   padding: var(--space-4) var(--space-6);
 }

@@ -24,7 +24,7 @@ describe('TenantStudentCreateDataService', () => {
     httpTesting.verify();
   });
 
-  it('submits enrollment payload without barcodeNumber', () => {
+  it('submits enrollment payload with account credentials and without barcodeNumber', () => {
     service.enrollStudent(createPayload()).subscribe((result) => {
       expect(result).toBeUndefined();
     });
@@ -32,6 +32,8 @@ describe('TenantStudentCreateDataService', () => {
     const request = httpTesting.expectOne((req) => req.url.endsWith('/tenant/students'));
     expect(request.request.method).toBe('POST');
     expect('barcodeNumber' in request.request.body).toBe(false);
+    expect(request.request.body.username).toBe('student.alpha');
+    expect(request.request.body.password).toBe('Student123!');
     request.flush({
       id: 'student-1',
       barcodeNumber: '123456789012',
@@ -57,6 +59,8 @@ function createPayload(): TenantStudentCreatePayload {
     fullName: 'Student Alpha',
     email: 'student.alpha@example.com',
     phone: '+201000000000',
+    username: 'student.alpha',
+    password: 'Student123!',
     birthDate: '2008-01-10',
     gender: 'Male',
     parentName: '',

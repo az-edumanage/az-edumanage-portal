@@ -98,6 +98,8 @@
                   placeholder="Select Method ..."
                   searchPlaceholder="Search methods..."
                   [emptyText]="paymentMethodEmptyText()"
+                  footerIcon="add"
+                  footerButton="Add New Method"
                   [disabled]="paymentMethodsLoading()"
                   [selectedValue]="groupForm.get('paymentMethod')?.value || ''"
                   [isOpen]="showPaymentMethodDropdown()"
@@ -106,6 +108,7 @@
                   (toggled)="togglePaymentMethodDropdown()"
                   (searchQueryChanged)="setPaymentMethodSearchQuery($event)"
                   (selected)="selectPaymentMethod($event)"
+                  (footerClicked)="openAddPaymentMethodModal()"
                 />
               </div>
             </div>
@@ -419,5 +422,83 @@
           </button>
         </div>
       </form>
+
+      @if (showAddPaymentMethodModal()) {
+        <div class="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/40 px-4 py-6" (click)="closeAddPaymentMethodModal()">
+          <div class="w-full max-w-lg rounded-xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900" (click)="$event.stopPropagation()">
+            <div class="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Add New Method</h3>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Create a subscription period and select it for this group.</p>
+              </div>
+              <button type="button" (click)="closeAddPaymentMethodModal()" [disabled]="paymentMethodSaving()" class="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-60 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+                <mat-icon class="block text-base">close</mat-icon>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4">
+              <div>
+                <label for="new-payment-method-name" class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Method Name</label>
+                <input
+                  id="new-payment-method-name"
+                  type="text"
+                  [value]="newPaymentMethodName()"
+                  (input)="setNewPaymentMethodName($any($event.target).value)"
+                  class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                >
+                @if (newPaymentMethodNameError()) {
+                  <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">{{ newPaymentMethodNameError() }}</p>
+                }
+              </div>
+
+              <div>
+                <span class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Duration</span>
+                <div class="inline-flex overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-800">
+                  <button type="button" (click)="selectNewPaymentMethodDurationType('Month')" [class.bg-indigo-600]="newPaymentMethodDurationType() === 'Month'" [class.text-white]="newPaymentMethodDurationType() === 'Month'" class="h-9 rounded-md px-4 text-sm font-medium text-slate-700 transition-colors dark:text-slate-300">Month</button>
+                  <button type="button" (click)="selectNewPaymentMethodDurationType('Day')" [class.bg-indigo-600]="newPaymentMethodDurationType() === 'Day'" [class.text-white]="newPaymentMethodDurationType() === 'Day'" class="h-9 rounded-md px-4 text-sm font-medium text-slate-700 transition-colors dark:text-slate-300">Day</button>
+                </div>
+              </div>
+
+              <div>
+                <label for="new-payment-method-duration" class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ newPaymentMethodDurationType() }} count</label>
+                <input
+                  id="new-payment-method-duration"
+                  type="number"
+                  min="1"
+                  [value]="newPaymentMethodDurationValue()"
+                  (input)="setNewPaymentMethodDurationValue($any($event.target).value)"
+                  class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                >
+                @if (newPaymentMethodDurationError()) {
+                  <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">{{ newPaymentMethodDurationError() }}</p>
+                }
+              </div>
+
+              <div>
+                <label for="new-payment-method-description" class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>
+                <textarea
+                  id="new-payment-method-description"
+                  rows="3"
+                  [value]="newPaymentMethodDescription()"
+                  (input)="setNewPaymentMethodDescription($any($event.target).value)"
+                  class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                ></textarea>
+              </div>
+            </div>
+
+            @if (newPaymentMethodSaveError()) {
+              <p class="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-300">{{ newPaymentMethodSaveError() }}</p>
+            }
+
+            <div class="mt-6 flex items-center justify-end gap-3">
+              <button type="button" (click)="closeAddPaymentMethodModal()" [disabled]="paymentMethodSaving()" class="rounded-lg border border-slate-200 bg-white px-5 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">Cancel</button>
+              <button type="button" (click)="saveNewPaymentMethod()" [disabled]="paymentMethodSaving()" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60">
+                <mat-icon class="text-sm">{{ paymentMethodSaving() ? 'hourglass_empty' : 'save' }}</mat-icon>
+                {{ paymentMethodSaving() ? 'Saving...' : 'Save Method' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   

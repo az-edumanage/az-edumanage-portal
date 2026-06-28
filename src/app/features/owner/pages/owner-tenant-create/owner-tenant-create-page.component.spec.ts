@@ -16,7 +16,7 @@ describe('OwnerTenantCreatePageComponent', () => {
       tenantUsername: [''],
       temporaryPassword: [''],
       subdomain: [''],
-      domain: ['.remix.com'],
+      domain: ['.az-edumanage.com'],
       contactName: [''],
       contactEmail: [''],
       contactPhone: [''],
@@ -45,11 +45,11 @@ describe('OwnerTenantCreatePageComponent', () => {
     countrySearchQuery: signal(''),
     showCustomizationMenu: signal(false),
     submitAttempted: signal(false),
-    submitStatus: signal(null),
+    submitStatus: signal<{ success: boolean; message: string } | null>(null),
     subscriptionTemplates: signal([]),
     planLoadError: signal(null),
     tenantTypes: ['Center', 'Teacher'],
-    domains: ['.remix.com', '.beedu.app'],
+    domains: ['.az-edumanage.com'],
     cities: signal([{ value: '10', label: 'Cairo' }]),
     countries: signal([{ value: '1', label: 'Egypt' }]),
     selectedPlanName: signal(''),
@@ -152,6 +152,14 @@ describe('OwnerTenantCreatePageComponent', () => {
 
     const regionSelect = fixture.nativeElement.querySelector('#region');
     expect(regionSelect).toBeTruthy();
+  });
+
+  it('exposes provisioning status from the facade', () => {
+    mockFacade.submitStatus.set({ success: true, message: 'Tenant provisioning verified successfully.' });
+    const fixture = TestBed.createComponent(OwnerTenantCreatePageComponent);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.submitStatus()?.message).toContain('provisioning');
   });
 
   it('binds country and city dropdowns to managed location controls', () => {

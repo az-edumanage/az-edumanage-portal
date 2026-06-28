@@ -1,0 +1,592 @@
+.tenant-role-form-page {
+  --role-surface: oklch(99% 0.006 260);
+  --role-surface-muted: oklch(96.8% 0.008 260);
+  --role-surface-soft: oklch(94.8% 0.018 265);
+  --role-text: oklch(24% 0.035 260);
+  --role-text-muted: oklch(47% 0.032 260);
+  --role-border: oklch(88% 0.018 260);
+  --role-border-strong: oklch(78% 0.028 260);
+  --role-accent: oklch(55% 0.19 277);
+  --role-accent-strong: oklch(48% 0.19 277);
+  --role-accent-soft: oklch(94% 0.032 277);
+  --role-danger: oklch(49% 0.18 28);
+  --role-danger-soft: oklch(96% 0.035 28);
+  --role-success-soft: oklch(95% 0.038 148);
+  --role-shadow: 0 16px 36px oklch(36% 0.055 260 / 8%);
+
+  display: grid;
+  gap: 20px;
+  color: var(--role-text);
+}
+
+.tenant-role-form-header,
+.tenant-role-form-shell,
+.tenant-role-form-panel,
+.tenant-role-form-summary {
+  background: var(--role-surface);
+  border: 1px solid var(--role-border);
+  border-radius: 8px;
+}
+
+.tenant-role-form-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+}
+
+.tenant-role-form-title,
+.tenant-role-form-section-heading,
+.tenant-role-form-summary {
+  min-width: 0;
+}
+
+.tenant-role-form-header p,
+.tenant-role-form-header h1,
+.tenant-role-form-header span,
+.tenant-role-form-section-title h2,
+.tenant-role-form-section-title span,
+.tenant-role-form-permission-summary h2,
+.tenant-role-form-permission-summary span,
+.tenant-role-form-summary p,
+.tenant-role-form-summary strong,
+.tenant-role-form-summary span {
+  margin: 0;
+}
+
+.tenant-role-form-header p {
+  margin-bottom: 4px;
+  color: var(--role-text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.tenant-role-form-header h1 {
+  color: var(--role-text);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.tenant-role-form-header span,
+.tenant-role-form-section-heading span,
+.tenant-role-form-summary p {
+  display: block;
+  margin-top: 6px;
+  color: var(--role-text-muted);
+  line-height: 1.45;
+}
+
+.tenant-role-form-shell {
+  overflow: hidden;
+}
+
+.tenant-role-form {
+  display: grid;
+  gap: 16px;
+}
+
+.tenant-role-form-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.tenant-role-form-panel {
+  display: grid;
+  gap: 18px;
+  padding: 18px;
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 65%) inset;
+}
+
+.tenant-role-form-panel--details {
+  align-content: start;
+}
+
+.tenant-role-form-panel--permissions {
+  gap: 16px;
+}
+
+.tenant-role-form-section-title,
+.tenant-role-form-permission-summary {
+  display: grid;
+  gap: 8px;
+}
+
+.tenant-role-form-section-heading,
+.tenant-role-form-permission-summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tenant-role-form-section-heading {
+  justify-content: flex-start;
+}
+
+.tenant-role-form-section-icon,
+.tenant-role-form-summary-icon {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  color: var(--role-accent);
+  background: var(--role-accent-soft);
+}
+
+.tenant-role-form-section-icon mat-icon,
+.tenant-role-form-summary-icon mat-icon {
+  width: 19px;
+  height: 19px;
+  font-size: 19px;
+}
+
+.tenant-role-form-section-title h2,
+.tenant-role-form-permission-summary h2 {
+  color: var(--role-text);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.tenant-role-form-field-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, .76fr) minmax(280px, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.tenant-role-form-field {
+  display: grid;
+  gap: 7px;
+  color: oklch(36% 0.035 260);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.tenant-role-form-field input,
+.tenant-role-form-field textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid var(--role-border-strong);
+  border-radius: 8px;
+  outline: 0;
+  color: var(--role-text);
+  background: oklch(99.5% 0.004 260);
+  font: inherit;
+  font-weight: 600;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.tenant-role-form-field input::placeholder,
+.tenant-role-form-field textarea::placeholder {
+  color: oklch(64% 0.025 260);
+}
+
+.tenant-role-form-field input:hover,
+.tenant-role-form-field textarea:hover {
+  border-color: oklch(68% 0.036 260);
+}
+
+.tenant-role-form-field input:focus,
+.tenant-role-form-field textarea:focus {
+  border-color: var(--role-accent);
+  background: var(--role-surface);
+  box-shadow: 0 0 0 3px oklch(88% 0.06 277);
+}
+
+.tenant-role-form-field textarea {
+  min-height: 86px;
+  resize: vertical;
+}
+
+.tenant-role-form-field small,
+.tenant-role-form-permission-summary small {
+  color: var(--role-danger);
+  font-size: 12px;
+}
+
+.tenant-role-form-field--invalid input {
+  border-color: oklch(64% 0.18 28);
+  background: var(--role-danger-soft);
+}
+
+.tenant-role-form-summary {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 18px;
+  background:
+    linear-gradient(135deg, oklch(98.5% 0.012 260), oklch(96.5% 0.018 277));
+}
+
+.tenant-role-form-summary strong {
+  display: block;
+  color: var(--role-text);
+  font-size: 34px;
+  line-height: 1;
+  font-weight: 850;
+}
+
+.tenant-role-form-summary span {
+  display: block;
+  margin-top: 5px;
+  color: var(--role-text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.tenant-role-form-permission-summary {
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--role-border);
+  border-radius: 8px;
+  background: var(--role-surface-muted);
+}
+
+.tenant-role-form-permission-summary > small {
+  flex-basis: 100%;
+}
+
+.tenant-role-form-permission-summary--invalid {
+  border-color: oklch(72% 0.12 28);
+  background: var(--role-danger-soft);
+}
+
+.tenant-role-form-permission-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  align-items: start;
+  gap: 14px;
+}
+
+.tenant-role-form-permission-group {
+  overflow: hidden;
+  border: 1px solid var(--role-border);
+  border-radius: 8px;
+  background: var(--role-surface);
+  box-shadow: 0 1px 2px oklch(36% 0.055 260 / 5%);
+}
+
+.tenant-role-form-permission-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 58px;
+  padding: 12px 14px;
+  background: var(--role-surface-muted);
+  border-bottom: 1px solid var(--role-border);
+}
+
+.tenant-role-form-permission-group h3 {
+  margin: 0;
+  color: var(--role-text);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.tenant-role-form-permission-group-header span {
+  display: inline-flex;
+  margin-top: 4px;
+  color: var(--role-text-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.tenant-role-form-group-toggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--role-border);
+  border-radius: 8px;
+  color: var(--role-accent-strong);
+  background: var(--role-surface);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.tenant-role-form-group-toggle:hover {
+  border-color: oklch(76% 0.055 277);
+  background: var(--role-accent-soft);
+}
+
+.tenant-role-form-check-list {
+  display: grid;
+}
+
+.tenant-role-form-check {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 10px;
+  position: relative;
+  padding: 12px 14px;
+  border-bottom: 1px solid oklch(93% 0.012 260);
+  color: var(--role-text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.tenant-role-form-check:last-child {
+  border-bottom: 0;
+}
+
+.tenant-role-form-check:hover {
+  background: oklch(98% 0.01 260);
+}
+
+.tenant-role-form-check--selected {
+  background: var(--role-accent-soft);
+}
+
+.tenant-role-form-check--selected:hover {
+  background: oklch(92.5% 0.045 277);
+}
+
+.tenant-role-form-check input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.tenant-role-form-check-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border: 1px solid var(--role-border-strong);
+  border-radius: 6px;
+  color: transparent;
+  background: var(--role-surface);
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.tenant-role-form-check-mark mat-icon {
+  width: 15px;
+  height: 15px;
+  font-size: 15px;
+}
+
+.tenant-role-form-check--selected .tenant-role-form-check-mark {
+  border-color: var(--role-accent);
+  color: oklch(99% 0.006 260);
+  background: var(--role-accent);
+}
+
+.tenant-role-form-check input:focus-visible + .tenant-role-form-check-mark {
+  outline: 3px solid oklch(88% 0.06 277);
+  outline-offset: 2px;
+}
+
+.tenant-role-form-check-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.tenant-role-form-check-copy strong {
+  color: var(--role-text);
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.tenant-role-form-check-copy small {
+  color: var(--role-text-muted);
+  line-height: 1.4;
+}
+
+.tenant-role-form-check em {
+  display: inline-flex;
+  margin-inline-start: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  color: var(--role-danger);
+  background: oklch(93% 0.045 28);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.tenant-role-form-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 4px;
+  padding: 14px 0 2px;
+  background: linear-gradient(180deg, oklch(98% 0.006 260 / 0), oklch(98% 0.006 260) 44%);
+}
+
+.primary-action,
+.secondary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease, border-color 160ms ease;
+}
+
+.primary-action {
+  border: 0;
+  color: oklch(99% 0.006 260);
+  background: var(--role-accent);
+  box-shadow: 0 10px 18px oklch(55% 0.19 277 / 18%);
+}
+
+.primary-action:hover:not(:disabled) {
+  background: var(--role-accent-strong);
+}
+
+.primary-action:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.primary-action:disabled {
+  cursor: not-allowed;
+  opacity: .65;
+  box-shadow: none;
+}
+
+.secondary-action {
+  border: 1px solid var(--role-border-strong);
+  color: oklch(36% 0.035 260);
+  background: var(--role-surface);
+}
+
+.secondary-action:hover {
+  border-color: oklch(74% 0.036 260);
+  background: var(--role-surface-muted);
+}
+
+.primary-action:focus-visible,
+.secondary-action:focus-visible,
+.tenant-role-form-group-toggle:focus-visible {
+  outline: 3px solid oklch(88% 0.06 277);
+  outline-offset: 2px;
+}
+
+.tenant-role-form-alert {
+  padding: 12px 14px;
+  border: 1px solid oklch(82% 0.08 28);
+  border-radius: 8px;
+  color: var(--role-danger);
+  background: var(--role-danger-soft);
+  font-weight: 800;
+}
+
+.tenant-role-form-loading {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.tenant-role-form-loading span {
+  display: block;
+  height: 54px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, oklch(96% 0.01 260), oklch(90% 0.018 260), oklch(96% 0.01 260));
+  background-size: 200% 100%;
+  animation: tenant-role-form-loading 1.1s ease-in-out infinite;
+}
+
+@media (max-width: 1040px) {
+  .tenant-role-form-main,
+  .tenant-role-form-field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tenant-role-form-summary {
+    grid-template-columns: 34px minmax(0, auto) minmax(220px, 1fr);
+    align-items: center;
+  }
+
+  .tenant-role-form-summary p {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .tenant-role-form-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tenant-role-form-summary {
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .tenant-role-form-summary p {
+    grid-column: 1 / -1;
+  }
+
+  .tenant-role-form-permission-summary,
+  .tenant-role-form-permission-group-header,
+  .tenant-role-form-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tenant-role-form-permission-list {
+    grid-template-columns: 1fr;
+  }
+
+  .tenant-role-form-actions {
+    position: static;
+    flex-direction: column-reverse;
+    padding-top: 0;
+  }
+
+  .primary-action,
+  .secondary-action {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primary-action,
+  .secondary-action,
+  .tenant-role-form-field input,
+  .tenant-role-form-field textarea,
+  .tenant-role-form-group-toggle,
+  .tenant-role-form-check,
+  .tenant-role-form-check-mark,
+  .tenant-role-form-loading span {
+    animation: none;
+    transition: none;
+  }
+}
+
+@keyframes tenant-role-form-loading {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: -100% 0;
+  }
+}

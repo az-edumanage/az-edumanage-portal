@@ -1,108 +1,159 @@
-<div class="min-h-screen bg-gradient-to-br from-slate-100 via-cyan-50 to-blue-100 px-4 py-8 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-  <div class="mx-auto grid w-full max-w-6xl overflow-hidden rounded-3xl border border-white/70 bg-white/75 shadow-2xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80 md:grid-cols-2">
-    <section class="relative hidden overflow-hidden bg-slate-900 p-10 text-white md:flex md:flex-col md:justify-between">
-      <div class="absolute -right-12 -top-16 h-56 w-56 rounded-full bg-cyan-400/30 blur-3xl"></div>
-      <div class="absolute -bottom-10 -left-10 h-52 w-52 rounded-full bg-indigo-500/30 blur-3xl"></div>
-
-      <div class="relative space-y-4">
-        <p class="text-xs uppercase tracking-[0.4em] text-cyan-300">Beedu Platform</p>
-        <h1 class="text-4xl font-semibold leading-tight">Run your education center from one place.</h1>
-        <p class="max-w-md text-sm text-slate-300">
-          Manage tenants, classrooms, schedules, billing, and communication through one secure dashboard.
-        </p>
+<main class="login-shell">
+  <section class="login-panel" aria-labelledby="login-title">
+    <div class="login-context" aria-hidden="true">
+      <div class="login-brand-row">
+        <img class="login-brand-logo login-brand-logo--full" src="/login-logo.svg" alt="AZ Edumanage Platform" />
       </div>
 
-      <div class="relative grid gap-4 text-sm text-slate-200">
-        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">Real-time operations visibility</div>
-        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">Role-based access for owner, tenant, and teacher</div>
+      <div class="login-context-copy">
+        <p class="login-eyebrow">Secure sign in</p>
+        <h1>{{ workspaceTitle() }}</h1>
+        <p>{{ workspaceDescription() }}</p>
       </div>
-    </section>
 
-    <section class="p-6 sm:p-10">
-      <div class="mx-auto w-full max-w-md">
-        <div class="mb-8 space-y-2">
-          <h2 class="text-3xl font-semibold text-slate-900 dark:text-slate-100">Welcome back</h2>
-          <p class="text-sm text-slate-600 dark:text-slate-400">Sign in to access your workspace.</p>
+      <div class="login-assurance-list">
+        <div class="login-assurance-item">
+          <mat-icon>verified_user</mat-icon>
+          <span>Workspace-specific access</span>
+        </div>
+        <div class="login-assurance-item">
+          <mat-icon>lock</mat-icon>
+          <span>Protected session recovery</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="login-form-pane">
+      <div class="login-form-card">
+        <div class="login-mobile-brand" aria-hidden="true">
+          <img class="login-brand-logo login-brand-logo--full" src="/login-logo.svg" alt="" />
         </div>
 
-        <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5" novalidate>
+        <header class="login-heading">
+          <p class="login-eyebrow">{{ workspaceTitle() }}</p>
+          <h2 id="login-title">Welcome back</h2>
+          <p>{{ tenantSubdomain() ? tenantSubdomain() + ' tenant access' : 'Enter your credentials to continue.' }}</p>
+        </header>
+
+        <form [formGroup]="form" (ngSubmit)="submit()" class="login-form" novalidate>
           @if (infoMessage()) {
-            <p class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300">
-              {{ infoMessage() }}
+            <p class="login-alert login-alert--info" role="status">
+              <mat-icon>info</mat-icon>
+              <span>{{ infoMessage() }}</span>
             </p>
           }
 
-          <div class="space-y-2">
-            <label for="username" class="text-sm font-medium text-slate-700 dark:text-slate-300">Username</label>
-            <input
-              id="username"
-              type="text"
-              formControlName="username"
-              autocomplete="username"
-              class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-900"
-            />
+          <div class="login-field">
+            <label for="username">Username or email</label>
+            <div class="login-input-wrap">
+              <mat-icon>person</mat-icon>
+              <input
+                id="username"
+                type="text"
+                formControlName="username"
+                autocomplete="username"
+                placeholder="Enter username or email"
+                [attr.aria-invalid]="form.controls.username.invalid && form.controls.username.touched"
+              />
+            </div>
+            @if (form.controls.username.invalid && form.controls.username.touched) {
+              <p class="login-field-error">Username or email is required.</p>
+            }
           </div>
 
-          <div class="space-y-2">
-            <label for="password" class="text-sm font-medium text-slate-700 dark:text-slate-300">Password</label>
-            <div class="relative">
+          <div class="login-field">
+            <div class="login-field-head">
+              <label for="password">Password</label>
+              <button type="button" class="login-link-button" (click)="openForgotPassword()">Forgot password?</button>
+            </div>
+            <div class="login-input-wrap login-input-wrap--password">
+              <mat-icon>key</mat-icon>
               <input
                 id="password"
                 [type]="showPassword() ? 'text' : 'password'"
                 formControlName="password"
                 autocomplete="current-password"
-                class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 pr-12 text-sm text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-900"
+                placeholder="Enter password"
+                [attr.aria-invalid]="form.controls.password.invalid && form.controls.password.touched"
               />
               <button
                 type="button"
+                class="login-icon-button"
                 (click)="togglePasswordVisibility()"
-                class="absolute inset-y-0 right-2 grid place-items-center rounded-lg px-2 text-slate-500 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-300 dark:text-slate-400 dark:hover:text-slate-200"
                 [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
               >
-                <mat-icon class="text-[20px]">{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+                <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
             </div>
+            @if (form.controls.password.invalid && form.controls.password.touched) {
+              <p class="login-field-error">Password is required.</p>
+            }
           </div>
 
+          @if (forgotPasswordOpen()) {
+            <section class="login-reset-panel" aria-labelledby="forgot-password-title">
+              <div class="login-reset-heading">
+                <div>
+                  <h3 id="forgot-password-title">Reset password</h3>
+                  <p>Enter your account email and we will send a recovery link.</p>
+                </div>
+                <button type="button" class="login-icon-button" (click)="closeForgotPassword()" aria-label="Close password reset">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+
+              <div class="login-field">
+                <label for="forgotPasswordEmail">Account email</label>
+                <div class="login-input-wrap">
+                  <mat-icon>mail</mat-icon>
+                  <input
+                    id="forgotPasswordEmail"
+                    type="email"
+                    [formControl]="forgotPasswordEmail"
+                    autocomplete="email"
+                    placeholder="name@example.com"
+                    [attr.aria-invalid]="forgotPasswordEmail.invalid && forgotPasswordEmail.touched"
+                  />
+                </div>
+                @if (forgotPasswordEmail.invalid && forgotPasswordEmail.touched) {
+                  <p class="login-field-error">Enter a valid email address.</p>
+                }
+              </div>
+
+              @if (forgotPasswordMessage()) {
+                <p class="login-alert login-alert--info" role="status">
+                  <mat-icon>mark_email_read</mat-icon>
+                  <span>{{ forgotPasswordMessage() }}</span>
+                </p>
+              }
+
+              @if (forgotPasswordError()) {
+                <p class="login-alert login-alert--error" role="alert">
+                  <mat-icon>error</mat-icon>
+                  <span>{{ forgotPasswordError() }}</span>
+                </p>
+              }
+
+              <button type="button" class="login-reset-submit" [disabled]="forgotPasswordSubmitting()" (click)="requestPasswordReset()">
+                <mat-icon>{{ forgotPasswordSubmitting() ? 'sync' : 'outgoing_mail' }}</mat-icon>
+                <span>{{ forgotPasswordSubmitting() ? 'Sending link...' : 'Send reset link' }}</span>
+              </button>
+            </section>
+          }
+
           @if (errorMessage()) {
-            <p class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
-              {{ errorMessage() }}
+            <p class="login-alert login-alert--error" role="alert">
+              <mat-icon>error</mat-icon>
+              <span>{{ errorMessage() }}</span>
             </p>
           }
 
-          <button
-            type="submit"
-            class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400"
-            [disabled]="submitting()"
-          >
-            <mat-icon class="text-[20px]">{{ submitting() ? 'hourglass_top' : 'login' }}</mat-icon>
-            {{ submitting() ? 'Signing in...' : 'Sign in' }}
+          <button type="submit" class="login-submit" [disabled]="submitting()">
+            <mat-icon>{{ submitting() ? 'sync' : 'login' }}</mat-icon>
+            <span>{{ submitting() ? 'Signing in...' : 'Sign in' }}</span>
           </button>
         </form>
-
-        <button
-          type="button"
-          (click)="continueAsGuest()"
-          class="mt-4 inline-flex w-full items-center justify-center rounded-xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-cyan-300 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-        >
-          Continue with demo data
-        </button>
-
-        <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <a
-            routerLink="/register"
-            class="inline-flex items-center justify-center rounded-xl border border-cyan-400/40 px-4 py-3 text-sm font-semibold text-cyan-700 transition hover:bg-cyan-50 dark:text-cyan-300 dark:hover:bg-cyan-950/30"
-          >
-            Register
-          </a>
-          <a
-            routerLink="/free-trial"
-            class="inline-flex items-center justify-center rounded-xl bg-cyan-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-cyan-500"
-          >
-            Free Trial
-          </a>
-        </div>
       </div>
-    </section>
-  </div>
-</div>
+    </div>
+  </section>
+</main>

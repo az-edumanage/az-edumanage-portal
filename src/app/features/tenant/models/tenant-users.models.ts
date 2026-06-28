@@ -5,7 +5,9 @@ export interface TenantUser {
   id: string;
   name: string;
   email: string;
-  role: TenantUserRole;
+  role: string;
+  roleId?: string | null;
+  permissions?: string[];
   status: TenantUserStatus;
   lastLogin: string;
   avatar?: string;

@@ -13,7 +13,7 @@ export class TenantUniversitySubjectsStore {
   private readonly collegesData = inject(TenantCollegesDataService);
 
   readonly searchQuery = signal('');
-  readonly viewMode = signal<'grid' | 'list'>('grid');
+  readonly viewMode = signal<'grid' | 'list'>('list');
   readonly universityFilter = signal('');
   readonly collegeFilter = signal('');
   readonly subjects = signal<TenantUniversitySubject[]>([]);

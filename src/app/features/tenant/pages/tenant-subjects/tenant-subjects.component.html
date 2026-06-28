@@ -226,13 +226,12 @@
             <tbody class="tenant-grades-tbody">
               @for (subject of filteredSubjects(); track subject.id) {
                 <tr
-                  class="tenant-grades-tr"
-                  [class.cursor-pointer]="isQuestionsBankGradeRoute"
-                  [attr.role]="isQuestionsBankGradeRoute ? 'link' : null"
-                  [attr.tabindex]="isQuestionsBankGradeRoute ? '0' : null"
-                  (click)="isQuestionsBankGradeRoute && openSubject(subject.id)"
-                  (keydown.enter)="isQuestionsBankGradeRoute && openSubject(subject.id)"
-                  (keydown.space)="isQuestionsBankGradeRoute && openSubject(subject.id); isQuestionsBankGradeRoute && $event.preventDefault()"
+                  class="tenant-grades-tr cursor-pointer"
+                  role="link"
+                  tabindex="0"
+                  (click)="openSubject(subject.id)"
+                  (keydown.enter)="openSubject(subject.id)"
+                  (keydown.space)="openSubject(subject.id); $event.preventDefault()"
                 >
                   <td class="tenant-grades-td">
                     <div class="tenant-grades-row-name-wrap">
@@ -258,10 +257,10 @@
                         <mat-icon class="text-sm block">visibility</mat-icon>
                       </a>
                       @if (!isQuestionsBankRoute) {
-                        <a [routerLink]="['/tenant/subjects', subject.id, 'edit']" class="tenant-grades-row-btn tenant-grades-row-btn--edit" title="Edit">
+                        <a [routerLink]="['/tenant/subjects', subject.id, 'edit']" (click)="$event.stopPropagation()" class="tenant-grades-row-btn tenant-grades-row-btn--edit" title="Edit">
                           <mat-icon class="text-sm block">edit</mat-icon>
                         </a>
-                        <button type="button" (click)="deleteSubject(subject.id)" [disabled]="deletingId() === subject.id" class="tenant-grades-row-btn tenant-grades-row-btn--delete" title="Delete">
+                        <button type="button" (click)="$event.stopPropagation(); deleteSubject(subject.id)" [disabled]="deletingId() === subject.id" class="tenant-grades-row-btn tenant-grades-row-btn--delete" title="Delete">
                           <mat-icon class="text-sm block">{{ deletingId() === subject.id ? 'sync' : 'delete' }}</mat-icon>
                         </button>
                       }

@@ -26,16 +26,31 @@
             </div>
 
             <div class="tenant-room-create-field">
-              <label for="roomType" class="tenant-room-create-label">Room Type</label>
-              <select 
-                id="roomType"
-                formControlName="type"
-                class="tenant-room-create-input"
-              >
-                @for (type of availableRoomTypes(); track type) {
-                  <option [value]="type">{{ type }}</option>
-                }
-              </select>
+              <div class="tenant-room-create-selector" (click)="$event.stopPropagation()">
+                <app-tenant-group-searchable-selector
+                  triggerId="roomType"
+                  label="Room Type"
+                  [placeholder]="roomTypePlaceholder()"
+                  [selectedValue]="selectedRoomTypeLabel()"
+                  [isOpen]="roomTypeSelectorOpen()"
+                  [disabled]="isLoadingLookups() || roomTypeSaving()"
+                  [options]="roomTypeOptions()"
+                  [searchQuery]="roomTypeSearchQuery()"
+                  searchPlaceholder="Search room types..."
+                  emptyText="No room types found"
+                  footerIcon="add"
+                  [footerButton]="roomTypeFooterLabel()"
+                  (toggled)="toggleRoomTypeSelector()"
+                  (searchQueryChanged)="setRoomTypeSearchQuery($event)"
+                  (selected)="selectRoomType($event)"
+                  (footerClicked)="addRoomTypeFromSearch()"
+                />
+              </div>
+              @if (roomTypeInlineError()) {
+                <p class="tenant-room-create-field-error">{{ roomTypeInlineError() }}</p>
+              } @else if (roomForm.controls.type.invalid && roomForm.controls.type.touched) {
+                <p class="tenant-room-create-field-error">Room type is required.</p>
+              }
             </div>
 
             <div class="tenant-room-create-field">

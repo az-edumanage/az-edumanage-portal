@@ -1,65 +1,42 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+
+import { environment } from '../../../../environments/environment';
+import type { TenantAccessUserSummary } from '../models/tenant-access-management.models';
 import { PendingRequest, TenantUser } from '../models/tenant-users.models';
 
 @Injectable({ providedIn: 'root' })
 export class TenantUsersDataService {
-  readonly users = signal<TenantUser[]>([
-    {
-      id: '1',
-      name: 'Ahmed Admin',
-      email: 'admin@school.com',
-      role: 'Admin',
-      status: 'Active',
-      lastLogin: '2 hours ago',
-    },
-    {
-      id: '2',
-      name: 'Sara Manager',
-      email: 'sara.m@school.com',
-      role: 'Manager',
-      status: 'Active',
-      lastLogin: '1 day ago',
-    },
-    {
-      id: '3',
-      name: 'John Staff',
-      email: 'john.s@school.com',
-      role: 'Staff',
-      status: 'Inactive',
-      lastLogin: '3 days ago',
-    },
-    {
-      id: '4',
-      name: 'Dr. Ahmed Zewail',
-      email: 'zewail@school.com',
-      role: 'Teacher',
-      status: 'Active',
-      lastLogin: '1 hour ago',
-    },
-    {
-      id: '5',
-      name: 'Mona Helmy',
-      email: 'mona.h@school.com',
-      role: 'Teacher',
-      status: 'Pending',
-      lastLogin: 'Never',
-    },
-  ]);
+  private readonly http = inject(HttpClient);
 
-  readonly pendingRequests = signal<PendingRequest[]>([
-    {
-      id: '1',
-      name: 'Youssef Mansour',
-      email: 'youssef@example.com',
-      requestedRole: 'Teacher',
-      date: 'Feb 24, 2026',
-    },
-    {
-      id: '2',
-      name: 'Layla Ibrahim',
-      email: 'layla@example.com',
-      requestedRole: 'Staff',
-      date: 'Feb 23, 2026',
-    },
-  ]);
+  readonly users = signal<TenantUser[]>([]);
+  readonly pendingRequests = signal<PendingRequest[]>([]);
+
+  async loadUsers(filters: { search?: string; status?: string } = {}): Promise<void> {
+    let params = new HttpParams();
+    if (filters.search?.trim()) {
+      params = params.set('search', filters.search.trim());
+    }
+    if (filters.status?.trim()) {
+      params = params.set('status', filters.status.trim().toUpperCase());
+    }
+    const response = await firstValueFrom(
+      this.http.get<{ users: TenantAccessUserSummary[] }>(`${environment.apiBaseUrl}/tenant/users`, { params }),
+    );
+    this.users.set(response.users.map((user) => this.toUser(user)));
+  }
+
+  private toUser(user: TenantAccessUserSummary): TenantUser {
+    return {
+      id: user.userId,
+      name: user.fullName || user.username,
+      email: user.email || user.username,
+      role: user.roleName || 'No role',
+      roleId: user.roleId,
+      permissions: user.permissions,
+      status: user.enabled ? 'Active' : 'Inactive',
+      lastLogin: user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : 'Never',
+    };
+  }
 }

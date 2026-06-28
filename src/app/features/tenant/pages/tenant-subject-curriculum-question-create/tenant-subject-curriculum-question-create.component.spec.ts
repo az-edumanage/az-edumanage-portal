@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { ReplaySubject } from 'rxjs';
 import { I18nService } from '../../../../core/services/i18n.service';
+import { TenantQuestionSourceSettingsService } from '../../data-access/tenant-question-source-settings.service';
 import { TenantQuestionTypeSettingsService } from '../../data-access/tenant-question-type-settings.service';
 import { TenantSubjectsDataService } from '../../data-access/tenant-subjects-data.service';
 import { TenantSubjectCurriculumNode } from '../../models/tenant-subjects.models';
@@ -27,6 +28,13 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
           {
             id: 'lesson-1',
             label: 'Lesson 1',
+            icon: 'description',
+            description: null,
+            children: [],
+          },
+          {
+            id: 'lesson-2',
+            label: 'Lesson 2',
             icon: 'description',
             description: null,
             children: [],
@@ -106,6 +114,29 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
         difficultyOrder: 3,
       },
     ]),
+    listCurriculumSkills: vi.fn().mockImplementation(async (_subjectId: string, nodeId: string) => {
+      const skillsByNode = {
+        'lesson-1': [
+          {
+            id: 'skill-1',
+            name: 'Critical reading',
+            description: 'Identify arguments.',
+            createdAt: '2026-01-01T00:00:00Z',
+            updatedAt: '2026-01-01T00:00:00Z',
+          },
+        ],
+        'lesson-2': [
+          {
+            id: 'skill-2',
+            name: 'Problem solving',
+            description: null,
+            createdAt: '2026-01-01T00:00:00Z',
+            updatedAt: '2026-01-01T00:00:00Z',
+          },
+        ],
+      } as const;
+      return skillsByNode[nodeId as keyof typeof skillsByNode] ?? [];
+    }),
     listCurriculumQuestions: vi.fn().mockResolvedValue([
       {
         id: 'question-1',
@@ -115,6 +146,7 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
         description: 'Choose all valid answers',
         bloomId: 'bloom-understand',
         difficultyId: 'difficulty-medium',
+        skillId: 'skill-1',
         weight: 12,
         answers: [
           {
@@ -130,6 +162,114 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
         updatedAt: '2026-01-01T00:00:00Z',
       },
     ]),
+    listBasicEducationExamQuestions: vi.fn().mockResolvedValue([
+      {
+        id: 'exam-question-1',
+        question: 'What is the lesson title?',
+        type: 'MULTIPLE_CHOICE',
+        answer: null,
+        description: 'Choose all valid answers',
+        bloomId: 'bloom-understand',
+        difficultyId: 'difficulty-medium',
+        skillId: 'skill-1',
+        weight: 12,
+        answers: [],
+        tags: [],
+        questionSource: null,
+        answerExplanation: null,
+        curriculumNodeId: null,
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      },
+    ]),
+    listBasicEducationExamLinkedQuestions: vi.fn().mockResolvedValue([
+      {
+        id: 'exam-question-1',
+        question: 'Editable exam-local question?',
+        type: 'MULTIPLE_CHOICE',
+        answer: null,
+        description: 'Only this exam copy is edited',
+        bloomId: 'bloom-understand',
+        difficultyId: 'difficulty-medium',
+        skillId: 'skill-1',
+        weight: 12,
+        answers: [],
+        tags: [],
+        questionSource: null,
+        answerExplanation: null,
+        curriculumNodeId: null,
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      },
+    ]),
+    createBasicEducationExamQuestion: vi.fn().mockResolvedValue({
+      id: 'bank-question-1',
+      question: 'Question bank only?',
+      type: 'TRUE_FALSE',
+      answer: null,
+      description: null,
+      bloomId: null,
+      difficultyId: null,
+      skillId: null,
+      weight: null,
+      answers: [],
+      tags: [],
+      questionSource: null,
+      answerExplanation: null,
+      curriculumNodeId: 'lesson-1',
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    }),
+    listBasicEducationExams: vi.fn().mockResolvedValue([
+      {
+        id: 'exam-1',
+        stageId: 'stage-1',
+        gradeId: 'grade-1',
+        subjectId: 'subject-1',
+        title: 'Saved Exam',
+        instructions: 'Keep instructions',
+        status: 'DRAFT',
+        shuffleQuestions: true,
+        showResultsImmediately: false,
+        allowRetakes: false,
+        questionCount: 1,
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      },
+    ]),
+    updateBasicEducationExam: vi.fn().mockResolvedValue({
+      id: 'exam-1',
+      stageId: 'stage-1',
+      gradeId: 'grade-1',
+      subjectId: 'subject-1',
+      title: 'Saved Exam',
+      instructions: 'Keep instructions',
+      status: 'DRAFT',
+      shuffleQuestions: true,
+      showResultsImmediately: false,
+      allowRetakes: false,
+      questionCount: 2,
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-02T00:00:00Z',
+    }),
+    updateBasicEducationExamQuestion: vi.fn().mockResolvedValue({
+      id: 'bank-question-1',
+      question: 'Question bank only?',
+      type: 'TRUE_FALSE',
+      answer: null,
+      description: null,
+      bloomId: null,
+      difficultyId: null,
+      skillId: null,
+      weight: null,
+      answers: [],
+      tags: [],
+      questionSource: null,
+      answerExplanation: null,
+      curriculumNodeId: 'lesson-1',
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    }),
     createCurriculumQuestion: vi.fn().mockResolvedValue({
       id: 'question-1',
       question: 'What is the lesson title?',
@@ -138,6 +278,7 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       description: null,
       bloomId: null,
       difficultyId: null,
+      skillId: null,
       weight: null,
       answers: [],
       createdAt: '2026-01-01T00:00:00Z',
@@ -151,6 +292,7 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       description: null,
       bloomId: null,
       difficultyId: null,
+      skillId: null,
       weight: null,
       answers: [
         {
@@ -164,6 +306,22 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       ],
       createdAt: '2026-01-01T00:00:00Z',
       updatedAt: '2026-01-02T00:00:00Z',
+    }),
+    createBasicEducationExamQuestionAnswer: vi.fn().mockResolvedValue({
+      id: 'bank-answer-1',
+      answer: 'true',
+      correct: true,
+      description: null,
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    }),
+    updateBasicEducationExamQuestionAnswer: vi.fn().mockResolvedValue({
+      id: 'bank-answer-1',
+      answer: 'true',
+      correct: true,
+      description: null,
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
     }),
     createCurriculumQuestionAnswer: vi.fn().mockResolvedValue({
       id: 'answer-1',
@@ -201,6 +359,25 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
     ]),
     toUserMessage: vi.fn().mockReturnValue('Unable to load question types. Please try again.'),
   };
+  const questionSourceSettings = {
+    listQuestionSources: vi.fn().mockResolvedValue([
+      {
+        id: 'source-official',
+        source: 'Official previous exam',
+        description: 'Imported from official exams.',
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      },
+      {
+        id: 'source-teacher',
+        source: 'Teacher-made',
+        description: null,
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      },
+    ]),
+    toUserMessage: vi.fn().mockReturnValue('Unable to load question sources. Please try again.'),
+  };
 
   beforeEach(async () => {
     paramMap$ = new ReplaySubject<ReturnType<typeof convertToParamMap>>(1);
@@ -211,7 +388,8 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
         { provide: TenantSubjectDetailsFacade, useValue: facade },
         { provide: TenantSubjectsDataService, useValue: data },
         { provide: TenantQuestionTypeSettingsService, useValue: questionTypeSettings },
-        { provide: ActivatedRoute, useValue: { paramMap: paramMap$.asObservable() } },
+        { provide: TenantQuestionSourceSettingsService, useValue: questionSourceSettings },
+        { provide: ActivatedRoute, useValue: { paramMap: paramMap$.asObservable(), snapshot: { queryParamMap: convertToParamMap({}) } } },
       ],
     }).compileComponents();
 
@@ -224,6 +402,7 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
   });
 
   afterEach(() => {
+    sessionStorage.clear();
     TestBed.inject(I18nService).setLanguage('en');
     vi.clearAllMocks();
   });
@@ -234,6 +413,7 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
     expect(facade.loadSubject).toHaveBeenCalledWith('subject-1');
     expect(data.getSubjectCurriculum).toHaveBeenCalledWith('subject-1');
     expect(questionTypeSettings.listQuestionTypes).toHaveBeenCalled();
+    expect(questionSourceSettings.listQuestionSources).toHaveBeenCalled();
     expect(data.listBloomLevels).toHaveBeenCalled();
     expect(data.listQuestionDifficulties).toHaveBeenCalled();
     expect(text).toContain('Subject');
@@ -244,19 +424,12 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
     expect(text).toContain('Lesson 1');
     expect(text).toContain('Add Question');
     expect(text).toContain('Question Information');
-    expect(text).toContain('Analytical Data');
-    expect(text).toContain('Inactive');
-    expect(text).toContain('Topic');
-    expect(text).toContain("Bloom's Taxonomy");
-    expect(text).toContain("Select Bloom's Taxonomy level");
-    expect(text).toContain('1. Remembering');
-    expect(text).toContain('2. Understanding');
-    expect(text).toContain('Difficulty');
-    expect(text).toContain('Easy');
-    expect(text).toContain('Medium');
-    expect(text).toContain('Hard');
-    expect(text).toContain('The Weight');
-    expect((fixture.nativeElement.querySelector('#questionWeight') as HTMLInputElement).placeholder).toBe('Enter weight');
+    expect(text).not.toContain('Analytical Data');
+    expect(text).not.toContain('Application Data');
+    expect(fixture.nativeElement.querySelector('[role="switch"][aria-label="Toggle Analytical Data"]')).toBeNull();
+    expect(data.listCurriculumSkills).toHaveBeenCalledWith('subject-1', 'lesson-1');
+    expect(data.listCurriculumSkills).toHaveBeenCalledWith('subject-1', 'lesson-2');
+    expect(fixture.componentInstance.questionForm.controls.questionSource.value).toBe('');
     expect(text).toContain('Type');
     const fieldLabels = Array.from(fixture.nativeElement.querySelectorAll('label') as NodeListOf<HTMLLabelElement>)
       .map((label) => label.textContent?.trim());
@@ -279,31 +452,178 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
     expect(text).toContain('Multiple Questions');
     expect(text).toContain('Single Question');
     expect(text).not.toContain('Correct');
+    expect(text).not.toContain('Analytical Data');
+    expect(text).not.toContain('Application Data');
     fixture.componentInstance.selectMultipleChoiceMode('single');
     fixture.detectChanges();
     text = fixture.nativeElement.textContent as string;
-    expect(fixture.nativeElement.querySelector('#question')).toBeTruthy();
+    const questionEditor = fixture.nativeElement.querySelector('#question') as HTMLTextAreaElement;
+    expect(questionEditor).toBeTruthy();
+    expect(questionEditor.tagName.toLowerCase()).toBe('textarea');
+    expect(text).toContain('Question editor');
     expect(text).toContain('Answer');
     expect(text).toContain('Correct');
     expect(text).toContain('Add');
     expect(fixture.nativeElement.querySelector('#description')).toBeTruthy();
     expect(text).toContain('Description');
+    expect(text).toContain('Analytical Data');
+    expect(text).toContain('Topic');
+    expect(text).toContain("Bloom's Taxonomy");
+    expect(text).toContain("Select Bloom's Taxonomy level");
+    fixture.componentInstance.toggleBloomTaxonomySelector();
+    fixture.detectChanges();
+    text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('1. Remembering');
+    expect(text).toContain('2. Understanding');
+    fixture.componentInstance.toggleBloomTaxonomySelector();
+    fixture.componentInstance.toggleSkillSelector();
+    fixture.detectChanges();
+    text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Skill');
+    expect(text).toContain('Select skill');
+    expect(text).toContain('Critical reading');
+    expect(text).toContain('Problem solving');
+    fixture.componentInstance.toggleSkillSelector();
+    fixture.detectChanges();
+    text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Difficulty');
+    expect(text).toContain('Easy');
+    expect(text).toContain('Medium');
+    expect(text).toContain('Hard');
+    expect(text).toContain('The Weight');
+    const typeTrigger = fixture.nativeElement.querySelector('#type') as HTMLButtonElement;
+    const bloomSelector = fixture.nativeElement.querySelector('#bloomTaxonomy') as HTMLButtonElement;
+    const skillSelector = fixture.nativeElement.querySelector('#questionSkill') as HTMLButtonElement;
+    const weightInput = fixture.nativeElement.querySelector('#questionWeight') as HTMLInputElement;
+    expect(typeTrigger.className).toContain('h-[46px]');
+    expect(bloomSelector.className).toContain('h-[46px]');
+    expect(skillSelector.className).toContain('h-[46px]');
+    expect(weightInput.className).toContain('h-[46px]');
+    expect(weightInput.placeholder).toBe('Enter weight');
+    expect(text).toContain('Application Data');
+    expect(text).toContain('Question Source');
+    expect(text).toContain('Select source');
+    expect((fixture.nativeElement.querySelector('#questionSource') as HTMLButtonElement).className).toContain('h-[46px]');
+    fixture.componentInstance.toggleQuestionSourceSelector();
+    fixture.detectChanges();
+    text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Official previous exam');
+    expect(text).toContain('Teacher-made');
     expect(text).toContain('Save Question');
   });
 
-  it('toggles the analytical data section state', () => {
-    const switchButton = fixture.nativeElement.querySelector('[role="switch"][aria-label="Toggle Analytical Data"]') as HTMLButtonElement;
+  it('renders exam breadcrumb and cancels back to exam create with subject query', async () => {
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'url', 'get').mockReturnValue(
+      '/tenant/exams/basic-education/stage-1/grades/grade-1/create/new/subjects/subject-1/curriculum/lesson-1/addQuestion',
+    );
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
-    expect(switchButton).toBeTruthy();
-    expect(switchButton.getAttribute('aria-checked')).toBe('false');
-    expect(fixture.nativeElement.textContent).toContain('Inactive');
-
-    switchButton.click();
+    paramMap$.next(convertToParamMap({
+      stageId: 'stage-1',
+      gradeId: 'grade-1',
+      id: 'subject-1',
+      nodeId: 'lesson-1',
+    }));
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(fixture.componentInstance.analyticalDataActive()).toBe(true);
-    expect(switchButton.getAttribute('aria-checked')).toBe('true');
-    expect(fixture.nativeElement.textContent).toContain('Active');
+    const text = fixture.nativeElement.textContent as string;
+    const links = Array.from(fixture.nativeElement.querySelectorAll('a')).map((anchor) => anchor as HTMLAnchorElement);
+    expect(text).toContain('Exams');
+    expect(text).toContain('Basic Education');
+    expect(text).toContain('Grade 3');
+    expect(text).toContain('Arabic');
+    expect(text).not.toContain('Curriculum');
+    expect(text).not.toContain('Lesson 1');
+    expect(text).not.toContain('Subject Details');
+    expect(links.some((anchor) =>
+      anchor.pathname === '/tenant/exams/basic-education/stage-1/grades/grade-1/create/new' &&
+      anchor.search === '?subjectId=subject-1',
+    )).toBe(true);
+
+    fixture.componentInstance.cancel();
+
+    expect(navigateSpy).toHaveBeenCalledWith(
+      ['/tenant/exams/basic-education', 'stage-1', 'grades', 'grade-1', 'create', 'new'],
+      { queryParams: { subjectId: 'subject-1' } },
+    );
+  });
+
+  it('shows the subject curriculum scope on exam question edit routes without a curriculum item', async () => {
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'url', 'get').mockReturnValue(
+      '/tenant/exams/basic-education/stage-1/grades/grade-1/create/new/subjects/subject-1/curriculum/editQuestion/exam-question-1',
+    );
+
+    paramMap$.next(convertToParamMap({
+      stageId: 'stage-1',
+      gradeId: 'grade-1',
+      id: 'subject-1',
+      questionId: 'exam-question-1',
+    }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    const topicSection = Array.from(fixture.nativeElement.querySelectorAll('.border-indigo-200') as NodeListOf<HTMLElement>)
+      .find((section) => section.textContent?.includes('Topic')) as HTMLElement | undefined;
+
+    expect(data.listBasicEducationExamQuestions).toHaveBeenCalledWith('stage-1', 'grade-1', 'subject-1');
+    expect(text).toContain('Curriculum Item');
+    expect(text).toContain('Current item');
+    expect(text).toContain('Arabic Curriculum');
+    expect(topicSection?.textContent).toContain('Topic');
+    expect(topicSection?.textContent).toContain('Arabic Curriculum');
+    expect(text).not.toContain('Lesson 1');
+  });
+
+  it('loads linked exam questions when editing a saved exam-local question copy', async () => {
+    const router = TestBed.inject(Router);
+    const route = TestBed.inject(ActivatedRoute);
+    vi.spyOn(router, 'url', 'get').mockReturnValue(
+      '/tenant/exams/basic-education/stage-1/grades/grade-1/create/new/subjects/subject-1/curriculum/editQuestion/exam-question-1?subjectId=subject-1&examId=exam-1',
+    );
+    Object.defineProperty(route.snapshot, 'queryParamMap', { value: convertToParamMap({ subjectId: 'subject-1', examId: 'exam-1' }), configurable: true });
+
+    paramMap$.next(convertToParamMap({
+      stageId: 'stage-1',
+      gradeId: 'grade-1',
+      id: 'subject-1',
+      questionId: 'exam-question-1',
+    }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    expect(data.listBasicEducationExamLinkedQuestions).toHaveBeenCalledWith('stage-1', 'grade-1', 'subject-1', 'exam-1');
+    expect(data.listBasicEducationExamQuestions).not.toHaveBeenCalledWith('stage-1', 'grade-1', 'subject-1');
+    expect(fixture.componentInstance.questionForm.controls.question.value).toBe('Editable exam-local question?');
+  });
+
+  it('shows analytical data only after Single Question is selected', () => {
+    let text = fixture.nativeElement.textContent as string;
+
+    expect(text).not.toContain('Analytical Data');
+    expect(text).not.toContain('Application Data');
+    fixture.componentInstance.selectQuestionType('Multiple Choice');
+    fixture.detectChanges();
+    text = fixture.nativeElement.textContent as string;
+    expect(text).not.toContain('Analytical Data');
+    expect(text).not.toContain('Application Data');
+
+    fixture.componentInstance.selectMultipleChoiceMode('single');
+    fixture.detectChanges();
+    text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Analytical Data');
+    expect(text).toContain('Application Data');
+    expect(fixture.nativeElement.querySelector('[role="switch"][aria-label="Toggle Analytical Data"]')).toBeNull();
+    expect(text).not.toContain('Inactive');
+    expect(text).not.toContain('Active');
   });
 
   it('renders Arabic labels and RTL direction when Arabic is selected', () => {
@@ -321,21 +641,26 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
     expect(text).toContain('منهج Arabic');
     expect(text).toContain('إضافة سؤال');
     expect(text).toContain('بيانات السؤال');
-    expect(text).toContain('البيانات التحليلية');
-    expect(text).toContain('الموضوع');
-    expect(text).toContain('تصنيف بلوم');
-    expect(text).toContain('1. التذكر');
-    expect(text).toContain('الصعوبة');
-    expect(text).toContain('سهل');
-    expect(text).toContain('الوزن');
+    expect(text).not.toContain('البيانات التحليلية');
     expect(text).toContain('اختر نوع السؤال');
 
     fixture.componentInstance.selectQuestionType('اختيار من متعدد');
+    fixture.componentInstance.selectMultipleChoiceMode('single');
     fixture.detectChanges();
     text = fixture.nativeElement.textContent as string;
 
     expect(text).toContain('أسئلة متعددة');
     expect(text).toContain('سؤال واحد');
+    expect(text).toContain('البيانات التحليلية');
+    expect(text).toContain('الموضوع');
+    expect(text).toContain('تصنيف بلوم');
+    fixture.componentInstance.toggleBloomTaxonomySelector();
+    fixture.detectChanges();
+    text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('1. التذكر');
+    expect(text).toContain('الصعوبة');
+    expect(text).toContain('سهل');
+    expect(text).toContain('الوزن');
     expect(fixture.componentInstance.questionForm.controls.type.value).toBe('MULTIPLE_CHOICE');
   });
 
@@ -344,7 +669,14 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
     vi.spyOn(router, 'navigate').mockResolvedValue(true);
     const component = fixture.componentInstance;
 
-    component.questionForm.patchValue({ question: 'What is the lesson title?', bloomId: 'bloom-understand', difficultyId: 'difficulty-medium' });
+    component.questionForm.patchValue({
+      question: 'What is the lesson title?',
+      bloomId: 'bloom-understand',
+      difficultyId: 'difficulty-medium',
+      skillId: 'skill-1',
+      questionSource: 'Official previous exam',
+      answerExplanation: 'Because the official key marks this option.',
+    });
     component.setQuestionWeightValue('12abc');
     expect(component.questionForm.controls.weight.value).toBe('12');
     const letterKeyEvent = new KeyboardEvent('keydown', { key: 'a', cancelable: true });
@@ -364,7 +696,10 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       description: '',
       bloomId: 'bloom-understand',
       difficultyId: 'difficulty-medium',
+      skillId: 'skill-1',
       weight: 12,
+      questionSource: 'Official previous exam',
+      answerExplanation: 'Because the official key marks this option.',
       mediaUrl: null,
       mediaFileName: null,
       mediaOriginalName: null,
@@ -372,6 +707,57 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       mediaSizeBytes: null,
     });
     expect(router.navigate).toHaveBeenCalledWith(['/tenant/subjects', 'subject-1', 'curriculum', 'lesson-1']);
+  });
+
+  it('appends inserted exam questions to existing saved exam questions', async () => {
+    const router = TestBed.inject(Router);
+    const route = TestBed.inject(ActivatedRoute);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    Object.defineProperty(route.snapshot, 'queryParamMap', { value: convertToParamMap({ examId: 'exam-1' }), configurable: true });
+    sessionStorage.setItem('tenant.exam-draft.questions.basic.stage-1.grade-1.subject-1', JSON.stringify(['question-root-one']));
+    paramMap$.next(convertToParamMap({ stageId: 'stage-1', gradeId: 'grade-1', id: 'subject-1', nodeId: 'lesson-1' }));
+    await fixture.whenStable();
+
+    const component = fixture.componentInstance;
+    vi.spyOn(component, 'isExamQuestionRoute').mockReturnValue(true);
+    component.questionForm.patchValue({ question: 'Inserted question?' });
+    component.selectQuestionType('True / False');
+    await component.saveQuestion();
+
+    expect(data.createBasicEducationExamQuestion).toHaveBeenCalledWith('stage-1', 'grade-1', 'subject-1', expect.objectContaining({
+      question: 'Inserted question?',
+      type: 'TRUE_FALSE',
+      curriculumNodeId: 'lesson-1',
+    }));
+    expect(data.updateBasicEducationExam).toHaveBeenCalledWith('stage-1', 'grade-1', 'subject-1', 'exam-1', expect.objectContaining({
+      title: 'Saved Exam',
+      instructions: 'Keep instructions',
+      questionIds: ['question-root-one', 'bank-question-1'],
+    }));
+    expect(sessionStorage.getItem('tenant.exam-draft.questions.basic.stage-1.grade-1.subject-1')).toBe(JSON.stringify(['question-root-one', 'bank-question-1']));
+    expect(router.navigate).toHaveBeenCalledWith(['/tenant/exams/basic-education', 'stage-1', 'grades', 'grade-1', 'create', 'new'], { queryParams: { subjectId: 'subject-1', examId: 'exam-1' } });
+  });
+
+  it('saves basic question-bank questions to the separated question-bank store', async () => {
+    const router = TestBed.inject(Router);
+    Object.defineProperty(router, 'url', { get: () => '', configurable: true });
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    paramMap$.next(convertToParamMap({ stageId: 'stage-1', gradeId: 'grade-1', id: 'subject-1', nodeId: 'lesson-1' }));
+    await fixture.whenStable();
+
+    const component = fixture.componentInstance;
+    vi.spyOn(component, 'usesBasicEducationQuestionBankStore').mockReturnValue(true);
+    component.questionForm.patchValue({ question: 'Question bank only?' });
+    component.selectQuestionType('True / False');
+    component.trueFalseAnswer.set(true);
+    await component.saveQuestion();
+
+    expect(data.createCurriculumQuestion).not.toHaveBeenCalled();
+    expect(data.createBasicEducationExamQuestion).toHaveBeenCalledWith('stage-1', 'grade-1', 'subject-1', expect.objectContaining({
+      question: 'Question bank only?',
+      type: 'TRUE_FALSE',
+      curriculumNodeId: 'lesson-1',
+    }));
   });
 
   it('saves multiple choice answers through the backend and updates correct choices', async () => {
@@ -392,7 +778,8 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       answer: null,
       description: '',
       bloomId: null,
-      difficultyId: null,
+            difficultyId: null,
+            skillId: null,
       weight: null,
       mediaUrl: null,
       mediaFileName: null,
@@ -535,7 +922,8 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       answer: null,
       description: null,
       bloomId: null,
-      difficultyId: null,
+            difficultyId: null,
+            skillId: null,
       weight: null,
       mediaUrl: null,
       mediaFileName: null,
@@ -549,7 +937,8 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       answer: null,
       description: null,
       bloomId: null,
-      difficultyId: null,
+            difficultyId: null,
+            skillId: null,
       weight: null,
       mediaUrl: null,
       mediaFileName: null,
@@ -600,7 +989,8 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       answer: null,
       description: null,
       bloomId: null,
-      difficultyId: null,
+            difficultyId: null,
+            skillId: null,
       weight: null,
       mediaUrl: null,
       mediaFileName: null,
@@ -655,7 +1045,8 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       answer: null,
       description: '',
       bloomId: null,
-      difficultyId: null,
+            difficultyId: null,
+            skillId: null,
       weight: null,
       mediaUrl: null,
       mediaFileName: null,
@@ -716,7 +1107,8 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       answer: null,
       description: null,
       bloomId: null,
-      difficultyId: null,
+            difficultyId: null,
+            skillId: null,
       weight: null,
       mediaUrl: null,
       mediaFileName: null,
@@ -762,7 +1154,8 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       answer: null,
       description: '',
       bloomId: null,
-      difficultyId: null,
+            difficultyId: null,
+            skillId: null,
       weight: null,
       mediaUrl: null,
       mediaFileName: null,
@@ -815,7 +1208,8 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       answer: null,
       description: null,
       bloomId: null,
-      difficultyId: null,
+            difficultyId: null,
+            skillId: null,
       weight: null,
       mediaUrl: null,
       mediaFileName: null,
@@ -865,6 +1259,19 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
     component.selectMultipleChoiceMode('single');
     component.questionForm.patchValue({ question: 'Water boils at 100 degrees?' });
     component.selectTrueFalseAnswer(true);
+    fixture.detectChanges();
+
+    text = fixture.nativeElement.textContent as string;
+    const trueButton = fixture.nativeElement.querySelector('button[aria-pressed="true"]') as HTMLButtonElement;
+    const falseButton = Array.from(fixture.nativeElement.querySelectorAll('button[aria-pressed="false"]') as NodeListOf<HTMLButtonElement>)
+      .find((button) => button.textContent?.includes('False')) as HTMLButtonElement | undefined;
+    expect(text).toContain('Selected');
+    expect(trueButton.textContent).toContain('True');
+    expect(trueButton.className).toContain('min-h-28');
+    expect(trueButton.className).toContain('shadow-sm');
+    expect(trueButton.className).toContain('ring-indigo-200');
+    expect(falseButton).toBeTruthy();
+
     await component.saveQuestion();
 
     expect(data.createCurriculumQuestion).toHaveBeenCalledWith('subject-1', 'lesson-1', {
@@ -873,7 +1280,8 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       answer: null,
       description: '',
       bloomId: null,
-      difficultyId: null,
+            difficultyId: null,
+            skillId: null,
       weight: null,
       mediaUrl: null,
       mediaFileName: null,
@@ -943,7 +1351,8 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       answer: null,
       description: null,
       bloomId: null,
-      difficultyId: null,
+            difficultyId: null,
+            skillId: null,
       weight: null,
       mediaUrl: null,
       mediaFileName: null,
@@ -957,7 +1366,8 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       answer: null,
       description: null,
       bloomId: null,
-      difficultyId: null,
+            difficultyId: null,
+            skillId: null,
       weight: null,
       mediaUrl: null,
       mediaFileName: null,
@@ -1135,7 +1545,8 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       answer: null,
       description: '',
       bloomId: null,
-      difficultyId: null,
+            difficultyId: null,
+            skillId: null,
       weight: null,
       mediaUrl: '/api/v1/public/tenant-curriculum-question-media/tenant-1/media.png',
       mediaFileName: 'media.png',
@@ -1176,7 +1587,8 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       answer: null,
       description: 'Choose all valid answers',
       bloomId: 'bloom-understand',
-      difficultyId: 'difficulty-medium',
+              difficultyId: 'difficulty-medium',
+              skillId: 'skill-1',
       weight: 12,
       mediaUrl: null,
       mediaFileName: null,

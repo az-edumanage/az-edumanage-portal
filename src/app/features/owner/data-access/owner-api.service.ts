@@ -54,7 +54,7 @@ export class OwnerApiService {
         centerName: 'Bright Future Academy',
         tenantType: 'Educational Center',
         subdomain: 'brightfuture',
-        domain: '.remix.com',
+        domain: '.az-edumanage.com',
         industry: 'K-12 School',
         contactName: 'John Doe',
         contactEmail: 'admin@brightfuture.edu',

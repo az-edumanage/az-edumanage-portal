@@ -67,6 +67,13 @@ function passwordChangeDestination(workspace: UserRole | null): string | null {
   return null;
 }
 
+function routedWorkspace(workspace: string | null | undefined): UserRole | null {
+  if (workspace === 'owner' || workspace === 'tenant' || workspace === 'teacher' || workspace === 'student' || workspace === 'parent') {
+    return workspace;
+  }
+  return null;
+}
+
 function overviewDestination(workspace: UserRole | null): string {
   if (workspace === 'tenant') {
     return '/tenant/overview';
@@ -76,6 +83,12 @@ function overviewDestination(workspace: UserRole | null): string {
   }
   if (workspace === 'owner') {
     return '/owner/overview';
+  }
+  if (workspace === 'student') {
+    return '/student/overview';
+  }
+  if (workspace === 'parent') {
+    return '/parent/overview';
   }
   return '/forbidden';
 }
@@ -87,7 +100,7 @@ function passwordChangeDecision(
   url: string,
 ): true | ReturnType<Router['createUrlTree']> {
   const routeWorkspace = dashboardService.resolveWorkspaceFromUrl(url);
-  const workspace = routeWorkspace ?? identity?.workspace ?? null;
+  const workspace = routeWorkspace ?? routedWorkspace(identity?.workspace) ?? null;
   const changePasswordUrl = passwordChangeDestination(workspace);
 
   if (identity?.passwordChangeRequired === true && changePasswordUrl && url !== changePasswordUrl) {

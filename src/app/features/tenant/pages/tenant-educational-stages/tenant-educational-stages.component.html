@@ -124,7 +124,7 @@
           </thead>
           <tbody class="tenant-educational-stages-tbody">
             @for (stage of filteredStages(); track stage.id) {
-              <tr class="tenant-educational-stages-tr">
+              <tr class="tenant-educational-stages-tr tenant-educational-stages-tr--clickable" role="link" tabindex="0" (click)="openStageGrades(stage)" (keydown.enter)="openStageGrades(stage)" (keydown.space)="openStageGrades(stage); $event.preventDefault()">
                 <td class="tenant-educational-stages-td">
                   <div class="tenant-educational-stages-row-name-wrap">
                     <div class="tenant-educational-stages-row-icon-wrap">
@@ -153,10 +153,10 @@
                 </td>
                 <td class="tenant-educational-stages-td tenant-educational-stages-td--actions">
                   <div class="tenant-educational-stages-row-actions">
-                    <button type="button" (click)="openEditModal(stage)" class="tenant-educational-stages-row-btn tenant-educational-stages-row-btn--edit" title="Edit" [disabled]="saving() || deletingStageId() === stage.id">
+                    <button type="button" (click)="$event.stopPropagation(); openEditModal(stage)" class="tenant-educational-stages-row-btn tenant-educational-stages-row-btn--edit" title="Edit" [disabled]="saving() || deletingStageId() === stage.id">
                       <mat-icon class="text-sm block">edit</mat-icon>
                     </button>
-                    <button type="button" (click)="deleteStage(stage.id)" class="tenant-educational-stages-row-btn tenant-educational-stages-row-btn--delete" title="Delete" [disabled]="deletingStageId() === stage.id">
+                    <button type="button" (click)="$event.stopPropagation(); deleteStage(stage.id)" class="tenant-educational-stages-row-btn tenant-educational-stages-row-btn--delete" title="Delete" [disabled]="deletingStageId() === stage.id">
                       <mat-icon class="text-sm block">{{ deletingStageId() === stage.id ? 'hourglass_empty' : 'delete' }}</mat-icon>
                     </button>
                   </div>

@@ -34,7 +34,7 @@ export class OwnerTenantEditFacade {
       centerName: ['', [Validators.required, Validators.minLength(3)]],
       tenantType: ['', Validators.required],
       subdomain: [{ value: '', disabled: true }],
-      domain: ['.remix.com'],
+      domain: ['.az-edumanage.com'],
       industry: ['', Validators.required],
       contactName: [''],
       contactEmail: ['', [Validators.email]],

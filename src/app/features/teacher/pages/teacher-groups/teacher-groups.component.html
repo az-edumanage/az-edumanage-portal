@@ -1,0 +1,222 @@
+<div class="teacher-groups-page">
+  <header class="page-header">
+    <div>
+      <h2>My Groups</h2>
+      <p>Review the classes assigned to your teacher account.</p>
+    </div>
+
+    <div class="view-toggle" aria-label="View mode">
+      <button type="button" title="Grid view" [class.active]="viewMode() === 'grid'" (click)="setViewMode('grid')">
+        <mat-icon>grid_view</mat-icon>
+      </button>
+      <button type="button" title="List view" [class.active]="viewMode() === 'list'" (click)="setViewMode('list')">
+        <mat-icon>view_list</mat-icon>
+      </button>
+    </div>
+  </header>
+
+  <section class="toolbar">
+    <div class="search-control">
+      <mat-icon>search</mat-icon>
+      <input
+        type="text"
+        [value]="searchQuery()"
+        (input)="setSearchQuery($event)"
+        placeholder="Search groups by name, subject, room, stage or grade..."
+      >
+    </div>
+
+    <div class="filter-actions">
+      <button type="button" class="filter-button" [class.active]="showFilterPanel() || activeFiltersCount() > 0" (click)="toggleFilterPanel()">
+        <mat-icon>filter_list</mat-icon>
+        Advanced Filters
+        @if (activeFiltersCount() > 0) {
+          <span>{{ activeFiltersCount() }}</span>
+        }
+        <mat-icon [class.rotate]="showFilterPanel()">expand_more</mat-icon>
+      </button>
+
+      @if (activeFiltersCount() > 0 || searchQuery()) {
+        <button type="button" class="reset-button" (click)="clearAllFilters()">
+          <mat-icon>restart_alt</mat-icon>
+          Reset All
+        </button>
+      }
+
+      @if (showFilterPanel()) {
+        <div class="filter-panel" [formGroup]="filterForm">
+          <div class="panel-header">
+            <strong>Filter Options</strong>
+            <button type="button" (click)="clearAdvancedFilters()">Reset</button>
+          </div>
+
+          <label>
+            Subject
+            <select formControlName="subject">
+              <option value="">All Subjects</option>
+              @for (subject of subjectOptions(); track subject) {
+                <option [value]="subject">{{ subject }}</option>
+              }
+            </select>
+          </label>
+
+          <label>
+            Education
+            <select formControlName="education">
+              <option value="">All Education</option>
+              @for (education of educationOptions(); track education) {
+                <option [value]="education">{{ education }}</option>
+              }
+            </select>
+          </label>
+
+          <label>
+            Status
+            <select formControlName="status">
+              <option value="">All Statuses</option>
+              @for (status of statusOptions(); track status) {
+                <option [value]="status">{{ status }}</option>
+              }
+            </select>
+          </label>
+
+          <label>
+            Sort By
+            <select formControlName="sortBy">
+              <option value="name">Name (A-Z)</option>
+              <option value="students-desc">Students (High to Low)</option>
+              <option value="students-asc">Students (Low to High)</option>
+            </select>
+          </label>
+        </div>
+      }
+    </div>
+  </section>
+
+  @if (loading()) {
+    <section class="state-panel">
+      <mat-icon>progress_activity</mat-icon>
+      <h3>Loading assigned groups</h3>
+      <p>Please wait while your classes are prepared.</p>
+    </section>
+  } @else if (failed()) {
+    <section class="state-panel">
+      <mat-icon>error_outline</mat-icon>
+      <h3>Unable to load groups</h3>
+      <p>{{ errorMessage() || 'Assigned groups could not be loaded.' }}</p>
+      <button type="button" (click)="retry()">Retry</button>
+    </section>
+  } @else if (empty()) {
+    <section class="state-panel">
+      <mat-icon>groups_2</mat-icon>
+      <h3>No groups assigned</h3>
+      <p>Your teacher account is not assigned to any groups yet.</p>
+    </section>
+  } @else if (noFilteredResults()) {
+    <section class="state-panel">
+      <mat-icon>search_off</mat-icon>
+      <h3>No matching groups</h3>
+      <p>Clear search or filters to return to all assigned groups.</p>
+      <button type="button" (click)="clearAllFilters()">Clear Filters</button>
+    </section>
+  } @else if (viewMode() === 'grid') {
+    <section class="groups-grid">
+      @for (group of filteredGroups(); track group.id) {
+        <article class="group-card">
+          <div class="card-top">
+            <div>
+              <h3>{{ group.name }}</h3>
+              <p>{{ group.subject || 'Subject not set' }}</p>
+            </div>
+            <span class="status-badge" [class]="statusClass(group.status)">{{ group.status }}</span>
+          </div>
+
+          <div class="metric-grid">
+            <div>
+              <mat-icon>school</mat-icon>
+              <span>Education</span>
+              <strong>{{ educationLabel(group) }}</strong>
+            </div>
+            <div>
+              <mat-icon>layers</mat-icon>
+              <span>Context</span>
+              <strong>{{ educationContext(group) }}</strong>
+            </div>
+            <div>
+              <mat-icon>meeting_room</mat-icon>
+              <span>Room</span>
+              <strong>{{ formatRooms(group) }}</strong>
+            </div>
+            <div>
+              <mat-icon>group</mat-icon>
+              <span>Students</span>
+              <strong>{{ group.studentsCount }}</strong>
+            </div>
+          </div>
+
+          <footer>
+            <span><mat-icon>schedule</mat-icon>{{ group.schedule }}</span>
+            <span>{{ formatStartAt(group) }} · {{ formatDuration(group) }}</span>
+          </footer>
+        </article>
+      }
+    </section>
+  } @else {
+    <section class="groups-table">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Group Name</th>
+              <th>Subject</th>
+              <th>Education</th>
+              <th>Room</th>
+              <th>Start At</th>
+              <th>Duration</th>
+              <th>Students</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (group of pagedGroups(); track group.id) {
+              <tr>
+                <td>
+                  <strong>{{ group.name }}</strong>
+                  <span>{{ educationContext(group) }}</span>
+                </td>
+                <td>{{ group.subject || 'Not set' }}</td>
+                <td>{{ educationLabel(group) }}</td>
+                <td>{{ formatRooms(group) }}</td>
+                <td>{{ formatStartAt(group) }}</td>
+                <td>{{ formatDuration(group) }}</td>
+                <td>{{ group.studentsCount }}</td>
+                <td><span class="status-badge" [class]="statusClass(group.status)">{{ group.status }}</span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <footer class="table-footer">
+        <span>Showing {{ pageStart() }}-{{ pageEnd() }} of {{ totalFilteredGroups() }} groups</span>
+        <div>
+          <label>
+            Rows
+            <select [value]="pageSize()" (change)="setPageSize($event)">
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </label>
+          <button type="button" (click)="previousPage()" [disabled]="pageIndex() === 0" title="Previous page">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <span>Page {{ pageIndex() + 1 }} of {{ totalPages() }}</span>
+          <button type="button" (click)="nextPage()" [disabled]="pageIndex() + 1 >= totalPages()" title="Next page">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+      </footer>
+    </section>
+  }
+</div>

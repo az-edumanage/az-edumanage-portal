@@ -1,0 +1,115 @@
+<section class="tenant-rbac-page">
+  <header class="tenant-rbac-header">
+    <div>
+      <p>Users</p>
+      <h1>Roles & Permissions</h1>
+    </div>
+    @if (canManageRoles() && !error()) {
+      <button type="button" class="primary-action" routerLink="/tenant/users/roles-permissions/create">
+        <mat-icon>add</mat-icon>
+        Create Role
+      </button>
+    }
+  </header>
+
+  <div class="tenant-rbac-filters">
+    <label>
+      <mat-icon>search</mat-icon>
+      <input
+        type="search"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        placeholder="Search roles"
+      >
+    </label>
+    <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+      <option value="ALL">All</option>
+      <option value="ACTIVE">Active</option>
+      <option value="INACTIVE">Inactive</option>
+    </select>
+  </div>
+
+  @if (error(); as message) {
+    <div class="tenant-rbac-alert">{{ message }}</div>
+  }
+
+  <div class="tenant-rbac-table">
+    <div class="tenant-rbac-row tenant-rbac-row--head">
+      <span>Role</span>
+      <span>Status</span>
+      <span>Assignments</span>
+      <span>Permissions</span>
+      <span>Actions</span>
+    </div>
+    @if (loading()) {
+      <div class="tenant-rbac-loading" aria-label="Loading roles">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    } @else if (roles().length === 0) {
+      <div class="tenant-rbac-empty">
+        <mat-icon>{{ hasActiveFilters() ? 'manage_search' : 'admin_panel_settings' }}</mat-icon>
+        <strong>{{ emptyTitle() }}</strong>
+        <span>{{ emptyDescription() }}</span>
+      </div>
+    } @else {
+      @for (role of roles(); track role.id) {
+        <div class="tenant-rbac-row">
+          <div class="tenant-rbac-role-cell">
+            <strong>{{ role.name }}</strong>
+            @if (role.description) {
+              <small>{{ role.description }}</small>
+            }
+            @if (role.protectedRole) {
+              <span class="tenant-rbac-protected">Protected</span>
+            }
+          </div>
+          <span class="tenant-rbac-status" [class.tenant-rbac-status--inactive]="role.status === 'INACTIVE'">{{ role.status }}</span>
+          <span class="tenant-rbac-metric">{{ role.userAssignmentCount }}</span>
+          <span class="tenant-rbac-metric">{{ role.permissions.length }}</span>
+            <span class="tenant-rbac-actions">
+            @if (canManageRoles()) {
+              <button type="button" title="Edit role" [routerLink]="['/tenant/users/roles-permissions', role.id, 'edit']">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button
+                type="button"
+                [title]="role.protectedRole ? 'Protected roles cannot change status' : 'Change status'"
+                [disabled]="role.protectedRole"
+                (click)="toggleStatus(role)"
+              >
+                <mat-icon>{{ role.status === 'ACTIVE' ? 'toggle_off' : 'toggle_on' }}</mat-icon>
+              </button>
+              <button
+                type="button"
+                [title]="role.protectedRole || role.userAssignmentCount > 0 ? 'Only unassigned custom roles can be deleted' : 'Delete role'"
+                [disabled]="role.protectedRole || role.userAssignmentCount > 0"
+                (click)="askDelete(role)"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            } @else {
+              <span class="tenant-rbac-readonly">View only</span>
+            }
+          </span>
+        </div>
+      }
+    }
+  </div>
+
+  @if (confirmingDelete(); as role) {
+    <div class="tenant-rbac-modal-backdrop">
+      <div class="tenant-rbac-modal" role="dialog" aria-modal="true" aria-label="Delete role confirmation">
+        <h2>Delete role?</h2>
+        <p>
+          <strong>{{ role.name }}</strong> will be removed. Roles with assigned users or protected status cannot be deleted.
+        </p>
+        <div>
+          <button type="button" class="secondary-action" (click)="confirmingDelete.set(null)">Cancel</button>
+          <button type="button" class="danger-action" (click)="confirmDelete()">Delete Role</button>
+        </div>
+      </div>
+    </div>
+  }
+</section>

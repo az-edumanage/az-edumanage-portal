@@ -45,6 +45,12 @@
       <form [formGroup]="studentForm" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Main Form Section -->
         <div class="lg:col-span-2 space-y-6">
+          @if (errorMessage()) {
+            <div class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg text-sm">
+              {{ errorMessage() }}
+            </div>
+          }
+
           <!-- Personal Information -->
           <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
             <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
@@ -60,7 +66,7 @@
                   type="text" 
                   formControlName="fullName"
                   placeholder="e.g. Ahmed Hassan"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  class="w-full h-[46px] px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                 >
               </div>
               
@@ -71,7 +77,7 @@
                   type="email" 
                   formControlName="email"
                   placeholder="ahmed@example.com"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  class="w-full h-[46px] px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                 >
               </div>
 
@@ -82,7 +88,7 @@
                   type="tel" 
                   formControlName="phone"
                   placeholder="+20 123 456 7890"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  class="w-full h-[46px] px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                 >
               </div>
 
@@ -92,16 +98,48 @@
                   id="birthDate"
                   type="date" 
                   formControlName="birthDate"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  class="w-full h-[46px] px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                 >
               </div>
 
-              <div>
-                <label for="gender" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Gender</label>
-                <select id="gender" formControlName="gender" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                </select>
+              <div class="relative">
+                <label id="gender-label" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Gender</label>
+                <button
+                  id="gender"
+                  type="button"
+                  class="w-full h-[46px] px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-left outline-none transition-all flex items-center justify-between gap-3 focus:ring-2 focus:ring-indigo-500"
+                  [attr.aria-expanded]="genderPanelOpen()"
+                  aria-labelledby="gender-label"
+                  aria-haspopup="listbox"
+                  (click)="toggleGenderPanel()"
+                >
+                  <span class="flex min-w-0 items-center gap-2">
+                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-300">
+                      <mat-icon class="text-sm">wc</mat-icon>
+                    </span>
+                    <span class="truncate text-slate-700 dark:text-slate-200">{{ studentForm.controls.gender.value }}</span>
+                  </span>
+                  <mat-icon class="text-base text-slate-400 transition-transform" [class.rotate-180]="genderPanelOpen()">expand_more</mat-icon>
+                </button>
+
+                @if (genderPanelOpen()) {
+                  <div class="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-slate-200/70 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/30" role="listbox" aria-labelledby="gender-label">
+                    @for (gender of genderOptions; track gender) {
+                      <button
+                        type="button"
+                        class="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50 focus:bg-slate-50 focus:outline-none dark:text-slate-200 dark:hover:bg-slate-800 dark:focus:bg-slate-800"
+                        role="option"
+                        [attr.aria-selected]="studentForm.controls.gender.value === gender"
+                        (click)="selectGender(gender)"
+                      >
+                        <span class="truncate font-medium">{{ gender }}</span>
+                        @if (studentForm.controls.gender.value === gender) {
+                          <mat-icon class="text-sm text-indigo-600 dark:text-indigo-300">check</mat-icon>
+                        }
+                      </button>
+                    }
+                  </div>
+                }
               </div>
             </div>
           </div>
@@ -121,7 +159,7 @@
                   type="text" 
                   formControlName="parentName"
                   placeholder="Hassan Ali"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  class="w-full h-[46px] px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                 >
               </div>
               
@@ -132,7 +170,7 @@
                   type="tel" 
                   formControlName="parentPhone"
                   placeholder="+20 123 456 7890"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  class="w-full h-[46px] px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                 >
               </div>
 
@@ -145,6 +183,54 @@
                   placeholder="123 Education St, Cairo"
                   class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                 ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Account Security -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <mat-icon class="text-sm">lock</mat-icon>
+              Account Access
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="username" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">User name</label>
+                <input
+                  id="username"
+                  type="text"
+                  formControlName="username"
+                  class="w-full h-[46px] px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                >
+                @if (studentForm.controls.username.touched && studentForm.controls.username.hasError('required')) {
+                  <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">User name is required</p>
+                }
+              </div>
+
+              <div>
+                <label for="password" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Initial Password</label>
+                <div class="relative">
+                  <input
+                    id="password"
+                    [type]="showPassword() ? 'text' : 'password'"
+                    formControlName="password"
+                    class="w-full h-[46px] px-3 py-2 pr-10 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  >
+                  <button
+                    type="button"
+                    (click)="showPassword.set(!showPassword())"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-500 transition-colors"
+                    aria-label="Toggle password visibility"
+                  >
+                    <mat-icon class="text-sm">{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+                  </button>
+                </div>
+                @if (studentForm.controls.password.touched && studentForm.controls.password.hasError('required')) {
+                  <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">Initial password is required</p>
+                } @else if (studentForm.controls.password.touched && studentForm.controls.password.hasError('minlength')) {
+                  <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">Initial password must be at least 8 characters</p>
+                }
               </div>
             </div>
           </div>

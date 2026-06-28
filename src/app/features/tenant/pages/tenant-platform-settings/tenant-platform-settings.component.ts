@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { TenantCountry, TenantCountrySettingsService } from '../../data-access/tenant-country-settings.service';
 import { TenantEquipmentFacility, TenantEquipmentFacilitySettingsService } from '../../data-access/tenant-equipment-facility-settings.service';
+import { TenantQuestionSource, TenantQuestionSourceSettingsService } from '../../data-access/tenant-question-source-settings.service';
 import { TenantQuestionType, TenantQuestionTypeSettingsService } from '../../data-access/tenant-question-type-settings.service';
 import { TenantRoomType, TenantRoomTypeSettingsService } from '../../data-access/tenant-room-type-settings.service';
 import { TenantSubscriptionPeriod, TenantSubscriptionPeriodSettingsService } from '../../data-access/tenant-subscription-period-settings.service';
@@ -20,6 +21,7 @@ export class TenantPlatformSettingsComponent implements OnInit {
   private readonly tenantEquipmentFacilitySettings = inject(TenantEquipmentFacilitySettingsService);
   private readonly tenantSubscriptionPeriodSettings = inject(TenantSubscriptionPeriodSettingsService);
   private readonly tenantQuestionTypeSettings = inject(TenantQuestionTypeSettingsService);
+  private readonly tenantQuestionSourceSettings = inject(TenantQuestionSourceSettingsService);
 
   readonly searchQuery = signal('');
   readonly activeTab = signal('general');
@@ -33,6 +35,16 @@ export class TenantPlatformSettingsComponent implements OnInit {
   readonly questionTypesLoading = signal(false);
   readonly questionTypesLoaded = signal(false);
   readonly questionTypeLoadError = signal<string | null>(null);
+  readonly questionSources = signal<TenantQuestionSource[]>([]);
+  readonly questionSourcesLoading = signal(false);
+  readonly questionSourcesLoaded = signal(false);
+  readonly questionSourceLoadError = signal<string | null>(null);
+  readonly showQuestionSourceModal = signal(false);
+  readonly questionSourceValue = signal('');
+  readonly questionSourceDescription = signal('');
+  readonly questionSourceValueError = signal<string | null>(null);
+  readonly questionSourceSaveError = signal<string | null>(null);
+  readonly questionSourceSaving = signal(false);
   readonly showCountryModal = signal(false);
   readonly newCountryName = signal('');
   readonly countryLoadError = signal<string | null>(null);
@@ -222,6 +234,13 @@ export class TenantPlatformSettingsComponent implements OnInit {
     }
   }
 
+  async openQuestionSourcesScreen(): Promise<void> {
+    this.activeTab.set('question-sources');
+    if (!this.questionSourcesLoaded()) {
+      await this.loadQuestionSources();
+    }
+  }
+
   async openRoomTypesScreen(): Promise<void> {
     this.activeTab.set('room-types');
     if (!this.roomTypesLoaded()) {
@@ -402,6 +421,73 @@ export class TenantPlatformSettingsComponent implements OnInit {
       this.questionTypeLoadError.set(this.tenantQuestionTypeSettings.toUserMessage(error));
     } finally {
       this.questionTypesLoading.set(false);
+    }
+  }
+
+  async loadQuestionSources(): Promise<void> {
+    if (this.questionSourcesLoading()) {
+      return;
+    }
+    this.questionSourcesLoading.set(true);
+    this.questionSourceLoadError.set(null);
+    try {
+      this.questionSources.set(await this.tenantQuestionSourceSettings.listQuestionSources());
+      this.questionSourcesLoaded.set(true);
+    } catch (error) {
+      this.questionSourceLoadError.set(this.tenantQuestionSourceSettings.toUserMessage(error));
+    } finally {
+      this.questionSourcesLoading.set(false);
+    }
+  }
+
+  openQuestionSourceModal(): void {
+    this.questionSourceValue.set('');
+    this.questionSourceDescription.set('');
+    this.questionSourceValueError.set(null);
+    this.questionSourceSaveError.set(null);
+    this.showQuestionSourceModal.set(true);
+  }
+
+  closeQuestionSourceModal(): void {
+    if (this.questionSourceSaving()) {
+      return;
+    }
+    this.showQuestionSourceModal.set(false);
+    this.questionSourceValue.set('');
+    this.questionSourceDescription.set('');
+    this.questionSourceValueError.set(null);
+    this.questionSourceSaveError.set(null);
+  }
+
+  async saveQuestionSource(): Promise<void> {
+    if (this.questionSourceSaving()) {
+      return;
+    }
+    const source = this.questionSourceValue().trim();
+    const description = this.questionSourceDescription().trim();
+    this.questionSourceValueError.set(null);
+    this.questionSourceSaveError.set(null);
+
+    if (!source) {
+      this.questionSourceValueError.set('Question source is required.');
+      return;
+    }
+
+    this.questionSourceSaving.set(true);
+    try {
+      const saved = await this.tenantQuestionSourceSettings.createQuestionSource({
+        source,
+        description: description || null,
+      });
+      this.questionSources.update((sources) => [...sources, saved].sort((a, b) => a.source.localeCompare(b.source)));
+      this.questionSourcesLoaded.set(true);
+      this.showQuestionSourceModal.set(false);
+      this.questionSourceValue.set('');
+      this.questionSourceDescription.set('');
+    } catch (error) {
+      this.questionSourceSaveError.set(this.tenantQuestionSourceSettings.toUserMessage(error));
+    } finally {
+      this.questionSourceSaving.set(false);
     }
   }
 

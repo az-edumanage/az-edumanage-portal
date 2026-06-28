@@ -1,4 +1,6 @@
 export interface RoomSchedule {
+  id: string;
+  groupId: string;
   day: string;
   time: string;
   group: string;
@@ -18,4 +20,14 @@ export interface RoomDetails {
   notes: string;
   floor?: string;
   building?: string;
+}
+
+export interface BackendRoomDetails {
+  id: string;
+  name: string;
+  type: string;
+  capacity: number;
+  status: string;
+  equipment?: string[];
+  notes?: string | null;
 }

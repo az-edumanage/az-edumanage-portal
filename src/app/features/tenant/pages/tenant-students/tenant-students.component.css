@@ -10,6 +10,11 @@
   text-align: right;
 }
 
+:host .tenant-students-clickable-row:focus-visible {
+  outline: 2px solid rgb(79 70 229 / 0.55);
+  outline-offset: -2px;
+}
+
 :host-context(.rtl) .tenant-students-table thead th:not(.tenant-students-actions-header),
 :host-context([dir='rtl']) .tenant-students-table thead th:not(.tenant-students-actions-header) {
   text-align: right !important;

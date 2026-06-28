@@ -17,10 +17,12 @@ export class TenantEducationalStagesStore {
   readonly countryOptions = signal<EducationalStageCountryOption[]>([]);
   readonly loading = signal(false);
   readonly countriesLoading = signal(false);
+  readonly countryCreating = signal(false);
   readonly saving = signal(false);
   readonly deletingStageId = signal<string | null>(null);
   readonly loadError = signal<string | null>(null);
   readonly countriesError = signal<string | null>(null);
+  readonly countryCreateError = signal<string | null>(null);
   readonly saveError = signal<string | null>(null);
   readonly deleteError = signal<string | null>(null);
 
@@ -103,6 +105,25 @@ export class TenantEducationalStagesStore {
     } finally {
       this.saving.set(false);
     }
+  }
+
+  async createCountryOption(name: string): Promise<EducationalStageCountryOption | null> {
+    this.countryCreating.set(true);
+    this.countryCreateError.set(null);
+    try {
+      const created = await this.data.createCountryOption(name);
+      this.countryOptions.update((countries) => [...countries, created].sort((a, b) => a.label.localeCompare(b.label)));
+      return created;
+    } catch (error) {
+      this.countryCreateError.set(this.data.toCountryUserMessage(error));
+      return null;
+    } finally {
+      this.countryCreating.set(false);
+    }
+  }
+
+  clearCountryCreateError(): void {
+    this.countryCreateError.set(null);
   }
 
   async updateStage(stageId: string, payload: TenantStagePayload): Promise<boolean> {

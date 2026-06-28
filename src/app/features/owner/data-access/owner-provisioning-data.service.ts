@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ProvisioningJob } from '../models/owner-provisioning.models';
+import { TenantMigrationStatus } from '../models/owner-provisioning.models';
 
 interface OwnerProvisioningResponse {
   tenantId: string;
@@ -21,6 +22,7 @@ interface OwnerProvisioningResponse {
 @Injectable({ providedIn: 'root' })
 export class OwnerProvisioningDataService {
   readonly jobs = signal<ProvisioningJob[]>([]);
+  readonly migrationStatuses = signal<TenantMigrationStatus[]>([]);
 
   constructor(private readonly http: HttpClient) {
     void this.refresh();
@@ -31,6 +33,21 @@ export class OwnerProvisioningDataService {
       this.http.get<OwnerProvisioningResponse[]>(`${environment.apiBaseUrl}/owner/provisioning`),
     );
     this.jobs.set(rows.map((row) => this.mapRow(row)));
+    await this.refreshMigrationStatuses();
+  }
+
+  async refreshMigrationStatuses(): Promise<void> {
+    const rows = await firstValueFrom(
+      this.http.get<TenantMigrationStatus[]>(`${environment.apiBaseUrl}/owner/tenant-migrations`),
+    );
+    this.migrationStatuses.set(rows ?? []);
+  }
+
+  async runTenantMigrations(): Promise<void> {
+    const rows = await firstValueFrom(
+      this.http.post<TenantMigrationStatus[]>(`${environment.apiBaseUrl}/owner/tenant-migrations/run`, {}),
+    );
+    this.migrationStatuses.set(rows ?? []);
   }
 
   addProvisioningJob(_: {

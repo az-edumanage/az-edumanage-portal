@@ -1,0 +1,158 @@
+<section class="tenant-role-form-page">
+  <header class="tenant-role-form-header">
+    <div class="tenant-role-form-title">
+      <p>Users</p>
+      <h1>{{ formTitle() }}</h1>
+      <span>{{ formSubtitle() }}</span>
+    </div>
+    <button type="button" class="secondary-action" (click)="cancel()">
+      <mat-icon>arrow_back</mat-icon>
+      Back to Roles
+    </button>
+  </header>
+
+  @if (error(); as message) {
+    <div class="tenant-role-form-alert">{{ message }}</div>
+  }
+
+  @if (initializing() || loading()) {
+    <div class="tenant-role-form-shell">
+      <div class="tenant-role-form-loading" aria-label="Loading role form">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  } @else {
+    <form class="tenant-role-form" (ngSubmit)="save()">
+      <div class="tenant-role-form-main">
+        <section class="tenant-role-form-panel tenant-role-form-panel--details">
+          <div class="tenant-role-form-section-title">
+            <div class="tenant-role-form-section-heading">
+              <span class="tenant-role-form-section-icon">
+                <mat-icon>badge</mat-icon>
+              </span>
+              <div>
+                <h2>Role Details</h2>
+                <span>Name the role clearly so it is easy to assign later.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="tenant-role-form-field-grid">
+            <label class="tenant-role-form-field" [class.tenant-role-form-field--invalid]="showNameError()">
+              <span>Role name</span>
+              <input
+                [ngModel]="form().name"
+                (ngModelChange)="updateName($event)"
+                name="roleName"
+                placeholder="Role name"
+                [attr.aria-invalid]="showNameError()"
+              >
+              @if (showNameError()) {
+                <small>Role name is required.</small>
+              }
+            </label>
+
+            <label class="tenant-role-form-field">
+              <span>Description</span>
+              <textarea
+                [ngModel]="form().description"
+                (ngModelChange)="updateDescription($event)"
+                name="description"
+                placeholder="Optional description"
+              ></textarea>
+            </label>
+          </div>
+        </section>
+
+        <aside class="tenant-role-form-summary" aria-label="Role progress">
+          <span class="tenant-role-form-summary-icon">
+            <mat-icon>admin_panel_settings</mat-icon>
+          </span>
+          <div>
+            <strong>{{ selectedPermissionCount() }}</strong>
+            <span>permissions selected</span>
+          </div>
+          <p>Save a role with focused access, then assign it from the user create flow.</p>
+        </aside>
+      </div>
+
+      <section class="tenant-role-form-panel tenant-role-form-panel--permissions">
+        <div
+          class="tenant-role-form-permission-summary"
+          [class.tenant-role-form-permission-summary--invalid]="showPermissionError()"
+        >
+          <div class="tenant-role-form-section-heading">
+            <span class="tenant-role-form-section-icon">
+              <mat-icon>rule</mat-icon>
+            </span>
+            <div>
+              <h2>Permissions</h2>
+              <span>{{ selectedPermissionCount() }} selected across {{ permissionGroups().length }} groups</span>
+            </div>
+          </div>
+          @if (showPermissionError()) {
+            <small>Select at least one permission.</small>
+          }
+        </div>
+
+        <div class="tenant-role-form-permission-list">
+          @for (group of permissionGroups(); track group.key) {
+            <section class="tenant-role-form-permission-group">
+              <div class="tenant-role-form-permission-group-header">
+                <div>
+                  <h3>{{ group.label }}</h3>
+                  <span>{{ groupSelectedCount(group) }} / {{ group.permissions.length }}</span>
+                </div>
+                <button
+                  type="button"
+                  class="tenant-role-form-group-toggle"
+                  (click)="toggleGroup(group)"
+                >
+                  {{ groupSelectedCount(group) === group.permissions.length ? 'Clear' : 'Select all' }}
+                </button>
+              </div>
+              <div class="tenant-role-form-check-list">
+                @for (permission of group.permissions; track permission.key) {
+                  <label
+                    class="tenant-role-form-check"
+                    [class.tenant-role-form-check--selected]="hasSelected(permission.key)"
+                  >
+                    <input
+                      type="checkbox"
+                      [checked]="hasSelected(permission.key)"
+                      (change)="togglePermission(permission.key)"
+                    >
+                    <span class="tenant-role-form-check-mark" aria-hidden="true">
+                      <mat-icon>check</mat-icon>
+                    </span>
+                    <span class="tenant-role-form-check-copy">
+                      <strong>
+                        {{ permission.label }}
+                        @if (permission.sensitive) {
+                          <em>Sensitive</em>
+                        }
+                      </strong>
+                      @if (permission.description) {
+                        <small>{{ permission.description }}</small>
+                      }
+                    </span>
+                  </label>
+                }
+              </div>
+            </section>
+          }
+        </div>
+      </section>
+
+      <footer class="tenant-role-form-actions">
+        <button type="button" class="secondary-action" (click)="cancel()">Cancel</button>
+        <button type="submit" class="primary-action" [disabled]="saving()">
+          <mat-icon>save</mat-icon>
+          {{ saving() ? 'Saving...' : submitLabel() }}
+        </button>
+      </footer>
+    </form>
+  }
+</section>

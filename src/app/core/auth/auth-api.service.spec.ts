@@ -142,4 +142,83 @@ describe('AuthApiService', () => {
 
     await expect(promise).resolves.toEqual({ passwordChangeRequired: false });
   });
+
+  it('posts teacher workspace login and stores the returned tenant-bound teacher identity', async () => {
+    const promise = service.login('teacher-user', 'secret', 'teacher');
+    await Promise.resolve();
+
+    const request = httpTestingController.expectOne(`${environment.apiBaseUrl}/auth/login`);
+    expect(request.request.method).toBe('POST');
+    expect(request.request.withCredentials).toBe(true);
+    expect(request.request.body).toEqual({
+      username: 'teacher-user',
+      password: 'secret',
+      workspace: 'teacher',
+    });
+
+    request.flush({
+      accessToken: 'teacher-token',
+      username: 'teacher-user',
+      roles: ['TEACHER'],
+      primaryRole: 'TEACHER',
+      workspace: 'teacher',
+      tenantId: 'tenant-1',
+      passwordChangeRequired: false,
+    });
+
+    await expect(promise).resolves.toMatchObject({ accessToken: 'teacher-token' });
+    expect(identityService.identity()).toEqual({
+      username: 'teacher-user',
+      roles: ['TEACHER'],
+      primaryRole: 'TEACHER',
+      workspace: 'teacher',
+      tenantId: 'tenant-1',
+      tenantPlan: null,
+      passwordChangeRequired: false,
+    });
+  });
+
+  it('infers teacher workspace from auth-me teacher metadata', async () => {
+    const promise = service.me();
+    await Promise.resolve();
+
+    const request = httpTestingController.expectOne(`${environment.apiBaseUrl}/auth/me`);
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      username: 'teacher-user',
+      roles: ['TEACHER'],
+      primaryRole: 'TEACHER',
+      tenantId: 'tenant-1',
+      tenantAccess: null,
+      tenantPlan: null,
+    });
+
+    await promise;
+
+    expect(identityService.identity()).toEqual({
+      username: 'teacher-user',
+      roles: ['TEACHER'],
+      primaryRole: 'TEACHER',
+      workspace: 'teacher',
+      tenantId: 'tenant-1',
+      tenantPlan: null,
+      passwordChangeRequired: false,
+    });
+  });
+
+  it('posts public forgot-password requests', async () => {
+    const promise = service.requestPasswordReset('admin@example.com', 'http://localhost:3000');
+    await Promise.resolve();
+
+    const request = httpTestingController.expectOne(`${environment.apiBaseUrl}/public/funnel/password/forgot`);
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({
+      email: 'admin@example.com',
+      frontendBaseUrl: 'http://localhost:3000',
+    });
+
+    request.flush({ message: 'If this email exists, a reset link has been sent.' });
+
+    await expect(promise).resolves.toEqual({ message: 'If this email exists, a reset link has been sent.' });
+  });
 });

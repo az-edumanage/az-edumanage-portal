@@ -15,6 +15,8 @@ export class TenantRoomDetailsComponent implements OnInit {
 
   readonly room = this.facade.room;
   readonly schedule = this.facade.schedule;
+  readonly loading = this.facade.loading;
+  readonly error = this.facade.error;
   readonly totalOccupiedHours = this.facade.totalOccupiedHours;
   readonly occupiedDaysCount = this.facade.occupiedDaysCount;
   readonly totalStudents = this.facade.totalStudents;
@@ -25,6 +27,6 @@ export class TenantRoomDetailsComponent implements OnInit {
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
-    this.facade.loadRoom(id);
+    void this.facade.loadRoom(id);
   }
 }

@@ -90,6 +90,232 @@ describe('TenantSubjectsDataService', () => {
     });
   });
 
+  it('loads basic-education exam questions from the platform-settings exams API', async () => {
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'url', 'get').mockReturnValue('/tenant/exams/basic-education/stage-1/grades/grade-1/create/new/subjects/subject-1/curriculum/node-1/addQuestion');
+
+    const promise = service.listBasicEducationExamQuestions('stage-1', 'grade-1', 'subject-1');
+    await Promise.resolve();
+
+    const request = httpTesting.expectOne((req) => (
+      req.url.endsWith('/tenant/platform-settings/exams/basic-education/stage-1/grades/grade-1/subjects/subject-1/questions')
+    ));
+    expect(request.request.method).toBe('GET');
+    request.flush([questionResponse()]);
+
+    await expect(promise).resolves.toEqual([questionResponse()]);
+  });
+
+  it('creates an editable exam-local question copy through the platform-settings exams API', async () => {
+    const promise = service.createEditableBasicEducationExamQuestionCopy('stage-1', 'grade-1', 'subject-1', 'exam-1', 'question-1');
+    await Promise.resolve();
+
+    const request = httpTesting.expectOne((req) => (
+      req.url.endsWith('/tenant/platform-settings/exams/basic-education/stage-1/grades/grade-1/subjects/subject-1/exam-1/questions/question-1/editable-copy')
+    ));
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({});
+    request.flush(questionResponse({ id: 'editable-question-1' }));
+
+    await expect(promise).resolves.toEqual(questionResponse({ id: 'editable-question-1' }));
+  });
+
+  it('creates basic-education exam questions through the platform-settings exams API', async () => {
+    const promise = service.createBasicEducationExamQuestion('stage-1', 'grade-1', 'subject-1', {
+      question: ' What is Arabic? ',
+      type: 'MULTIPLE_CHOICE',
+      answer: null,
+      description: null,
+      bloomId: null,
+      difficultyId: null,
+      weight: null,
+      skillId: null,
+      mediaUrl: null,
+      mediaFileName: null,
+      mediaOriginalName: null,
+      mediaContentType: null,
+      mediaSizeBytes: null,
+    });
+    await Promise.resolve();
+
+    const request = httpTesting.expectOne((req) => (
+      req.url.endsWith('/tenant/platform-settings/exams/basic-education/stage-1/grades/grade-1/subjects/subject-1/curriculum/questions')
+    ));
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body['question']).toBe('What is Arabic?');
+    request.flush(questionResponse());
+
+    await expect(promise).resolves.toEqual(questionResponse());
+  });
+
+  it('loads saved basic-education exams through the platform-settings exams API', async () => {
+    const promise = service.listBasicEducationExams('stage-1', 'grade-1', 'subject-1');
+    await Promise.resolve();
+
+    const request = httpTesting.expectOne((req) => (
+      req.url.endsWith('/tenant/platform-settings/exams/basic-education/stage-1/grades/grade-1/subjects/subject-1')
+    ));
+    expect(request.request.method).toBe('GET');
+    request.flush([examResponse()]);
+
+    await expect(promise).resolves.toEqual([examResponse()]);
+  });
+
+  it('loads linked questions for a saved basic-education exam', async () => {
+    const promise = service.listBasicEducationExamLinkedQuestions('stage-1', 'grade-1', 'subject-1', 'exam-1');
+    await Promise.resolve();
+
+    const request = httpTesting.expectOne((req) => (
+      req.url.endsWith('/tenant/platform-settings/exams/basic-education/stage-1/grades/grade-1/subjects/subject-1/exam-1/questions')
+    ));
+    expect(request.request.method).toBe('GET');
+    request.flush([questionResponse()]);
+
+    await expect(promise).resolves.toEqual([questionResponse()]);
+  });
+
+  it('creates saved basic-education exams through the platform-settings exams API', async () => {
+    const promise = service.createBasicEducationExam('stage-1', 'grade-1', 'subject-1', {
+      title: ' Midterm ',
+      instructions: ' Read carefully ',
+      shuffleQuestions: true,
+      showResultsImmediately: false,
+      allowRetakes: false,
+      questionIds: ['question-1'],
+    });
+    await Promise.resolve();
+
+    const request = httpTesting.expectOne((req) => (
+      req.url.endsWith('/tenant/platform-settings/exams/basic-education/stage-1/grades/grade-1/subjects/subject-1')
+    ));
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({
+      title: 'Midterm',
+      instructions: 'Read carefully',
+      shuffleQuestions: true,
+      showResultsImmediately: false,
+      allowRetakes: false,
+      questionIds: ['question-1'],
+    });
+    request.flush(examResponse({ title: 'Midterm' }));
+
+    await expect(promise).resolves.toEqual(examResponse({ title: 'Midterm' }));
+  });
+
+  it('updates saved basic-education exam status through the platform-settings exams API', async () => {
+    const promise = service.updateBasicEducationExamStatus('stage-1', 'grade-1', 'subject-1', 'exam-1', {
+      status: ' PUBLISHED ',
+    });
+    await Promise.resolve();
+
+    const request = httpTesting.expectOne((req) => (
+      req.url.endsWith('/tenant/platform-settings/exams/basic-education/stage-1/grades/grade-1/subjects/subject-1/exam-1/status')
+    ));
+    expect(request.request.method).toBe('PATCH');
+    expect(request.request.body).toEqual({ status: 'PUBLISHED' });
+    request.flush(examResponse({ status: 'PUBLISHED' }));
+
+    await expect(promise).resolves.toEqual(examResponse({ status: 'PUBLISHED' }));
+  });
+
+  it('updates saved basic-education exams through the platform-settings exams API', async () => {
+    const promise = service.updateBasicEducationExam('stage-1', 'grade-1', 'subject-1', 'exam-1', {
+      title: ' Updated Midterm ',
+      instructions: ' Updated notes ',
+      shuffleQuestions: false,
+      showResultsImmediately: true,
+      allowRetakes: true,
+      questionIds: ['question-1', 'question-2'],
+    });
+    await Promise.resolve();
+
+    const request = httpTesting.expectOne((req) => (
+      req.url.endsWith('/tenant/platform-settings/exams/basic-education/stage-1/grades/grade-1/subjects/subject-1/exam-1')
+    ));
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toEqual({
+      title: 'Updated Midterm',
+      instructions: 'Updated notes',
+      shuffleQuestions: false,
+      showResultsImmediately: true,
+      allowRetakes: true,
+      questionIds: ['question-1', 'question-2'],
+    });
+    request.flush(examResponse({ title: 'Updated Midterm' }));
+
+    await expect(promise).resolves.toEqual(examResponse({ title: 'Updated Midterm' }));
+  });
+
+  it('deletes saved basic-education exams through the platform-settings exams API', async () => {
+    const promise = service.deleteBasicEducationExam('stage-1', 'grade-1', 'subject-1', 'exam-1');
+    await Promise.resolve();
+
+    const request = httpTesting.expectOne((req) => (
+      req.url.endsWith('/tenant/platform-settings/exams/basic-education/stage-1/grades/grade-1/subjects/subject-1/exam-1')
+    ));
+    expect(request.request.method).toBe('DELETE');
+    request.flush(null);
+
+    await expect(promise).resolves.toBeUndefined();
+  });
+
+  it('creates basic-education exam question answers through the platform-settings exams API', async () => {
+    const promise = service.createBasicEducationExamQuestionAnswer('stage-1', 'grade-1', 'subject-1', 'question-1', {
+      answer: ' Answer one ',
+      correct: true,
+      description: ' First option ',
+      mediaUrl: null,
+      mediaFileName: null,
+      mediaOriginalName: null,
+      mediaContentType: null,
+      mediaSizeBytes: null,
+    });
+    await Promise.resolve();
+
+    const request = httpTesting.expectOne((req) => (
+      req.url.endsWith('/tenant/platform-settings/exams/basic-education/stage-1/grades/grade-1/subjects/subject-1/curriculum/questions/question-1/answers')
+    ));
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body['answer']).toBe('Answer one');
+    expect(request.request.body['description']).toBe('First option');
+    request.flush(answerResponse());
+
+    await expect(promise).resolves.toEqual(answerResponse());
+  });
+
+  it('updates basic-education exam question answers through the platform-settings exams API', async () => {
+    const promise = service.updateBasicEducationExamQuestionAnswer('stage-1', 'grade-1', 'subject-1', 'question-1', 'answer-1', {
+      answer: ' Updated answer ',
+      correct: false,
+      description: ' Updated option ',
+    });
+    await Promise.resolve();
+
+    const request = httpTesting.expectOne((req) => (
+      req.url.endsWith('/tenant/platform-settings/exams/basic-education/stage-1/grades/grade-1/subjects/subject-1/curriculum/questions/question-1/answers/answer-1')
+    ));
+    expect(request.request.method).toBe('PATCH');
+    expect(request.request.body['answer']).toBe('Updated answer');
+    expect(request.request.body['correct']).toBe(false);
+    expect(request.request.body['description']).toBe('Updated option');
+    request.flush(answerResponse({ answer: 'Updated answer', correct: false, description: 'Updated option' }));
+
+    await expect(promise).resolves.toEqual(answerResponse({ answer: 'Updated answer', correct: false, description: 'Updated option' }));
+  });
+
+  it('deletes basic-education exam questions through the platform-settings exams API', async () => {
+    const promise = service.deleteBasicEducationExamQuestion('stage-1', 'grade-1', 'subject-1', 'question-1');
+    await Promise.resolve();
+
+    const request = httpTesting.expectOne((req) => (
+      req.url.endsWith('/tenant/platform-settings/exams/basic-education/stage-1/grades/grade-1/subjects/subject-1/curriculum/questions/question-1')
+    ));
+    expect(request.request.method).toBe('DELETE');
+    request.flush(null);
+
+    await expect(promise).resolves.toBeUndefined();
+  });
+
   it('loads stage and grade selector options', async () => {
     const stagesPromise = service.listStageOptions();
     await Promise.resolve();
@@ -129,5 +355,68 @@ function subjectResponse() {
     updatedAt: '2026-01-01T00:00:00Z',
     groups: [],
     teachers: [],
+  };
+}
+
+function examResponse(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'exam-1',
+    stageId: 'stage-1',
+    gradeId: 'grade-1',
+    subjectId: 'subject-1',
+    title: 'First Term',
+    instructions: null,
+    status: 'DRAFT',
+    shuffleQuestions: true,
+    showResultsImmediately: false,
+    allowRetakes: false,
+    questionCount: 1,
+    createdAt: '2026-06-26T00:00:00Z',
+    updatedAt: '2026-06-26T00:00:00Z',
+    ...overrides,
+  };
+}
+
+function questionResponse(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'question-1',
+    curriculumNodeId: 'node-1',
+    question: 'What is Arabic?',
+    type: 'MULTIPLE_CHOICE',
+    answer: null,
+    description: null,
+    mediaUrl: null,
+    mediaFileName: null,
+    mediaOriginalName: null,
+    mediaContentType: null,
+    mediaSizeBytes: null,
+    bloomId: null,
+    difficultyId: null,
+    weight: null,
+    skillId: null,
+    questionSource: null,
+    answerExplanation: null,
+    tags: [],
+    answers: [],
+    createdAt: '2026-01-01T00:00:00Z',
+    updatedAt: '2026-01-01T00:00:00Z',
+    ...overrides,
+  };
+}
+
+function answerResponse(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'answer-1',
+    answer: 'Answer one',
+    correct: true,
+    description: 'First option',
+    mediaUrl: null,
+    mediaFileName: null,
+    mediaOriginalName: null,
+    mediaContentType: null,
+    mediaSizeBytes: null,
+    createdAt: '2026-01-01T00:00:00Z',
+    updatedAt: '2026-01-01T00:00:00Z',
+    ...overrides,
   };
 }

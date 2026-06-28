@@ -24,8 +24,10 @@ export class TenantGradeCreateFacade {
   readonly countryOptions = this.store.countryOptions;
   readonly academicLevelOptions = this.store.academicLevelOptions;
   readonly countriesLoading = this.store.countriesLoading;
+  readonly countryCreating = this.store.countryCreating;
   readonly levelsLoading = this.store.levelsLoading;
   readonly countriesError = this.store.countriesError;
+  readonly countryCreateError = this.store.countryCreateError;
   readonly levelsError = this.store.levelsError;
   readonly loadError = this.store.loadError;
   readonly isEditMode = this.store.isEditMode;
@@ -38,13 +40,20 @@ export class TenantGradeCreateFacade {
     description: [''],
   });
 
-  async initialize(gradeId: string | null = null, returnUrl: string | null = null): Promise<void> {
+  async initialize(gradeId: string | null = null, returnUrl: string | null = null, freshCreate = false): Promise<void> {
     this.isSuccess = false;
     this.returnUrl = returnUrl === '/tenant/groups/create' ? returnUrl : null;
     this.store.setEditMode(gradeId);
     this.store.loadError.set(null);
     this.store.saveError.set(null);
+    this.store.levelsError.set(null);
     this.gradeForm.enable({ emitEvent: false });
+    this.gradeForm.reset({
+      name: '',
+      countryId: '',
+      stageId: '',
+      description: '',
+    }, { emitEvent: false });
     await this.loadCountries();
 
     if (gradeId) {
@@ -52,9 +61,15 @@ export class TenantGradeCreateFacade {
       return;
     }
 
+    if (freshCreate) {
+      this.taskService.removeTask(this.store.taskId());
+      this.store.academicLevelOptions.set([]);
+      return;
+    }
+
     const savedTask = this.taskService.getTask(this.store.taskId());
     if (savedTask?.data) {
-      this.gradeForm.patchValue(savedTask.data as Partial<TenantGradeCreateForm>);
+      this.gradeForm.patchValue(savedTask.data as Partial<TenantGradeCreateForm>, { emitEvent: false });
       this.taskService.removeTask(this.store.taskId());
     }
 
@@ -83,6 +98,27 @@ export class TenantGradeCreateFacade {
   async onCountryChange(countryId: string): Promise<void> {
     this.gradeForm.controls.stageId.setValue('');
     await this.loadAcademicLevels(countryId, '');
+  }
+
+  async createCountryOption(name: string): Promise<string | null> {
+    this.store.countryCreating.set(true);
+    this.store.countryCreateError.set(null);
+    try {
+      const created = await this.data.createCountryOption(name);
+      this.store.countryOptions.update((countries) => [...countries, created].sort((a, b) => a.label.localeCompare(b.label)));
+      this.gradeForm.controls.countryId.setValue(created.value);
+      await this.onCountryChange(created.value);
+      return created.value;
+    } catch (error) {
+      this.store.countryCreateError.set(this.data.toCountryUserMessage(error));
+      return null;
+    } finally {
+      this.store.countryCreating.set(false);
+    }
+  }
+
+  clearCountryCreateError(): void {
+    this.store.countryCreateError.set(null);
   }
 
   resetForm(): void {

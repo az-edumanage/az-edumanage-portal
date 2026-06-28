@@ -133,7 +133,16 @@
           </thead>
           <tbody class="tenant-universities-tbody">
             @for (university of universities(); track university.id) {
-              <tr class="tenant-universities-tr">
+              <tr
+                class="tenant-universities-tr"
+                [class.tenant-universities-tr--clickable]="true"
+                role="link"
+                tabindex="0"
+                [attr.title]="isExamsUniversityEducationRoute() ? 'Open university colleges' : 'View related colleges'"
+                (click)="openRelatedColleges(university.id)"
+                (keydown.enter)="openRelatedColleges(university.id)"
+                (keydown.space)="openRelatedColleges(university.id); $event.preventDefault()"
+              >
                 <td class="tenant-universities-td">
                   <div class="tenant-universities-row-name-wrap">
                     <div class="tenant-universities-row-icon-wrap">
@@ -160,7 +169,7 @@
                     <span>{{ university.subjectCount }}</span>
                   </div>
                 </td>
-                <td class="tenant-universities-td tenant-universities-td--actions">
+                <td class="tenant-universities-td tenant-universities-td--actions" (click)="$event.stopPropagation()">
                   <div class="tenant-universities-row-actions">
                     <a [routerLink]="['/tenant/universities', university.id]" class="tenant-universities-row-btn tenant-universities-row-btn--view" title="View Details">
                       <mat-icon class="text-sm block">visibility</mat-icon>

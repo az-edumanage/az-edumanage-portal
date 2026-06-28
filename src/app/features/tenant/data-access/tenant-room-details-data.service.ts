@@ -1,31 +1,107 @@
-import { Injectable } from '@angular/core';
-import { RoomDetails, RoomSchedule } from '../models/tenant-room-details.models';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import { AuthApiService } from '../../../core/auth/auth-api.service';
+import { BackendScheduleSession } from '../models/tenant-schedule.models';
+import { BackendRoomDetails, RoomDetails, RoomSchedule } from '../models/tenant-room-details.models';
 
 @Injectable({ providedIn: 'root' })
 export class TenantRoomDetailsDataService {
-  getRoomById(id: string | null): RoomDetails {
-    const roomId = id || '1';
+  private readonly http = inject(HttpClient);
+  private readonly authApi = inject(AuthApiService);
+  private readonly roomsUrl = `${environment.apiBaseUrl}/tenant/rooms`;
+  private readonly scheduleUrl = `${environment.apiBaseUrl}/tenant/groups/schedule`;
 
+  async getRoomById(id: string | null): Promise<RoomDetails> {
+    const roomId = this.requireRoomId(id);
+    await this.authApi.ensureLoggedIn();
+    const room = await firstValueFrom(this.http.get<BackendRoomDetails>(`${this.roomsUrl}/${roomId}`));
+    return this.toRoomDetails(room);
+  }
+
+  async getScheduleByRoomId(id: string | null): Promise<RoomSchedule[]> {
+    const roomId = this.requireRoomId(id);
+    await this.authApi.ensureLoggedIn();
+    const sessions = await firstValueFrom(this.http.get<BackendScheduleSession[]>(this.scheduleUrl));
+    return (sessions ?? [])
+      .filter((session) => session.roomId === roomId)
+      .map((session) => this.toRoomSchedule(session));
+  }
+
+  toUserMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse && typeof error.error?.message === 'string') {
+      return error.error.message;
+    }
+    return 'Unable to load room details. Please try again.';
+  }
+
+  private requireRoomId(id: string | null): string {
+    const roomId = id?.trim();
+    if (!roomId) {
+      throw new Error('Room is required');
+    }
+    return roomId;
+  }
+
+  private toRoomDetails(room: BackendRoomDetails): RoomDetails {
     return {
-      id: roomId,
-      name: roomId === '2' ? 'Physics Lab' : 'Room 101',
-      type: roomId === '2' ? 'Laboratory' : 'Classroom',
-      capacity: roomId === '2' ? 20 : 30,
-      status: roomId === '2' ? 'Occupied' : 'Available',
-      equipment: roomId === '2' ? ['Lab Kits', 'Projector', 'Safety Gear'] : ['Projector', 'AC', 'Whiteboard'],
-      notes: 'This room is equipped with high-speed internet and modern teaching aids. Please ensure all equipment is turned off after use.',
-      floor: '1st Floor',
-      building: 'Main Block',
+      id: room.id,
+      name: room.name,
+      type: room.type,
+      capacity: room.capacity,
+      status: room.status,
+      equipment: room.equipment ?? [],
+      notes: room.notes ?? '',
     };
   }
 
-  getScheduleByRoomId(): RoomSchedule[] {
-    return [
-      { day: 'Monday', time: '10:00 AM - 11:30 AM', group: 'Physics G12-A', teacher: 'Dr. Ahmed Zewail', subject: 'Physics', studentsCount: 25, durationHours: 1.5 },
-      { day: 'Monday', time: '01:00 PM - 02:30 PM', group: 'Math G11-B', teacher: 'Prof. Mona Helmy', subject: 'Mathematics', studentsCount: 18, durationHours: 1.5 },
-      { day: 'Wednesday', time: '10:00 AM - 11:30 AM', group: 'Physics G12-A', teacher: 'Dr. Ahmed Zewail', subject: 'Physics', studentsCount: 25, durationHours: 1.5 },
-      { day: 'Thursday', time: '09:00 AM - 10:30 AM', group: 'Chemistry G10-C', teacher: 'Mr. Khaled Said', subject: 'Chemistry', studentsCount: 22, durationHours: 1.5 },
-      { day: 'Friday', time: '11:00 AM - 12:30 PM', group: 'Biology G12-D', teacher: 'Dr. Sara Ahmed', subject: 'Biology', studentsCount: 20, durationHours: 1.5 },
-    ];
+  private toRoomSchedule(session: BackendScheduleSession): RoomSchedule {
+    return {
+      id: session.id,
+      groupId: session.groupId,
+      day: session.day,
+      time: this.formatTimeRange(session.startTime, session.duration),
+      group: session.groupName,
+      teacher: session.teacherName,
+      subject: session.subjectName ?? '',
+      studentsCount: session.studentsCount ?? 0,
+      durationHours: (session.duration ?? 0) / 60,
+    };
+  }
+
+  private formatTimeRange(startTime: string, duration: number | null): string {
+    if (!duration) {
+      return this.formatScheduleTime(startTime);
+    }
+    const start = this.toMinutes(startTime);
+    if (start === null) {
+      return this.formatScheduleTime(startTime);
+    }
+    return `${this.formatMinutes(start)} - ${this.formatMinutes(start + duration)}`;
+  }
+
+  private formatScheduleTime(time: string): string {
+    const minutes = this.toMinutes(time);
+    return minutes === null ? time : this.formatMinutes(minutes);
+  }
+
+  private toMinutes(time: string): number | null {
+    const [hourPart, minutePart = '0'] = time.split(':');
+    const hour = Number(hourPart);
+    const minute = Number(minutePart);
+    if (Number.isNaN(hour) || Number.isNaN(minute)) {
+      return null;
+    }
+    return hour * 60 + minute;
+  }
+
+  private formatMinutes(totalMinutes: number): string {
+    const normalizedMinutes = ((totalMinutes % 1440) + 1440) % 1440;
+    const hour = Math.floor(normalizedMinutes / 60);
+    const minute = normalizedMinutes % 60;
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${String(minute).padStart(2, '0')} ${period}`;
   }
 }

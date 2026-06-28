@@ -192,7 +192,15 @@
             </thead>
             <tbody class="tenant-colleges-tbody">
               @for (college of colleges(); track college.id) {
-                <tr class="tenant-colleges-tr">
+                <tr
+                  class="tenant-colleges-tr tenant-colleges-tr--interactive"
+                  role="link"
+                  tabindex="0"
+                  [attr.aria-label]="'Open related subjects for ' + college.name"
+                  (click)="openRelatedSubjects(college.id, college.universityId)"
+                  (keydown.enter)="openRelatedSubjects(college.id, college.universityId)"
+                  (keydown.space)="$event.preventDefault(); openRelatedSubjects(college.id, college.universityId)"
+                >
                   <td class="tenant-colleges-td">
                     <div class="tenant-colleges-row-name-wrap">
                       <div class="tenant-colleges-row-icon-wrap">
@@ -214,13 +222,13 @@
                   </td>
                   <td class="tenant-colleges-td tenant-colleges-td--actions">
                     <div class="tenant-colleges-row-actions">
-                      <a [routerLink]="['/tenant/colleges', college.id]" class="tenant-colleges-row-btn tenant-colleges-row-btn--view" title="View Details">
+                      <a [routerLink]="['/tenant/colleges', college.id]" (click)="$event.stopPropagation()" class="tenant-colleges-row-btn tenant-colleges-row-btn--view" title="View Details">
                         <mat-icon class="text-sm block">visibility</mat-icon>
                       </a>
-                      <a [routerLink]="['/tenant/colleges', college.id, 'edit']" class="tenant-colleges-row-btn tenant-colleges-row-btn--edit" title="Edit">
+                      <a [routerLink]="['/tenant/colleges', college.id, 'edit']" (click)="$event.stopPropagation()" class="tenant-colleges-row-btn tenant-colleges-row-btn--edit" title="Edit">
                         <mat-icon class="text-sm block">edit</mat-icon>
                       </a>
-                      <button type="button" (click)="deleteCollege(college.id)" [disabled]="deletingId() === college.id" class="tenant-colleges-row-btn tenant-colleges-row-btn--delete" title="Delete">
+                      <button type="button" (click)="$event.stopPropagation(); deleteCollege(college.id)" [disabled]="deletingId() === college.id" class="tenant-colleges-row-btn tenant-colleges-row-btn--delete" title="Delete">
                         <mat-icon class="text-sm block">delete</mat-icon>
                       </button>
                     </div>

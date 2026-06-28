@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { TenantUniversitySubjectsFacade } from '../../state/tenant-university-subjects.facade';
 
@@ -14,6 +14,7 @@ import { TenantUniversitySubjectsFacade } from '../../state/tenant-university-su
 })
 export class TenantUniversitySubjectsComponent implements OnInit {
   private readonly facade = inject(TenantUniversitySubjectsFacade);
+  private readonly route = inject(ActivatedRoute);
 
   readonly searchQuery = this.facade.searchQuery;
   readonly viewMode = this.facade.viewMode;
@@ -36,6 +37,19 @@ export class TenantUniversitySubjectsComponent implements OnInit {
   );
 
   ngOnInit(): void {
+    const universityId = this.route.snapshot.queryParamMap.get('universityId') ?? '';
+    const collegeId = this.route.snapshot.queryParamMap.get('collegeId') ?? '';
+
+    if (universityId || collegeId) {
+      this.viewMode.set('list');
+      if (universityId) {
+        this.facade.setUniversityFilter(universityId);
+      }
+      if (collegeId) {
+        this.facade.setCollegeFilter(collegeId);
+      }
+    }
+
     void this.facade.loadOptions();
     void this.facade.loadSubjects();
   }

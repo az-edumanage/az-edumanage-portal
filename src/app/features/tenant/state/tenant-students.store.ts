@@ -10,6 +10,7 @@ export class TenantStudentsStore {
   readonly showFilterPanel = signal(false);
   readonly viewMode = signal<'grid' | 'list'>('list');
 
+  readonly stageFilter = signal('');
   readonly gradeFilter = signal('');
   readonly statusFilter = signal('');
   readonly sortBy = signal('name');
@@ -22,6 +23,7 @@ export class TenantStudentsStore {
 
   readonly activeFiltersCount = computed(() => {
     let count = 0;
+    if (this.stageFilter()) count++;
     if (this.gradeFilter()) count++;
     if (this.statusFilter()) count++;
     if (this.sortBy() !== 'name') count++;
@@ -30,6 +32,7 @@ export class TenantStudentsStore {
 
   readonly filteredStudents = computed(() => {
     const query = this.searchQuery().toLowerCase();
+    const stage = this.stageFilter();
     const grade = this.gradeFilter();
     const status = this.statusFilter();
     const sortBy = this.sortBy();
@@ -39,9 +42,10 @@ export class TenantStudentsStore {
         !query ||
         student.name.toLowerCase().includes(query) ||
         student.email.toLowerCase().includes(query);
-      const matchesGrade = !grade || student.grade === grade;
+      const matchesStage = !stage || student.stageId === stage;
+      const matchesGrade = !grade || student.gradeId === grade;
       const matchesStatus = !status || student.status === status;
-      return matchesSearch && matchesGrade && matchesStatus;
+      return matchesSearch && matchesStage && matchesGrade && matchesStatus;
     });
 
     if (sortBy === 'date-desc') {

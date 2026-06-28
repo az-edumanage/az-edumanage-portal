@@ -55,6 +55,10 @@ describe('TenantGroupLessonDetailsComponent', () => {
     loadGroupLessonContent: vi.fn(),
     addGroupLesson: vi.fn(),
     addGroupLessonContent: vi.fn(),
+    loadGroupLibraryFolders: vi.fn(),
+    loadGroupLibraryFiles: vi.fn(),
+    loadGroupLibraryNotes: vi.fn(),
+    loadGroupLibraryLinks: vi.fn(),
   };
   const subjectsData = {
     getSubjectCurriculumForCategory: vi.fn(),
@@ -95,17 +99,29 @@ describe('TenantGroupLessonDetailsComponent', () => {
     data.addGroupLessonContent.mockReset();
     data.addGroupLessonContent.mockReturnValue(of({
       id: 'content-1',
-      curriculumNodeId: unitNodeId,
-      curriculumNodeLabel: 'Unit one',
-      folderId: 'folder-parent',
-      folderName: 'Unit Resources',
+      curriculumNodeId: lessonNodeId,
+      curriculumNodeLabel: 'Group Library',
+      folderId: 'library-folder-1',
+      folderName: 'Al Moaaser Book',
       contentType: 'FILE',
-      contentId: 'file-parent',
-      title: 'unit.pdf',
-      url: '/uploads/unit.pdf',
+      contentId: 'library-file-1',
+      title: 'digital_technology1_study_pack.pdf',
+      url: '/uploads/digital_technology1_study_pack.pdf',
       fileContentType: 'application/pdf',
-      sizeBytes: 1024,
+      sizeBytes: 7168,
     } satisfies GroupLessonContent));
+    data.loadGroupLibraryFolders.mockReset();
+    data.loadGroupLibraryFolders.mockReturnValue(of([
+      { id: 'library-folder-1', name: 'Al Moaaser Book', description: null, fileTypes: ['pdf'], filesCount: 1, createdAt: '', updatedAt: '' },
+    ]));
+    data.loadGroupLibraryFiles.mockReset();
+    data.loadGroupLibraryFiles.mockReturnValue(of([
+      { id: 'library-file-1', url: '/uploads/digital_technology1_study_pack.pdf', fileName: 'digital_technology1_study_pack.pdf', originalName: 'digital_technology1_study_pack.pdf', contentType: 'application/pdf', sizeBytes: 7168, createdAt: '', updatedAt: '' },
+    ]));
+    data.loadGroupLibraryNotes.mockReset();
+    data.loadGroupLibraryNotes.mockReturnValue(of([]));
+    data.loadGroupLibraryLinks.mockReset();
+    data.loadGroupLibraryLinks.mockReturnValue(of([]));
     subjectsData.getSubjectCurriculumForCategory.mockReset();
     subjectsData.getSubjectCurriculumForCategory.mockResolvedValue({
       id: 'curriculum',
@@ -221,7 +237,7 @@ describe('TenantGroupLessonDetailsComponent', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Select material from the parent directory.');
+    expect(fixture.nativeElement.textContent).toContain('Select material from this group library.');
   });
 
   it('assigns the current lesson when a session is clicked', async () => {
@@ -269,7 +285,7 @@ describe('TenantGroupLessonDetailsComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('new-lesson.pdf');
   });
 
-  it('opens material selector with parent directory material and inserts selected content into the lesson', async () => {
+  it('opens material selector with group library material and inserts selected content into the lesson', async () => {
     const button = fixture.debugElement
       .queryAll(By.css('button.tenant-group-lesson-details-primary'))
       .find((element) => (element.nativeElement.textContent as string).includes('Insert Content'));
@@ -292,12 +308,13 @@ describe('TenantGroupLessonDetailsComponent', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     fixture.detectChanges();
 
-    expect(subjectsData.getSubjectCurriculumForCategory).toHaveBeenCalledWith('subject-1', 'BASIC_EDUCATION');
-    expect(subjectsData.listCurriculumMaterialFolders).not.toHaveBeenCalledWith('subject-1', 'curriculum', 'BASIC_EDUCATION');
-    expect(subjectsData.listCurriculumMaterialFolders).toHaveBeenCalledWith('subject-1', unitNodeId, 'BASIC_EDUCATION');
-    expect(subjectsData.listCurriculumMaterialFolders).not.toHaveBeenCalledWith('subject-1', lessonNodeId, 'BASIC_EDUCATION');
+    expect(data.loadGroupLibraryFolders).toHaveBeenCalledWith('group-123');
+    expect(data.loadGroupLibraryFiles).toHaveBeenCalledWith('group-123', 'library-folder-1');
+    expect(data.loadGroupLibraryNotes).toHaveBeenCalledWith('group-123', 'library-folder-1');
+    expect(data.loadGroupLibraryLinks).toHaveBeenCalledWith('group-123', 'library-folder-1');
+    expect(subjectsData.listCurriculumMaterialFolders).not.toHaveBeenCalledWith('subject-1', unitNodeId, 'BASIC_EDUCATION');
     const modalText = fixture.debugElement.query(By.css('.tenant-group-lesson-modal')).nativeElement.textContent as string;
-    expect(modalText).toContain('unit.pdf');
+    expect(modalText).toContain('digital_technology1_study_pack.pdf');
     expect(modalText).not.toContain('lesson.pdf');
 
     fixture.debugElement.query(By.css('.tenant-group-lesson-material-option')).nativeElement.click();
@@ -312,10 +329,10 @@ describe('TenantGroupLessonDetailsComponent', () => {
     fixture.detectChanges();
 
     expect(data.addGroupLessonContent).toHaveBeenCalledWith('group-123', 'group-lesson-1', {
-      curriculumNodeId: unitNodeId,
-      folderId: 'folder-parent',
+      curriculumNodeId: lessonNodeId,
+      folderId: 'library-folder-1',
       contentType: 'FILE',
-      contentId: 'file-parent',
+      contentId: 'library-file-1',
     });
     expect(fixture.nativeElement.textContent).toContain('Lesson material');
     expect(fixture.nativeElement.textContent).not.toContain('Open curriculum');

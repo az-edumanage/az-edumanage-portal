@@ -153,6 +153,12 @@ export class AuthSessionService {
     if (url?.startsWith('/teacher')) {
       return 'teacher';
     }
+    if (url?.startsWith('/student')) {
+      return 'student';
+    }
+    if (url?.startsWith('/parent')) {
+      return 'parent';
+    }
     return 'owner';
   }
 }

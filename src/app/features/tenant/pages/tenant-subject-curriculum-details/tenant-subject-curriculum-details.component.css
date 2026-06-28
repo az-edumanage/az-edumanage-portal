@@ -382,31 +382,67 @@
   line-height: 1rem;
 }
 
-.curriculum-details-material-panel {
+.curriculum-details-material-panel,
+.curriculum-details-skills-panel {
   min-height: 16rem;
   padding: 1.5rem;
   gap: 1rem;
 }
 
-.curriculum-material-toolbar {
+.curriculum-material-toolbar,
+.curriculum-skills-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
 
-.curriculum-material-toolbar h4 {
+.curriculum-material-toolbar h4,
+.curriculum-skills-toolbar h4 {
   margin: 0;
   color: rgb(15 23 42);
   font-size: 1rem;
   font-weight: 800;
 }
 
-.curriculum-material-toolbar p {
+.curriculum-material-toolbar p,
+.curriculum-skills-toolbar p {
   margin: 0.25rem 0 0;
   color: rgb(100 116 139);
   font-size: 0.8125rem;
   font-weight: 700;
+}
+
+.curriculum-skills-table th:first-child,
+.curriculum-skills-table td:first-child {
+  min-width: 14rem;
+}
+
+.curriculum-skill-name-cell {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+  color: rgb(15 23 42);
+  font-weight: 800;
+}
+
+.curriculum-skill-icon {
+  display: inline-flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.625rem;
+  background: rgb(238 242 255);
+  color: rgb(79 70 229);
+}
+
+.curriculum-skill-icon mat-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  font-size: 1.125rem;
+  line-height: 1.125rem;
 }
 
 .curriculum-material-folder-grid {
@@ -1013,6 +1049,7 @@
 }
 
 .curriculum-details-modal-secondary,
+.curriculum-details-modal-primary,
 .curriculum-details-modal-danger {
   display: inline-flex;
   min-height: 2.25rem;
@@ -1037,6 +1074,17 @@
   outline: none;
 }
 
+.curriculum-details-modal-primary {
+  background: rgb(79 70 229);
+  color: rgb(255 255 255);
+}
+
+.curriculum-details-modal-primary:hover:not(:disabled),
+.curriculum-details-modal-primary:focus-visible {
+  background: rgb(67 56 202);
+  outline: none;
+}
+
 .curriculum-details-modal-danger {
   background: rgb(220 38 38);
   color: rgb(255 255 255);
@@ -1049,6 +1097,7 @@
 }
 
 .curriculum-details-modal-secondary:disabled,
+.curriculum-details-modal-primary:disabled,
 .curriculum-details-modal-danger:disabled {
   cursor: not-allowed;
   opacity: 0.65;
@@ -1148,11 +1197,13 @@
     padding-inline: 0.75rem;
   }
 
-  .curriculum-details-material-panel {
+  .curriculum-details-material-panel,
+  .curriculum-details-skills-panel {
     padding: 1rem;
   }
 
-  .curriculum-material-toolbar {
+  .curriculum-material-toolbar,
+  .curriculum-skills-toolbar {
     align-items: stretch;
     flex-direction: column;
   }
@@ -1188,6 +1239,7 @@
   .curriculum-material-folder-grid {
     grid-template-columns: minmax(0, 1fr);
   }
+
 }
 
 :host-context(.dark) .curriculum-details-icon {
@@ -1297,12 +1349,15 @@
 }
 
 :host-context(.dark) .curriculum-material-toolbar h4,
+:host-context(.dark) .curriculum-skills-toolbar h4,
+:host-context(.dark) .curriculum-skill-name-cell,
 :host-context(.dark) .curriculum-material-folder-title h5,
 :host-context(.dark) .curriculum-material-modal-field span {
   color: rgb(226 232 240);
 }
 
 :host-context(.dark) .curriculum-material-toolbar p,
+:host-context(.dark) .curriculum-skills-toolbar p,
 :host-context(.dark) .curriculum-material-folder-title span,
 :host-context(.dark) .curriculum-material-folder-body p,
 :host-context(.dark) .curriculum-material-folder-cover-slot {
@@ -1314,6 +1369,7 @@
   background: rgb(15 23 42);
 }
 
+:host-context(.dark) .curriculum-skill-icon,
 :host-context(.dark) .curriculum-material-folder-icon {
   background: rgb(49 46 129 / 0.45);
   color: rgb(129 140 248);

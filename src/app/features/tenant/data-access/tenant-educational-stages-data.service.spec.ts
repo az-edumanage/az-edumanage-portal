@@ -30,6 +30,8 @@ const countryServiceMock = {
   listCountries: vi.fn().mockResolvedValue([
     { id: 'country-1', name: 'Egypt', code: null, createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
   ]),
+  createCountry: vi.fn().mockResolvedValue({ id: 'country-2', name: 'Morocco', code: null, createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' }),
+  toUserMessage: vi.fn().mockReturnValue('Unable to save country. Please try again.'),
 };
 
 describe('TenantEducationalStagesDataService', () => {
@@ -41,6 +43,7 @@ describe('TenantEducationalStagesDataService', () => {
     countryServiceMock.listCountries.mockResolvedValue([
       { id: 'country-1', name: 'Egypt', code: null, createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
     ]);
+    countryServiceMock.createCountry.mockResolvedValue({ id: 'country-2', name: 'Morocco', code: null, createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' });
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
@@ -79,6 +82,12 @@ describe('TenantEducationalStagesDataService', () => {
     await expect(service.listCountryOptions()).resolves.toEqual([
       { value: 'country-1', label: 'Egypt', code: null },
     ]);
+  });
+
+  it('creates a country option through tenant countries', async () => {
+    await expect(service.createCountryOption('  Morocco  ')).resolves.toEqual({ value: 'country-2', label: 'Morocco', code: null });
+
+    expect(countryServiceMock.createCountry).toHaveBeenCalledWith('  Morocco  ');
   });
 
   it('creates tenant stages through the backend', async () => {

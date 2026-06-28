@@ -1,44 +1,97 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, map, throwError } from 'rxjs';
+import { Observable, catchError, forkJoin, map, of, switchMap, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { EducationalStage } from '../models/tenant-educational-stages.models';
+import { Grade } from '../models/tenant-grades.models';
 import { Student, StudentDetails, StudentScheduleRow, StudentScheduleSummary, TenantStudentBackendRecord } from '../models/tenant-students.models';
+
+interface StudentEducationLookup {
+  gradesById: Map<string, Grade>;
+  stagesById: Map<string, EducationalStage>;
+}
+
+interface AssignedEducationLabel {
+  grade: string;
+  gradeId?: string;
+  stage: string;
+  stageId?: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class TenantStudentsDataService {
   private readonly http = inject(HttpClient);
   private readonly studentsUrl = `${environment.apiBaseUrl}/tenant/students`;
+  private readonly gradesUrl = `${environment.apiBaseUrl}/tenant/platform-settings/grades`;
+  private readonly stagesUrl = `${environment.apiBaseUrl}/tenant/platform-settings/stages`;
 
   loadStudents(): Observable<Student[]> {
     return this.http
       .get<TenantStudentBackendRecord[]>(this.studentsUrl)
       .pipe(
-        map((records) => records.map((record) => this.toStudent(record))),
+        switchMap((records) => this.toStudentsWithAssignedEducation(records ?? [])),
         catchError((error: HttpErrorResponse) => this.handleError(error)),
       );
   }
 
   getStudent(id: string): Observable<StudentDetails> {
     return this.http.get<TenantStudentBackendRecord>(`${this.studentsUrl}/${id}`).pipe(
-      map((record) => this.toStudentDetails(record)),
+      switchMap((record) => {
+        if (!this.needsEducationLookup(record)) {
+          return of(this.toStudentDetails(record));
+        }
+        return forkJoin({
+          grades: this.http.get<Grade[]>(this.gradesUrl),
+          stages: this.http.get<EducationalStage[]>(this.stagesUrl),
+        }).pipe(
+          map(({ grades, stages }) => this.toStudentDetails(record, this.toEducationLookup(grades ?? [], stages ?? []))),
+        );
+      }),
       catchError((error: HttpErrorResponse) => this.handleError(error)),
     );
   }
 
-  private toStudent(record: TenantStudentBackendRecord): Student {
-    return {
+  private toStudentsWithAssignedEducation(records: TenantStudentBackendRecord[]): Observable<Student[]> {
+    if (records.length === 0) {
+      return of([]);
+    }
+    if (!records.some((record) => this.needsEducationLookup(record))) {
+      return of(records.map((record) => this.toStudent(record)));
+    }
+    return forkJoin({
+      grades: this.http.get<Grade[]>(this.gradesUrl),
+      stages: this.http.get<EducationalStage[]>(this.stagesUrl),
+    }).pipe(
+      map(({ grades, stages }) => {
+        const lookup = this.toEducationLookup(grades ?? [], stages ?? []);
+        return records.map((record) => this.toStudent(record, lookup));
+      }),
+    );
+  }
+
+  private toStudent(record: TenantStudentBackendRecord, lookup?: StudentEducationLookup): Student {
+    const education = this.toAssignedEducationLabel(record, lookup);
+    const student: Student = {
       id: record.id,
       name: record.fullName,
       email: record.email,
-      grade: this.toEducationLabel(record.educationCategory),
+      grade: education.grade,
+      stage: education.stage,
       status: 'Active',
       enrollmentDate: this.toEnrollmentDate(record.createdAt),
     };
+    if (education.gradeId) {
+      student.gradeId = education.gradeId;
+    }
+    if (education.stageId) {
+      student.stageId = education.stageId;
+    }
+    return student;
   }
 
-  private toStudentDetails(record: TenantStudentBackendRecord): StudentDetails {
+  private toStudentDetails(record: TenantStudentBackendRecord, lookup?: StudentEducationLookup): StudentDetails {
     return {
-      ...this.toStudent(record),
+      ...this.toStudent(record, lookup),
       phone: record.phone ?? '',
       barcodeNumber: record.barcodeNumber ?? record.barcode_number ?? '',
       gender: record.gender ?? '',
@@ -61,6 +114,70 @@ export class TenantStudentsDataService {
       return 'University Education';
     }
     return 'Education';
+  }
+
+  private toAssignedEducationLabel(record: TenantStudentBackendRecord, lookup?: StudentEducationLookup): AssignedEducationLabel {
+    const grade = this.lookupAssignedGrade(record, lookup);
+    const gradeId = record.gradeIds?.find((id) => id?.trim()) ?? grade?.id;
+    const gradeName = record.gradeName ?? record.grade_name ?? record.gradeNames?.find((name) => name?.trim()) ?? grade?.name;
+    const stage = this.lookupAssignedStage(record, grade, lookup);
+    const stageId = record.stageIds?.find((id) => id?.trim()) ?? stage?.id;
+    const stageName =
+      record.stageName ??
+      record.stage_name ??
+      record.stageNames?.find((name) => name?.trim()) ??
+      stage?.name;
+    const resolvedGrade = gradeName?.trim();
+    const resolvedStage = stageName?.trim();
+    if (resolvedGrade) {
+      return {
+        grade: resolvedGrade,
+        gradeId,
+        stage: resolvedStage && resolvedStage.toLowerCase() !== resolvedGrade.toLowerCase() ? resolvedStage : '',
+        stageId,
+      };
+    }
+    if (resolvedStage) {
+      return {
+        grade: resolvedStage,
+        gradeId,
+        stage: '',
+        stageId,
+      };
+    }
+    return {
+      grade: this.toEducationLabel(record.educationCategory),
+      gradeId,
+      stage: '',
+      stageId,
+    };
+  }
+
+  private needsEducationLookup(record: TenantStudentBackendRecord): boolean {
+    const hasResolvedGrade = Boolean((record.gradeName ?? record.grade_name ?? record.gradeNames?.find((name) => name?.trim()))?.trim());
+    const hasResolvedStage = Boolean((record.stageName ?? record.stage_name ?? record.stageNames?.find((name) => name?.trim()))?.trim());
+    return Boolean(record.gradeIds?.length && !hasResolvedGrade) || Boolean(record.stageIds?.length && !hasResolvedStage);
+  }
+
+  private toEducationLookup(grades: Grade[], stages: EducationalStage[]): StudentEducationLookup {
+    return {
+      gradesById: new Map(grades.map((grade) => [grade.id, grade])),
+      stagesById: new Map(stages.map((stage) => [stage.id, stage])),
+    };
+  }
+
+  private lookupAssignedGrade(record: TenantStudentBackendRecord, lookup?: StudentEducationLookup): Grade | undefined {
+    const gradeId = record.gradeIds?.find((id) => id?.trim());
+    return gradeId ? lookup?.gradesById.get(gradeId) : undefined;
+  }
+
+  private lookupAssignedStage(
+    record: TenantStudentBackendRecord,
+    grade: Grade | undefined,
+    lookup?: StudentEducationLookup
+  ): EducationalStage | undefined {
+    const stageId = record.stageIds?.find((id) => id?.trim()) ?? grade?.stageId;
+    return stageId ? lookup?.stagesById.get(stageId) : undefined;
   }
 
   private toEnrollmentDate(value: string | null): string {
