@@ -14,6 +14,14 @@ export function safeRedirect(value: string | null): string | null {
   return decoded;
 }
 
+export function sameTenantRedirect(value: string | null, workspace: string): string | null {
+  const redirect = safeRedirect(value);
+  if (!redirect || redirect === '/') {
+    return null;
+  }
+  return redirect.startsWith(`/${workspace}/`) ? redirect : null;
+}
+
 export function jwtExpiresAt(token: string | null): number | null {
   if (!token) {
     return null;

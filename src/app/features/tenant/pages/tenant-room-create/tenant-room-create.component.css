@@ -84,6 +84,16 @@
   margin-bottom: var(--space-2);
 }
 
+.tenant-room-create-selector {
+  position: relative;
+}
+
+.tenant-room-create-field-error {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: #e11d48;
+}
+
 .tenant-room-create-input {
   width: 100%;
   padding: var(--space-2) var(--space-3);

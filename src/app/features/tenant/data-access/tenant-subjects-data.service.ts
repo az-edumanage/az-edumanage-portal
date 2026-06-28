@@ -14,11 +14,15 @@ import {
   TenantCurriculumMaterialFolder,
   TenantCurriculumMaterialLink,
   TenantCurriculumMaterialNote,
+  TenantCurriculumSkill,
   TenantSubjectCreateForm,
   TenantSubjectCurriculumNode,
   TenantCurriculumQuestion,
   TenantCurriculumQuestionAnswer,
   TenantCurriculumQuestionPage,
+  TenantQuestionBankOverview,
+  TenantQuestionBankTaggedQuestion,
+  TenantQuestionBankTagSummary,
   TenantSubjectGradeOption,
   TenantSubjectGroupRow,
   TenantSubjectStageOption,
@@ -46,6 +50,10 @@ export type TenantCurriculumQuestionPayload = {
   bloomId: string | null;
   difficultyId: string | null;
   weight: number | null;
+  skillId: string | null;
+  curriculumNodeId?: string | null;
+  questionSource?: string | null;
+  answerExplanation?: string | null;
   tags?: string[];
 } & TenantCurriculumQuestionMediaPayload;
 
@@ -63,6 +71,35 @@ export interface TenantCurriculumQuestionMediaUpload {
   sizeBytes: number;
 }
 
+export interface TenantBasicEducationExam {
+  id: string;
+  stageId: string;
+  gradeId: string;
+  subjectId: string;
+  title: string;
+  instructions: string | null;
+  status: string;
+  shuffleQuestions: boolean;
+  showResultsImmediately: boolean;
+  allowRetakes: boolean;
+  questionCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TenantBasicEducationExamPayload {
+  title: string;
+  instructions: string | null;
+  shuffleQuestions: boolean;
+  showResultsImmediately: boolean;
+  allowRetakes: boolean;
+  questionIds: string[];
+}
+
+export interface TenantBasicEducationExamStatusPayload {
+  status: string;
+}
+
 export interface TenantCurriculumMaterialFolderPayload {
   name: string;
   description: string | null;
@@ -76,6 +113,11 @@ export interface TenantCurriculumMaterialNotePayload {
 export interface TenantCurriculumMaterialLinkPayload {
   title: string;
   url: string;
+}
+
+export interface TenantCurriculumSkillPayload {
+  name: string;
+  description: string | null;
 }
 
 export interface TenantSubjectListFilters {
@@ -98,8 +140,10 @@ export class TenantSubjectsDataService {
   private readonly router = inject(Router);
   private readonly subjectsUrl = `${environment.apiBaseUrl}/tenant/platform-settings/subjects`;
   private readonly universitySubjectsUrl = `${environment.apiBaseUrl}/tenant/platform-settings/university-subjects`;
+  private readonly platformSettingsUrl = `${environment.apiBaseUrl}/tenant/platform-settings`;
   private readonly stagesUrl = `${environment.apiBaseUrl}/tenant/platform-settings/stages`;
   private readonly gradesUrl = `${environment.apiBaseUrl}/tenant/platform-settings/grades`;
+  private readonly questionsBankOverviewUrl = `${environment.apiBaseUrl}/tenant/platform-settings/questions-bank/overview`;
   private readonly bloomsUrl = `${environment.apiBaseUrl}/blooms`;
   private readonly questionDifficultiesUrl = `${environment.apiBaseUrl}/question-difficulties`;
 
@@ -129,6 +173,16 @@ export class TenantSubjectsDataService {
       descriptionEn: difficulty.descriptionEn ?? null,
       difficultyOrder: difficulty.difficultyOrder,
     }));
+  }
+
+  async getQuestionBankOverview(tag?: string | null): Promise<TenantQuestionBankOverview> {
+    await this.authApi.ensureLoggedIn();
+    let params = new HttpParams();
+    if (tag?.trim()) {
+      params = params.set('tag', tag.trim());
+    }
+    const response = await firstValueFrom(this.http.get<TenantQuestionBankOverview>(this.questionsBankOverviewUrl, { params }));
+    return this.normalizeQuestionBankOverview(response);
   }
 
   async listSubjects(filters: TenantSubjectListFilters = {}): Promise<TenantSubject[]> {
@@ -268,6 +322,168 @@ export class TenantSubjectsDataService {
     return this.normalizeCurriculumQuestion(response);
   }
 
+  async listBasicEducationExamQuestions(
+    stageId: string,
+    gradeId: string,
+    subjectId: string,
+  ): Promise<TenantCurriculumQuestion[]> {
+    await this.authApi.ensureLoggedIn();
+    const response = await firstValueFrom(this.http.get<TenantCurriculumQuestion[]>(
+      `${this.platformSettingsUrl}/exams/basic-education/${stageId}/grades/${gradeId}/subjects/${subjectId}/questions`,
+    ));
+    return (response ?? []).map((question) => this.normalizeCurriculumQuestion(question));
+  }
+
+  async listBasicEducationExams(
+    stageId: string,
+    gradeId: string,
+    subjectId: string,
+  ): Promise<TenantBasicEducationExam[]> {
+    await this.authApi.ensureLoggedIn();
+    const response = await firstValueFrom(this.http.get<TenantBasicEducationExam[]>(
+      `${this.platformSettingsUrl}/exams/basic-education/${stageId}/grades/${gradeId}/subjects/${subjectId}`,
+    ));
+    return response ?? [];
+  }
+
+  async listBasicEducationExamLinkedQuestions(
+    stageId: string,
+    gradeId: string,
+    subjectId: string,
+    examId: string,
+  ): Promise<TenantCurriculumQuestion[]> {
+    await this.authApi.ensureLoggedIn();
+    const response = await firstValueFrom(this.http.get<TenantCurriculumQuestion[]>(
+      `${this.platformSettingsUrl}/exams/basic-education/${stageId}/grades/${gradeId}/subjects/${subjectId}/${examId}/questions`,
+    ));
+    return (response ?? []).map((question) => this.normalizeCurriculumQuestion(question));
+  }
+
+  async createEditableBasicEducationExamQuestionCopy(
+    stageId: string,
+    gradeId: string,
+    subjectId: string,
+    examId: string,
+    questionId: string,
+  ): Promise<TenantCurriculumQuestion> {
+    await this.authApi.ensureLoggedIn();
+    const response = await firstValueFrom(this.http.post<TenantCurriculumQuestion>(
+      `${this.platformSettingsUrl}/exams/basic-education/${stageId}/grades/${gradeId}/subjects/${subjectId}/${examId}/questions/${questionId}/editable-copy`,
+      {},
+    ));
+    return this.normalizeCurriculumQuestion(response);
+  }
+
+  async createBasicEducationExam(
+    stageId: string,
+    gradeId: string,
+    subjectId: string,
+    payload: TenantBasicEducationExamPayload,
+  ): Promise<TenantBasicEducationExam> {
+    await this.authApi.ensureLoggedIn();
+    return await firstValueFrom(this.http.post<TenantBasicEducationExam>(
+      `${this.platformSettingsUrl}/exams/basic-education/${stageId}/grades/${gradeId}/subjects/${subjectId}`,
+      {
+        title: payload.title.trim(),
+        instructions: payload.instructions?.trim() || null,
+        shuffleQuestions: payload.shuffleQuestions,
+        showResultsImmediately: payload.showResultsImmediately,
+        allowRetakes: payload.allowRetakes,
+        questionIds: payload.questionIds,
+      },
+    ));
+  }
+
+  async updateBasicEducationExam(
+    stageId: string,
+    gradeId: string,
+    subjectId: string,
+    examId: string,
+    payload: TenantBasicEducationExamPayload,
+  ): Promise<TenantBasicEducationExam> {
+    await this.authApi.ensureLoggedIn();
+    return await firstValueFrom(this.http.put<TenantBasicEducationExam>(
+      `${this.platformSettingsUrl}/exams/basic-education/${stageId}/grades/${gradeId}/subjects/${subjectId}/${examId}`,
+      {
+        title: payload.title.trim(),
+        instructions: payload.instructions?.trim() || null,
+        shuffleQuestions: payload.shuffleQuestions,
+        showResultsImmediately: payload.showResultsImmediately,
+        allowRetakes: payload.allowRetakes,
+        questionIds: payload.questionIds,
+      },
+    ));
+  }
+
+  async deleteBasicEducationExam(
+    stageId: string,
+    gradeId: string,
+    subjectId: string,
+    examId: string,
+  ): Promise<void> {
+    await this.authApi.ensureLoggedIn();
+    await firstValueFrom(this.http.delete<void>(
+      `${this.platformSettingsUrl}/exams/basic-education/${stageId}/grades/${gradeId}/subjects/${subjectId}/${examId}`,
+    ));
+  }
+
+  async updateBasicEducationExamStatus(
+    stageId: string,
+    gradeId: string,
+    subjectId: string,
+    examId: string,
+    payload: TenantBasicEducationExamStatusPayload,
+  ): Promise<TenantBasicEducationExam> {
+    await this.authApi.ensureLoggedIn();
+    return await firstValueFrom(this.http.patch<TenantBasicEducationExam>(
+      `${this.platformSettingsUrl}/exams/basic-education/${stageId}/grades/${gradeId}/subjects/${subjectId}/${examId}/status`,
+      {
+        status: payload.status.trim(),
+      },
+    ));
+  }
+
+  async createBasicEducationExamQuestion(
+    stageId: string,
+    gradeId: string,
+    subjectId: string,
+    payload: TenantCurriculumQuestionPayload,
+  ): Promise<TenantCurriculumQuestion> {
+    await this.authApi.ensureLoggedIn();
+    const response = await firstValueFrom(this.http.post<TenantCurriculumQuestion>(
+      `${this.platformSettingsUrl}/exams/basic-education/${stageId}/grades/${gradeId}/subjects/${subjectId}/curriculum/questions`,
+      this.toCurriculumQuestionBody(payload),
+    ));
+    return this.normalizeCurriculumQuestion(response);
+  }
+
+  async updateBasicEducationExamQuestion(
+    stageId: string,
+    gradeId: string,
+    subjectId: string,
+    questionId: string,
+    payload: TenantCurriculumQuestionPayload,
+  ): Promise<TenantCurriculumQuestion> {
+    await this.authApi.ensureLoggedIn();
+    const response = await firstValueFrom(this.http.put<TenantCurriculumQuestion>(
+      `${this.platformSettingsUrl}/exams/basic-education/${stageId}/grades/${gradeId}/subjects/${subjectId}/curriculum/questions/${questionId}`,
+      this.toCurriculumQuestionBody(payload),
+    ));
+    return this.normalizeCurriculumQuestion(response);
+  }
+
+  async deleteBasicEducationExamQuestion(
+    stageId: string,
+    gradeId: string,
+    subjectId: string,
+    questionId: string,
+  ): Promise<void> {
+    await this.authApi.ensureLoggedIn();
+    await firstValueFrom(this.http.delete<void>(
+      `${this.platformSettingsUrl}/exams/basic-education/${stageId}/grades/${gradeId}/subjects/${subjectId}/curriculum/questions/${questionId}`,
+    ));
+  }
+
   async updateCurriculumQuestion(
     subjectId: string,
     nodeId: string,
@@ -311,6 +527,21 @@ export class TenantSubjectsDataService {
     return this.normalizeCurriculumQuestionAnswer(response);
   }
 
+  async createBasicEducationExamQuestionAnswer(
+    stageId: string,
+    gradeId: string,
+    subjectId: string,
+    questionId: string,
+    payload: TenantCurriculumQuestionAnswerPayload,
+  ): Promise<TenantCurriculumQuestionAnswer> {
+    await this.authApi.ensureLoggedIn();
+    const response = await firstValueFrom(this.http.post<TenantCurriculumQuestionAnswer>(
+      `${this.platformSettingsUrl}/exams/basic-education/${stageId}/grades/${gradeId}/subjects/${subjectId}/curriculum/questions/${questionId}/answers`,
+      this.toCurriculumQuestionAnswerBody(payload),
+    ));
+    return this.normalizeCurriculumQuestionAnswer(response);
+  }
+
   async updateCurriculumQuestionAnswer(
     subjectId: string,
     nodeId: string,
@@ -334,6 +565,47 @@ export class TenantSubjectsDataService {
     }
     const response = await firstValueFrom(this.http.patch<TenantCurriculumQuestionAnswer>(
       `${this.subjectsBaseUrl()}/${subjectId}/curriculum/nodes/${nodeId}/questions/${questionId}/answers/${answerId}`,
+      body,
+    ));
+    return this.normalizeCurriculumQuestionAnswer(response);
+  }
+
+  async updateBasicEducationExamQuestionAnswer(
+    stageId: string,
+    gradeId: string,
+    subjectId: string,
+    questionId: string,
+    answerId: string,
+    payload: Partial<TenantCurriculumQuestionAnswerPayload>,
+  ): Promise<TenantCurriculumQuestionAnswer> {
+    await this.authApi.ensureLoggedIn();
+    const body: Record<string, string | number | boolean | null> = {};
+    if (payload.answer !== undefined) {
+      body['answer'] = payload.answer.trim();
+    }
+    if (payload.correct !== undefined) {
+      body['correct'] = payload.correct;
+    }
+    if (payload.description !== undefined) {
+      body['description'] = payload.description?.trim() || null;
+    }
+    if (payload.mediaUrl !== undefined) {
+      body['mediaUrl'] = payload.mediaUrl;
+    }
+    if (payload.mediaFileName !== undefined) {
+      body['mediaFileName'] = payload.mediaFileName;
+    }
+    if (payload.mediaOriginalName !== undefined) {
+      body['mediaOriginalName'] = payload.mediaOriginalName;
+    }
+    if (payload.mediaContentType !== undefined) {
+      body['mediaContentType'] = payload.mediaContentType;
+    }
+    if (payload.mediaSizeBytes !== undefined) {
+      body['mediaSizeBytes'] = payload.mediaSizeBytes;
+    }
+    const response = await firstValueFrom(this.http.patch<TenantCurriculumQuestionAnswer>(
+      `${this.platformSettingsUrl}/exams/basic-education/${stageId}/grades/${gradeId}/subjects/${subjectId}/curriculum/questions/${questionId}/answers/${answerId}`,
       body,
     ));
     return this.normalizeCurriculumQuestionAnswer(response);
@@ -387,6 +659,48 @@ export class TenantSubjectsDataService {
     await this.authApi.ensureLoggedIn();
     await firstValueFrom(this.http.delete<void>(
       `${this.subjectsBaseUrl()}/${subjectId}/curriculum/nodes/${nodeId}/material-folders/${folderId}`,
+    ));
+  }
+
+  async listCurriculumSkills(subjectId: string, nodeId: string): Promise<TenantCurriculumSkill[]> {
+    await this.authApi.ensureLoggedIn();
+    const response = await firstValueFrom(this.http.get<TenantCurriculumSkill[]>(
+      `${this.subjectsBaseUrl()}/${subjectId}/curriculum/nodes/${nodeId}/skills`,
+    ));
+    return (response ?? []).map((skill) => this.normalizeCurriculumSkill(skill));
+  }
+
+  async createCurriculumSkill(
+    subjectId: string,
+    nodeId: string,
+    payload: TenantCurriculumSkillPayload,
+  ): Promise<TenantCurriculumSkill> {
+    await this.authApi.ensureLoggedIn();
+    const response = await firstValueFrom(this.http.post<TenantCurriculumSkill>(
+      `${this.subjectsBaseUrl()}/${subjectId}/curriculum/nodes/${nodeId}/skills`,
+      this.toCurriculumSkillBody(payload),
+    ));
+    return this.normalizeCurriculumSkill(response);
+  }
+
+  async updateCurriculumSkill(
+    subjectId: string,
+    nodeId: string,
+    skillId: string,
+    payload: TenantCurriculumSkillPayload,
+  ): Promise<TenantCurriculumSkill> {
+    await this.authApi.ensureLoggedIn();
+    const response = await firstValueFrom(this.http.put<TenantCurriculumSkill>(
+      `${this.subjectsBaseUrl()}/${subjectId}/curriculum/nodes/${nodeId}/skills/${skillId}`,
+      this.toCurriculumSkillBody(payload),
+    ));
+    return this.normalizeCurriculumSkill(response);
+  }
+
+  async deleteCurriculumSkill(subjectId: string, nodeId: string, skillId: string): Promise<void> {
+    await this.authApi.ensureLoggedIn();
+    await firstValueFrom(this.http.delete<void>(
+      `${this.subjectsBaseUrl()}/${subjectId}/curriculum/nodes/${nodeId}/skills/${skillId}`,
     ));
   }
 
@@ -565,7 +879,9 @@ export class TenantSubjectsDataService {
   }
 
   private subjectsBaseUrl(): string {
-    return this.router.url.startsWith('/tenant/university-subjects') ? this.universitySubjectsUrl : this.subjectsUrl;
+    return this.router.url.startsWith('/tenant/university-subjects') || this.router.url.startsWith('/tenant/questions-bank/university-education')
+      ? this.universitySubjectsUrl
+      : this.subjectsUrl;
   }
 
   private subjectsBaseUrlForCategory(educationCategory: string | null | undefined): string {
@@ -585,6 +901,7 @@ export class TenantSubjectsDataService {
   private normalizeCurriculumQuestion(question: TenantCurriculumQuestion): TenantCurriculumQuestion {
     return {
       id: question.id,
+      curriculumNodeId: question.curriculumNodeId ?? null,
       question: question.question,
       type: question.type,
       answer: question.answer ?? null,
@@ -597,10 +914,52 @@ export class TenantSubjectsDataService {
       bloomId: question.bloomId ?? null,
       difficultyId: question.difficultyId ?? null,
       weight: question.weight ?? null,
+      skillId: question.skillId ?? null,
+      questionSource: question.questionSource ?? null,
+      answerExplanation: question.answerExplanation ?? null,
       tags: question.tags ?? [],
       answers: (question.answers ?? []).map((answer) => this.normalizeCurriculumQuestionAnswer(answer)),
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
+    };
+  }
+
+  private normalizeQuestionBankOverview(overview: TenantQuestionBankOverview): TenantQuestionBankOverview {
+    return {
+      basicEducationQuestions: overview.basicEducationQuestions ?? 0,
+      universityEducationQuestions: overview.universityEducationQuestions ?? 0,
+      stagesCount: overview.stagesCount ?? 0,
+      universitiesCount: overview.universitiesCount ?? 0,
+      tags: (overview.tags ?? []).map((tag) => this.normalizeQuestionBankTag(tag)),
+      taggedQuestions: (overview.taggedQuestions ?? []).map((question) => this.normalizeQuestionBankTaggedQuestion(question)),
+    };
+  }
+
+  private normalizeQuestionBankTag(tag: TenantQuestionBankTagSummary): TenantQuestionBankTagSummary {
+    return {
+      name: tag.name,
+      totalQuestions: tag.totalQuestions ?? 0,
+    };
+  }
+
+  private normalizeQuestionBankTaggedQuestion(question: TenantQuestionBankTaggedQuestion): TenantQuestionBankTaggedQuestion {
+    return {
+      id: question.id,
+      question: question.question,
+      type: question.type,
+      subjectId: question.subjectId,
+      subjectName: question.subjectName,
+      curriculumNodeId: question.curriculumNodeId,
+      curriculumNodeName: question.curriculumNodeName,
+      track: question.track,
+      stageId: question.stageId ?? null,
+      stageName: question.stageName ?? null,
+      gradeId: question.gradeId ?? null,
+      gradeName: question.gradeName ?? null,
+      universityId: question.universityId ?? null,
+      universityName: question.universityName ?? null,
+      tags: question.tags ?? [],
+      createdAt: question.createdAt,
     };
   }
 
@@ -629,6 +988,10 @@ export class TenantSubjectsDataService {
       bloomId: payload.bloomId || null,
       difficultyId: payload.difficultyId || null,
       weight: payload.weight,
+      skillId: payload.skillId || null,
+      curriculumNodeId: payload.curriculumNodeId || null,
+      questionSource: payload.questionSource?.trim() || null,
+      answerExplanation: payload.answerExplanation?.trim() || null,
     };
     if (payload.tags !== undefined) {
       body['tags'] = payload.tags;
@@ -650,6 +1013,13 @@ export class TenantSubjectsDataService {
   }
 
   private toCurriculumMaterialFolderBody(payload: TenantCurriculumMaterialFolderPayload): Record<string, string | null> {
+    return {
+      name: payload.name.trim(),
+      description: payload.description?.trim() || null,
+    };
+  }
+
+  private toCurriculumSkillBody(payload: TenantCurriculumSkillPayload): Record<string, string | null> {
     return {
       name: payload.name.trim(),
       description: payload.description?.trim() || null,
@@ -679,6 +1049,16 @@ export class TenantSubjectsDataService {
       filesCount: folder.filesCount ?? 0,
       createdAt: folder.createdAt,
       updatedAt: folder.updatedAt,
+    };
+  }
+
+  private normalizeCurriculumSkill(skill: TenantCurriculumSkill): TenantCurriculumSkill {
+    return {
+      id: skill.id,
+      name: skill.name,
+      description: skill.description ?? null,
+      createdAt: skill.createdAt,
+      updatedAt: skill.updatedAt,
     };
   }
 

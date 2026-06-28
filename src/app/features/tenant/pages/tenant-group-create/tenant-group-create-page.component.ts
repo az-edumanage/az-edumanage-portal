@@ -19,7 +19,11 @@ import { TenantGroupSearchableSelectorComponent } from '../../components/tenant-
 import { TenantGroupOwnedBySelectorComponent } from '../../components/tenant-group-owned-by-selector/tenant-group-owned-by-selector.component';
 import { TenantGroupScheduleSectionComponent } from '../../components/tenant-group-schedule-section/tenant-group-schedule-section.component';
 import { TenantGroupSelectorOption } from '../../models/tenant-group-create.models';
-import { TenantSubscriptionPeriod, TenantSubscriptionPeriodSettingsService } from '../../data-access/tenant-subscription-period-settings.service';
+import {
+  TenantSubscriptionPeriod,
+  TenantSubscriptionPeriodDurationType,
+  TenantSubscriptionPeriodSettingsService,
+} from '../../data-access/tenant-subscription-period-settings.service';
 
 @Component({
   selector: 'app-tenant-group-create-page',
@@ -88,6 +92,15 @@ export class TenantGroupCreatePageComponent implements OnInit, OnDestroy {
   readonly paymentMethodOptions = signal<TenantGroupSelectorOption[]>([]);
   readonly paymentMethodsLoading = signal(false);
   readonly paymentMethodsLoadError = signal<string | null>(null);
+  readonly showAddPaymentMethodModal = signal(false);
+  readonly paymentMethodSaving = signal(false);
+  readonly newPaymentMethodName = signal('');
+  readonly newPaymentMethodDurationType = signal<TenantSubscriptionPeriodDurationType>('Month');
+  readonly newPaymentMethodDurationValue = signal(1);
+  readonly newPaymentMethodDescription = signal('');
+  readonly newPaymentMethodNameError = signal<string | null>(null);
+  readonly newPaymentMethodDurationError = signal<string | null>(null);
+  readonly newPaymentMethodSaveError = signal<string | null>(null);
   readonly filteredPaymentMethods = computed(() => {
     const query = this.paymentMethodSearchQuery().toLowerCase();
     const options = this.paymentMethodOptions();
@@ -235,6 +248,9 @@ export class TenantGroupCreatePageComponent implements OnInit, OnDestroy {
     const next = !this.showPaymentMethodDropdown();
     this.facade.closeAllDropdowns();
     this.showPaymentMethodDropdown.set(next);
+    if (next) {
+      void this.loadSubscriptionPeriods();
+    }
   }
 
   selectPaymentMethod(value: string): void {
@@ -289,6 +305,94 @@ export class TenantGroupCreatePageComponent implements OnInit, OnDestroy {
 
   setPaymentMethodSearchQuery(value: string): void {
     this.paymentMethodSearchQuery.set(value);
+  }
+
+  openAddPaymentMethodModal(): void {
+    this.showPaymentMethodDropdown.set(false);
+    this.newPaymentMethodName.set(this.paymentMethodSearchQuery().trim());
+    this.newPaymentMethodDurationType.set('Month');
+    this.newPaymentMethodDurationValue.set(1);
+    this.newPaymentMethodDescription.set('');
+    this.newPaymentMethodNameError.set(null);
+    this.newPaymentMethodDurationError.set(null);
+    this.newPaymentMethodSaveError.set(null);
+    this.showAddPaymentMethodModal.set(true);
+  }
+
+  closeAddPaymentMethodModal(): void {
+    if (this.paymentMethodSaving()) {
+      return;
+    }
+
+    this.showAddPaymentMethodModal.set(false);
+  }
+
+  setNewPaymentMethodName(value: string): void {
+    this.newPaymentMethodName.set(value);
+    this.newPaymentMethodNameError.set(null);
+  }
+
+  selectNewPaymentMethodDurationType(value: TenantSubscriptionPeriodDurationType): void {
+    this.newPaymentMethodDurationType.set(value);
+  }
+
+  setNewPaymentMethodDurationValue(value: string | number): void {
+    this.newPaymentMethodDurationValue.set(Number(value));
+    this.newPaymentMethodDurationError.set(null);
+  }
+
+  setNewPaymentMethodDescription(value: string): void {
+    this.newPaymentMethodDescription.set(value);
+  }
+
+  async saveNewPaymentMethod(): Promise<void> {
+    if (this.paymentMethodSaving()) {
+      return;
+    }
+
+    const name = this.newPaymentMethodName().trim();
+    const durationValue = Number(this.newPaymentMethodDurationValue());
+    const description = this.newPaymentMethodDescription().trim();
+    this.newPaymentMethodNameError.set(null);
+    this.newPaymentMethodDurationError.set(null);
+    this.newPaymentMethodSaveError.set(null);
+
+    if (!name) {
+      this.newPaymentMethodNameError.set('Method name is required.');
+      return;
+    }
+
+    if (!Number.isFinite(durationValue) || durationValue < 1) {
+      this.newPaymentMethodDurationError.set('Duration must be at least 1.');
+      return;
+    }
+
+    this.paymentMethodSaving.set(true);
+    try {
+      const saved = await this.subscriptionPeriodSettings.createSubscriptionPeriod({
+        name,
+        durationType: this.newPaymentMethodDurationType(),
+        durationValue: Math.trunc(durationValue),
+        description: description || null,
+      });
+      const option = this.toPaymentMethodOption(saved);
+      this.paymentMethodOptions.update((options) => {
+        const next = options.some((item) => item.id === option.id)
+          ? options.map((item) => item.id === option.id ? option : item)
+          : [...options, option];
+        return next.sort((a, b) => a.name.localeCompare(b.name));
+      });
+      this.groupForm.patchValue({
+        paymentMethod: option.name,
+        paymentMethodId: option.id,
+      });
+      this.paymentMethodSearchQuery.set('');
+      this.showAddPaymentMethodModal.set(false);
+    } catch (error) {
+      this.newPaymentMethodSaveError.set(this.subscriptionPeriodSettings.toUserMessage(error));
+    } finally {
+      this.paymentMethodSaving.set(false);
+    }
   }
 
   closeDropdowns(): void {

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { TenantSubjectsDataService } from '../../data-access/tenant-subjects-data.service';
 import { TenantCurriculumQuestion, TenantSubject, TenantSubjectCurriculumNode } from '../../models/tenant-subjects.models';
@@ -16,6 +16,7 @@ interface QuestionBankNodeOption {
 
 interface QuestionBankRow {
   id: string;
+  questionId: string;
   question: string;
   type: string;
   description: string;
@@ -40,11 +41,13 @@ interface QuestionBankCurriculumChild {
       <nav class="flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400" aria-label="Breadcrumb">
         <a routerLink="/tenant/questions-bank" class="font-medium text-slate-600 transition hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300">Questions Bank</a>
         <mat-icon class="text-base text-slate-400">chevron_right</mat-icon>
-        <a routerLink="/tenant/questions-bank/basic-education" class="font-medium text-slate-600 transition hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300">Basic Education</a>
+        <a [routerLink]="educationRootLink()" class="font-medium text-slate-600 transition hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300">{{ isUniversityQuestionsBankRoute() ? 'University Education' : 'Basic Education' }}</a>
         <mat-icon class="text-base text-slate-400">chevron_right</mat-icon>
-        <a [routerLink]="['/tenant/questions-bank/basic-education', stageId()]" class="font-medium text-slate-600 transition hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300">{{ subject()?.stageName || 'Stage' }}</a>
-        <mat-icon class="text-base text-slate-400">chevron_right</mat-icon>
-        <a [routerLink]="['/tenant/questions-bank/basic-education', stageId(), 'grades', gradeId()]" class="font-medium text-slate-600 transition hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300">{{ subject()?.gradeName || 'Grade' }}</a>
+        @if (!isUniversityQuestionsBankRoute()) {
+          <a [routerLink]="['/tenant/questions-bank/basic-education', stageId()]" class="font-medium text-slate-600 transition hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300">{{ subject()?.stageName || 'Stage' }}</a>
+          <mat-icon class="text-base text-slate-400">chevron_right</mat-icon>
+        }
+        <a [routerLink]="subjectsListLink()" class="font-medium text-slate-600 transition hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300">{{ isUniversityQuestionsBankRoute() ? (subject()?.gradeName || 'College') : (subject()?.gradeName || 'Grade') }}</a>
         <mat-icon class="text-base text-slate-400">chevron_right</mat-icon>
         <a [routerLink]="subjectCurriculumLink()" class="font-medium text-slate-600 transition hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300">{{ subject()?.name || 'Subject' }}</a>
         <mat-icon class="text-base text-slate-400">chevron_right</mat-icon>
@@ -161,11 +164,20 @@ interface QuestionBankCurriculumChild {
                   <th class="px-5 py-3">Type</th>
                   <th class="px-5 py-3">Curriculum Item</th>
                   <th class="px-5 py-3 text-center">Answers</th>
+                  <th class="w-28 px-5 py-3 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-slate-900">
                 @for (row of filteredRows(); track row.id) {
-                  <tr class="transition hover:bg-slate-50 dark:hover:bg-slate-800/60">
+                  <tr
+                    role="button"
+                    tabindex="0"
+                    class="cursor-pointer transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500/30 dark:hover:bg-slate-800/60"
+                    (click)="openQuestion(row)"
+                    (keydown.enter)="openQuestion(row)"
+                    (keydown.space)="openQuestion(row); $event.preventDefault()"
+                    [attr.aria-label]="'Open question overview for ' + row.question"
+                  >
                     <td class="px-5 py-4">
                       <div class="font-semibold text-slate-900 dark:text-slate-100">{{ row.question }}</div>
                       <div class="mt-1 max-w-3xl truncate text-sm text-slate-500 dark:text-slate-400">{{ row.description || 'No description' }}</div>
@@ -173,6 +185,29 @@ interface QuestionBankCurriculumChild {
                     <td class="px-5 py-4 text-sm font-medium text-slate-700 dark:text-slate-300">{{ row.type }}</td>
                     <td class="px-5 py-4 text-sm font-medium text-slate-700 dark:text-slate-300">{{ row.nodeLabel }}</td>
                     <td class="px-5 py-4 text-center text-sm font-semibold text-slate-900 dark:text-slate-100">{{ row.answerCount }}</td>
+                    <td class="px-5 py-4">
+                      <div class="flex items-center justify-center gap-2">
+                        <a
+                          [routerLink]="editQuestionLink(row)"
+                          (click)="$event.stopPropagation()"
+                          class="inline-flex h-9 w-9 items-center justify-center rounded-md text-indigo-600 transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:text-indigo-300 dark:hover:bg-indigo-950/30"
+                          [attr.aria-label]="'Edit question ' + row.question"
+                          title="Edit"
+                        >
+                          <mat-icon class="text-base">edit</mat-icon>
+                        </a>
+                        <button
+                          type="button"
+                          (click)="deleteQuestion(row, $event)"
+                          class="inline-flex h-9 w-9 items-center justify-center rounded-md text-rose-600 transition hover:bg-rose-50 focus:outline-none focus:ring-2 focus:ring-rose-500/30 disabled:cursor-not-allowed disabled:opacity-50 dark:text-rose-300 dark:hover:bg-rose-950/30"
+                          [disabled]="deletingQuestionId() === row.questionId"
+                          [attr.aria-label]="'Delete question ' + row.question"
+                          title="Delete"
+                        >
+                          <mat-icon class="text-base">{{ deletingQuestionId() === row.questionId ? 'sync' : 'delete' }}</mat-icon>
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 }
               </tbody>
@@ -191,11 +226,13 @@ interface QuestionBankCurriculumChild {
 })
 export class TenantQuestionsBankSubjectQuestionsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly data = inject(TenantSubjectsDataService);
 
   readonly allItemsValue = ALL_ITEMS_VALUE;
   readonly stageId = signal('');
   readonly gradeId = signal('');
+  readonly collegeId = signal('');
   readonly subjectId = signal('');
   readonly subject = signal<TenantSubject | null>(null);
   readonly curriculumRoot = signal<TenantSubjectCurriculumNode | null>(null);
@@ -205,6 +242,7 @@ export class TenantQuestionsBankSubjectQuestionsComponent implements OnInit {
   readonly searchQuery = signal('');
   readonly loading = signal(false);
   readonly loadError = signal<string | null>(null);
+  readonly deletingQuestionId = signal<string | null>(null);
 
   readonly selectedNodeChildren = computed<QuestionBankCurriculumChild[]>(() => {
     const root = this.curriculumRoot();
@@ -256,26 +294,79 @@ export class TenantQuestionsBankSubjectQuestionsComponent implements OnInit {
       : this.subjectCurriculumLink();
   });
 
-  readonly subjectCurriculumLink = computed(() => [
-    '/tenant/questions-bank/basic-education',
-    this.stageId(),
-    'grades',
-    this.gradeId(),
-    'subjects',
-    this.subjectId(),
-    'curriculum',
-  ]);
+  readonly subjectCurriculumLink = computed(() => this.isUniversityQuestionsBankRoute()
+    ? ['/tenant/questions-bank/university-education/colleges', this.collegeId(), 'subjects', this.subjectId(), 'curriculum']
+    : ['/tenant/questions-bank/basic-education', this.stageId(), 'grades', this.gradeId(), 'subjects', this.subjectId(), 'curriculum']);
 
   curriculumNodeLink(nodeId: string): unknown[] {
     return [...this.subjectCurriculumLink(), nodeId];
   }
 
+  questionOverviewLink(row: QuestionBankRow): unknown[] {
+    return [...this.subjectCurriculumLink(), row.nodeId, 'questions', row.questionId];
+  }
+
+  editQuestionLink(row: QuestionBankRow): unknown[] {
+    return [...this.subjectCurriculumLink(), row.nodeId, 'editQuestion', row.questionId];
+  }
+
+  openQuestion(row: QuestionBankRow): void {
+    void this.router.navigate(this.questionOverviewLink(row));
+  }
+
+  async deleteQuestion(row: QuestionBankRow, event: Event): Promise<void> {
+    event.stopPropagation();
+    if (this.deletingQuestionId()) {
+      return;
+    }
+    const confirmed = window.confirm(`Delete question "${row.question}"?`);
+    if (!confirmed) {
+      return;
+    }
+
+    this.deletingQuestionId.set(row.questionId);
+    this.loadError.set(null);
+    try {
+      if (this.isBasicQuestionsBankRoute()) {
+        await this.data.deleteBasicEducationExamQuestion(this.stageId(), this.gradeId(), this.subjectId(), row.questionId);
+      } else {
+        await this.data.deleteCurriculumQuestion(this.subjectId(), row.nodeId, row.questionId);
+      }
+      this.rows.update((rows) => rows.filter((item) => item.id !== row.id));
+    } catch (error) {
+      this.loadError.set(this.data.toUserMessage(error, 'Unable to delete question. Please try again.'));
+    } finally {
+      this.deletingQuestionId.set(null);
+    }
+  }
+
   ngOnInit(): void {
     this.stageId.set(this.route.snapshot.paramMap.get('stageId') ?? '');
     this.gradeId.set(this.route.snapshot.paramMap.get('gradeId') ?? '');
+    this.collegeId.set(this.route.snapshot.paramMap.get('collegeId') ?? '');
     this.subjectId.set(this.route.snapshot.paramMap.get('id') ?? '');
     this.selectedNodeId.set(this.route.snapshot.paramMap.get('nodeId') ?? '');
     void this.loadQuestions();
+  }
+
+  isBasicQuestionsBankRoute(): boolean {
+    return this.router.url.startsWith('/tenant/questions-bank/basic-education');
+  }
+
+  isUniversityQuestionsBankRoute(): boolean {
+    return this.router.url.startsWith('/tenant/questions-bank/university-education');
+  }
+
+  educationRootLink(): unknown[] {
+    return this.isUniversityQuestionsBankRoute()
+      ? ['/tenant/questions-bank/university-education']
+      : ['/tenant/questions-bank/basic-education'];
+  }
+
+  subjectsListLink(): unknown[] {
+    return this.isUniversityQuestionsBankRoute()
+      ? ['/tenant/questions-bank/university-education/colleges', this.collegeId()]
+      : ['/tenant/questions-bank/basic-education', this.stageId(), 'grades', this.gradeId()];
   }
 
   private async loadQuestions(): Promise<void> {
@@ -307,6 +398,12 @@ export class TenantQuestionsBankSubjectQuestionsComponent implements OnInit {
 
   private async loadNodeQuestions(subjectId: string, node: QuestionBankNodeOption): Promise<QuestionBankRow[]> {
     try {
+      if (this.isBasicQuestionsBankRoute()) {
+        const questions = await this.data.listBasicEducationExamQuestions(this.stageId(), this.gradeId(), subjectId);
+        return questions
+          .filter((question) => question.curriculumNodeId === node.id)
+          .map((question) => this.toRow(question, node));
+      }
       const page = await this.data.listCurriculumQuestionsPage(subjectId, node.id, { page: 0, size: 100 });
       return page.content.map((question) => this.toRow(question, node));
     } catch {
@@ -347,6 +444,7 @@ export class TenantQuestionsBankSubjectQuestionsComponent implements OnInit {
   private toRow(question: TenantCurriculumQuestion, node: QuestionBankNodeOption): QuestionBankRow {
     return {
       id: `${node.id}-${question.id}`,
+      questionId: question.id,
       question: question.question || question.mediaOriginalName || question.mediaFileName || 'Media question',
       type: question.type,
       description: question.description || question.answer || '',

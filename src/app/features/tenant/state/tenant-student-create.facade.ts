@@ -31,6 +31,8 @@ export class TenantStudentCreateFacade {
     fullName: ['', [Validators.required, Validators.minLength(3)]],
     email: ['', [Validators.required, Validators.email]],
     phone: ['', Validators.required],
+    username: ['', Validators.required],
+    password: ['', [Validators.required, Validators.minLength(8)]],
     birthDate: ['', Validators.required],
     gender: ['Male', Validators.required],
     parentName: [''],

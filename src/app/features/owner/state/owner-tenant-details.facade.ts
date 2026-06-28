@@ -176,6 +176,17 @@ export class OwnerTenantDetailsFacade {
     this.pendingPlanId.set(null);
   }
 
+  retryProvisioning(): void {
+    const currentTenant = this.store.tenant();
+    if (!currentTenant) {
+      return;
+    }
+    this.data.retryProvisioning(currentTenant.id).subscribe({
+      next: () => this.initialize(currentTenant.id),
+      error: () => this.store.setLoadError('Tenant provisioning retry could not be started.'),
+    });
+  }
+
   getCurrentPlanPrice(): string {
     return this.data.getPlanPrice(this.tenant.planId);
   }

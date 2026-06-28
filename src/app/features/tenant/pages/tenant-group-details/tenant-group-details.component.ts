@@ -13,7 +13,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { I18nService } from '../../../../core/services/i18n.service';
-import { GroupDetails, GroupLesson, GroupLessonContent, GroupStudent } from '../../models/tenant-group-details.models';
+import { GroupDetails, GroupExamRow, GroupLesson, GroupLessonContent, GroupStudent } from '../../models/tenant-group-details.models';
 import {
   TenantCurriculumMaterialFile,
   TenantCurriculumMaterialFolder,
@@ -27,7 +27,7 @@ import { TenantSubjectsDataService } from '../../data-access/tenant-subjects-dat
 
 Chart.register(...registerables);
 
-type GroupDetailsTab = 'sessions' | 'enrolledStudents' | 'lessons' | 'library' | 'overview';
+type GroupDetailsTab = 'sessions' | 'enrolledStudents' | 'lessons' | 'library' | 'exams' | 'overview';
 type SessionFilter = 'all' | 'dated' | 'recurring';
 type SessionRelativeStatus = 'current' | 'next';
 type LessonFilter = 'all' | 'withDescription' | 'withoutDescription';
@@ -186,6 +186,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   readonly insertContentLoading = signal(false);
   readonly insertContentError = signal<string | null>(null);
   readonly insertContentOptions = signal<LessonMaterialOption[]>([]);
+  readonly insertContentFolderFilter = signal('all');
   readonly selectedInsertContent = signal<LessonMaterialOption | null>(null);
   readonly insertingContent = signal(false);
   readonly insertedLessonContent = signal<GroupLessonContent[]>([]);
@@ -224,6 +225,17 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   readonly libraryPreviewError = signal<string | null>(null);
   readonly libraryPreviewObjectUrl = signal<string | null>(null);
   readonly libraryPreviewSafeObjectUrl = signal<SafeResourceUrl | null>(null);
+  readonly groupExams = signal<GroupExamRow[]>([]);
+  readonly groupExamsLoading = signal(false);
+  readonly groupExamsLoaded = signal(false);
+  readonly groupExamsError = signal<string | null>(null);
+  readonly groupExamsLoadedGroupId = signal<string | null>(null);
+  readonly groupExamActionError = signal<string | null>(null);
+  readonly deletingGroupExamId = signal<string | null>(null);
+  readonly pendingDeleteGroupExam = signal<GroupExamRow | null>(null);
+  readonly examSearchTerm = signal('');
+  readonly examPageIndex = signal(0);
+  readonly examPageSize = signal(5);
   readonly enrolledStudentSearchTerm = signal('');
   readonly enrolledStudentFilter = signal<EnrolledStudentFilter>('all');
   readonly enrolledStudentPageIndex = signal(0);
@@ -236,6 +248,13 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   readonly availableCurriculumLessonOptions = computed(() => {
     const addedLessonIds = new Set(this.groupLessons().map((lesson) => lesson.curriculumNodeId));
     return this.curriculumLessonOptions().filter((lesson) => !addedLessonIds.has(lesson.id));
+  });
+  readonly displayableGroupLessons = computed(() => {
+    const leafIds = this.curriculumLessonLeafIds();
+    if (!leafIds) {
+      return this.groupLessons();
+    }
+    return this.groupLessons().filter((lesson) => leafIds.has(lesson.curriculumNodeId));
   });
   readonly filteredSessionRows = computed<GroupSessionRow[]>(() => {
     const query = this.sessionSearchTerm().trim().toLowerCase();
@@ -257,7 +276,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   readonly filteredGroupLessons = computed(() => {
     const query = this.lessonSearchTerm().trim().toLowerCase();
     const filter = this.lessonFilter();
-    return this.groupLessons().filter((lesson) => {
+    return this.displayableGroupLessons().filter((lesson) => {
       const hasDescription = Boolean(lesson.description?.trim());
       const matchesFilter =
         filter === 'all' ||
@@ -305,6 +324,29 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     const start = pageIndex * this.enrolledStudentPageSize();
     return this.filteredEnrolledStudents().slice(start, start + this.enrolledStudentPageSize());
   });
+  readonly filteredGroupExams = computed(() => {
+    const query = this.examSearchTerm().trim().toLowerCase();
+    return this.groupExams().filter((exam) => {
+      if (!query) {
+        return true;
+      }
+      return [
+        exam.title,
+        exam.status,
+        exam.date,
+        exam.startTime ?? '',
+        `${exam.duration} min`,
+        exam.questionCount == null ? '' : `${exam.questionCount} questions`,
+        exam.instructions ?? '',
+      ].some((value) => value.toLowerCase().includes(query));
+    });
+  });
+  readonly examTotalPages = computed(() => Math.max(1, Math.ceil(this.filteredGroupExams().length / this.examPageSize())));
+  readonly pagedGroupExams = computed(() => {
+    const pageIndex = this.examVisiblePageIndex();
+    const start = pageIndex * this.examPageSize();
+    return this.filteredGroupExams().slice(start, start + this.examPageSize());
+  });
   readonly filteredLibraryFiles = computed(() => {
     if (this.libraryContentFilter() !== 'all' && this.libraryContentFilter() !== 'files') {
       return [];
@@ -331,6 +373,20 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   readonly hasLibraryContent = computed(() =>
     this.filteredLibraryFiles().length > 0 || this.filteredLibraryNotes().length > 0 || this.filteredLibraryLinks().length > 0,
   );
+  readonly insertContentFolderOptions = computed(() => {
+    const byId = new Map<string, TenantCurriculumMaterialFolder>();
+    for (const option of this.insertContentOptions()) {
+      byId.set(option.source.folder.id, option.source.folder);
+    }
+    return Array.from(byId.values()).sort((first, second) => first.name.localeCompare(second.name));
+  });
+  readonly filteredInsertContentOptions = computed(() => {
+    const folderId = this.insertContentFolderFilter();
+    if (folderId === 'all') {
+      return this.insertContentOptions();
+    }
+    return this.insertContentOptions().filter((option) => option.source.folder.id === folderId);
+  });
   readonly libraryCreateTargets = computed<GroupLibraryNodeTarget[]>(() => {
     const root = this.lessonCurriculumRoot();
     return root ? this.libraryMaterialNodes(root, this.groupLessons()) : [];
@@ -434,6 +490,22 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
 
     effect(() => {
       const group = this.group();
+      const loadedGroupId = untracked(() => this.groupExamsLoadedGroupId());
+      if (group?.id && loadedGroupId && loadedGroupId !== group.id) {
+        this.resetGroupExams();
+      }
+      if (this.activeTab() !== 'exams' || !group?.id) {
+        return;
+      }
+      const loaded = untracked(() => this.groupExamsLoaded());
+      const loading = untracked(() => this.groupExamsLoading());
+      if (!loaded && !loading) {
+        void this.loadGroupExams();
+      }
+    });
+
+    effect(() => {
+      const group = this.group();
       if (this.activeTab() !== 'library' || !this.isCurrentGroupReady(group)) {
         return;
       }
@@ -499,7 +571,31 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
       void this.loadAndSyncGroupLessons();
     } else if (tab === 'library') {
       void this.loadGroupLibrary();
+    } else if (tab === 'exams') {
+      void this.loadGroupExams();
     }
+  }
+
+  async loadGroupExams(force = false): Promise<void> {
+    if (!this.groupId || this.groupExamsLoading() || (!force && this.groupExamsLoaded())) {
+      return;
+    }
+    this.groupExamsLoading.set(true);
+    this.groupExamsError.set(null);
+    try {
+      this.groupExams.set(await firstValueFrom(this.groupDetailsData.loadGroupExams(this.groupId)));
+      this.groupExamsLoaded.set(true);
+      this.groupExamsLoadedGroupId.set(this.group()?.id ?? this.groupId);
+      this.examPageIndex.set(0);
+    } catch (error) {
+      this.groupExamsError.set(error instanceof Error ? error.message : 'Unable to load exams');
+    } finally {
+      this.groupExamsLoading.set(false);
+    }
+  }
+
+  retryGroupExams(): void {
+    void this.loadGroupExams(true);
   }
 
   async loadGroupLessons(): Promise<void> {
@@ -700,6 +796,123 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     this.enrolledStudentPageIndex.set(0);
   }
 
+  setExamSearchTerm(value: string): void {
+    this.examSearchTerm.set(value);
+    this.examPageIndex.set(0);
+  }
+
+  clearExamSearch(): void {
+    this.examSearchTerm.set('');
+    this.examPageIndex.set(0);
+  }
+
+  editGroupExam(_exam: GroupExamRow, event?: Event): void {
+    event?.stopPropagation();
+    this.router.navigate(['/tenant/groups', this.groupId, 'exam']);
+  }
+
+  requestDeleteGroupExam(exam: GroupExamRow, event?: Event): void {
+    event?.stopPropagation();
+    if (this.groupExamActionInProgress()) {
+      return;
+    }
+    this.groupExamActionError.set(null);
+    this.pendingDeleteGroupExam.set(exam);
+  }
+
+  closeDeleteGroupExamModal(): void {
+    if (this.groupExamActionInProgress()) {
+      return;
+    }
+    this.pendingDeleteGroupExam.set(null);
+    this.groupExamActionError.set(null);
+  }
+
+  async confirmDeleteGroupExam(): Promise<void> {
+    const exam = this.pendingDeleteGroupExam();
+    if (!exam || this.groupExamActionInProgress()) {
+      return;
+    }
+    this.deletingGroupExamId.set(exam.id);
+    this.groupExamActionError.set(null);
+    try {
+      await firstValueFrom(this.groupDetailsData.deleteGroupExam(this.groupId, exam.id));
+      this.groupExams.update((exams) => exams.filter((row) => row.id !== exam.id));
+      this.pendingDeleteGroupExam.set(null);
+      this.normalizeExamPageIndex();
+    } catch (error) {
+      this.groupExamActionError.set(error instanceof Error ? error.message : 'Unable to delete exam');
+    } finally {
+      this.deletingGroupExamId.set(null);
+    }
+  }
+
+  groupExamActionInProgress(): boolean {
+    return Boolean(this.deletingGroupExamId());
+  }
+
+  setExamPageSize(value: string | number): void {
+    const size = Number(value);
+    this.examPageSize.set(Number.isFinite(size) && size > 0 ? size : 5);
+    this.examPageIndex.set(0);
+  }
+
+  previousExamPage(): void {
+    this.examPageIndex.update((page) => Math.max(0, page - 1));
+  }
+
+  nextExamPage(): void {
+    this.examPageIndex.update((page) => Math.min(this.examTotalPages() - 1, page + 1));
+  }
+
+  examPageStart(): number {
+    const total = this.filteredGroupExams().length;
+    return total === 0 ? 0 : this.examVisiblePageIndex() * this.examPageSize() + 1;
+  }
+
+  examPageEnd(): number {
+    return Math.min(this.filteredGroupExams().length, this.examPageStart() + this.pagedGroupExams().length - 1);
+  }
+
+  examVisiblePageIndex(): number {
+    return Math.min(this.examPageIndex(), this.examTotalPages() - 1);
+  }
+
+  examCountLabel(): string {
+    const total = this.groupExams().length;
+    const visible = this.filteredGroupExams().length;
+    if (!total) {
+      return 'No published exams';
+    }
+    if (visible !== total) {
+      return `${visible} of ${total} exams`;
+    }
+    return total === 1 ? '1 published exam' : `${total} published exams`;
+  }
+
+  examTimeLabel(exam: GroupExamRow): string {
+    return exam.startTime ? `${exam.date} at ${exam.startTime}` : `${exam.date} anytime`;
+  }
+
+  examDurationLabel(exam: GroupExamRow): string {
+    return `${exam.duration} min`;
+  }
+
+  examQuestionCountLabel(exam: GroupExamRow): string {
+    if (exam.questionCount == null) {
+      return 'Questions not counted';
+    }
+    return exam.questionCount === 1 ? '1 question' : `${exam.questionCount} questions`;
+  }
+
+  examSettingsLabel(exam: GroupExamRow): string {
+    const settings = [
+      exam.settings.showResultsImmediately ? 'Instant results' : null,
+      exam.settings.allowRetakes ? 'Retakes' : null,
+    ].filter((value): value is string => Boolean(value));
+    return settings.length ? settings.join(', ') : 'Standard';
+  }
+
   attendanceStateLabel(student: GroupStudent): string {
     return student.attendanceState ?? 'Not marked';
   }
@@ -758,6 +971,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     this.insertContentLesson.set(lesson);
     this.insertContentModalOpen.set(true);
     this.selectedInsertContent.set(null);
+    this.insertContentFolderFilter.set('all');
     this.insertContentError.set(null);
     await this.loadInsertContentOptions(lesson);
   }
@@ -769,6 +983,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     this.insertContentModalOpen.set(false);
     this.insertContentLesson.set(null);
     this.selectedInsertContent.set(null);
+    this.insertContentFolderFilter.set('all');
     this.insertContentError.set(null);
     this.insertContentOptions.set([]);
     this.insertedLessonContent.set([]);
@@ -777,6 +992,15 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   selectInsertContent(option: LessonMaterialOption): void {
     this.selectedInsertContent.set(option);
     this.insertContentError.set(null);
+  }
+
+  setInsertContentFolderFilter(value: string): void {
+    const folderId = value?.trim() || 'all';
+    this.insertContentFolderFilter.set(folderId);
+    const selected = this.selectedInsertContent();
+    if (selected && folderId !== 'all' && selected.source.folder.id !== folderId) {
+      this.selectedInsertContent.set(null);
+    }
   }
 
   isInsertContentAlreadyAdded(option: LessonMaterialOption): boolean {
@@ -803,6 +1027,10 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
       this.insertContentModalOpen.set(false);
       this.insertContentLesson.set(null);
       this.selectedInsertContent.set(null);
+      this.insertContentFolderFilter.set('all');
+      if (this.groupId) {
+        await this.router.navigate(['/tenant/groups', this.groupId, 'lessons', lesson.id]);
+      }
     } catch (error) {
       this.insertContentError.set(error instanceof Error ? error.message : 'Unable to insert content');
     } finally {
@@ -1436,8 +1664,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   }
 
   private async loadInsertContentOptions(lesson: GroupLesson): Promise<void> {
-    const group = this.group();
-    if (!group?.subjectId || !lesson.curriculumNodeId) {
+    if (!lesson.curriculumNodeId) {
       this.insertContentOptions.set([]);
       this.insertedLessonContent.set([]);
       return;
@@ -1448,10 +1675,10 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     try {
       const [insertedContent, sources] = await Promise.all([
         firstValueFrom(this.groupDetailsData.loadGroupLessonContent(this.groupId, lesson.id)),
-        this.loadParentLessonMaterialSources(group.subjectId, group.educationCategory, lesson.curriculumNodeId),
+        this.loadGroupLibraryMaterialSources(),
       ]);
       const options = await Promise.all(
-        sources.map((source) => this.loadMaterialOptions(group.subjectId ?? '', group.educationCategory, source)),
+        sources.map((source) => this.loadGroupLibraryMaterialOptions(source)),
       );
       this.insertedLessonContent.set(insertedContent);
       this.insertContentOptions.set(options.flat());
@@ -1460,6 +1687,38 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     } finally {
       this.insertContentLoading.set(false);
     }
+  }
+
+  private async loadGroupLibraryMaterialSources(): Promise<LessonMaterialSource[]> {
+    const folders = this.libraryFolders().length
+      ? this.libraryFolders().map((entry) => entry.folder)
+      : await firstValueFrom(this.groupDetailsData.loadGroupLibraryFolders(this.groupId));
+    if (!this.libraryFolders().length) {
+      const group = this.group();
+      this.libraryFolders.set(folders.map((folder) => ({
+        nodeId: group?.id ?? 'group-library',
+        nodeLabel: 'Group Library',
+        folder,
+      })));
+    }
+    return folders.map((folder) => ({
+      nodeId: this.insertContentLesson()?.curriculumNodeId ?? this.group()?.id ?? 'group-library',
+      nodeLabel: 'Group Library',
+      folder,
+    }));
+  }
+
+  private async loadGroupLibraryMaterialOptions(source: LessonMaterialSource): Promise<LessonMaterialOption[]> {
+    const [files, notes, links] = await Promise.all([
+      firstValueFrom(this.groupDetailsData.loadGroupLibraryFiles(this.groupId, source.folder.id)),
+      firstValueFrom(this.groupDetailsData.loadGroupLibraryNotes(this.groupId, source.folder.id)),
+      firstValueFrom(this.groupDetailsData.loadGroupLibraryLinks(this.groupId, source.folder.id)),
+    ]);
+    return [
+      ...files.map((file) => this.fileOption(file, source)),
+      ...notes.map((note) => this.noteOption(note, source)),
+      ...links.map((link) => this.linkOption(link, source)),
+    ];
   }
 
   private async loadGroupLibrary(): Promise<void> {
@@ -1680,6 +1939,9 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     if (tab === 'library') {
       return 'Library';
     }
+    if (tab === 'exams') {
+      return 'Exams';
+    }
     return tab === 'overview' ? 'Overview' : 'Enrolled Students';
   }
 
@@ -1872,7 +2134,24 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   }
 
   private isGroupDetailsTab(value: string | null): value is GroupDetailsTab {
-    return value === 'sessions' || value === 'enrolledStudents' || value === 'lessons' || value === 'library' || value === 'overview';
+    return value === 'sessions' || value === 'enrolledStudents' || value === 'lessons' || value === 'library' || value === 'exams' || value === 'overview';
+  }
+
+  private resetGroupExams(): void {
+    this.groupExams.set([]);
+    this.groupExamsLoading.set(false);
+    this.groupExamsLoaded.set(false);
+    this.groupExamsError.set(null);
+    this.groupExamActionError.set(null);
+    this.deletingGroupExamId.set(null);
+    this.pendingDeleteGroupExam.set(null);
+    this.groupExamsLoadedGroupId.set(null);
+    this.examSearchTerm.set('');
+    this.examPageIndex.set(0);
+  }
+
+  private normalizeExamPageIndex(): void {
+    this.examPageIndex.set(Math.min(this.examPageIndex(), this.examTotalPages() - 1));
   }
 
   openCalendar(): void {
@@ -2079,6 +2358,14 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     };
     visit(root, []);
     return lessons;
+  }
+
+  private curriculumLessonLeafIds(): Set<string> | null {
+    const root = this.lessonCurriculumRoot();
+    if (!root) {
+      return null;
+    }
+    return new Set(this.flattenCurriculumLessons(root).map((lesson) => lesson.id));
   }
 
   private mergeGroupLessons(current: GroupLesson[], incoming: GroupLesson[]): GroupLesson[] {

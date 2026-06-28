@@ -26,7 +26,7 @@ interface CurriculumPathItem {
   label: string;
 }
 
-type QuestionsBankBreadcrumbKey = 'questionsBank' | 'basicEducation' | 'stage' | 'grade' | 'subject' | 'curriculum';
+type QuestionsBankBreadcrumbKey = 'questionsBank' | 'basicEducation' | 'universityEducation' | 'stage' | 'grade' | 'college' | 'subject' | 'curriculum';
 
 @Component({
   selector: 'app-tenant-subject-curriculum',
@@ -63,6 +63,9 @@ export class TenantSubjectCurriculumComponent implements OnInit {
     if (this.isQuestionsBankRoute()) {
       return subject ? this.questionsBankSubjectLink(subject.id) : this.questionsBankSubjectsLink();
     }
+    if (this.isUniversityQuestionsBankRoute()) {
+      return subject ? this.universityQuestionsBankSubjectLink(subject.id) : this.universityQuestionsBankSubjectsLink();
+    }
     return subject ? [this.subjectsRootLink(), subject.id] : [this.subjectsRootLink()];
   });
   readonly curriculumTree = computed<CurriculumTreeNode[]>(() => {
@@ -87,7 +90,19 @@ export class TenantSubjectCurriculumComponent implements OnInit {
   }
 
   isQuestionsBankRoute(): boolean {
+    return this.isBasicQuestionsBankRoute();
+  }
+
+  isAnyQuestionsBankRoute(): boolean {
+    return this.isBasicQuestionsBankRoute() || this.isUniversityQuestionsBankRoute();
+  }
+
+  isBasicQuestionsBankRoute(): boolean {
     return this.router.url.startsWith('/tenant/questions-bank/basic-education');
+  }
+
+  isUniversityQuestionsBankRoute(): boolean {
+    return this.router.url.startsWith('/tenant/questions-bank/university-education');
   }
 
   isExpanded(nodeId: string): boolean {
@@ -121,6 +136,28 @@ export class TenantSubjectCurriculumComponent implements OnInit {
     }
 
     this.selectedNodeId.set(nodeId);
+  }
+
+  openCurriculumContentItem(nodeId: string): void {
+    const node = this.findNode(this.curriculumTree(), nodeId);
+    if (!node) {
+      return;
+    }
+
+    if (node.children.length) {
+      this.selectedNodeId.set(nodeId);
+      const expanded = new Set(this.expandedNodeIds());
+      expanded.add(nodeId);
+      this.expandedNodeIds.set(expanded);
+      return;
+    }
+
+    if (this.isAnyQuestionsBankRoute()) {
+      void this.router.navigate(this.curriculumNodeQuestionsLink(nodeId));
+      return;
+    }
+
+    this.selectTreeNode(nodeId);
   }
 
   canSelectTreeNode(nodeId: string): boolean {
@@ -159,8 +196,10 @@ export class TenantSubjectCurriculumComponent implements OnInit {
     const labels = {
       questionsBank: { en: 'Questions Bank', ar: 'بنك الأسئلة' },
       basicEducation: { en: 'Basic Education', ar: 'التعليم الأساسي' },
+      universityEducation: { en: 'University Education', ar: 'التعليم الجامعي' },
       stage: { en: 'Stage', ar: 'المرحلة' },
       grade: { en: 'Grade', ar: 'الصف' },
+      college: { en: 'College', ar: 'الكلية' },
       subject: { en: 'Subject', ar: 'المادة' },
       curriculum: { en: 'Curriculum', ar: 'المنهج' },
     } as const;
@@ -170,6 +209,9 @@ export class TenantSubjectCurriculumComponent implements OnInit {
   subjectsListLink(): unknown[] {
     if (this.isQuestionsBankRoute()) {
       return this.questionsBankSubjectsLink();
+    }
+    if (this.isUniversityQuestionsBankRoute()) {
+      return this.universityQuestionsBankSubjectsLink();
     }
     return [this.subjectsRootLink()];
   }
@@ -272,6 +314,9 @@ export class TenantSubjectCurriculumComponent implements OnInit {
     if (this.isQuestionsBankRoute()) {
       return subject ? [...this.questionsBankSubjectLink(subject.id), 'curriculum', nodeId] : this.questionsBankSubjectsLink();
     }
+    if (this.isUniversityQuestionsBankRoute()) {
+      return subject ? [...this.universityQuestionsBankSubjectLink(subject.id), 'curriculum', nodeId] : this.universityQuestionsBankSubjectsLink();
+    }
     return subject ? [this.subjectsRootLink(), subject.id, 'curriculum', nodeId] : [this.subjectsRootLink()];
   }
 
@@ -284,10 +329,16 @@ export class TenantSubjectCurriculumComponent implements OnInit {
     if (this.isQuestionsBankRoute()) {
       return subject ? [...this.questionsBankSubjectLink(subject.id), 'curriculum', nodeId] : this.questionsBankSubjectsLink();
     }
+    if (this.isUniversityQuestionsBankRoute()) {
+      return subject ? [...this.universityQuestionsBankSubjectLink(subject.id), 'curriculum', nodeId] : this.universityQuestionsBankSubjectsLink();
+    }
     return subject ? [this.subjectsRootLink(), subject.id, 'curriculum', nodeId, 'addQuestion'] : [this.subjectsRootLink()];
   }
 
   questionsBankStageLink(): unknown[] {
+    if (this.isUniversityQuestionsBankRoute()) {
+      return ['/tenant/questions-bank/university-education'];
+    }
     const stageId = this.questionsBankStageId();
     return stageId
       ? ['/tenant/questions-bank/basic-education', stageId]
@@ -295,6 +346,12 @@ export class TenantSubjectCurriculumComponent implements OnInit {
   }
 
   questionsBankSubjectsLink(): unknown[] {
+    if (this.isUniversityQuestionsBankRoute()) {
+      const collegeId = this.questionsBankCollegeId();
+      return collegeId
+        ? ['/tenant/questions-bank/university-education/colleges', collegeId]
+        : ['/tenant/questions-bank/university-education'];
+    }
     const stageId = this.questionsBankStageId();
     const gradeId = this.questionsBankGradeId();
     return stageId && gradeId
@@ -506,8 +563,23 @@ export class TenantSubjectCurriculumComponent implements OnInit {
     return this.route.snapshot?.paramMap.get('gradeId') ?? this.subject()?.gradeId ?? '';
   }
 
+  private questionsBankCollegeId(): string {
+    return this.route.snapshot?.paramMap.get('collegeId') ?? this.subject()?.gradeId ?? '';
+  }
+
   private questionsBankSubjectLink(subjectId: string): unknown[] {
     return [...this.questionsBankSubjectsLink(), 'subjects', subjectId];
+  }
+
+  private universityQuestionsBankSubjectsLink(): unknown[] {
+    const collegeId = this.questionsBankCollegeId();
+    return collegeId
+      ? ['/tenant/questions-bank/university-education/colleges', collegeId]
+      : ['/tenant/questions-bank/university-education'];
+  }
+
+  private universityQuestionsBankSubjectLink(subjectId: string): unknown[] {
+    return [...this.universityQuestionsBankSubjectsLink(), 'subjects', subjectId];
   }
 
 }

@@ -54,12 +54,58 @@ export interface GroupSessionLibraryContent extends Omit<GroupLessonContent, 'cu
   completed?: boolean;
 }
 
+export interface GroupExamSettings {
+  showResultsImmediately: boolean;
+  allowRetakes: boolean;
+}
+
+export interface GroupExamRow {
+  id: string;
+  groupId: string;
+  examId: string;
+  title: string;
+  status: string;
+  date: string;
+  startTime?: string | null;
+  duration: number;
+  questionCount?: number | null;
+  instructions?: string | null;
+  updatedAt?: string | null;
+  settings: GroupExamSettings;
+}
+
+export interface GroupPublishedSessionContent {
+  source: 'SUBJECT_MATERIAL' | 'LESSON_CONTENT' | 'SESSION_LIBRARY' | string;
+  lessonId?: string | null;
+  lessonTitle?: string | null;
+  folderId: string;
+  folderName: string;
+  contentType: 'FILE' | 'NOTE' | 'LINK';
+  contentId: string;
+  title: string;
+  url?: string | null;
+  fileContentType?: string | null;
+  sizeBytes?: number | null;
+}
+
+export interface GroupSessionPublication {
+  id?: string | null;
+  groupId: string;
+  sessionId: string;
+  published: boolean;
+  publishedAt?: string | null;
+  mediaCount: number;
+  media: GroupPublishedSessionContent[];
+}
+
 export interface GroupDetails {
   id: string;
   name: string;
   subjectId?: string | null;
   educationCategory?: 'BASIC_EDUCATION' | 'UNIVERSITY_EDUCATION' | string | null;
+  stageId?: string | null;
   stageName?: string | null;
+  gradeId?: string | null;
   gradeName?: string | null;
   subject: string;
   teacher: string;
@@ -120,6 +166,30 @@ export interface TenantGroupSessionLibraryContentResponse {
   completed?: boolean;
 }
 
+export interface TenantGroupPublishedSessionContentResponse {
+  source: string;
+  lessonId?: string | null;
+  lessonTitle?: string | null;
+  folderId: string;
+  folderName: string;
+  contentType: 'FILE' | 'NOTE' | 'LINK';
+  contentId: string;
+  title: string;
+  url?: string | null;
+  fileContentType?: string | null;
+  sizeBytes?: number | null;
+}
+
+export interface TenantGroupSessionPublicationResponse {
+  id?: string | null;
+  groupId: string;
+  sessionId: string;
+  published: boolean;
+  publishedAt?: string | null;
+  mediaCount: number;
+  media?: TenantGroupPublishedSessionContentResponse[];
+}
+
 export interface TenantGroupStudentResponse {
   id: string;
   name: string;
@@ -138,7 +208,9 @@ export interface TenantGroupDetailsResponse {
   name: string;
   subjectId?: string | null;
   educationCategory?: 'BASIC_EDUCATION' | 'UNIVERSITY_EDUCATION' | string | null;
+  stageId?: string | null;
   stageName?: string | null;
+  gradeId?: string | null;
   gradeName?: string | null;
   subject: string;
   teacher: string;

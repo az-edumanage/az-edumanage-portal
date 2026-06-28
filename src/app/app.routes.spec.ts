@@ -2,6 +2,8 @@ import { routes } from './app.routes';
 import { OWNER_ROUTES } from './features/owner/routes';
 import { TENANT_ROUTES } from './features/tenant/routes';
 import { TEACHER_ROUTES } from './features/teacher/routes';
+import { STUDENT_ROUTES } from './features/student/routes';
+import { PARENT_ROUTES } from './features/parent/routes';
 import { MainLayoutComponent } from './core/layout/main-layout/main-layout.component';
 
 function tenantChildPaths(): string[] {
@@ -9,7 +11,7 @@ function tenantChildPaths(): string[] {
 }
 
 describe('Route Deep Link Matrix', () => {
-  it('should keep root lazy route entries for owner/tenant/teacher', () => {
+  it('should keep root lazy route entries for owner/tenant/teacher/student/parent', () => {
     const root = routes.find((r) => r.path === '' && r.component !== undefined);
     expect(root).toBeDefined();
 
@@ -17,6 +19,14 @@ describe('Route Deep Link Matrix', () => {
     expect(children.some((c) => c.path === 'owner')).toBe(true);
     expect(children.some((c) => c.path === 'tenant')).toBe(true);
     expect(children.some((c) => c.path === 'teacher')).toBe(true);
+    expect(children.some((c) => c.path === 'student')).toBe(true);
+    expect(children.some((c) => c.path === 'parent')).toBe(true);
+  });
+
+  it('uses the root route as the login entry so tenant subdomains do not need /tenant/login', () => {
+    const rootLogin = routes.find((route) => route.path === '' && route.pathMatch === 'full');
+    expect(rootLogin?.loadComponent).toBeDefined();
+    expect(rootLogin?.redirectTo).toBeUndefined();
   });
 
   it('keeps tenant change password outside the main layout branch', () => {
@@ -50,5 +60,10 @@ describe('Route Deep Link Matrix', () => {
     const paths = TEACHER_ROUTES.map((r) => r.path);
     expect(paths).toContain('overview');
     expect(paths).toContain('media');
+  });
+
+  it('should include student and parent overview routes', () => {
+    expect(STUDENT_ROUTES.map((r) => r.path)).toContain('overview');
+    expect(PARENT_ROUTES.map((r) => r.path)).toContain('overview');
   });
 });

@@ -11,8 +11,24 @@ import { TenantRoomTypeSettingsService } from './tenant-room-type-settings.servi
 describe('TenantRoomCreateDataService', () => {
   let service: TenantRoomCreateDataService;
   let httpTesting: HttpTestingController;
+  let roomTypeSettings: {
+    listRoomTypes: ReturnType<typeof vi.fn>;
+    createRoomType: ReturnType<typeof vi.fn>;
+    toUserMessage: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
+    roomTypeSettings = {
+      listRoomTypes: vi.fn().mockResolvedValue([]),
+      createRoomType: vi.fn().mockResolvedValue({
+        id: 'room-type-1',
+        name: 'Studio',
+        description: null,
+        createdAt: '2026-06-02T00:00:00Z',
+        updatedAt: '2026-06-02T00:00:00Z',
+      }),
+      toUserMessage: vi.fn().mockReturnValue('Unable to save room type. Please try again.'),
+    };
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
@@ -25,9 +41,7 @@ describe('TenantRoomCreateDataService', () => {
         },
         {
           provide: TenantRoomTypeSettingsService,
-          useValue: {
-            listRoomTypes: () => Promise.resolve([]),
-          },
+          useValue: roomTypeSettings,
         },
         {
           provide: TenantEquipmentFacilitySettingsService,
@@ -85,5 +99,18 @@ describe('TenantRoomCreateDataService', () => {
     });
 
     await actual;
+  });
+
+  it('creates a room type and appends it to the available room types', async () => {
+    service.availableRoomTypes.set(['Laboratory']);
+
+    const created = await service.createRoomType('Studio');
+
+    expect(roomTypeSettings.createRoomType).toHaveBeenCalledWith({
+      name: 'Studio',
+      description: null,
+    });
+    expect(created).toBe('Studio');
+    expect(service.availableRoomTypes()).toEqual(['Laboratory', 'Studio']);
   });
 });

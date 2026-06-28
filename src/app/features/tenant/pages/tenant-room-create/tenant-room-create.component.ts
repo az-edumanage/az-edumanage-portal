@@ -1,13 +1,14 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TenantRoomCreateFacade } from '../../state/tenant-room-create.facade';
+import { TenantGroupSearchableSelectorComponent } from '../../components/tenant-group-searchable-selector/tenant-group-searchable-selector.component';
 
 @Component({
   selector: 'app-tenant-room-create',
-  imports: [CommonModule, RouterModule, MatIconModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, MatIconModule, FormsModule, ReactiveFormsModule, TenantGroupSearchableSelectorComponent],
   templateUrl: './tenant-room-create.component.html',
   styleUrl: './tenant-room-create.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -25,6 +26,19 @@ export class TenantRoomCreateComponent implements OnInit, OnDestroy {
   readonly availableRoomTypes = this.facade.availableRoomTypes;
   readonly availableEquipment = this.facade.availableEquipment;
   readonly roomForm = this.facade.roomForm;
+  readonly roomTypeSelectorOpen = this.facade.roomTypeSelectorOpen;
+  readonly roomTypeSearchQuery = this.facade.roomTypeSearchQuery;
+  readonly roomTypeSaving = this.facade.roomTypeSaving;
+  readonly roomTypeInlineError = this.facade.roomTypeInlineError;
+  readonly roomTypeOptions = this.facade.roomTypeOptions;
+  readonly selectedRoomTypeLabel = this.facade.selectedRoomTypeLabel;
+  readonly roomTypePlaceholder = this.facade.roomTypePlaceholder;
+  readonly roomTypeFooterLabel = this.facade.roomTypeFooterLabel;
+
+  @HostListener('document:click')
+  closeOpenPanels(): void {
+    this.facade.closeRoomTypeSelector();
+  }
 
   ngOnInit(): void {
     this.facade.initialize(this.route.snapshot.paramMap.get('id'));
@@ -40,6 +54,22 @@ export class TenantRoomCreateComponent implements OnInit, OnDestroy {
 
   onEquipmentChange(event: Event): void {
     this.facade.onEquipmentChange(event);
+  }
+
+  toggleRoomTypeSelector(): void {
+    this.facade.toggleRoomTypeSelector();
+  }
+
+  setRoomTypeSearchQuery(value: string): void {
+    this.facade.setRoomTypeSearchQuery(value);
+  }
+
+  selectRoomType(name: string): void {
+    this.facade.selectRoomType(name);
+  }
+
+  addRoomTypeFromSearch(): void {
+    void this.facade.addRoomTypeFromSearch();
   }
 
   onCancel(): void {

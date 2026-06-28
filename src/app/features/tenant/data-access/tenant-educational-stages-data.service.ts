@@ -40,6 +40,17 @@ export class TenantEducationalStagesDataService {
     return options;
   }
 
+  async createCountryOption(name: string): Promise<EducationalStageCountryOption> {
+    const country = await this.countryService.createCountry(name);
+    const option = {
+      value: country.id,
+      label: country.name,
+      code: country.code,
+    };
+    this.countryOptions.push(option);
+    return option;
+  }
+
   async createStage(payload: TenantStagePayload): Promise<EducationalStage> {
     await this.authApi.ensureLoggedIn();
     return await firstValueFrom(this.http.post<EducationalStage>(this.stagesUrl, this.toPayload(payload)));
@@ -69,6 +80,10 @@ export class TenantEducationalStagesDataService {
       }
     }
     return 'Unable to save educational stages. Please try again.';
+  }
+
+  toCountryUserMessage(error: unknown): string {
+    return this.countryService.toUserMessage(error);
   }
 
   private toPayload(payload: TenantStagePayload): TenantStagePayload {

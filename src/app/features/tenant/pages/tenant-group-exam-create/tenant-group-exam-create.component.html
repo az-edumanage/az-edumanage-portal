@@ -6,11 +6,27 @@
           <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
             <a routerLink="/tenant/groups" class="hover:text-indigo-600 transition-colors">Groups</a>
             <mat-icon class="text-[10px]">chevron_right</mat-icon>
-            <a [routerLink]="['/tenant/groups', groupId()]" class="hover:text-indigo-600 transition-colors">Physics G12-A</a>
+            @if (groupContext()) {
+              <a [routerLink]="['/tenant/groups', groupId()]" class="hover:text-indigo-600 transition-colors">{{ groupContext()?.name }}</a>
+              <mat-icon class="text-[10px]">chevron_right</mat-icon>
+              @if (groupContext()?.stageName) {
+                <span>{{ groupContext()?.stageName }}</span>
+                <mat-icon class="text-[10px]">chevron_right</mat-icon>
+              }
+              @if (groupContext()?.gradeName) {
+                <span>{{ groupContext()?.gradeName }}</span>
+                <mat-icon class="text-[10px]">chevron_right</mat-icon>
+              }
+              <span>{{ groupContext()?.subject }}</span>
+            } @else if (isGroupContextLoading()) {
+              <span class="breadcrumb-muted">Loading group...</span>
+            } @else if (groupContextError()) {
+              <span class="breadcrumb-error">Group unavailable</span>
+            }
             <mat-icon class="text-[10px]">chevron_right</mat-icon>
-            <span>Create Exam</span>
+            <span>Group Exam</span>
           </div>
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">New Group Exam</h2>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ groupContext()?.name || 'Group Exam' }}</h2>
         </div>
         <div class="flex gap-3">
           <button 
@@ -39,11 +55,13 @@
         <!-- Main Form Section -->
         <div class="lg:col-span-2 space-y-6">
           <!-- Basic Information -->
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-              <mat-icon class="text-sm">info</mat-icon>
-              Exam Details
-            </h3>
+          <div class="exam-panel">
+            <div class="exam-panel-header">
+              <span class="exam-panel-icon">
+                <mat-icon>info</mat-icon>
+              </span>
+              <h3>Exam Details</h3>
+            </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="md:col-span-2">
@@ -52,8 +70,9 @@
                   id="examTitle"
                   type="text" 
                   formControlName="title"
-                  placeholder="e.g. Mid-term Physics Quiz"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  readonly
+                  placeholder="Select a published exam"
+                  class="group-exam-input"
                 >
               </div>
               
@@ -63,7 +82,7 @@
                   id="examDate"
                   type="date" 
                   formControlName="date"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  class="group-exam-input"
                 >
               </div>
 
@@ -74,7 +93,17 @@
                   type="number" 
                   formControlName="duration"
                   placeholder="60"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  class="group-exam-input"
+                >
+              </div>
+
+              <div class="md:col-span-2 schedule-start-time">
+                <label for="examStartTime" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Start Time</label>
+                <input
+                  id="examStartTime"
+                  type="time"
+                  formControlName="startTime"
+                  class="group-exam-input"
                 >
               </div>
 
@@ -85,78 +114,183 @@
                   formControlName="instructions"
                   rows="3"
                   placeholder="Enter instructions for students..."
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  class="group-exam-textarea"
                 ></textarea>
               </div>
             </div>
           </div>
 
-          <!-- Questions Section Placeholder -->
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-            <div class="flex items-center justify-between">
-              <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                <mat-icon class="text-sm">quiz</mat-icon>
-                Questions
-              </h3>
-              <button type="button" class="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">
-                <mat-icon class="text-xs">add</mat-icon>
-                Add Question
-              </button>
+          <div class="exam-panel">
+            <div class="exam-panel-header">
+              <span class="exam-panel-icon">
+                <mat-icon>quiz</mat-icon>
+              </span>
+              <h3>Exams</h3>
+              @if (examOptionsError()) {
+                <button type="button" (click)="onRetryExamOptions()" class="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">
+                  <mat-icon class="text-xs">refresh</mat-icon>
+                  Retry
+                </button>
+              }
             </div>
-            
-            <div class="p-8 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl text-center space-y-2">
-              <mat-icon class="text-4xl text-slate-300">post_add</mat-icon>
-              <p class="text-sm text-slate-500">No questions added yet. Start by adding a new question or importing from bank.</p>
-              <div class="flex justify-center gap-3 pt-2">
-                <button type="button" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-bold text-slate-500 dark:text-slate-500 hover:bg-slate-200 transition-colors">
-                  Manual Entry
-                </button>
-                <button type="button" class="px-3 py-1.5 bg-indigo-600/10 dark:bg-indigo-900/40 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-100 transition-colors">
-                  Import from Bank
-                </button>
+
+            @if (!isExamOptionsLoading() && !examOptionsError()) {
+              <div class="exam-search">
+                <mat-icon>search</mat-icon>
+                <input
+                  type="search"
+                  [value]="examSearchQuery()"
+                  (input)="onSearchExams($event)"
+                  placeholder="Search exams"
+                  aria-label="Search exams"
+                >
               </div>
-            </div>
+            }
+            
+            @if (isExamOptionsLoading()) {
+              <div class="question-state">
+                <mat-icon class="animate-spin text-3xl text-slate-300">sync</mat-icon>
+                <p>Loading published exams...</p>
+              </div>
+            } @else if (examOptionsError()) {
+              <div class="question-state error">
+                <mat-icon class="text-3xl">error_outline</mat-icon>
+                <p>{{ examOptionsError() }}</p>
+                <button type="button" (click)="onRetryExamOptions()" class="retry-button">Retry</button>
+              </div>
+            } @else if (publishedExamOptions().length === 0) {
+              <div class="question-state">
+                <mat-icon class="text-3xl text-slate-300">assignment_late</mat-icon>
+                @if (examSearchQuery()) {
+                  <p>No exams match your search.</p>
+                } @else {
+                  <p>No published exams are available for this group subject and grade.</p>
+                }
+              </div>
+            } @else {
+              <div class="exam-options" role="listbox" aria-label="Published exams">
+                @for (exam of publishedExamOptions(); track exam.id) {
+                  <div class="exam-option" [class.selected]="examForm.controls.selectedExamId.value === exam.id">
+                    <input
+                      [id]="'published-exam-' + exam.id"
+                      type="radio"
+                      formControlName="selectedExamId"
+                      [value]="exam.id"
+                      (change)="onSelectExam(exam.id)"
+                    >
+                    <label class="exam-option-main" [for]="'published-exam-' + exam.id">
+                      <span class="exam-title">{{ exam.title }}</span>
+                      <span class="exam-meta">{{ exam.questionCount }} questions • {{ exam.updatedAt || exam.createdAt || 'No date' }}</span>
+                    </label>
+                    <span class="exam-status">{{ exam.status }}</span>
+                    <button
+                      type="button"
+                      class="exam-preview-button"
+                      (click)="onPreviewExam(exam.id)"
+                      [attr.aria-label]="'Preview questions for ' + exam.title"
+                      title="Preview questions"
+                    >
+                      <mat-icon>visibility</mat-icon>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
           </div>
         </div>
 
         <!-- Sidebar Options -->
         <div class="space-y-6">
-          <!-- Storage Options -->
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Save Options</h3>
-            
-            <div class="space-y-3">
-              <label class="flex items-center gap-2 text-sm cursor-pointer">
-                <input type="checkbox" formControlName="saveToCenterBank" class="rounded border-slate-200 text-indigo-600">
-                <span class="text-slate-700 dark:text-slate-300">Save to Center Question Bank</span>
-              </label>
-              <label class="flex items-center gap-2 text-sm cursor-pointer">
-                <input type="checkbox" formControlName="saveToMyMedia" class="rounded border-slate-200 text-indigo-600">
-                <span class="text-slate-700 dark:text-slate-300">Save to My Media (Exams)</span>
-              </label>
-            </div>
-          </div>
-
           <!-- Exam Settings -->
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Settings</h3>
+          <div class="exam-panel settings-panel">
+            <div class="exam-panel-header">
+              <span class="exam-panel-icon">
+                <mat-icon>tune</mat-icon>
+              </span>
+              <h3>Settings</h3>
+            </div>
             
-            <div class="space-y-3">
-              <label class="flex items-center gap-2 text-sm cursor-pointer">
-                <input type="checkbox" formControlName="shuffleQuestions" class="rounded border-slate-200 text-indigo-600">
-                <span class="text-slate-700 dark:text-slate-300">Shuffle questions</span>
+            <div class="settings-list">
+              <label class="setting-option">
+                <input type="checkbox" formControlName="showResultsImmediately">
+                <span>
+                  <span class="setting-title">Show results immediately</span>
+                  <span class="setting-description">Students see their score after finishing.</span>
+                </span>
               </label>
-              <label class="flex items-center gap-2 text-sm cursor-pointer">
-                <input type="checkbox" formControlName="showResultsImmediately" class="rounded border-slate-200 text-indigo-600">
-                <span class="text-slate-700 dark:text-slate-300">Show results immediately</span>
-              </label>
-              <label class="flex items-center gap-2 text-sm cursor-pointer">
-                <input type="checkbox" formControlName="allowRetakes" class="rounded border-slate-200 text-indigo-600">
-                <span class="text-slate-700 dark:text-slate-300">Allow retakes</span>
+              <label class="setting-option">
+                <input type="checkbox" formControlName="allowRetakes">
+                <span>
+                  <span class="setting-title">Allow retakes</span>
+                  <span class="setting-description">Students can start another attempt while the exam is open.</span>
+                </span>
               </label>
             </div>
           </div>
         </div>
       </form>
     </div>
-  
+
+    @if (isPreviewOpen()) {
+      <div class="preview-backdrop" (click)="onClosePreview()"></div>
+      <aside class="preview-drawer" role="dialog" aria-modal="true" aria-labelledby="previewDrawerTitle">
+        <header class="preview-header">
+          <div class="min-w-0">
+            <h3 id="previewDrawerTitle">{{ previewExam()?.title || 'Exam questions' }}</h3>
+            <p>{{ previewExam()?.questionCount || 0 }} questions</p>
+          </div>
+          <button type="button" class="preview-close-button" (click)="onClosePreview()" aria-label="Close preview">
+            <mat-icon>close</mat-icon>
+          </button>
+        </header>
+
+        <div class="preview-content">
+          @if (isPreviewLoading()) {
+            <div class="question-state preview-state">
+              <mat-icon class="animate-spin text-3xl text-slate-300">sync</mat-icon>
+              <p>Loading questions...</p>
+            </div>
+          } @else if (previewError()) {
+            <div class="question-state preview-state error">
+              <mat-icon class="text-3xl">error_outline</mat-icon>
+              <p>{{ previewError() }}</p>
+              <button type="button" (click)="onRetryPreview()" class="retry-button">Retry</button>
+            </div>
+          } @else if (previewQuestions().length === 0) {
+            <div class="question-state preview-state">
+              <mat-icon class="text-3xl text-slate-300">playlist_remove</mat-icon>
+              <p>No questions are linked to this exam.</p>
+            </div>
+          } @else {
+            <div class="preview-question-list">
+              @for (question of previewQuestions(); track question.id; let index = $index) {
+                <article class="preview-question">
+                  <div class="preview-question-index">{{ index + 1 }}</div>
+                  <div class="preview-question-body">
+                    <div class="preview-question-title">{{ question.question }}</div>
+                    <div class="preview-question-meta">
+                      <span>{{ question.type }}</span>
+                      @if (question.tags?.length) {
+                        <span>{{ question.tags?.join(', ') }}</span>
+                      }
+                    </div>
+                    @if (question.description) {
+                      <p class="preview-question-description">{{ question.description }}</p>
+                    }
+                    @if (question.answers?.length) {
+                      <ul class="preview-answer-list">
+                        @for (answer of question.answers; track $index) {
+                          <li>{{ answer.answer || answer.text || 'Answer option' }}</li>
+                        }
+                      </ul>
+                    } @else if (question.answer) {
+                      <p class="preview-answer-text">{{ question.answer }}</p>
+                    }
+                  </div>
+                </article>
+              }
+            </div>
+          }
+        </div>
+      </aside>
+    }

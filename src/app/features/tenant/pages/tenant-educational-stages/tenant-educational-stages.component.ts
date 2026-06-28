@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { startWith } from 'rxjs';
@@ -20,6 +20,7 @@ export class TenantEducationalStagesComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
   private readonly facade = inject(TenantEducationalStagesFacade);
+  private readonly router = inject(Router);
 
   readonly searchQuery = this.facade.searchQuery;
   readonly showFilterPanel = this.facade.showFilterPanel;
@@ -63,6 +64,12 @@ export class TenantEducationalStagesComponent implements OnInit {
   ngOnInit(): void {
     void this.facade.loadStages();
     void this.facade.loadCountryOptions();
+  }
+
+  openStageGrades(stage: EducationalStage): void {
+    void this.router.navigate(['/tenant/grades'], {
+      queryParams: { stageId: stage.id },
+    });
   }
 
   toggleFilterPanel(): void {

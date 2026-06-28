@@ -6,10 +6,12 @@ import { LoginComponent } from './login.component';
 import { AuthApiService } from '../../../../core/auth/auth-api.service';
 import { DashboardService } from '../../../../core/services/dashboard.service';
 import { AuthSessionService } from '../../../../core/auth/auth-session.service';
+import { TenantHostContextService } from '../../../../core/auth/tenant-host-context.service';
 
 describe('LoginComponent', () => {
   let authApi: {
     login: ReturnType<typeof vi.fn>;
+    requestPasswordReset: ReturnType<typeof vi.fn>;
   };
   let dashboardService: {
     returnUrl: ReturnType<typeof signal<string | null>>;
@@ -19,10 +21,15 @@ describe('LoginComponent', () => {
     scheduleExpiry: ReturnType<typeof vi.fn>;
     refreshSession: ReturnType<typeof vi.fn>;
   };
+  let tenantHostContext: {
+    isTenantHost: ReturnType<typeof signal<boolean>>;
+    context: ReturnType<typeof signal<{ contextType: string; hostname: string; subdomain: string | null }>>;
+  };
 
-  function configure(url = '/tenant/login', queryParams: Record<string, string> = {}): void {
+  function configure(url = '/tenant/login', queryParams: Record<string, string> = {}, isTenantHost = false): void {
     authApi = {
       login: vi.fn().mockResolvedValue({ accessToken: 'token', passwordChangeRequired: false }),
+      requestPasswordReset: vi.fn().mockResolvedValue({ message: 'If this email exists, a reset link has been sent.' }),
     };
     dashboardService = {
       returnUrl: signal<string | null>(null),
@@ -32,6 +39,14 @@ describe('LoginComponent', () => {
       scheduleExpiry: vi.fn(),
       refreshSession: vi.fn().mockResolvedValue(null),
     };
+    tenantHostContext = {
+      isTenantHost: signal(isTenantHost),
+      context: signal({
+        contextType: isTenantHost ? 'tenant' : 'platform',
+        hostname: isTenantHost ? 'hussein.az-edumanage.com' : 'az-edumanage.com',
+        subdomain: isTenantHost ? 'hussein' : null,
+      }),
+    };
 
     TestBed.configureTestingModule({
       imports: [LoginComponent],
@@ -39,6 +54,7 @@ describe('LoginComponent', () => {
         { provide: AuthApiService, useValue: authApi },
         { provide: DashboardService, useValue: dashboardService },
         { provide: AuthSessionService, useValue: authSession },
+        { provide: TenantHostContextService, useValue: tenantHostContext },
         { provide: Router, useValue: { url, navigate: vi.fn().mockResolvedValue(true) } },
         {
           provide: ActivatedRoute,
@@ -66,6 +82,82 @@ describe('LoginComponent', () => {
 
     expect(authApi.login).toHaveBeenCalledWith('tenant-user', 'secret', 'tenant');
     expect(dashboardService.setRole).toHaveBeenCalledWith('tenant');
+  });
+
+  it('uses tenant workspace login from tenant subdomain root', async () => {
+    configure('/', {}, true);
+    const fixture = TestBed.createComponent(LoginComponent);
+    const component = fixture.componentInstance;
+
+    component.form.setValue({
+      username: 'tenant-user',
+      password: 'secret',
+    });
+
+    await component.submit();
+
+    expect(authApi.login).toHaveBeenCalledWith('tenant-user', 'secret', 'tenant');
+    expect(dashboardService.setRole).toHaveBeenCalledWith('tenant');
+  });
+
+  it('opens the returned teacher dashboard from the shared tenant login form', async () => {
+    configure('/tenant/login', {}, true);
+    authApi.login.mockResolvedValue({
+      accessToken: 'teacher-token',
+      username: 'teacher-user',
+      roles: ['TEACHER'],
+      primaryRole: 'TEACHER',
+      workspace: 'teacher',
+      tenantId: 'tenant-1',
+      passwordChangeRequired: false,
+    });
+    const fixture = TestBed.createComponent(LoginComponent);
+    const component = fixture.componentInstance;
+
+    component.form.setValue({
+      username: 'teacher-user',
+      password: 'secret',
+    });
+
+    await component.submit();
+
+    expect(authApi.login).toHaveBeenCalledWith('teacher-user', 'secret', 'tenant');
+    expect(dashboardService.setRole).toHaveBeenCalledWith('teacher');
+  });
+
+  it('supports student and parent workspace login paths', async () => {
+    configure('/student/login');
+    let fixture = TestBed.createComponent(LoginComponent);
+    fixture.componentInstance.form.setValue({ username: 'student-user', password: 'secret' });
+    await fixture.componentInstance.submit();
+    expect(authApi.login).toHaveBeenCalledWith('student-user', 'secret', 'student');
+
+    TestBed.resetTestingModule();
+    configure('/parent/login');
+    fixture = TestBed.createComponent(LoginComponent);
+    fixture.componentInstance.form.setValue({ username: 'parent-user', password: 'secret' });
+    await fixture.componentInstance.submit();
+    expect(authApi.login).toHaveBeenCalledWith('parent-user', 'secret', 'parent');
+  });
+
+  it('labels tenant credentials as username or email and submits a trimmed email', async () => {
+    configure('/tenant/login');
+    const fixture = TestBed.createComponent(LoginComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+    const nativeElement = fixture.nativeElement as HTMLElement;
+
+    expect(nativeElement.querySelector('label[for="username"]')?.textContent?.trim()).toBe('Username or email');
+    expect(nativeElement.querySelector<HTMLInputElement>('#username')?.placeholder).toBe('Enter username or email');
+
+    component.form.setValue({
+      username: ' admin@example.com ',
+      password: 'secret',
+    });
+
+    await component.submit();
+
+    expect(authApi.login).toHaveBeenCalledWith('admin@example.com', 'secret', 'tenant');
   });
 
   it('redirects flagged tenant logins to forced password change', async () => {
@@ -199,7 +291,7 @@ describe('LoginComponent', () => {
 
     await component.submit();
 
-    expect(component.errorMessage()).toBe('Invalid username or password. Please try again.');
+    expect(component.errorMessage()).toBe('Invalid username/email or password. Please try again.');
     expect(dashboardService.setRole).not.toHaveBeenCalled();
   });
 
@@ -262,5 +354,39 @@ describe('LoginComponent', () => {
 
     expect(dashboardService.returnUrl()).toBe('/tenant/groups');
     expect(dashboardService.setRole).toHaveBeenCalledWith('tenant');
+  });
+
+  it('prefills forgot-password email from username and requests a reset link', async () => {
+    configure('/tenant/login');
+    const fixture = TestBed.createComponent(LoginComponent);
+    const component = fixture.componentInstance;
+
+    component.form.patchValue({
+      username: 'admin@example.com',
+    });
+
+    component.openForgotPassword();
+    expect(component.forgotPasswordOpen()).toBe(true);
+    expect(component.forgotPasswordEmail.value).toBe('admin@example.com');
+
+    await component.requestPasswordReset();
+
+    expect(authApi.requestPasswordReset).toHaveBeenCalledWith('admin@example.com', expect.any(String));
+    expect(component.forgotPasswordMessage()).toBe('If this email exists, a reset link has been sent.');
+    expect(component.forgotPasswordError()).toBeNull();
+  });
+
+  it('validates forgot-password email before sending a reset request', async () => {
+    configure('/tenant/login');
+    const fixture = TestBed.createComponent(LoginComponent);
+    const component = fixture.componentInstance;
+
+    component.openForgotPassword();
+    component.forgotPasswordEmail.setValue('not-an-email');
+
+    await component.requestPasswordReset();
+
+    expect(authApi.requestPasswordReset).not.toHaveBeenCalled();
+    expect(component.forgotPasswordEmail.touched).toBe(true);
   });
 });

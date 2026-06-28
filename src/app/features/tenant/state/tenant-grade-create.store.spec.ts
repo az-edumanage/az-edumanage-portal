@@ -20,11 +20,13 @@ describe('TenantGradeCreateFacade', () => {
   let facade: TenantGradeCreateFacade;
   let dataService: {
     listCountryOptions: ReturnType<typeof vi.fn>;
+    createCountryOption: ReturnType<typeof vi.fn>;
     listAcademicLevelOptions: ReturnType<typeof vi.fn>;
     getGrade: ReturnType<typeof vi.fn>;
     createGrade: ReturnType<typeof vi.fn>;
     updateGrade: ReturnType<typeof vi.fn>;
     toUserMessage: ReturnType<typeof vi.fn>;
+    toCountryUserMessage: ReturnType<typeof vi.fn>;
   };
   let router: { navigate: ReturnType<typeof vi.fn> };
   let taskService: {
@@ -39,10 +41,13 @@ describe('TenantGradeCreateFacade', () => {
         { value: 'country-eg', label: 'Egypt', code: 'EG' },
         { value: 'country-jo', label: 'Jordan', code: 'JO' },
       ]),
+      createCountryOption: vi.fn().mockResolvedValue({ value: 'country-ma', label: 'Morocco', code: null }),
       listAcademicLevelOptions: vi.fn().mockImplementation((countryId: string) =>
         Promise.resolve(countryId === 'country-eg'
           ? [{ value: 'stage-secondary', label: 'Secondary', countryId: 'country-eg' }]
-          : [{ value: 'stage-primary', label: 'Primary', countryId: 'country-jo' }]),
+          : countryId === 'country-jo'
+            ? [{ value: 'stage-primary', label: 'Primary', countryId: 'country-jo' }]
+            : [{ value: 'stage-diploma', label: 'Diploma', countryId: 'country-ma' }]),
       ),
       getGrade: vi.fn().mockResolvedValue({
         id: 'grade-1',
@@ -61,6 +66,7 @@ describe('TenantGradeCreateFacade', () => {
       createGrade: vi.fn().mockResolvedValue({ id: 'grade-1' }),
       updateGrade: vi.fn().mockResolvedValue({ id: 'grade-1' }),
       toUserMessage: vi.fn().mockReturnValue('Backend validation failed'),
+      toCountryUserMessage: vi.fn().mockReturnValue('Country validation failed'),
     };
     router = { navigate: vi.fn().mockResolvedValue(true) };
     taskService = {
@@ -91,6 +97,29 @@ describe('TenantGradeCreateFacade', () => {
     expect(facade.gradeForm.controls.stageId.value).toBe('stage-secondary');
   });
 
+  it('starts with empty create fields when fresh create is requested', async () => {
+    taskService.getTask.mockReturnValueOnce({
+      data: {
+        name: 'Draft Grade',
+        countryId: 'country-eg',
+        stageId: 'stage-secondary',
+        description: 'Draft description',
+      },
+    });
+
+    await facade.initialize(null, null, true);
+
+    expect(taskService.removeTask).toHaveBeenCalledWith('create-grade-task');
+    expect(taskService.getTask).not.toHaveBeenCalled();
+    expect(facade.gradeForm.getRawValue()).toEqual({
+      name: '',
+      countryId: '',
+      stageId: '',
+      description: '',
+    });
+    expect(facade.academicLevelOptions()).toEqual([]);
+  });
+
   it('initializes edit mode with existing grade values and filtered levels', async () => {
     await facade.initialize('grade-1');
 
@@ -115,6 +144,19 @@ describe('TenantGradeCreateFacade', () => {
       { value: 'stage-primary', label: 'Primary', countryId: 'country-jo' },
     ]);
     expect(facade.gradeForm.controls.stageId.value).toBe('stage-primary');
+  });
+
+  it('creates a country option and reloads academic levels for it', async () => {
+    await facade.initialize();
+
+    const countryId = await facade.createCountryOption('Morocco');
+
+    expect(countryId).toBe('country-ma');
+    expect(facade.countryOptions().map((country) => country.label)).toEqual(['Egypt', 'Jordan', 'Morocco']);
+    expect(dataService.createCountryOption).toHaveBeenCalledWith('Morocco');
+    expect(dataService.listAcademicLevelOptions).toHaveBeenLastCalledWith('country-ma');
+    expect(facade.gradeForm.controls.countryId.value).toBe('country-ma');
+    expect(facade.gradeForm.controls.stageId.value).toBe('stage-diploma');
   });
 
   it('submits a valid backend grade and navigates to the list', async () => {

@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { TenantCountrySettingsService } from '../../data-access/tenant-country-settings.service';
 import { TenantEquipmentFacilitySettingsService } from '../../data-access/tenant-equipment-facility-settings.service';
+import { TenantQuestionSourceSettingsService } from '../../data-access/tenant-question-source-settings.service';
 import { TenantQuestionTypeSettingsService } from '../../data-access/tenant-question-type-settings.service';
 import { TenantRoomTypeSettingsService } from '../../data-access/tenant-room-type-settings.service';
 import { TenantSubscriptionPeriodSettingsService } from '../../data-access/tenant-subscription-period-settings.service';
@@ -37,6 +38,11 @@ describe('TenantPlatformSettingsComponent', () => {
   };
   let questionTypeSettings: {
     listQuestionTypes: ReturnType<typeof vi.fn>;
+    toUserMessage: ReturnType<typeof vi.fn>;
+  };
+  let questionSourceSettings: {
+    listQuestionSources: ReturnType<typeof vi.fn>;
+    createQuestionSource: ReturnType<typeof vi.fn>;
     toUserMessage: ReturnType<typeof vi.fn>;
   };
 
@@ -149,6 +155,25 @@ describe('TenantPlatformSettingsComponent', () => {
       ]),
       toUserMessage: vi.fn().mockReturnValue('Unable to load question types. Please try again.'),
     };
+    questionSourceSettings = {
+      listQuestionSources: vi.fn().mockResolvedValue([
+        {
+          id: 'question-source-1',
+          source: 'Official previous exam',
+          description: 'Imported from a formal exam.',
+          createdAt: '2026-01-01T00:00:00Z',
+          updatedAt: '2026-01-01T00:00:00Z',
+        },
+      ]),
+      createQuestionSource: vi.fn().mockResolvedValue({
+        id: 'question-source-2',
+        source: 'Teacher-made',
+        description: 'Written by the teacher.',
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      }),
+      toUserMessage: vi.fn().mockReturnValue('Question source already exists'),
+    };
 
     await TestBed.configureTestingModule({
       imports: [TenantPlatformSettingsComponent],
@@ -158,6 +183,7 @@ describe('TenantPlatformSettingsComponent', () => {
         { provide: TenantEquipmentFacilitySettingsService, useValue: equipmentFacilitySettings },
         { provide: TenantSubscriptionPeriodSettingsService, useValue: subscriptionPeriodSettings },
         { provide: TenantQuestionTypeSettingsService, useValue: questionTypeSettings },
+        { provide: TenantQuestionSourceSettingsService, useValue: questionSourceSettings },
       ],
     }).compileComponents();
   });
@@ -327,6 +353,79 @@ describe('TenantPlatformSettingsComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Short Answer');
     expect(fixture.nativeElement.textContent).toContain('Essay');
     expect(fixture.nativeElement.textContent).toContain('MCQ');
+  });
+
+  it('shows the Question Source card in General and opens backend question sources', async () => {
+    const fixture = TestBed.createComponent(TenantPlatformSettingsComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    await component.selectTab('general');
+    fixture.detectChanges();
+
+    const nav = fixture.nativeElement.querySelector('nav');
+    expect(nav.textContent).not.toContain('Question Source');
+    expect(fixture.nativeElement.textContent).toContain('Question Source');
+
+    await component.openQuestionSourcesScreen();
+    fixture.detectChanges();
+
+    expect(component.activeTab()).toBe('question-sources');
+    expect(questionSourceSettings.listQuestionSources).toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Manage source values used by curriculum questions.');
+    expect(fixture.nativeElement.textContent).toContain('Source');
+    expect(fixture.nativeElement.textContent).toContain('Description');
+    expect(fixture.nativeElement.textContent).toContain('Official previous exam');
+    expect(fixture.nativeElement.textContent).toContain('Imported from a formal exam.');
+  });
+
+  it('opens the add source modal and saves a question source through the backend', async () => {
+    const fixture = TestBed.createComponent(TenantPlatformSettingsComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    await component.openQuestionSourcesScreen();
+    component.openQuestionSourceModal();
+    fixture.detectChanges();
+
+    expect(component.showQuestionSourceModal()).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('Add New Source');
+
+    component.questionSourceValue.set(' Teacher-made ');
+    component.questionSourceDescription.set(' Written by the teacher. ');
+    await component.saveQuestionSource();
+    fixture.detectChanges();
+
+    expect(questionSourceSettings.createQuestionSource).toHaveBeenCalledWith({
+      source: 'Teacher-made',
+      description: 'Written by the teacher.',
+    });
+    expect(component.showQuestionSourceModal()).toBe(false);
+    expect(component.questionSources().map((source) => source.source)).toContain('Teacher-made');
+  });
+
+  it('keeps the source modal open for blank and backend-failed saves', async () => {
+    const fixture = TestBed.createComponent(TenantPlatformSettingsComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    component.openQuestionSourceModal();
+    component.questionSourceValue.set('   ');
+    await component.saveQuestionSource();
+
+    expect(component.showQuestionSourceModal()).toBe(true);
+    expect(component.questionSourceValueError()).toBe('Question source is required.');
+    expect(questionSourceSettings.createQuestionSource).not.toHaveBeenCalled();
+
+    questionSourceSettings.createQuestionSource.mockRejectedValueOnce(new Error('duplicate'));
+    component.questionSourceValue.set('Official previous exam');
+    await component.saveQuestionSource();
+
+    expect(component.showQuestionSourceModal()).toBe(true);
+    expect(component.questionSourceSaveError()).toBe('Question source already exists');
   });
 
   it('shows the Room Type card in General and opens the room types screen', async () => {

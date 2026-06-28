@@ -16,9 +16,10 @@ export class TenantGradesStore {
 
   readonly searchQuery = signal('');
   readonly showFilterPanel = signal(false);
-  readonly viewMode = signal<'grid' | 'list'>('grid');
+  readonly viewMode = signal<'grid' | 'list'>('list');
 
   readonly levelFilter = signal('');
+  readonly stageFilter = signal('');
   readonly minStudentsFilter = signal<number | null>(null);
   readonly maxStudentsFilter = signal<number | null>(null);
   readonly sortBy = signal('name');
@@ -35,6 +36,7 @@ export class TenantGradesStore {
   readonly activeFiltersCount = computed(() => {
     let count = 0;
     if (this.levelFilter()) count++;
+    if (this.stageFilter()) count++;
     if (this.minStudentsFilter() !== null) count++;
     if (this.maxStudentsFilter() !== null) count++;
     if (this.sortBy() !== 'name') count++;
@@ -44,6 +46,7 @@ export class TenantGradesStore {
   readonly filteredGrades = computed(() => {
     const query = this.searchQuery().trim().toLowerCase();
     const level = this.levelFilter();
+    const stageId = this.stageFilter();
     const minStudents = this.minStudentsFilter();
     const maxStudents = this.maxStudentsFilter();
     const sortBy = this.sortBy();
@@ -56,10 +59,11 @@ export class TenantGradesStore {
         grade.country.toLowerCase().includes(query);
 
       const matchesLevel = !level || grade.level === level;
+      const matchesStage = !stageId || grade.stageId === stageId;
       const matchesMin = minStudents === null || grade.studentCount >= minStudents;
       const matchesMax = maxStudents === null || grade.studentCount <= maxStudents;
 
-      return matchesSearch && matchesLevel && matchesMin && matchesMax;
+      return matchesSearch && matchesStage && matchesLevel && matchesMin && matchesMax;
     });
 
     if (sortBy === 'students-desc') {

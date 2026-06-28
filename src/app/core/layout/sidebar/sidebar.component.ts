@@ -8,11 +8,13 @@ import { AuthTokenService } from '../../auth/auth-token.service';
 import { AuthIdentityService } from '../../auth/auth-identity.service';
 import { AuthApiService } from '../../auth/auth-api.service';
 import { TenantImpersonationService } from '../../auth/tenant-impersonation.service';
+import { TenantHostContextService } from '../../auth/tenant-host-context.service';
 
 interface MenuItem {
   labelKey: string;
   icon: string;
   route?: string;
+  permission?: string;
   badge?: number;
   children?: MenuItem[];
 }
@@ -35,6 +37,7 @@ export class SidebarComponent {
   private readonly authIdentityService = inject(AuthIdentityService);
   private readonly authApi = inject(AuthApiService);
   private readonly tenantImpersonationService = inject(TenantImpersonationService);
+  private readonly tenantHostContext = inject(TenantHostContextService);
   private readonly router = inject(Router);
   
   collapsed = this.dashboardService.sidebarCollapsed;
@@ -97,6 +100,8 @@ export class SidebarComponent {
       OWNER: 'Owner',
       TENANT_ADMIN: 'Tenant Admin',
       TEACHER: 'Teacher',
+      STUDENT: 'Student',
+      PARENT: 'Parent',
     };
     return roleLabels[role] ?? role.replaceAll('_', ' ').toLowerCase().replace(/\b\w/g, (m) => m.toUpperCase());
   });
@@ -115,7 +120,7 @@ export class SidebarComponent {
     this.authIdentityService.clearIdentity();
     this.tenantImpersonationService.clear();
     this.dashboardService.returnUrl.set(null);
-    this.router.navigate([`/${role}/login`]);
+    this.router.navigate([this.tenantHostContext.isTenantHost() ? '/' : `/${role}/login`]);
   }
 
   toggleUserPanel(): void {
@@ -190,31 +195,31 @@ export class SidebarComponent {
           }
         ];
       case 'tenant':
-        return [
+        return this.filterTenantMenu([
           {
             titleKey: 'sidebar.section.main',
             items: [
               { labelKey: 'sidebar.item.overview', icon: 'dashboard', route: '/tenant/overview' },
-              { labelKey: 'sidebar.item.students', icon: 'school', route: '/tenant/students' },
-              { labelKey: 'sidebar.item.teachers', icon: 'person_outline', route: '/tenant/teachers' },
-              { labelKey: 'sidebar.item.groupsClasses', icon: 'groups', route: '/tenant/groups' },
-              { labelKey: 'sidebar.item.rooms', icon: 'rooms', route: '/tenant/rooms' },
+              { labelKey: 'sidebar.item.students', icon: 'school', route: '/tenant/students', permission: 'tenant.students.view' },
+              { labelKey: 'sidebar.item.teachers', icon: 'person_outline', route: '/tenant/teachers', permission: 'tenant.teachers.view' },
+              { labelKey: 'sidebar.item.groupsClasses', icon: 'groups', route: '/tenant/groups', permission: 'tenant.groups.view' },
+              { labelKey: 'sidebar.item.rooms', icon: 'rooms', route: '/tenant/rooms', permission: 'tenant.rooms.view' },
               {
                 labelKey: 'sidebar.item.basicEducation',
                 icon: 'account_tree',
                 children: [
-                  { labelKey: 'sidebar.item.educationalStages', icon: 'account_tree', route: '/tenant/educational-stages' },
-                  { labelKey: 'sidebar.item.grades', icon: 'grades', route: '/tenant/grades' },
-                  { labelKey: 'sidebar.item.subjects', icon: 'menu_book', route: '/tenant/subjects' },
+                  { labelKey: 'sidebar.item.educationalStages', icon: 'account_tree', route: '/tenant/educational-stages', permission: 'tenant.basicEducation.view' },
+                  { labelKey: 'sidebar.item.grades', icon: 'grades', route: '/tenant/grades', permission: 'tenant.grades.view' },
+                  { labelKey: 'sidebar.item.subjects', icon: 'menu_book', route: '/tenant/subjects', permission: 'tenant.basicEducation.view' },
                 ],
               },
               {
                 labelKey: 'sidebar.item.universityEducation',
                 icon: 'account_balance',
                 children: [
-                  { labelKey: 'sidebar.item.universities', icon: 'account_balance', route: '/tenant/universities' },
-                  { labelKey: 'sidebar.item.colleges', icon: 'school', route: '/tenant/colleges' },
-                  { labelKey: 'sidebar.item.universitySubjects', icon: 'menu_book', route: '/tenant/university-subjects' },
+                  { labelKey: 'sidebar.item.universities', icon: 'account_balance', route: '/tenant/universities', permission: 'tenant.universityEducation.view' },
+                  { labelKey: 'sidebar.item.colleges', icon: 'school', route: '/tenant/colleges', permission: 'tenant.universityEducation.view' },
+                  { labelKey: 'sidebar.item.universitySubjects', icon: 'menu_book', route: '/tenant/university-subjects', permission: 'tenant.universityEducation.view' },
                 ],
               },
             ]
@@ -222,24 +227,25 @@ export class SidebarComponent {
           {
             titleKey: 'sidebar.section.academic',
             items: [
-              { labelKey: 'sidebar.item.schedule', icon: 'calendar_today', route: '/tenant/schedule' },
-              { labelKey: 'sidebar.item.attendance', icon: 'fact_check', route: '/tenant/attendance' },
-              { labelKey: 'sidebar.item.examsGrades', icon: 'assignment', route: '/tenant/exams' },
-              { labelKey: 'sidebar.item.questionsBank', icon: 'quiz', route: '/tenant/questions-bank' },
+              { labelKey: 'sidebar.item.schedule', icon: 'calendar_today', route: '/tenant/schedule', permission: 'tenant.attendance.view' },
+              { labelKey: 'sidebar.item.attendance', icon: 'fact_check', route: '/tenant/attendance', permission: 'tenant.attendance.view' },
+              { labelKey: 'sidebar.item.examsGrades', icon: 'assignment', route: '/tenant/exams', permission: 'tenant.exams.manage' },
+              { labelKey: 'sidebar.item.grades', icon: 'grades', route: '/tenant/grades', permission: 'tenant.grades.view' },
+              { labelKey: 'sidebar.item.questionsBank', icon: 'quiz', route: '/tenant/questions-bank', permission: 'tenant.questionBank.manage' },
             ]
           },
           {
             titleKey: 'sidebar.section.financeAdmin',
             items: [
-              { labelKey: 'sidebar.item.billing', icon: 'receipt_long', route: '/tenant/billing' },
-              { labelKey: 'sidebar.item.reports', icon: 'bar_chart', route: '/tenant/reports' },
+              { labelKey: 'sidebar.item.billing', icon: 'receipt_long', route: '/tenant/billing', permission: 'tenant.billing.view' },
+              { labelKey: 'sidebar.item.reports', icon: 'bar_chart', route: '/tenant/reports', permission: 'tenant.reports.view' },
             ]
           },
           {
             titleKey: 'sidebar.section.settings',
             items: [
-              { labelKey: 'sidebar.item.platformSettings', icon: 'settings', route: '/tenant/settings' },
-              { labelKey: 'sidebar.item.webSettings', icon: 'public', route: '/tenant/web-settings' },
+              { labelKey: 'sidebar.item.platformSettings', icon: 'settings', route: '/tenant/settings', permission: 'tenant.settings.manage' },
+              { labelKey: 'sidebar.item.webSettings', icon: 'public', route: '/tenant/web-settings', permission: 'tenant.settings.manage' },
             ]
           },
           {
@@ -251,10 +257,11 @@ export class SidebarComponent {
             {
                 titleKey: 'sidebar.section.users',
                 items: [
-                    { labelKey: 'sidebar.item.users', icon: 'person', route: '/tenant/users' },
+                    { labelKey: 'sidebar.item.users', icon: 'person', route: '/tenant/users', permission: 'tenant.users.view' },
+                    { labelKey: 'sidebar.item.rolesPermissions', icon: 'admin_panel_settings', route: '/tenant/users/roles-permissions', permission: 'tenant.roles.view' },
                 ]
             }
-        ];
+        ]);
       case 'teacher':
         return [
           {
@@ -264,14 +271,62 @@ export class SidebarComponent {
               { labelKey: 'sidebar.item.mySchedule', icon: 'calendar_month', route: '/teacher/schedule' },
               { labelKey: 'sidebar.item.myGroups', icon: 'groups', route: '/teacher/groups' },
               { labelKey: 'sidebar.item.attendance', icon: 'fact_check', route: '/teacher/attendance' },
-              { labelKey: 'sidebar.item.examsGrades', icon: 'assignment_turned_in', route: '/teacher/grades' },
+              { labelKey: 'sidebar.item.examsGrades', icon: 'assignment_turned_in', route: '/teacher/exams' },
               { labelKey: 'sidebar.item.messages', icon: 'chat', route: '/teacher/messages' },
               { labelKey: 'sidebar.item.profile', icon: 'person', route: '/teacher/profile' },
             ]
           }
         ];
+      case 'student':
+        return [
+          {
+            titleKey: 'sidebar.section.main',
+            items: [
+              { labelKey: 'sidebar.item.overview', icon: 'dashboard', route: '/student/overview' },
+              { labelKey: 'sidebar.item.schedule', icon: 'calendar_today', route: '/student/schedule' },
+              { labelKey: 'sidebar.item.attendance', icon: 'fact_check', route: '/student/attendance' },
+              { labelKey: 'sidebar.item.examsGrades', icon: 'assignment', route: '/student/exams' },
+              { labelKey: 'sidebar.item.billing', icon: 'receipt_long', route: '/student/billing' },
+            ],
+          },
+        ];
+      case 'parent':
+        return [
+          {
+            titleKey: 'sidebar.section.main',
+            items: [
+              { labelKey: 'sidebar.item.overview', icon: 'dashboard', route: '/parent/overview' },
+              { labelKey: 'sidebar.item.students', icon: 'school', route: '/parent/students' },
+              { labelKey: 'sidebar.item.attendance', icon: 'fact_check', route: '/parent/attendance' },
+              { labelKey: 'sidebar.item.examsGrades', icon: 'assignment', route: '/parent/exams' },
+              { labelKey: 'sidebar.item.billing', icon: 'receipt_long', route: '/parent/billing' },
+            ],
+          },
+        ];
       default:
         return [];
     }
   });
+
+  private filterTenantMenu(sections: MenuSection[]): MenuSection[] {
+    return sections
+      .map((section) => ({
+        ...section,
+        items: section.items
+          .map((item) => this.filterTenantItem(item))
+          .filter((item): item is MenuItem => item !== null),
+      }))
+      .filter((section) => section.items.length > 0);
+  }
+
+  private filterTenantItem(item: MenuItem): MenuItem | null {
+    const children = item.children
+      ?.map((child) => this.filterTenantItem(child))
+      .filter((child): child is MenuItem => child !== null);
+    const allowed = !item.permission || this.authIdentityService.hasPermission(item.permission);
+    if (!allowed && (!children || children.length === 0)) {
+      return null;
+    }
+    return { ...item, children };
+  }
 }

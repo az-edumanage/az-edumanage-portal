@@ -554,23 +554,44 @@ export class TenantGroupLessonDetailsComponent implements OnInit, OnDestroy {
   }
 
   private async loadAvailableMaterial(): Promise<void> {
-    const group = this.group();
     const lesson = this.lesson();
-    if (!group?.subjectId || !lesson?.curriculumNodeId) {
+    if (!lesson?.curriculumNodeId) {
       this.materialOptions.set([]);
       return;
     }
     this.materialLoading.set(true);
     this.materialError.set(null);
     try {
-      const sources = await this.loadParentLessonMaterialSources(group.subjectId, group.educationCategory, lesson.curriculumNodeId);
-      const options = await Promise.all(sources.map((source) => this.loadMaterialOptions(group.subjectId ?? '', group.educationCategory, source)));
+      const sources = await this.loadGroupLibraryMaterialSources(lesson);
+      const options = await Promise.all(sources.map((source) => this.loadGroupLibraryMaterialOptions(source)));
       this.materialOptions.set(options.flat());
     } catch (error) {
       this.materialError.set(error instanceof Error ? error.message : 'Unable to load material');
     } finally {
       this.materialLoading.set(false);
     }
+  }
+
+  private async loadGroupLibraryMaterialSources(lesson: GroupLesson): Promise<LessonMaterialSource[]> {
+    const folders = await firstValueFrom(this.data.loadGroupLibraryFolders(this.groupId));
+    return folders.map((folder) => ({
+      nodeId: lesson.curriculumNodeId,
+      nodeLabel: 'Group Library',
+      folder,
+    }));
+  }
+
+  private async loadGroupLibraryMaterialOptions(source: LessonMaterialSource): Promise<LessonMaterialOption[]> {
+    const [files, notes, links] = await Promise.all([
+      firstValueFrom(this.data.loadGroupLibraryFiles(this.groupId, source.folder.id)),
+      firstValueFrom(this.data.loadGroupLibraryNotes(this.groupId, source.folder.id)),
+      firstValueFrom(this.data.loadGroupLibraryLinks(this.groupId, source.folder.id)),
+    ]);
+    return [
+      ...files.map((file) => this.fileOption(file, source)),
+      ...notes.map((note) => this.noteOption(note, source)),
+      ...links.map((link) => this.linkOption(link, source)),
+    ];
   }
 
   private async loadSessionLessons(): Promise<void> {
@@ -683,7 +704,7 @@ export class TenantGroupLessonDetailsComponent implements OnInit, OnDestroy {
 
   private materialOptionToContent(option: LessonMaterialOption): GroupLessonContent {
     return {
-      id: `material-${option.type}-${option.id}`,
+      id: `material-${option.type}-${option.source.folder.id}-${option.id}`,
       curriculumNodeId: option.source.nodeId,
       curriculumNodeLabel: option.source.nodeLabel,
       folderId: option.source.folder.id,
@@ -725,8 +746,8 @@ export class TenantGroupLessonDetailsComponent implements OnInit, OnDestroy {
     return Array.from(merged.values());
   }
 
-  private contentKey(content: Pick<GroupLessonContent, 'contentType' | 'contentId'>): string {
-    return `${content.contentType}:${content.contentId}`;
+  private contentKey(content: Pick<GroupLessonContent, 'contentType' | 'contentId' | 'folderId'>): string {
+    return `${content.contentType}:${content.folderId}:${content.contentId}`;
   }
 
   private isContentFilter(value: string): value is LessonContentFilter {

@@ -5,6 +5,8 @@ export interface TenantStudentCreatePayload {
   fullName: string;
   email: string;
   phone: string;
+  username: string;
+  password: string;
   birthDate: string;
   gender: TenantStudentGender;
   parentName: string;

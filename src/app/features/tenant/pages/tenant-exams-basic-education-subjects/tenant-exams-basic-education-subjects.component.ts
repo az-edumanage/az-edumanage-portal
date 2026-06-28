@@ -118,7 +118,7 @@ type SubjectAssignmentFilter = 'all' | 'with-groups' | 'without-groups' | 'with-
                 @for (subject of filteredSubjects(); track subject.id) {
                   <tr class="group transition hover:bg-slate-50 dark:hover:bg-slate-800/60">
                     <td class="px-5 py-4">
-                      <a [routerLink]="['/tenant/exams/basic-education', stageId(), 'grades', gradeId(), 'create']" class="flex items-center gap-3">
+                      <a [routerLink]="['/tenant/exams/basic-education', stageId(), 'grades', gradeId(), 'create']" [queryParams]="{ subjectId: subject.id }" class="flex items-center gap-3">
                         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-600 group-hover:bg-indigo-50 group-hover:text-indigo-600 dark:bg-slate-800 dark:text-slate-300 dark:group-hover:bg-indigo-500/10 dark:group-hover:text-indigo-300">
                           <mat-icon class="text-base">menu_book</mat-icon>
                         </span>
@@ -133,7 +133,7 @@ type SubjectAssignmentFilter = 'all' | 'with-groups' | 'without-groups' | 'with-
                     <td class="px-5 py-4 text-center text-sm font-semibold text-slate-900 dark:text-slate-100">{{ subject.assignedGroupsCount }}</td>
                     <td class="px-5 py-4 text-center text-sm font-semibold text-slate-900 dark:text-slate-100">{{ subject.assignedTeachersCount }}</td>
                     <td class="px-5 py-4 text-right">
-                      <a [routerLink]="['/tenant/exams/basic-education', stageId(), 'grades', gradeId(), 'create']" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-700 dark:text-slate-300 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-300" [attr.aria-label]="'Open exams for ' + subject.name">
+                      <a [routerLink]="['/tenant/exams/basic-education', stageId(), 'grades', gradeId(), 'create']" [queryParams]="{ subjectId: subject.id }" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-700 dark:text-slate-300 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-300" [attr.aria-label]="'Open exams for ' + subject.name">
                         <mat-icon class="text-base">chevron_right</mat-icon>
                       </a>
                     </td>

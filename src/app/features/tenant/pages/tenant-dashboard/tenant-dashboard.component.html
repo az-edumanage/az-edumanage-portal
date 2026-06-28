@@ -8,9 +8,9 @@
         </div>
         <div class="flex items-center gap-3">
           <div class="flex bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-1">
-            <button class="px-3 py-1.5 text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-md shadow-sm">Today</button>
-            <button class="px-3 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">This Week</button>
-            <button class="px-3 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">This Month</button>
+            <button type="button" (click)="selectRange('today')" [class]="overview.range() === 'today' ? 'px-3 py-1.5 text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-md shadow-sm' : 'px-3 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors'">Today</button>
+            <button type="button" (click)="selectRange('week')" [class]="overview.range() === 'week' ? 'px-3 py-1.5 text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-md shadow-sm' : 'px-3 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors'">This Week</button>
+            <button type="button" (click)="selectRange('month')" [class]="overview.range() === 'month' ? 'px-3 py-1.5 text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-md shadow-sm' : 'px-3 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors'">This Month</button>
           </div>
           <button class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-sm shadow-indigo-500/20">
             <mat-icon class="text-sm">download</mat-icon>
@@ -21,13 +21,13 @@
 
       <!-- KPI Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        @for (card of kpiCards; track card.label) {
+        @for (card of kpiCards(); track card.key) {
           <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
             <div class="flex items-center justify-between mb-3">
               <div [class]="'p-2 rounded-lg ' + card.bgClass">
                 <mat-icon [class]="card.iconClass + ' text-lg'">{{ card.icon }}</mat-icon>
               </div>
-              @if (card.trend) {
+              @if (card.trend !== null && card.trend !== undefined) {
                 <span [class]="'text-[10px] font-bold px-1.5 py-0.5 rounded-full ' + (card.trend > 0 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400')">
                   {{ card.trend > 0 ? '+' : '' }}{{ card.trend }}%
                 </span>
@@ -102,7 +102,7 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
-                @for (session of todaySessions; track session.id) {
+                @for (session of todaySessions(); track session.id) {
                   <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
                     <td class="px-6 py-4 font-mono text-xs text-slate-500 dark:text-slate-500">{{ session.time }}</td>
                     <td class="px-6 py-4">
@@ -124,6 +124,12 @@
                       </span>
                     </td>
                   </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="px-6 py-10 text-center text-sm font-medium text-slate-500 dark:text-slate-500">
+                      No sessions scheduled for today.
+                    </td>
+                  </tr>
                 }
               </tbody>
             </table>
@@ -139,8 +145,8 @@
               Quick Actions
             </h3>
             <div class="grid grid-cols-2 gap-3">
-              @for (action of quickActions; track action.label) {
-                <button class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 hover:border-indigo-200 dark:hover:border-indigo-800 transition-all group">
+              @for (action of quickActions(); track action.label) {
+                <button type="button" (click)="navigateTo(action.route)" class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 hover:border-indigo-200 dark:hover:border-indigo-800 transition-all group">
                   <div [class]="'p-2 rounded-lg bg-white dark:bg-slate-800 shadow-sm group-hover:scale-110 transition-transform ' + action.color">
                     <mat-icon class="text-lg">{{ action.icon }}</mat-icon>
                   </div>
@@ -157,10 +163,10 @@
                 <mat-icon class="text-rose-500 text-sm">warning</mat-icon>
                 Pending Payments
               </h3>
-              <span class="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 text-[10px] font-bold px-1.5 py-0.5 rounded-full">15 Total</span>
+              <span class="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ pendingPaymentCount() }} Total</span>
             </div>
             <div class="divide-y divide-slate-200 dark:divide-slate-800">
-              @for (payment of pendingPayments; track payment.student) {
+              @for (payment of pendingPayments(); track payment.invoiceId) {
                 <div class="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                   <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500">
@@ -173,10 +179,11 @@
                   </div>
                   <div class="flex flex-col items-end gap-1">
                     <p class="text-sm font-bold text-slate-900 dark:text-white">{{ payment.amount }}</p>
-                    <button class="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-md transition-colors">
-                      Record
-                    </button>
                   </div>
+                </div>
+              } @empty {
+                <div class="p-6 text-center text-sm font-medium text-slate-500 dark:text-slate-500">
+                  No pending payments.
                 </div>
               }
             </div>
@@ -187,4 +194,3 @@
         </div>
       </div>
     </div>
-  

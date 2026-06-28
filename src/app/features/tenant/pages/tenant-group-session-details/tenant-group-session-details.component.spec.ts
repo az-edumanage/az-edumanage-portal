@@ -80,6 +80,8 @@ describe('TenantGroupSessionDetailsComponent', () => {
     addGroupSessionLibraryContent: vi.fn(),
     deleteGroupSessionLibraryContent: vi.fn(),
     updateGroupSessionLibraryContentCompletion: vi.fn(),
+    loadGroupSessionPublication: vi.fn(),
+    publishGroupSession: vi.fn(),
   };
   const attendanceData = {
     scanBarcode: vi.fn(),
@@ -163,6 +165,19 @@ describe('TenantGroupSessionDetailsComponent', () => {
         fileContentType: null,
         sizeBytes: null,
       },
+      {
+        id: 'content-3',
+        curriculumNodeId: lessonNodeId,
+        curriculumNodeLabel: 'Forces and Motion',
+        folderId: 'folder-2',
+        folderName: 'External Books',
+        contentType: 'FILE',
+        contentId: 'library-file-3',
+        title: 'Lecture 1.pdf',
+        url: '/media/lecture-1.pdf',
+        fileContentType: 'application/pdf',
+        sizeBytes: 4509716,
+      },
     ]));
     data.addGroupLesson.mockReset();
     data.addGroupLesson.mockReturnValue(of({
@@ -222,15 +237,28 @@ describe('TenantGroupSessionDetailsComponent', () => {
       },
     ]));
     data.loadGroupLibraryNotes.mockReset();
-    data.loadGroupLibraryNotes.mockReturnValue(of([
-      {
-        id: 'library-note-1',
-        title: 'Session note',
-        contentJson: JSON.stringify({ blocks: [{ data: { text: 'Session note body' } }] }),
-        createdAt: '2026-06-11T00:00:00',
-        updatedAt: '2026-06-11T00:00:00',
-      },
-    ]));
+    data.loadGroupLibraryNotes.mockImplementation((_groupId: string, folderId: string) => {
+      if (folderId === 'folder-1') {
+        return of([
+          {
+            id: 'note-1',
+            title: 'Class note',
+            contentJson: JSON.stringify({ blocks: [{ data: { text: 'Newton note content' } }] }),
+            createdAt: '2026-06-11T00:00:00',
+            updatedAt: '2026-06-11T00:00:00',
+          },
+        ]);
+      }
+      return of([
+        {
+          id: 'library-note-1',
+          title: 'Session note',
+          contentJson: JSON.stringify({ blocks: [{ data: { text: 'Session note body' } }] }),
+          createdAt: '2026-06-11T00:00:00',
+          updatedAt: '2026-06-11T00:00:00',
+        },
+      ]);
+    });
     data.loadGroupSessionLibraryContent.mockReset();
     data.loadGroupSessionLibraryContent.mockReturnValue(of([]));
     data.addGroupSessionLibraryContent.mockReset();
@@ -269,6 +297,40 @@ describe('TenantGroupSessionDetailsComponent', () => {
         completed,
       }),
     );
+    data.loadGroupSessionPublication.mockReset();
+    data.loadGroupSessionPublication.mockReturnValue(of({
+      id: null,
+      groupId: 'group-123',
+      sessionId: 'event-1',
+      published: false,
+      publishedAt: null,
+      mediaCount: 0,
+      media: [],
+    }));
+    data.publishGroupSession.mockReset();
+    data.publishGroupSession.mockReturnValue(of({
+      id: 'publication-1',
+      groupId: 'group-123',
+      sessionId: 'event-1',
+      published: true,
+      publishedAt: '2026-06-27T00:00:00Z',
+      mediaCount: 4,
+      media: [
+        {
+          source: 'SUBJECT_MATERIAL',
+          lessonId: 'lesson-1',
+          lessonTitle: 'Forces and Motion',
+          folderId: 'folder-2',
+          folderName: 'Direct material',
+          contentType: 'FILE',
+          contentId: 'file-2',
+          title: 'Direct slide.pdf',
+          url: '/media/direct-slide.pdf',
+          fileContentType: 'application/pdf',
+          sizeBytes: 1024,
+        },
+      ],
+    }));
     http.get.mockReset();
     http.get.mockReturnValue(of(new Blob(['pdf'], { type: 'application/pdf' })));
     attendanceData.scanBarcode.mockReset();
@@ -391,6 +453,7 @@ describe('TenantGroupSessionDetailsComponent', () => {
     expect(data.loadGroupById).toHaveBeenCalledWith('group-123');
     expect(data.loadGroupLessons).toHaveBeenCalledWith('group-123', { sync: false, sessionId: 'event-1' });
     expect(data.loadGroupSessionLibraryContent).toHaveBeenCalledWith('group-123', 'event-1');
+    expect(data.loadGroupSessionPublication).toHaveBeenCalledWith('group-123', 'event-1');
     expect(text).toContain('Physics G12-A');
     expect(text).toContain('Saturday');
     expect(text).toContain('Physics');
@@ -412,6 +475,7 @@ describe('TenantGroupSessionDetailsComponent', () => {
     expect(text).toContain('Broadcast');
     expect(text).toContain('Calendar');
     expect(text).toContain('Report');
+    expect(text).toContain('Publish Session');
     expect(text).toContain('Secondary');
     expect(text).toContain('Grade 12');
     expect(text).toContain('Open attendance');
@@ -461,12 +525,17 @@ describe('TenantGroupSessionDetailsComponent', () => {
     expect(updatedText).toContain('Lesson Material');
     expect(updatedText).toContain('Newton worksheet.pdf');
     expect(updatedText).toContain('Class note');
+    expect(updatedText).toContain('Lecture 1.pdf');
+    expect(updatedText).toContain('External Books');
     expect(updatedText).toContain('Direct slide.pdf');
     expect(updatedText).toContain('Direct material');
     expect(updatedText).toContain('Lesson files');
     expect(updatedText).toContain('2 KB');
+    expect(data.loadGroupLessonContent).toHaveBeenCalledTimes(1);
+    expect(subjectsData.listCurriculumMaterialFolders).toHaveBeenCalledWith('subject-1', lessonNodeId, 'BASIC_EDUCATION');
 
-    const materialButton: HTMLButtonElement = fixture.nativeElement.querySelector('.tenant-group-session-material-item');
+    const materialButton = Array.from(fixture.nativeElement.querySelectorAll('.tenant-group-session-material-item'))
+      .find((button) => (button as HTMLButtonElement).textContent?.includes('Newton worksheet.pdf')) as HTMLButtonElement;
     materialButton.click();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -483,15 +552,29 @@ describe('TenantGroupSessionDetailsComponent', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.tenant-group-session-preview-overlay')).toBeFalsy();
 
-    const materialButtons: NodeListOf<HTMLButtonElement> = fixture.nativeElement.querySelectorAll('.tenant-group-session-material-item');
-    materialButtons[1].click();
+    const noteButton = Array.from(fixture.nativeElement.querySelectorAll('.tenant-group-session-material-item'))
+      .find((button) => (button as HTMLButtonElement).textContent?.includes('Class note')) as HTMLButtonElement;
+    noteButton.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
     const noteDrawerText = fixture.nativeElement.textContent as string;
-    expect(subjectsData.listCurriculumMaterialNotes).toHaveBeenCalledWith('subject-1', lessonNodeId, 'folder-1', 'BASIC_EDUCATION');
+    expect(data.loadGroupLibraryNotes).toHaveBeenCalledWith('group-123', 'folder-1');
     expect(noteDrawerText).toContain('Class note');
     expect(noteDrawerText).toContain('Newton note content');
+  });
+
+  it('publishes the session media for the future student dashboard', async () => {
+    const publishButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .find((button) => (button as HTMLButtonElement).textContent?.includes('Publish Session')) as HTMLButtonElement;
+
+    publishButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(data.publishGroupSession).toHaveBeenCalledWith('group-123', 'event-1');
+    expect(fixture.componentInstance.sessionPublication()?.published).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('4 session media items published for students.');
   });
 
   it('removes a lesson from the session lessons table', async () => {

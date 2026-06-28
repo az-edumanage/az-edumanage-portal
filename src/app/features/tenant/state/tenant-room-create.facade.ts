@@ -1,9 +1,10 @@
-import { Injectable, computed, inject } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { TaskService } from '../../../core/services/task.service';
 import { TenantRoomCreateDataService } from '../data-access/tenant-room-create-data.service';
+import type { TenantGroupSelectorOption } from '../models/tenant-group-create.models';
 import { TenantRoomCreatePayload } from '../models/tenant-room-create.models';
 import { TenantRoomCreateStore } from './tenant-room-create.store';
 
@@ -24,6 +25,33 @@ export class TenantRoomCreateFacade {
   readonly isEditMode = this.store.isEditMode;
   readonly availableRoomTypes = this.data.availableRoomTypes;
   readonly availableEquipment = this.data.availableEquipment;
+  readonly roomTypeSelectorOpen = signal(false);
+  readonly roomTypeSearchQuery = signal('');
+  readonly roomTypeSaving = signal(false);
+  readonly roomTypeInlineError = signal<string | null>(null);
+  readonly selectedRoomTypeLabel = signal('');
+  readonly roomTypeOptions = computed<TenantGroupSelectorOption[]>(() => {
+    const query = this.roomTypeSearchQuery().trim().toLowerCase();
+    return this.normalizedAvailableRoomTypes()
+      .filter((type) => !query || type.toLowerCase().includes(query))
+      .map((type) => ({
+        id: type,
+        name: type,
+      }));
+  });
+  readonly roomTypePlaceholder = computed(() => {
+    if (this.isLoadingLookups()) {
+      return 'Loading room types...';
+    }
+    if (this.availableRoomTypes().length === 0) {
+      return 'Add a room type';
+    }
+    return 'Select room type';
+  });
+  readonly roomTypeFooterLabel = computed(() => {
+    const value = this.roomTypeSearchQuery().trim();
+    return value ? `Add room type: ${value}` : 'Add room type';
+  });
 
   readonly roomForm = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
@@ -79,6 +107,62 @@ export class TenantRoomCreateFacade {
     this.roomForm.patchValue({ equipment });
   }
 
+  toggleRoomTypeSelector(): void {
+    if (this.isLoadingLookups() || this.roomTypeSaving()) {
+      return;
+    }
+    this.roomTypeSelectorOpen.update((isOpen) => !isOpen);
+  }
+
+  closeRoomTypeSelector(): void {
+    this.roomTypeSelectorOpen.set(false);
+  }
+
+  setRoomTypeSearchQuery(value: string): void {
+    this.roomTypeSearchQuery.set(value);
+    this.roomTypeInlineError.set(null);
+  }
+
+  selectRoomType(name: string): void {
+    const selected = this.findAvailableRoomType(name);
+    if (!selected) {
+      return;
+    }
+    this.roomForm.controls.type.setValue(selected);
+    this.roomForm.controls.type.markAsDirty();
+    this.roomForm.controls.type.markAsTouched();
+    this.roomForm.controls.type.updateValueAndValidity();
+    this.selectedRoomTypeLabel.set(selected);
+    this.roomTypeSearchQuery.set('');
+    this.roomTypeInlineError.set(null);
+    this.roomTypeSelectorOpen.set(false);
+  }
+
+  async addRoomTypeFromSearch(): Promise<void> {
+    const name = this.roomTypeSearchQuery().trim();
+    if (!name) {
+      this.roomTypeInlineError.set('Type a room type name before adding it.');
+      return;
+    }
+
+    const existing = this.findAvailableRoomType(name);
+    if (existing) {
+      this.selectRoomType(existing);
+      return;
+    }
+
+    this.roomTypeSaving.set(true);
+    this.roomTypeInlineError.set(null);
+    try {
+      const createdName = await this.data.createRoomType(name);
+      this.selectRoomType(createdName);
+    } catch (error) {
+      this.roomTypeInlineError.set(this.data.toUserMessage(error));
+    } finally {
+      this.roomTypeSaving.set(false);
+    }
+  }
+
   onCancel(): void {
     this.isSuccess = true;
     this.taskService.removeTask(this.taskId());
@@ -125,22 +209,26 @@ export class TenantRoomCreateFacade {
 
       if (roomId) {
         this.roomForm.patchValue(await this.data.getRoomForEdit(roomId));
+        this.syncSelectedRoomTypeLabel();
       } else {
         const roomTypes = this.availableRoomTypes();
         const currentType = this.roomForm.get('type')?.value;
-        if (roomTypes.length > 0 && (!currentType || !roomTypes.includes(currentType))) {
+        if (roomTypes.length > 0 && (!currentType || !this.findAvailableRoomType(currentType))) {
           this.roomForm.patchValue({ type: roomTypes[0] });
+          this.syncSelectedRoomTypeLabel();
         }
       }
 
       const savedTask = this.taskService.getTask(this.taskId());
       if (savedTask?.data) {
         this.roomForm.patchValue(savedTask.data as Partial<TenantRoomCreatePayload>);
+        this.syncSelectedRoomTypeLabel();
         this.taskService.removeTask(this.taskId());
       }
 
       if (!this.hasAvailableRoomType()) {
         this.roomForm.patchValue({ type: this.availableRoomTypes()[0] ?? '' });
+        this.syncSelectedRoomTypeLabel();
       }
     } catch (error) {
       this.store.setSubmitError(error instanceof Error ? error.message : 'Unable to load room settings.');
@@ -151,6 +239,34 @@ export class TenantRoomCreateFacade {
 
   private hasAvailableRoomType(): boolean {
     const type = this.roomForm.get('type')?.value?.trim();
-    return !!type && this.availableRoomTypes().includes(type);
+    return !!type && !!this.findAvailableRoomType(type);
+  }
+
+  private syncSelectedRoomTypeLabel(): void {
+    const selected = this.findAvailableRoomType(this.roomForm.controls.type.value);
+    this.selectedRoomTypeLabel.set(selected ?? '');
+  }
+
+  private findAvailableRoomType(value: string | null | undefined): string | null {
+    const normalized = value?.trim().toLowerCase();
+    if (!normalized) {
+      return null;
+    }
+    return this.normalizedAvailableRoomTypes().find((type) => type.toLowerCase() === normalized) ?? null;
+  }
+
+  private normalizedAvailableRoomTypes(): string[] {
+    const seen = new Set<string>();
+    const roomTypes: string[] = [];
+    for (const type of this.availableRoomTypes()) {
+      const normalized = type.trim();
+      const key = normalized.toLowerCase();
+      if (!normalized || seen.has(key)) {
+        continue;
+      }
+      seen.add(key);
+      roomTypes.push(normalized);
+    }
+    return roomTypes;
   }
 }

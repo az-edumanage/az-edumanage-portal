@@ -33,6 +33,15 @@ export class TenantGradeCreateDataService {
     }));
   }
 
+  async createCountryOption(name: string): Promise<TenantGradeCountryOption> {
+    const country = await this.countryService.createCountry(name);
+    return {
+      value: country.id,
+      label: country.name,
+      code: country.code,
+    };
+  }
+
   async listAcademicLevelOptions(countryId: string): Promise<TenantGradeAcademicLevelOption[]> {
     if (!countryId) {
       return [];
@@ -76,6 +85,10 @@ export class TenantGradeCreateDataService {
       }
     }
     return 'Unable to save grade. Please try again.';
+  }
+
+  toCountryUserMessage(error: unknown): string {
+    return this.countryService.toUserMessage(error);
   }
 
   private toPayload(payload: TenantGradeCreateForm): TenantGradeCreateForm {

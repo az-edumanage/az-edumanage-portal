@@ -43,3 +43,18 @@ export interface TenantCreatePayload {
   sendOnboardingEmail: boolean;
   temporaryPassword: string;
 }
+
+export interface TenantProvisioningReadinessStep {
+  code: string;
+  label: string;
+  status: 'passed' | 'pending' | 'failed' | string;
+  message: string | null;
+}
+
+export interface TenantProvisioningReadiness {
+  tenantId: string;
+  provisioningStatus: string;
+  active: boolean;
+  ready: boolean;
+  steps: TenantProvisioningReadinessStep[];
+}

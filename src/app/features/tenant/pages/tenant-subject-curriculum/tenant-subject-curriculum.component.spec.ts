@@ -239,6 +239,7 @@ describe('TenantSubjectCurriculumComponent', () => {
 
   it('uses the curriculum page as the questions bank subject step before opening questions', async () => {
     await addRootChild('First Term');
+    await addChild('node-1', 'Unit 1');
     const router = TestBed.inject(Router);
     const route = TestBed.inject(ActivatedRoute);
     const originalUrlDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(router), 'url');
@@ -263,6 +264,9 @@ describe('TenantSubjectCurriculumComponent', () => {
     const firstTermTableLink = questionsBankFixture.debugElement
       .queryAll(By.css('.curriculum-content-link'))
       .find((button) => (button.nativeElement as HTMLButtonElement).textContent?.includes('First Term'));
+    const firstTermRow = questionsBankFixture.debugElement
+      .queryAll(By.css('.curriculum-content-row'))
+      .find((row) => (row.nativeElement as HTMLElement).textContent?.includes('First Term'));
     const actionLabels = questionsBankFixture.debugElement
       .queryAll(By.css('.curriculum-table-action'))
       .map((button) => button.attributes['aria-label']);
@@ -286,9 +290,21 @@ describe('TenantSubjectCurriculumComponent', () => {
       '/tenant/questions-bank/basic-education/stage-1/grades/grade-1',
     ]);
     expect(actionLabels).toEqual(['Open questions for First Term']);
+    expect((firstTermRow?.nativeElement as HTMLTableRowElement).getAttribute('role')).toBe('button');
+    expect((firstTermRow?.nativeElement as HTMLTableRowElement).getAttribute('tabindex')).toBe('0');
     expect(questionsButton?.injector.get(RouterLink).href).toContain('/tenant/questions-bank/basic-education/stage-1/grades/grade-1/subjects/subject-1/curriculum/node-1');
 
-    firstTermTableLink?.triggerEventHandler('click');
+    firstTermRow?.triggerEventHandler('click');
+    questionsBankFixture.detectChanges();
+
+    expect(navigate).not.toHaveBeenCalled();
+    expect(questionsBankFixture.componentInstance.selectedNodeId()).toBe('node-1');
+    expect((questionsBankFixture.nativeElement.textContent as string)).toContain('Unit 1');
+
+    const unitRow = questionsBankFixture.debugElement
+      .queryAll(By.css('.curriculum-content-row'))
+      .find((row) => (row.nativeElement as HTMLElement).textContent?.includes('Unit 1'));
+    unitRow?.triggerEventHandler('click');
     questionsBankFixture.detectChanges();
 
     expect(navigate).toHaveBeenCalledWith([
@@ -299,8 +315,68 @@ describe('TenantSubjectCurriculumComponent', () => {
       'subjects',
       'subject-1',
       'curriculum',
-      'node-1',
+      'node-2',
     ]);
+
+    navigate.mockClear();
+    firstTermTableLink?.triggerEventHandler('click', new MouseEvent('click'));
+    questionsBankFixture.detectChanges();
+
+    expect(navigate).not.toHaveBeenCalled();
+    expect(questionsBankFixture.componentInstance.selectedNodeId()).toBe('node-1');
+
+    if (originalUrlDescriptor) {
+      Object.defineProperty(router, 'url', originalUrlDescriptor);
+    }
+    if (originalSnapshotDescriptor) {
+      Object.defineProperty(route, 'snapshot', originalSnapshotDescriptor);
+    } else {
+      delete (route as Partial<ActivatedRoute>).snapshot;
+    }
+  });
+
+  it('renders university question-bank curriculum like the normal university subject curriculum page', async () => {
+    await addRootChild('First Term');
+    const router = TestBed.inject(Router);
+    const route = TestBed.inject(ActivatedRoute);
+    const originalUrlDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(router), 'url');
+    const originalSnapshotDescriptor = Object.getOwnPropertyDescriptor(route, 'snapshot');
+    Object.defineProperty(router, 'url', {
+      configurable: true,
+      get: () => '/tenant/questions-bank/university-education/colleges/college-1/subjects/subject-1/curriculum',
+    });
+    Object.defineProperty(route, 'snapshot', {
+      configurable: true,
+      value: {
+        paramMap: convertToParamMap({ collegeId: 'college-1', id: 'subject-1' }),
+      },
+    });
+
+    const universityQuestionsBankFixture = TestBed.createComponent(TenantSubjectCurriculumComponent);
+    universityQuestionsBankFixture.detectChanges();
+    await universityQuestionsBankFixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    universityQuestionsBankFixture.detectChanges();
+
+    const breadcrumbText = (universityQuestionsBankFixture.debugElement.query(By.css('.curriculum-page-breadcrumb')).nativeElement as HTMLElement).textContent ?? '';
+    const actionLabels = universityQuestionsBankFixture.debugElement
+      .queryAll(By.css('.curriculum-table-action'))
+      .map((button) => button.attributes['aria-label']);
+    const detailsButton = universityQuestionsBankFixture.debugElement
+      .queryAll(By.css('.curriculum-table-action'))
+      .find((button) => button.attributes['aria-label'] === 'Show details for First Term');
+    const questionsButton = universityQuestionsBankFixture.debugElement
+      .queryAll(By.css('.curriculum-table-action'))
+      .find((button) => button.attributes['aria-label'] === 'Open questions for First Term');
+
+    expect(breadcrumbText).toContain('Questions Bank');
+    expect(breadcrumbText).toContain('University Education');
+    expect(breadcrumbText).toContain('Grade 10');
+    expect(breadcrumbText).toContain('Mathematics');
+    expect(breadcrumbText).toContain('Curriculum');
+    expect(actionLabels).toEqual(['Open questions for First Term']);
+    expect(detailsButton).toBeUndefined();
+    expect(questionsButton?.injector.get(RouterLink).href).toContain('/tenant/questions-bank/university-education/colleges/college-1/subjects/subject-1/curriculum/node-1');
 
     if (originalUrlDescriptor) {
       Object.defineProperty(router, 'url', originalUrlDescriptor);
@@ -329,7 +405,7 @@ describe('TenantSubjectCurriculumComponent', () => {
       .find((button) => (button.nativeElement as HTMLElement).textContent?.includes('First Term'));
 
     expect(firstTermTableLink).toBeDefined();
-    firstTermTableLink?.triggerEventHandler('click');
+    firstTermTableLink?.triggerEventHandler('click', new MouseEvent('click'));
     fixture.detectChanges();
 
     tableRows = fixture.debugElement.queryAll(By.css('tbody tr'));

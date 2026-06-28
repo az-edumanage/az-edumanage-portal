@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -19,6 +19,8 @@ export class TenantGradesComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
   private readonly facade = inject(TenantGradesFacade);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly searchQuery = this.facade.searchQuery;
   readonly showFilterPanel = this.facade.showFilterPanel;
@@ -30,6 +32,7 @@ export class TenantGradesComponent implements OnInit {
   readonly filteredGrades = this.facade.filteredGrades;
   readonly levelOptions = this.facade.levelOptions;
   readonly deleteState = this.facade.deleteState;
+  readonly linkedStageId = this.route.snapshot.queryParamMap.get('stageId') ?? '';
 
   readonly filterForm = this.fb.group({
     level: [''],
@@ -52,7 +55,21 @@ export class TenantGradesComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    if (this.linkedStageId) {
+      this.viewMode.set('list');
+      this.facade.setStageFilter(this.linkedStageId);
+    }
+
     void this.facade.loadGrades();
+  }
+
+  openGradeSubjects(grade: Grade): void {
+    void this.router.navigate(['/tenant/subjects'], {
+      queryParams: {
+        stageId: grade.stageId,
+        gradeId: grade.id,
+      },
+    });
   }
 
   toggleFilterPanel(): void {

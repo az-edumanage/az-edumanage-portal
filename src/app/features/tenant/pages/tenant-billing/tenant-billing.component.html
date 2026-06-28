@@ -1,0 +1,122 @@
+<div class="billing-page">
+  <header class="billing-header">
+    <div>
+      <h2>Billing</h2>
+      <p>Track student enrollment invoices and collection status.</p>
+    </div>
+  </header>
+
+  <section class="billing-toolbar" aria-label="Invoice filters">
+    <div class="search-field">
+      <mat-icon>search</mat-icon>
+      <input
+        type="search"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="setSearchQuery($event)"
+        placeholder="Search invoices, students, groups or payment method"
+      >
+    </div>
+
+    <label class="status-filter">
+      <span>Status</span>
+      <select [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)">
+        <option value="">All</option>
+        <option value="unpaid">Unpaid</option>
+        <option value="paid">Paid</option>
+      </select>
+    </label>
+  </section>
+
+  @if (errorMessage()) {
+    <div class="notice notice-error">{{ errorMessage() }}</div>
+  }
+
+  @if (actionMessage()) {
+    <div class="notice notice-info">{{ actionMessage() }}</div>
+  }
+
+  <section class="billing-table-shell">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Invoice</th>
+            <th>Student</th>
+            <th>Group</th>
+            <th>Duration</th>
+            <th>Period</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th class="actions-col">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (isLoading()) {
+            <tr>
+              <td colspan="8" class="state-cell">Loading invoices...</td>
+            </tr>
+          } @else if (!hasInvoices()) {
+            <tr>
+              <td colspan="8" class="state-cell">No enrollment invoices yet.</td>
+            </tr>
+          } @else {
+            @for (invoice of invoices(); track invoice.id) {
+              <tr>
+                <td>
+                  <strong>{{ invoice.invoiceRef }}</strong>
+                  <span>{{ dateLabel(invoice.createdAt) }}</span>
+                </td>
+                <td>{{ invoice.studentName }}</td>
+                <td>{{ invoice.groupName }}</td>
+                <td>{{ durationLabel(invoice) }}</td>
+                <td>{{ dateLabel(invoice.billingPeriodStart) }} - {{ dateLabel(invoice.billingPeriodEnd) }}</td>
+                <td class="amount-cell">{{ amountLabel(invoice) }}</td>
+                <td>
+                  <span class="status-badge" [class.status-paid]="invoice.status === 'paid'">
+                    {{ statusLabel(invoice.status) }}
+                  </span>
+                </td>
+                <td class="actions-col">
+                  @if (invoice.status === 'unpaid' && canMarkPaid) {
+                    <button
+                      type="button"
+                      class="icon-action"
+                      title="Mark paid"
+                      [disabled]="payingInvoiceId() === invoice.id"
+                      (click)="markPaid(invoice)"
+                    >
+                      <mat-icon>{{ payingInvoiceId() === invoice.id ? 'hourglass_empty' : 'payments' }}</mat-icon>
+                    </button>
+                  } @else {
+                    <span class="paid-at">{{ dateLabel(invoice.paidAt) }}</span>
+                  }
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="billing-pagination">
+      <span>{{ pageStart() }}-{{ pageEnd() }} of {{ totalItems() }}</span>
+      <label>
+        Rows
+        <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)">
+          <option [ngValue]="10">10</option>
+          <option [ngValue]="25">25</option>
+          <option [ngValue]="50">50</option>
+          <option [ngValue]="100">100</option>
+        </select>
+      </label>
+      <div class="pager-actions">
+        <button type="button" (click)="previousPage()" [disabled]="pageIndex() === 0">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <button type="button" (click)="nextPage()" [disabled]="pageIndex() >= totalPages() - 1">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    </footer>
+  </section>
+</div>

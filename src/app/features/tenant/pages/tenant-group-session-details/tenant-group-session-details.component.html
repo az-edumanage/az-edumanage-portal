@@ -111,7 +111,22 @@
             <mat-icon>analytics</mat-icon>
             <span>Report</span>
           </a>
+          <button type="button" [disabled]="publishingSession()" (click)="publishSession()">
+            <mat-icon>{{ publishingSession() ? 'sync' : sessionPublication()?.published ? 'published_with_changes' : 'publish' }}</mat-icon>
+            <span>{{ publishingSession() ? 'Publishing...' : 'Publish Session' }}</span>
+          </button>
         </div>
+        @if (publishSessionMessage()) {
+          <p class="tenant-group-session-publish-feedback tenant-group-session-publish-feedback--success">
+            <mat-icon>check_circle</mat-icon>
+            {{ publishSessionMessage() }}
+          </p>
+        } @else if (publishSessionError()) {
+          <p class="tenant-group-session-publish-feedback tenant-group-session-publish-feedback--error">
+            <mat-icon>error</mat-icon>
+            {{ publishSessionError() }}
+          </p>
+        }
       </section>
 
       <section class="tenant-group-session-details-card tenant-group-session-overview-card">

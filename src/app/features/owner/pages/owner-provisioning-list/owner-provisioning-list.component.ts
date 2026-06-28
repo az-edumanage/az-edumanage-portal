@@ -17,6 +17,7 @@ export class OwnerProvisioningListComponent {
   readonly filter = this.facade.filter;
   readonly filteredJobs = this.facade.filteredJobs;
   readonly statusOptions = this.facade.statusOptions;
+  readonly migrationStatuses = this.facade.migrationStatuses;
 
   setFilter(value: 'All' | ProvisioningStatus): void {
     this.facade.setFilter(value);
@@ -24,6 +25,10 @@ export class OwnerProvisioningListComponent {
 
   refresh(): void {
     void this.facade.refresh();
+  }
+
+  runTenantMigrations(): void {
+    void this.facade.runTenantMigrations();
   }
 
   getStatusColor(status: string): string {

@@ -139,6 +139,41 @@
   justify-content: flex-end;
 }
 
+.tenant-group-exams-clear {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  padding: 0 0.875rem;
+  color: #4338ca;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  white-space: nowrap;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.tenant-group-exams-clear:hover,
+.tenant-group-exams-clear:focus-visible {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  outline: none;
+}
+
+.tenant-group-exams-action-error {
+  margin: 0;
+  border: 1px solid #fecdd3;
+  border-radius: 0.75rem;
+  background: #fff1f2;
+  padding: 0.75rem 0.875rem;
+  color: #be123c;
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
 .tenant-group-sessions-filter-btn {
   display: inline-flex;
   min-height: 2.5rem;
@@ -275,6 +310,324 @@
 .tenant-group-sessions-list {
   display: grid;
   gap: 0;
+}
+
+.tenant-group-exams-list {
+  display: grid;
+}
+
+.tenant-group-exam-row {
+  display: grid;
+  grid-template-columns: auto minmax(12rem, 1.4fr) minmax(10rem, 1fr) minmax(6rem, 0.7fr) minmax(8rem, 0.8fr) minmax(10rem, 1fr) auto;
+  gap: 0.875rem;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tenant-group-exam-row:last-child {
+  border-bottom: 0;
+}
+
+.tenant-group-exam-main,
+.tenant-group-exam-cell {
+  min-width: 0;
+}
+
+.tenant-group-exam-main span {
+  display: inline-flex;
+  width: fit-content;
+  margin-bottom: 0.25rem;
+  border-radius: 999px;
+  background: #dcfce7;
+  padding: 0.1875rem 0.5rem;
+  color: #047857;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  line-height: 1rem;
+}
+
+.tenant-group-exam-main p,
+.tenant-group-exam-main small,
+.tenant-group-exam-cell strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-group-exam-main p {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 900;
+}
+
+.tenant-group-exam-main small {
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.tenant-group-exam-cell {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.tenant-group-exam-cell span {
+  color: #64748b;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  line-height: 1rem;
+}
+
+.tenant-group-exam-cell strong {
+  color: #334155;
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+.tenant-group-exam-cell--settings strong {
+  white-space: normal;
+}
+
+.tenant-group-exam-actions {
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.tenant-group-exam-action {
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.625rem;
+  background: #ffffff;
+  color: #475569;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease, opacity 160ms ease;
+}
+
+.tenant-group-exam-action:hover,
+.tenant-group-exam-action:focus-visible {
+  outline: none;
+}
+
+.tenant-group-exam-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.tenant-group-exam-action mat-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  font-size: 1.125rem;
+  line-height: 1.125rem;
+}
+
+.tenant-group-exam-action--primary:hover,
+.tenant-group-exam-action--primary:focus-visible {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.tenant-group-exam-action--danger:hover,
+.tenant-group-exam-action--danger:focus-visible {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.tenant-group-exam-delete-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(15 23 42 / 0.48);
+  padding: 1rem;
+}
+
+.tenant-group-exam-delete-modal {
+  width: min(100%, 30rem);
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  background: #ffffff;
+  box-shadow: 0 14px 34px rgb(15 23 42 / 0.18);
+  color: #0f172a;
+  animation: tenant-group-exam-modal-in 180ms ease-out;
+}
+
+.tenant-group-exam-delete-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.875rem;
+  align-items: start;
+  padding: 1.25rem;
+}
+
+.tenant-group-exam-delete-icon {
+  display: inline-flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.875rem;
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.tenant-group-exam-delete-icon mat-icon,
+.tenant-group-exam-delete-close mat-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 1.25rem;
+  line-height: 1.25rem;
+}
+
+.tenant-group-exam-delete-header h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.4;
+}
+
+.tenant-group-exam-delete-header p {
+  margin: 0.25rem 0 0;
+  color: #475569;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.tenant-group-exam-delete-close {
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.625rem;
+  background: #ffffff;
+  color: #64748b;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease, opacity 160ms ease;
+}
+
+.tenant-group-exam-delete-close:hover,
+.tenant-group-exam-delete-close:focus-visible {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  color: #0f172a;
+  outline: none;
+}
+
+.tenant-group-exam-delete-close:disabled,
+.tenant-group-exam-delete-cancel:disabled,
+.tenant-group-exam-delete-confirm:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.tenant-group-exam-delete-error {
+  margin: 0 1.25rem 1rem;
+  border: 1px solid #fecdd3;
+  border-radius: 0.75rem;
+  background: #fff1f2;
+  padding: 0.75rem 0.875rem;
+  color: #be123c;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.tenant-group-exam-delete-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  border-top: 1px solid #e2e8f0;
+  padding: 1rem 1.25rem;
+}
+
+.tenant-group-exam-delete-cancel,
+.tenant-group-exam-delete-confirm {
+  min-height: 2.5rem;
+  border-radius: 0.625rem;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  font-weight: 800;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease, opacity 160ms ease;
+}
+
+.tenant-group-exam-delete-cancel {
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #334155;
+}
+
+.tenant-group-exam-delete-cancel:hover,
+.tenant-group-exam-delete-cancel:focus-visible {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  outline: none;
+}
+
+.tenant-group-exam-delete-confirm {
+  background: #e11d48;
+  color: #ffffff;
+}
+
+.tenant-group-exam-delete-confirm:hover,
+.tenant-group-exam-delete-confirm:focus-visible {
+  background: #be123c;
+  outline: none;
+}
+
+.tenant-group-exams-skeleton {
+  display: grid;
+  gap: 0;
+}
+
+.tenant-group-exams-skeleton span {
+  display: block;
+  height: 4.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(90deg, #f8fafc 0%, #eef2ff 50%, #f8fafc 100%);
+  background-size: 200% 100%;
+  animation: tenant-group-exams-pulse 1.4s ease-in-out infinite;
+}
+
+.tenant-group-exams-state--error button {
+  min-height: 2.25rem;
+  border-radius: 0.5rem;
+  background: #4f46e5;
+  padding: 0 0.875rem;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+@keyframes tenant-group-exams-pulse {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@keyframes tenant-group-exam-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.375rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .tenant-group-session-row {
@@ -1536,6 +1889,49 @@
   padding: 1rem 1.25rem;
 }
 
+.tenant-group-insert-content-filterbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+.tenant-group-insert-content-folder-filter {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: 0.5rem;
+  width: min(100%, 18rem);
+  border: 1px solid #e2e8f0;
+  border-radius: 0.625rem;
+  background: #f8fafc;
+  padding: 0 0.75rem;
+  color: #475569;
+}
+
+.tenant-group-insert-content-folder-filter mat-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #6d28d9;
+  font-size: 1rem;
+}
+
+.tenant-group-insert-content-folder-filter span {
+  color: #334155;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.tenant-group-insert-content-folder-filter select {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: #0f172a;
+  font-size: 0.8125rem;
+  font-weight: 900;
+  outline: none;
+}
+
 .tenant-group-insert-content-list {
   display: grid;
   gap: 0.5rem;
@@ -2107,6 +2503,20 @@
     padding: 1rem;
   }
 
+  .tenant-group-exam-row {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 1rem;
+  }
+
+  .tenant-group-exam-cell {
+    grid-column: 2;
+  }
+
+  .tenant-group-exam-actions {
+    grid-column: 2;
+    justify-content: flex-start;
+  }
+
   .tenant-group-session-meta {
     grid-column: 2;
     text-align: left;
@@ -2158,6 +2568,12 @@
   .tenant-group-calendar-cancel,
   .tenant-group-calendar-save {
     flex: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tenant-group-exams-skeleton span {
+    animation: none;
   }
 }
 
@@ -2465,6 +2881,7 @@
 :host-context(.dark) .tenant-group-insert-content-modal,
 :host-context(.dark) .tenant-group-insert-content-modal-head button,
 :host-context(.dark) .tenant-group-insert-content-option,
+:host-context(.dark) .tenant-group-insert-content-folder-filter,
 :host-context(.dark) .tenant-group-insert-content-secondary {
   border-color: #334155;
   background: #0f172a;
@@ -2476,12 +2893,15 @@
 }
 
 :host-context(.dark) .tenant-group-insert-content-modal-head h3,
+:host-context(.dark) .tenant-group-insert-content-folder-filter span,
+:host-context(.dark) .tenant-group-insert-content-folder-filter select,
 :host-context(.dark) .tenant-group-insert-content-option-main strong {
   color: #f8fafc;
 }
 
 :host-context(.dark) .tenant-group-insert-content-modal-head span,
 :host-context(.dark) .tenant-group-insert-content-option-main small,
+:host-context(.dark) .tenant-group-insert-content-folder-filter,
 :host-context(.dark) .tenant-group-insert-content-secondary {
   color: #94a3b8;
 }
@@ -2545,6 +2965,97 @@
   background: rgb(30 41 59 / 0.52);
 }
 
+:host-context(.dark) .tenant-group-exam-row {
+  border-color: #1e293b;
+}
+
+:host-context(.dark) .tenant-group-exam-main p,
+:host-context(.dark) .tenant-group-exam-cell strong {
+  color: #f8fafc;
+}
+
+:host-context(.dark) .tenant-group-exam-main small,
+:host-context(.dark) .tenant-group-exam-cell span {
+  color: #94a3b8;
+}
+
+:host-context(.dark) .tenant-group-exams-clear {
+  border-color: #334155;
+  background: #0f172a;
+  color: #c7d2fe;
+}
+
+:host-context(.dark) .tenant-group-exams-action-error {
+  border-color: rgb(244 63 94 / 0.32);
+  background: rgb(127 29 29 / 0.24);
+  color: #fecdd3;
+}
+
+:host-context(.dark) .tenant-group-exam-action {
+  border-color: #334155;
+  background: #0f172a;
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .tenant-group-exam-action--primary:hover,
+:host-context(.dark) .tenant-group-exam-action--primary:focus-visible {
+  border-color: rgb(129 140 248 / 0.45);
+  background: rgb(79 70 229 / 0.18);
+  color: #c7d2fe;
+}
+
+:host-context(.dark) .tenant-group-exam-action--danger:hover,
+:host-context(.dark) .tenant-group-exam-action--danger:focus-visible {
+  border-color: rgb(244 63 94 / 0.45);
+  background: rgb(159 18 57 / 0.2);
+  color: #fda4af;
+}
+
+:host-context(.dark) .tenant-group-exam-delete-modal {
+  border-color: #1e293b;
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+:host-context(.dark) .tenant-group-exam-delete-icon {
+  background: rgb(159 18 57 / 0.2);
+  color: #fda4af;
+}
+
+:host-context(.dark) .tenant-group-exam-delete-header h3 {
+  color: #f8fafc;
+}
+
+:host-context(.dark) .tenant-group-exam-delete-header p {
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .tenant-group-exam-delete-close,
+:host-context(.dark) .tenant-group-exam-delete-cancel {
+  border-color: #334155;
+  background: #0f172a;
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .tenant-group-exam-delete-close:hover,
+:host-context(.dark) .tenant-group-exam-delete-close:focus-visible,
+:host-context(.dark) .tenant-group-exam-delete-cancel:hover,
+:host-context(.dark) .tenant-group-exam-delete-cancel:focus-visible {
+  border-color: #475569;
+  background: #1e293b;
+  color: #f8fafc;
+}
+
+:host-context(.dark) .tenant-group-exam-delete-error {
+  border-color: rgb(244 63 94 / 0.32);
+  background: rgb(127 29 29 / 0.24);
+  color: #fecdd3;
+}
+
+:host-context(.dark) .tenant-group-exam-delete-footer {
+  border-color: #1e293b;
+}
+
 :host-context(.dark) .tenant-group-calendar-panel,
 :host-context(.dark) .tenant-group-calendar-header,
 :host-context(.dark) .tenant-group-calendar-form {
@@ -2594,4 +3105,10 @@
 
 :host-context(.dark) ::ng-deep .fc-col-header-cell {
   background: #111827;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tenant-group-exam-delete-modal {
+    animation: none;
+  }
 }

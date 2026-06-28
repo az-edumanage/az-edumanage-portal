@@ -124,6 +124,28 @@
             </div>
           </div>
 
+          <div class="owner-tenant-details-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Provisioning Readiness</h3>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-500">
+                  Status: {{ tenant.provisioningStatus }} · Schema: {{ tenant.schemaName }}
+                </p>
+                @if (tenant.provisioningError !== '—') {
+                  <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ tenant.provisioningError }}</p>
+                }
+              </div>
+              <button
+                type="button"
+                (click)="retryProvisioning()"
+                class="owner-tenant-details-btn owner-tenant-details-btn-secondary flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              >
+                <mat-icon class="text-sm">restart_alt</mat-icon>
+                Retry
+              </button>
+            </div>
+          </div>
+
           <!-- Contact Info Card -->
           <div class="owner-tenant-details-card bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
             <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Contact Information</h3>

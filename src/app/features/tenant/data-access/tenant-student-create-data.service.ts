@@ -18,6 +18,8 @@ export class TenantStudentCreateDataService {
       fullName: '',
       email: '',
       phone: '',
+      username: '',
+      password: '',
       birthDate: '',
       gender: 'Male',
       parentName: '',
@@ -50,6 +52,7 @@ export class TenantStudentCreateDataService {
   private normalizePayload(payload: TenantStudentCreatePayload): TenantStudentCreatePayload {
     return {
       ...payload,
+      username: payload.username.trim(),
       stageIds: payload.educationCategory === 'BASIC_EDUCATION' ? payload.stageIds : [],
       gradeIds: payload.educationCategory === 'BASIC_EDUCATION' ? payload.gradeIds : [],
       universityIds: payload.educationCategory === 'UNIVERSITY_EDUCATION' ? payload.universityIds : [],

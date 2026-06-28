@@ -2,7 +2,7 @@ import { signal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { I18nService } from '../../../../core/services/i18n.service';
 import { GroupDetails, GroupStudent } from '../../models/tenant-group-details.models';
@@ -75,6 +75,8 @@ describe('TenantGroupDetailsComponent', () => {
     removeStudentFromGroup: vi.fn(),
   };
   const groupDetailsData = {
+    loadGroupExams: vi.fn(),
+    deleteGroupExam: vi.fn(),
     loadGroupLessons: vi.fn(),
     addGroupLesson: vi.fn(),
     loadGroupLessonContent: vi.fn(),
@@ -114,6 +116,10 @@ describe('TenantGroupDetailsComponent', () => {
     exitingStudentId.set(null);
     facade.isLoading.set(false);
     facade.error.set(null);
+    groupDetailsData.loadGroupExams.mockReset();
+    groupDetailsData.loadGroupExams.mockReturnValue(of([]));
+    groupDetailsData.deleteGroupExam.mockReset();
+    groupDetailsData.deleteGroupExam.mockReturnValue(of(undefined));
     groupDetailsData.loadGroupLessons.mockReset();
     groupDetailsData.loadGroupLessons.mockReturnValue(of([]));
     groupDetailsData.addGroupLesson.mockReset();
@@ -225,6 +231,7 @@ describe('TenantGroupDetailsComponent', () => {
       ],
     }).compileComponents();
 
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     fixture = TestBed.createComponent(TenantGroupDetailsComponent);
     fixture.detectChanges();
   });
@@ -308,9 +315,227 @@ describe('TenantGroupDetailsComponent', () => {
     const tabs = fixture.nativeElement.querySelector('.tenant-group-detail-tabs') as HTMLElement;
     const sessionsPanel = fixture.nativeElement.querySelector('#tenant-group-sessions-panel') as HTMLElement;
 
-    expect(tabButtons).toEqual(['Sessions', 'Enrolled Students', 'Lessons', 'Library', 'Overview']);
+    expect(tabButtons).toEqual(['Sessions', 'Enrolled Students', 'Lessons', 'Library', 'Exams', 'Overview']);
+    expect(tabButtons.indexOf('Exams')).toBe(tabButtons.indexOf('Overview') - 1);
     expect(tabs.compareDocumentPosition(sessionsPanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(fixture.componentInstance.activeTab()).toBe('sessions');
+  });
+
+  it('loads and renders published exams from the exams tab', async () => {
+    groupDetailsData.loadGroupExams.mockReturnValue(of([
+      {
+        id: 'assignment-1',
+        groupId: 'group-123',
+        examId: 'exam-1',
+        title: 'Physics Midterm',
+        status: 'PUBLISHED',
+        date: '2026-07-01',
+        startTime: '09:30',
+        duration: 60,
+        questionCount: 24,
+        instructions: 'Read carefully',
+        updatedAt: '2026-06-27T08:45:00Z',
+        settings: {
+          showResultsImmediately: false,
+          allowRetakes: false,
+        },
+      },
+    ]));
+
+    fixture.componentInstance.selectTab('exams');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(groupDetailsData.loadGroupExams).toHaveBeenCalledWith('group-123');
+    expect(fixture.nativeElement.querySelector('#tenant-group-exams-panel')).toBeTruthy();
+    expect(text).toContain('Physics Midterm');
+    expect(text).toContain('2026-07-01 at 09:30');
+    expect(text).toContain('60 min');
+    expect(text).toContain('24 questions');
+    expect(text).not.toContain('Shuffle');
+    expect(fixture.nativeElement.querySelector('button[title="Edit exam"]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('button[title="Delete exam"]')).toBeTruthy();
+  });
+
+  it('edits and deletes exams from row action icons', async () => {
+    groupDetailsData.loadGroupExams.mockReturnValue(of([
+      {
+        id: 'assignment-1',
+        groupId: 'group-123',
+        examId: 'exam-1',
+        title: 'Physics Midterm',
+        status: 'PUBLISHED',
+        date: '2026-07-01',
+        startTime: '09:30',
+        duration: 60,
+        questionCount: 24,
+        instructions: 'Read carefully',
+        updatedAt: '2026-06-27T08:45:00Z',
+        settings: {
+          showResultsImmediately: false,
+          allowRetakes: false,
+        },
+      },
+      {
+        id: 'assignment-2',
+        groupId: 'group-123',
+        examId: 'exam-2',
+        title: 'Chemistry Final',
+        status: 'PUBLISHED',
+        date: '2026-07-02',
+        startTime: null,
+        duration: 45,
+        questionCount: 12,
+        instructions: null,
+        updatedAt: null,
+        settings: {
+          showResultsImmediately: true,
+          allowRetakes: true,
+        },
+      },
+    ]));
+
+    fixture.componentInstance.selectTab('exams');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const editButton = fixture.nativeElement.querySelector('button[title="Edit exam"]') as HTMLButtonElement;
+    editButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['/tenant/groups', 'group-123', 'exam']);
+    expect(fixture.nativeElement.textContent).toContain('Physics Midterm');
+
+    const deleteButton = Array.from(
+      fixture.nativeElement.querySelectorAll('button[title="Delete exam"]'),
+    )[1] as HTMLButtonElement;
+    deleteButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(groupDetailsData.deleteGroupExam).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Delete Chemistry Final from this group?');
+
+    const confirmDeleteButton = Array.from(
+      fixture.nativeElement.querySelectorAll('button'),
+    ).find((button) => (button as HTMLButtonElement).textContent?.trim() === 'Delete exam') as HTMLButtonElement;
+    confirmDeleteButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(groupDetailsData.deleteGroupExam).toHaveBeenCalledWith('group-123', 'assignment-2');
+    expect(fixture.nativeElement.textContent).toContain('Physics Midterm');
+    expect(fixture.nativeElement.textContent).not.toContain('Chemistry Final');
+    expect(fixture.nativeElement.textContent).not.toContain('Delete Chemistry Final from this group?');
+  });
+
+  it('shows exams empty and recoverable error states', async () => {
+    fixture.componentInstance.selectTab('exams');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('No published exams are assigned to this group yet.');
+
+    groupDetailsData.loadGroupExams.mockReset();
+    groupDetailsData.loadGroupExams.mockReturnValue(throwError(() => new Error('Unable to load exams')));
+    fixture.componentInstance.groupExamsLoaded.set(false);
+    fixture.componentInstance.selectTab('exams');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Unable to load exams');
+    expect(fixture.nativeElement.textContent).toContain('Retry');
+  });
+
+  it('filters and paginates exams in the exams tab', async () => {
+    groupDetailsData.loadGroupExams.mockReturnValue(of(
+      Array.from({ length: 6 }, (_, index) => ({
+        id: `assignment-${index + 1}`,
+        groupId: 'group-123',
+        examId: `exam-${index + 1}`,
+        title: index === 5 ? 'Chemistry Final' : `Physics Exam ${index + 1}`,
+        status: 'PUBLISHED',
+        date: `2026-07-${String(index + 1).padStart(2, '0')}`,
+        startTime: null,
+        duration: 60,
+        questionCount: index + 1,
+        instructions: null,
+        updatedAt: null,
+        settings: {
+          showResultsImmediately: false,
+          allowRetakes: false,
+        },
+      })),
+    ));
+
+    fixture.componentInstance.selectTab('exams');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Page 1 of 2');
+    expect(fixture.nativeElement.textContent).toContain('Physics Exam 5');
+    expect(fixture.nativeElement.textContent).not.toContain('Chemistry Final');
+
+    const nextButton = fixture.nativeElement.querySelector('button[title="Next exam page"]') as HTMLButtonElement;
+    nextButton.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Chemistry Final');
+
+    const searchInput = fixture.nativeElement.querySelector('#tenant-group-exams-panel input[type="search"]') as HTMLInputElement;
+    searchInput.value = 'chemistry';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('1 of 6 exams');
+    expect(fixture.nativeElement.textContent).toContain('Chemistry Final');
+    expect(fixture.nativeElement.textContent).not.toContain('Physics Exam 1');
+  });
+
+  it('keeps all group detail tabs selectable after adding exams', async () => {
+    for (const tab of ['sessions', 'enrolledStudents', 'lessons', 'library', 'exams', 'overview'] as const) {
+      fixture.componentInstance.selectTab(tab);
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(fixture.componentInstance.activeTab()).toBe(tab);
+    }
+  });
+
+  it('resets exams rows, search text, and pagination when the loaded group changes', async () => {
+    groupDetailsData.loadGroupExams.mockReturnValue(of([
+      {
+        id: 'assignment-1',
+        groupId: 'group-123',
+        examId: 'exam-1',
+        title: 'Physics Midterm',
+        status: 'PUBLISHED',
+        date: '2026-07-01',
+        startTime: null,
+        duration: 60,
+        questionCount: 24,
+        instructions: null,
+        updatedAt: null,
+        settings: {
+          showResultsImmediately: false,
+          allowRetakes: false,
+        },
+      },
+    ]));
+    fixture.componentInstance.selectTab('exams');
+    await fixture.whenStable();
+    fixture.detectChanges();
+    fixture.componentInstance.setExamSearchTerm('physics');
+    fixture.componentInstance.examPageIndex.set(1);
+    fixture.componentInstance.selectTab('sessions');
+
+    group.set({ ...initialGroup, id: 'group-456', name: 'Chemistry G12-A' });
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.groupExams()).toEqual([]);
+    expect(fixture.componentInstance.examSearchTerm()).toBe('');
+    expect(fixture.componentInstance.examPageIndex()).toBe(0);
+    expect(fixture.componentInstance.groupExamsLoaded()).toBe(false);
   });
 
   it('switches to the library tab and renders the library panel', async () => {
@@ -1039,12 +1264,13 @@ describe('TenantGroupDetailsComponent', () => {
         },
       ],
     });
-    subjectsData.listCurriculumMaterialFolders.mockResolvedValue([
-      { id: 'folder-1', name: 'Unit material', description: null, fileTypes: ['pdf'], filesCount: 1, createdAt: '', updatedAt: '' },
-    ]);
-    subjectsData.listCurriculumMaterialFiles.mockResolvedValue([
-      { id: 'file-1', url: '/uploads/intro.pdf', fileName: 'intro.pdf', originalName: 'intro.pdf', contentType: 'application/pdf', sizeBytes: 2048, createdAt: '', updatedAt: '' },
-    ]);
+    groupDetailsData.loadGroupLibraryFolders.mockReturnValue(of([
+      { id: 'folder-1', name: 'Group library material', description: null, fileTypes: ['pdf'], filesCount: 1, createdAt: '', updatedAt: '' },
+      { id: 'folder-2', name: 'External Books', description: null, fileTypes: ['pdf'], filesCount: 1, createdAt: '', updatedAt: '' },
+    ]));
+    groupDetailsData.loadGroupLibraryFiles.mockImplementation((_groupId, folderId) => of(folderId === 'folder-2'
+      ? [{ id: 'file-2', url: '/uploads/system.pdf', fileName: 'system.pdf', originalName: 'system.pdf', contentType: 'application/pdf', sizeBytes: 4096, createdAt: '', updatedAt: '' }]
+      : [{ id: 'file-1', url: '/uploads/intro.pdf', fileName: 'intro.pdf', originalName: 'intro.pdf', contentType: 'application/pdf', sizeBytes: 2048, createdAt: '', updatedAt: '' }]));
 
     fixture.componentInstance.selectTab('lessons');
     await fixture.whenStable();
@@ -1058,9 +1284,22 @@ describe('TenantGroupDetailsComponent', () => {
 
     expect(navigateSpy).not.toHaveBeenCalled();
     expect(groupDetailsData.loadGroupLessonContent).toHaveBeenCalledWith('group-123', 'group-lesson-1');
-    expect(subjectsData.listCurriculumMaterialFolders).toHaveBeenCalledWith('subject-1', unitId, 'BASIC_EDUCATION');
+    expect(groupDetailsData.loadGroupLibraryFolders).toHaveBeenCalledWith('group-123');
+    expect(groupDetailsData.loadGroupLibraryFiles).toHaveBeenCalledWith('group-123', 'folder-1');
+    expect(groupDetailsData.loadGroupLibraryFiles).toHaveBeenCalledWith('group-123', 'folder-2');
+    expect(groupDetailsData.loadGroupLibraryNotes).toHaveBeenCalledWith('group-123', 'folder-1');
+    expect(groupDetailsData.loadGroupLibraryLinks).toHaveBeenCalledWith('group-123', 'folder-1');
+    expect(subjectsData.listCurriculumMaterialFolders).not.toHaveBeenCalled();
     expect(fixture.nativeElement.textContent).toContain('Insert content');
     expect(fixture.nativeElement.textContent).toContain('intro.pdf');
+
+    const folderFilter = fixture.nativeElement.querySelector('.tenant-group-insert-content-folder-filter select') as HTMLSelectElement;
+    folderFilter.value = 'folder-2';
+    folderFilter.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).not.toContain('intro.pdf');
+    expect(fixture.nativeElement.textContent).toContain('system.pdf');
 
     const materialOption = fixture.nativeElement.querySelector('.tenant-group-insert-content-option') as HTMLButtonElement;
     materialOption.click();
@@ -1073,11 +1312,12 @@ describe('TenantGroupDetailsComponent', () => {
     fixture.detectChanges();
 
     expect(groupDetailsData.addGroupLessonContent).toHaveBeenCalledWith('group-123', 'group-lesson-1', {
-      curriculumNodeId: unitId,
-      folderId: 'folder-1',
+      curriculumNodeId: lessonId,
+      folderId: 'folder-2',
       contentType: 'FILE',
-      contentId: 'file-1',
+      contentId: 'file-2',
     });
+    expect(navigateSpy).toHaveBeenCalledWith(['/tenant/groups', 'group-123', 'lessons', 'group-lesson-1']);
   });
 
   it('renders curriculum lessons in a searchable paginated table', async () => {
@@ -1097,6 +1337,36 @@ describe('TenantGroupDetailsComponent', () => {
         description: null,
       },
     ]));
+    subjectsData.getSubjectCurriculumForCategory.mockResolvedValue({
+      id: 'curriculum',
+      label: 'Physics Curriculum',
+      icon: 'folder',
+      description: null,
+      children: [
+        {
+          id: 'unit-1',
+          label: 'Unit one',
+          icon: 'folder',
+          description: null,
+          children: [
+            {
+              id: 'lesson-1',
+              label: 'Lesson one',
+              icon: 'description',
+              description: 'Intro lesson',
+              children: [],
+            },
+            {
+              id: 'lesson-2',
+              label: 'Lesson two',
+              icon: 'description',
+              description: null,
+              children: [],
+            },
+          ],
+        },
+      ],
+    });
 
     fixture.componentInstance.selectTab('lessons');
     await fixture.whenStable();
@@ -1124,6 +1394,78 @@ describe('TenantGroupDetailsComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('No lessons match the current search or filter.');
+  });
+
+  it('hides persisted curriculum parent nodes from the lessons table', async () => {
+    groupDetailsData.loadGroupLessons.mockReturnValue(of([
+      {
+        id: 'group-unit-2',
+        curriculumNodeId: 'unit-2',
+        title: 'Unit 2',
+        path: 'Physics Curriculum',
+        description: null,
+      },
+      {
+        id: 'group-lesson-1',
+        curriculumNodeId: 'lesson-1',
+        title: 'Lesson one',
+        path: 'Unit one',
+        description: 'Intro lesson',
+      },
+    ]));
+    groupDetailsData.addGroupLesson.mockImplementation((_groupId: string, nodeId: string) => of({
+      id: `group-${nodeId}`,
+      curriculumNodeId: nodeId,
+      title: nodeId === 'lesson-2' ? 'Lesson two' : 'Lesson one',
+      path: nodeId === 'lesson-2' ? 'Unit 2' : 'Unit one',
+      description: null,
+    }));
+    subjectsData.getSubjectCurriculumForCategory.mockResolvedValue({
+      id: 'curriculum',
+      label: 'Physics Curriculum',
+      icon: 'folder',
+      description: null,
+      children: [
+        {
+          id: 'unit-1',
+          label: 'Unit one',
+          icon: 'folder',
+          description: null,
+          children: [
+            {
+              id: 'lesson-1',
+              label: 'Lesson one',
+              icon: 'description',
+              description: 'Intro lesson',
+              children: [],
+            },
+          ],
+        },
+        {
+          id: 'unit-2',
+          label: 'Unit 2',
+          icon: 'folder',
+          description: null,
+          children: [
+            {
+              id: 'lesson-2',
+              label: 'Lesson two',
+              icon: 'description',
+              description: null,
+              children: [],
+            },
+          ],
+        },
+      ],
+    });
+
+    fixture.componentInstance.selectTab('lessons');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const rows = Array.from(fixture.nativeElement.querySelectorAll('#tenant-group-lessons-panel tbody tr')) as HTMLElement[];
+    const rowTitles = rows.map((row) => row.querySelector('strong')?.textContent?.trim());
+    expect(rowTitles).toEqual(['Lesson one', 'Lesson two']);
   });
 
   it('keeps the lesson picker available after auto syncing curriculum lessons', async () => {

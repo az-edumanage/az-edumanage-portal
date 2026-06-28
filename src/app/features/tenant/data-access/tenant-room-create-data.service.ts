@@ -27,6 +27,22 @@ export class TenantRoomCreateDataService {
     this.availableEquipment.set(equipmentFacilities.map((equipment) => equipment.name));
   }
 
+  async createRoomType(name: string): Promise<string> {
+    const created = await this.roomTypeSettings.createRoomType({
+      name,
+      description: null,
+    });
+    this.availableRoomTypes.update((types) => {
+      const nextTypes = [...types, created.name];
+      return Array.from(new Set(nextTypes.map((type) => type.trim()).filter(Boolean)));
+    });
+    return created.name;
+  }
+
+  toUserMessage(error: unknown): string {
+    return this.roomTypeSettings.toUserMessage(error);
+  }
+
   async getRoomForEdit(roomId: string): Promise<TenantRoomCreatePayload> {
     await this.authApi.ensureLoggedIn();
     const room = await firstValueFrom(this.http.get<TenantRoomCreatePayload>(`${this.roomsUrl}/${roomId}`));

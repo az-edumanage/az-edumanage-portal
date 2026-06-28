@@ -13,6 +13,7 @@ export class OwnerProvisioningListFacade {
   readonly filter = this.store.filter;
   readonly filteredJobs = this.store.filteredJobs;
   readonly statusOptions = this.store.statusOptions;
+  readonly migrationStatuses = this.provisioningData.migrationStatuses;
 
   setFilter(value: 'All' | ProvisioningStatus): void {
     this.filter.set(value);
@@ -20,6 +21,10 @@ export class OwnerProvisioningListFacade {
 
   async refresh(): Promise<void> {
     await this.provisioningData.refresh();
+  }
+
+  async runTenantMigrations(): Promise<void> {
+    await this.provisioningData.runTenantMigrations();
   }
 
   getStatusColor(status: string): string {

@@ -42,7 +42,7 @@ describe('OwnerTenantCreateFacade', () => {
       subscriptionTemplates: signal<TenantPlanOption[]>([]),
       planLoadError: signal<string | null>(null),
       tenantTypes: ['Center', 'Teacher'],
-      domains: ['.remix.com'],
+      domains: ['.az-edumanage.com'],
       cityDropdownOptions: signal([{ value: '10', label: 'Cairo' }]),
       countryDropdownOptions: signal([{ value: '1', label: 'Egypt' }, { value: '2', label: 'Saudi Arabia' }]),
       loadBootstrapData: vi.fn().mockResolvedValue(undefined),
@@ -111,7 +111,7 @@ describe('OwnerTenantCreateFacade', () => {
     expect(facade.tenantForm.get('centerName')?.value).toBeNull();
     expect(facade.tenantForm.get('tenantUsername')?.value).toBe('');
     expect(facade.tenantForm.get('temporaryPassword')?.value).toBe('');
-    expect(facade.tenantForm.get('domain')?.value).toBe('.remix.com');
+    expect(facade.tenantForm.get('domain')?.value).toBe('.az-edumanage.com');
     expect(facade.tenantForm.get('countryId')?.value).toBeNull();
     expect(facade.tenantForm.get('cityId')?.value).toBeNull();
     expect(dataService.clearCities).toHaveBeenCalled();
@@ -201,7 +201,7 @@ describe('OwnerTenantCreateFacade', () => {
       tenantUsername: 'abc-admin',
       temporaryPassword: 'TempPass123!',
       subdomain: 'abc-center',
-      domain: '.remix.com',
+      domain: '.az-edumanage.com',
       contactName: 'Tenant Admin',
       contactEmail: 'admin@example.com',
       contactPhone: '+1555012345',

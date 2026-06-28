@@ -30,7 +30,8 @@ describe('TenantStudentsDataService', () => {
           id: 'student-1',
           name: 'Ahmed Ali',
           email: 'ahmed@example.com',
-          grade: 'Basic Education',
+          grade: 'Grade 10',
+          stage: 'Primary Stage',
           status: 'Active',
           enrollmentDate: 'Jun 2026',
         },
@@ -45,7 +46,67 @@ describe('TenantStudentsDataService', () => {
         fullName: 'Ahmed Ali',
         email: 'ahmed@example.com',
         educationCategory: 'BASIC_EDUCATION',
+        stageName: 'Primary Stage',
+        gradeName: 'Grade 10',
         createdAt: '2026-06-01T10:00:00Z',
+      },
+    ]);
+  });
+
+  it('resolves assigned grade and stage names from ids when the student response only has education category', () => {
+    service.loadStudents().subscribe((students) => {
+      expect(students[0]).toEqual(expect.objectContaining({
+        grade: 'Grade 10',
+        gradeId: 'grade-1',
+        stage: 'Primary Stage',
+        stageId: 'stage-1',
+      }));
+    });
+
+    const studentsRequest = httpTesting.expectOne((req) => req.url.endsWith('/tenant/students'));
+    studentsRequest.flush([
+      {
+        id: 'student-1',
+        fullName: 'Ahmed Ali',
+        email: 'ahmed@example.com',
+        educationCategory: 'BASIC_EDUCATION',
+        stageIds: ['stage-1'],
+        gradeIds: ['grade-1'],
+        createdAt: '2026-06-01T10:00:00Z',
+      },
+    ]);
+
+    httpTesting.expectOne((req) => req.url.endsWith('/tenant/platform-settings/grades')).flush([
+      {
+        id: 'grade-1',
+        name: 'Grade 10',
+        description: null,
+        level: '10',
+        stageId: 'stage-1',
+        countryId: 'country-1',
+        country: 'Egypt',
+        countryCode: 'EG',
+        studentCount: 1,
+        createdAt: '2026-06-01T10:00:00Z',
+        updatedAt: '2026-06-01T10:00:00Z',
+        groups: [],
+      },
+    ]);
+    httpTesting.expectOne((req) => req.url.endsWith('/tenant/platform-settings/stages')).flush([
+      {
+        id: 'stage-1',
+        name: 'Primary Stage',
+        code: null,
+        order: 1,
+        status: 'Active',
+        countryId: 'country-1',
+        country: 'Egypt',
+        countryCode: 'EG',
+        gradeCount: 1,
+        classCount: 0,
+        description: '',
+        createdAt: '2026-06-01T10:00:00Z',
+        updatedAt: '2026-06-01T10:00:00Z',
       },
     ]);
   });
@@ -321,6 +382,24 @@ describe('TenantStudentsDataService', () => {
         email: 'missing@example.com',
         educationCategory: null,
         createdAt: null,
+      },
+    ]);
+  });
+
+  it('uses assigned stage when grade name is unavailable', () => {
+    service.loadStudents().subscribe((students) => {
+      expect(students[0].grade).toBe('Primary Stage');
+    });
+
+    const request = httpTesting.expectOne((req) => req.url.endsWith('/tenant/students'));
+    request.flush([
+      {
+        id: 'student-4',
+        fullName: 'Stage Only',
+        email: 'stage@example.com',
+        educationCategory: 'BASIC_EDUCATION',
+        stage_name: 'Primary Stage',
+        createdAt: '2026-06-01T10:00:00Z',
       },
     ]);
   });

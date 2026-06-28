@@ -9,15 +9,36 @@ import { AuthTokenService } from '../../auth/auth-token.service';
 import { AuthIdentityService } from '../../auth/auth-identity.service';
 import { AuthApiService } from '../../auth/auth-api.service';
 import { TenantImpersonationService } from '../../auth/tenant-impersonation.service';
+import { TenantHostContextService } from '../../auth/tenant-host-context.service';
 
 const educationRoutes = ['/tenant/educational-stages', '/tenant/grades', '/tenant/subjects'];
 const universityEducationRoutes = ['/tenant/universities', '/tenant/colleges', '/tenant/university-subjects'];
 
 describe('SidebarComponent', () => {
   let currentRole: ReturnType<typeof signal<WorkspaceRole>>;
+  let grantedPermissions: Set<string>;
+  let isTenantHost: ReturnType<typeof signal<boolean>>;
 
   beforeEach(() => {
     currentRole = signal<WorkspaceRole>('tenant');
+    isTenantHost = signal(false);
+    grantedPermissions = new Set([
+      'tenant.students.view',
+      'tenant.teachers.view',
+      'tenant.groups.view',
+      'tenant.rooms.view',
+      'tenant.basicEducation.view',
+      'tenant.universityEducation.view',
+      'tenant.attendance.view',
+      'tenant.exams.manage',
+      'tenant.grades.view',
+      'tenant.questionBank.manage',
+      'tenant.billing.view',
+      'tenant.reports.view',
+      'tenant.settings.manage',
+      'tenant.users.view',
+      'tenant.roles.view',
+    ]);
 
     TestBed.configureTestingModule({
       imports: [SidebarComponent],
@@ -35,9 +56,18 @@ describe('SidebarComponent', () => {
         },
         { provide: I18nService, useValue: { language: signal<'en' | 'ar'>('en'), t: (key: string) => key } },
         { provide: AuthTokenService, useValue: { clearToken: vi.fn() } },
-        { provide: AuthIdentityService, useValue: { username: signal('tenant'), primaryRole: signal('WEB_USER'), clearIdentity: vi.fn() } },
+        {
+          provide: AuthIdentityService,
+          useValue: {
+            username: signal('tenant'),
+            primaryRole: signal('WEB_USER'),
+            clearIdentity: vi.fn(),
+            hasPermission: (permission: string) => grantedPermissions.has(permission),
+          },
+        },
         { provide: AuthApiService, useValue: { logout: vi.fn().mockResolvedValue(undefined) } },
         { provide: TenantImpersonationService, useValue: { clear: vi.fn() } },
+        { provide: TenantHostContextService, useValue: { isTenantHost } },
       ],
     });
   });
@@ -63,13 +93,46 @@ describe('SidebarComponent', () => {
     expect(basicEducation?.children?.map((child) => child.route)).toEqual(educationRoutes);
     expect(mainItems.findIndex((item) => item.labelKey === 'sidebar.item.universityEducation'))
       .toBe(mainItems.findIndex((item) => item.labelKey === 'sidebar.item.basicEducation') + 1);
-    expect(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.questionsBank'))
+    expect(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.grades'))
       .toBe(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.examsGrades') + 1);
+    expect(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.questionsBank'))
+      .toBe(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.grades') + 1);
+    expect(academicItems.find((item) => item.labelKey === 'sidebar.item.examsGrades')?.route).toBe('/tenant/exams');
+    expect(academicItems.find((item) => item.labelKey === 'sidebar.item.grades')?.route).toBe('/tenant/grades');
     expect(academicItems.find((item) => item.labelKey === 'sidebar.item.questionsBank')?.route).toBe('/tenant/questions-bank');
     expect(universityEducation?.route).toBeUndefined();
     expect(universityEducation?.children?.map((child) => child.route)).toEqual(universityEducationRoutes);
-    educationRoutes.forEach((route) => expect(routes).not.toContain(route));
+    educationRoutes.filter((route) => route !== '/tenant/grades').forEach((route) => expect(routes).not.toContain(route));
     universityEducationRoutes.forEach((route) => expect(routes).not.toContain(route));
+  });
+
+  it('uses /teacher/exams for the teacher exams menu item', () => {
+    currentRole.set('teacher');
+
+    const fixture = TestBed.createComponent(SidebarComponent);
+    const sections = fixture.componentInstance.menuSections();
+    const examsItem = sections
+      .flatMap((section) => section.items)
+      .find((item) => item.labelKey === 'sidebar.item.examsGrades');
+
+    expect(examsItem?.route).toBe('/teacher/exams');
+  });
+
+  it.each([
+    ['tenant.rooms.view', '/tenant/rooms'],
+    ['tenant.basicEducation.view', '/tenant/educational-stages'],
+    ['tenant.grades.view', '/tenant/grades'],
+    ['tenant.universityEducation.view', '/tenant/universities'],
+    ['tenant.attendance.view', '/tenant/attendance'],
+    ['tenant.reports.view', '/tenant/reports'],
+    ['tenant.settings.manage', '/tenant/settings'],
+  ])('shows %s sidebar target when the matching permission is granted', (permission, route) => {
+    grantedPermissions = new Set([permission]);
+
+    const fixture = TestBed.createComponent(SidebarComponent);
+    const routes = allRoutes(fixture.componentInstance.menuSections());
+
+    expect(routes).toContain(route);
   });
 
   it('toggles the Basic Education accordion without navigation', () => {
@@ -185,7 +248,18 @@ describe('SidebarComponent', () => {
     expect(fixture.componentInstance.menuSections()).toEqual([]);
   });
 
-  it('logs out to the current route workspace login when available', async () => {
+  it('logs out to the tenant subdomain base URL', async () => {
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    isTenantHost.set(true);
+    const fixture = TestBed.createComponent(SidebarComponent);
+
+    await fixture.componentInstance.logout();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/']);
+  });
+
+  it('logs out to the current route workspace login on platform hosts', async () => {
     const router = TestBed.inject(Router);
     vi.spyOn(router, 'navigate').mockResolvedValue(true);
     const fixture = TestBed.createComponent(SidebarComponent);
@@ -195,3 +269,10 @@ describe('SidebarComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/tenant/login']);
   });
 });
+
+function allRoutes(sections: ReturnType<SidebarComponent['menuSections']>): string[] {
+  return sections.flatMap((section) => section.items.flatMap((item) => [
+    ...(item.route ? [item.route] : []),
+    ...(item.children?.flatMap((child) => child.route ? [child.route] : []) ?? []),
+  ]));
+}

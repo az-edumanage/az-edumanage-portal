@@ -9,9 +9,11 @@ describe('TenantEducationalStagesStore', () => {
     listStages: ReturnType<typeof vi.fn>;
     listCountryOptions: ReturnType<typeof vi.fn>;
     createStage: ReturnType<typeof vi.fn>;
+    createCountryOption: ReturnType<typeof vi.fn>;
     updateStage: ReturnType<typeof vi.fn>;
     deleteStage: ReturnType<typeof vi.fn>;
     toUserMessage: ReturnType<typeof vi.fn>;
+    toCountryUserMessage: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
@@ -22,9 +24,11 @@ describe('TenantEducationalStagesStore', () => {
         { value: 'country-sa', label: 'Saudi Arabia', code: null },
       ]),
       createStage: vi.fn().mockResolvedValue(stage({ id: 'stage-new', name: 'Advanced Diploma', countryId: 'country-sa', country: 'Saudi Arabia' })),
+      createCountryOption: vi.fn().mockResolvedValue({ value: 'country-ma', label: 'Morocco', code: null }),
       updateStage: vi.fn().mockResolvedValue(stage({ id: 'stage-primary', name: 'Primary Updated', countryId: 'country-sa', country: 'Saudi Arabia' })),
       deleteStage: vi.fn().mockResolvedValue(undefined),
       toUserMessage: vi.fn().mockReturnValue('Backend validation failed'),
+      toCountryUserMessage: vi.fn().mockReturnValue('Country validation failed'),
     };
 
     TestBed.configureTestingModule({
@@ -80,6 +84,25 @@ describe('TenantEducationalStagesStore', () => {
     expect(added).toBeTruthy();
     expect(added?.country).toBe('Saudi Arabia');
     expect(dataService.createStage).toHaveBeenCalledWith({ name: 'Advanced Diploma', description: 'Real stage', countryId: 'country-sa' });
+  });
+
+  it('creates a country option and adds it to the country list', async () => {
+    await store.loadCountryOptions();
+
+    const created = await store.createCountryOption('Morocco');
+
+    expect(created).toEqual({ value: 'country-ma', label: 'Morocco', code: null });
+    expect(store.countryOptions().map((country) => country.label)).toEqual(['Egypt', 'Morocco', 'Saudi Arabia']);
+    expect(dataService.createCountryOption).toHaveBeenCalledWith('Morocco');
+  });
+
+  it('surfaces country creation errors', async () => {
+    dataService.createCountryOption.mockRejectedValueOnce(new Error('Duplicate'));
+
+    const created = await store.createCountryOption('Egypt');
+
+    expect(created).toBeNull();
+    expect(store.countryCreateError()).toBe('Country validation failed');
   });
 
   it('keeps modal open signal path on save failure', async () => {

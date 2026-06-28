@@ -189,6 +189,19 @@
         <button
           type="button"
           class="tenant-group-detail-tab"
+          [class.tenant-group-detail-tab--active]="activeTab() === 'exams'"
+          role="tab"
+          [attr.aria-selected]="activeTab() === 'exams'"
+          aria-controls="tenant-group-exams-panel"
+          id="tenant-group-exams-tab"
+          (click)="selectTab('exams')"
+        >
+          <mat-icon>assignment</mat-icon>
+          <span>{{ tabLabel('exams') }}</span>
+        </button>
+        <button
+          type="button"
+          class="tenant-group-detail-tab"
           [class.tenant-group-detail-tab--active]="activeTab() === 'overview'"
           role="tab"
           [attr.aria-selected]="activeTab() === 'overview'"
@@ -376,7 +389,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
                     <h3 class="font-bold text-slate-900 dark:text-white">Lessons</h3>
-                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-500">{{ groupLessons().length }} loaded from curriculum</p>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-500">{{ displayableGroupLessons().length }} loaded from curriculum</p>
                   </div>
                   <button type="button" class="tenant-group-lessons-add" (click)="openLessonPicker()" [disabled]="lessonsLoading() || lessonsSyncing()">
                     <mat-icon>add</mat-icon>
@@ -449,7 +462,7 @@
                     <mat-icon>error</mat-icon>
                     <p>{{ lessonsError() }}</p>
                   </div>
-                } @else if (groupLessons().length) {
+                } @else if (displayableGroupLessons().length) {
                   <div class="tenant-group-lesson-material-toolbar">
                     <label class="tenant-group-lesson-material-search">
                       <mat-icon>search</mat-icon>
@@ -754,22 +767,22 @@
                   </div>
                 </div>
               } @else if (libraryFolders().length) {
-                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 p-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-4 p-5">
                   @for (libraryFolder of libraryFolders(); track libraryFolder.folder.id) {
-                    <article class="tenant-group-library-folder-card grid min-h-44 grid-rows-[auto_auto_1fr] gap-3 rounded-xl border border-slate-200 bg-white p-4 text-start transition hover:border-indigo-200 dark:border-slate-800 dark:bg-slate-900">
+                    <article class="tenant-group-library-folder-card rounded-xl border border-slate-200 bg-white p-4 text-start transition hover:border-indigo-200 dark:border-slate-800 dark:bg-slate-900">
                       <div class="flex items-start justify-between gap-3">
                         <button
                           type="button"
-                          class="flex min-w-0 items-center gap-2.5 rounded-xl text-start outline-none transition focus-visible:ring-2 focus-visible:ring-indigo-400"
+                          class="flex min-w-0 flex-1 items-center gap-3 rounded-xl text-start outline-none transition focus-visible:ring-2 focus-visible:ring-indigo-400"
                           [attr.aria-label]="'Open ' + libraryFolder.folder.name"
                           (click)="openLibraryFolder(libraryFolder)"
                         >
-                          <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300">
+                          <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300">
                             <mat-icon>folder</mat-icon>
                           </span>
                           <span class="min-w-0">
-                            <strong class="block truncate text-sm font-extrabold text-slate-900 dark:text-white">{{ libraryFolder.folder.name }}</strong>
-                            <small class="block text-xs font-extrabold text-slate-500 dark:text-slate-400">{{ libraryFolderFilesLabel(libraryFolder.folder) }}</small>
+                            <strong class="block truncate text-sm font-extrabold leading-5 text-slate-900 dark:text-white">{{ libraryFolder.folder.name }}</strong>
+                            <small class="block text-xs font-bold leading-5 text-slate-500 dark:text-slate-400">{{ libraryFolderFilesLabel(libraryFolder.folder) }}</small>
                           </span>
                         </button>
                         <div class="inline-flex shrink-0 items-center gap-1" aria-label="Library folder actions">
@@ -797,16 +810,18 @@
                           </button>
                         </div>
                       </div>
-                      <div class="grid min-h-20 grid-cols-2 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/40" aria-label="Folder file type preview">
-                        @for (slot of libraryFolderPreviewSlots(libraryFolder.folder); track $index) {
-                          <span
-                            class="inline-flex min-h-10 items-center justify-center border-slate-200 text-slate-400 odd:border-r [&:nth-child(-n+2)]:border-b dark:border-slate-800"
-                            [class.opacity-50]="slot.empty"
-                          >
-                            <mat-icon class="text-lg">{{ materialFolderIcon(slot.type) }}</mat-icon>
-                          </span>
-                        }
-                      </div>
+                      <button
+                        type="button"
+                        class="mt-4 flex w-full items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-start text-xs font-bold text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-300 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/40"
+                        [attr.aria-label]="'Open ' + libraryFolder.folder.name + ' contents'"
+                        (click)="openLibraryFolder(libraryFolder)"
+                      >
+                        <span class="inline-flex min-w-0 items-center gap-2">
+                          <mat-icon class="text-base text-indigo-600 dark:text-indigo-300">{{ materialFolderIcon(libraryFolder.folder.fileTypes[0] || 'file') }}</mat-icon>
+                          <span class="truncate">{{ libraryFolderFilesLabel(libraryFolder.folder) }}</span>
+                        </span>
+                        <mat-icon class="text-base text-slate-400">chevron_right</mat-icon>
+                      </button>
                     </article>
                   }
                 </div>
@@ -817,6 +832,176 @@
                 </div>
               }
             </section>
+          } @else if (activeTab() === 'exams') {
+            <section
+              class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden"
+              id="tenant-group-exams-panel"
+              role="tabpanel"
+              aria-labelledby="tenant-group-exams-tab"
+            >
+              <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col gap-4">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div>
+                    <h3 class="font-bold text-slate-900 dark:text-white">Exams</h3>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-500">{{ examCountLabel() }}</p>
+                  </div>
+                  @if (groupExamsError()) {
+                    <button type="button" (click)="retryGroupExams()" class="tenant-group-sessions-calendar">
+                      <mat-icon>refresh</mat-icon>
+                      Retry
+                    </button>
+                  }
+                </div>
+                <div class="tenant-group-sessions-toolbar" aria-label="Exam tools">
+                  <label class="tenant-group-sessions-search">
+                    <mat-icon>search</mat-icon>
+                    <input
+                      type="search"
+                      [ngModel]="examSearchTerm()"
+                      (ngModelChange)="setExamSearchTerm($event)"
+                      placeholder="Search exams by title, date, status or duration..."
+                      aria-label="Search exams"
+                    />
+                  </label>
+                  @if (examSearchTerm()) {
+                    <button type="button" class="tenant-group-exams-clear" (click)="clearExamSearch()">
+                      <mat-icon>close</mat-icon>
+                      Clear
+                    </button>
+                  }
+                </div>
+                @if (groupExamActionError()) {
+                  <p class="tenant-group-exams-action-error" role="alert">{{ groupExamActionError() }}</p>
+                }
+              </div>
+
+              @if (groupExamsLoading()) {
+                <div class="tenant-group-exams-skeleton" aria-label="Loading exams">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              } @else if (groupExamsError()) {
+                <div class="tenant-group-sessions-empty tenant-group-exams-state--error">
+                  <mat-icon>error_outline</mat-icon>
+                  <p>{{ groupExamsError() }}</p>
+                  <button type="button" (click)="retryGroupExams()">Retry</button>
+                </div>
+              } @else if (filteredGroupExams().length) {
+                <div class="tenant-group-exams-list">
+                  @for (exam of pagedGroupExams(); track exam.id) {
+                    <article class="tenant-group-exam-row">
+                      <div class="tenant-group-session-icon">
+                        <mat-icon>assignment</mat-icon>
+                      </div>
+                      <div class="tenant-group-exam-main">
+                        <span>{{ exam.status }}</span>
+                        <p>{{ exam.title }}</p>
+                        <small>{{ exam.instructions || 'No instructions' }}</small>
+                      </div>
+                      <div class="tenant-group-exam-cell">
+                        <span>Date and time</span>
+                        <strong>{{ examTimeLabel(exam) }}</strong>
+                      </div>
+                      <div class="tenant-group-exam-cell">
+                        <span>Duration</span>
+                        <strong>{{ examDurationLabel(exam) }}</strong>
+                      </div>
+                      <div class="tenant-group-exam-cell">
+                        <span>Questions</span>
+                        <strong>{{ examQuestionCountLabel(exam) }}</strong>
+                      </div>
+                      <div class="tenant-group-exam-cell tenant-group-exam-cell--settings">
+                        <span>Settings</span>
+                        <strong>{{ examSettingsLabel(exam) }}</strong>
+                      </div>
+                      <div class="tenant-group-exam-actions" aria-label="Exam row actions">
+                        <button
+                          type="button"
+                          class="tenant-group-exam-action tenant-group-exam-action--primary"
+                          [disabled]="groupExamActionInProgress()"
+                          (click)="editGroupExam(exam, $event)"
+                          [attr.aria-label]="'Edit ' + exam.title + ' assignment'"
+                          title="Edit exam"
+                        >
+                          <mat-icon>edit</mat-icon>
+                        </button>
+                        <button
+                          type="button"
+                          class="tenant-group-exam-action tenant-group-exam-action--danger"
+                          [disabled]="groupExamActionInProgress()"
+                          (click)="requestDeleteGroupExam(exam, $event)"
+                          [attr.aria-label]="'Delete ' + exam.title + ' from group'"
+                          title="Delete exam"
+                        >
+                          <mat-icon>{{ deletingGroupExamId() === exam.id ? 'sync' : 'delete' }}</mat-icon>
+                        </button>
+                      </div>
+                    </article>
+                  }
+                </div>
+                <div class="tenant-group-sessions-pagination" aria-label="Exams pagination">
+                  <div class="tenant-group-sessions-pagination-summary">
+                    Showing {{ examPageStart() }}-{{ examPageEnd() }} of {{ filteredGroupExams().length }} exams
+                  </div>
+                  <div class="tenant-group-sessions-pagination-actions">
+                    <label>
+                      Rows
+                      <select [ngModel]="examPageSize()" (ngModelChange)="setExamPageSize($event)">
+                        <option [value]="5">5</option>
+                        <option [value]="10">10</option>
+                        <option [value]="20">20</option>
+                      </select>
+                    </label>
+                    <button type="button" (click)="previousExamPage()" [disabled]="examVisiblePageIndex() === 0" title="Previous exam page">
+                      <mat-icon>chevron_left</mat-icon>
+                    </button>
+                    <span>Page {{ examVisiblePageIndex() + 1 }} of {{ examTotalPages() }}</span>
+                    <button type="button" (click)="nextExamPage()" [disabled]="examVisiblePageIndex() + 1 === examTotalPages()" title="Next exam page">
+                      <mat-icon>chevron_right</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              } @else {
+                <div class="tenant-group-sessions-empty">
+                  <mat-icon>{{ groupExams().length ? 'search_off' : 'assignment' }}</mat-icon>
+                  <p>{{ groupExams().length ? 'No exams match the current search.' : 'No published exams are assigned to this group yet.' }}</p>
+                </div>
+              }
+            </section>
+            @if (pendingDeleteGroupExam(); as examToDelete) {
+              <div class="tenant-group-exam-delete-backdrop" role="presentation" (click)="closeDeleteGroupExamModal()">
+                <div
+                  class="tenant-group-exam-delete-modal"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="tenant-group-exam-delete-title"
+                  (click)="$event.stopPropagation()"
+                >
+                  <div class="tenant-group-exam-delete-header">
+                    <div class="tenant-group-exam-delete-icon">
+                      <mat-icon>delete</mat-icon>
+                    </div>
+                    <div>
+                      <h3 id="tenant-group-exam-delete-title">Delete exam</h3>
+                      <p>Delete {{ examToDelete.title }} from this group? This action cannot be undone.</p>
+                    </div>
+                    <button type="button" class="tenant-group-exam-delete-close" aria-label="Close delete exam confirmation" [disabled]="groupExamActionInProgress()" (click)="closeDeleteGroupExamModal()">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </div>
+                  @if (groupExamActionError()) {
+                    <div class="tenant-group-exam-delete-error" role="alert">{{ groupExamActionError() }}</div>
+                  }
+                  <div class="tenant-group-exam-delete-footer">
+                    <button type="button" class="tenant-group-exam-delete-cancel" [disabled]="groupExamActionInProgress()" (click)="closeDeleteGroupExamModal()">Cancel</button>
+                    <button type="button" class="tenant-group-exam-delete-confirm" [disabled]="groupExamActionInProgress()" (click)="confirmDeleteGroupExam()">
+                      {{ groupExamActionInProgress() ? 'Deleting...' : 'Delete exam' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
           } @else if (activeTab() === 'overview') {
             <section
               class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden"
@@ -1052,7 +1237,7 @@
                 <mat-icon>how_to_reg</mat-icon>
                 <span class="text-[10px] font-bold uppercase">Attendance</span>
               </a>
-              <a [routerLink]="['/tenant/groups', groupId, 'exam']" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+              <a [routerLink]="['/tenant/groups', groupId, 'exam']" [queryParams]="{ freshCreate: true }" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
                 <mat-icon>assignment</mat-icon>
                 <span class="text-[10px] font-bold uppercase">Exam</span>
               </a>
@@ -1333,7 +1518,7 @@
               <div>
                 <p>Insert content</p>
                 <h3 id="group-insert-content-title">{{ insertContentLesson()?.title || 'Lesson' }}</h3>
-                <span>Select material from the parent curriculum directory.</span>
+                <span>Select material from this group library.</span>
               </div>
               <button type="button" aria-label="Close insert content" (click)="closeInsertContentModal()">
                 <mat-icon>close</mat-icon>
@@ -1352,8 +1537,24 @@
                   <p>{{ insertContentError() }}</p>
                 </div>
               } @else if (insertContentOptions().length) {
+                <div class="tenant-group-insert-content-filterbar">
+                  <label class="tenant-group-insert-content-folder-filter">
+                    <mat-icon>folder</mat-icon>
+                    <span>Folder</span>
+                    <select
+                      [value]="insertContentFolderFilter()"
+                      (change)="setInsertContentFolderFilter($any($event.target).value)"
+                      aria-label="Filter material by folder"
+                    >
+                      <option value="all">All folders</option>
+                      @for (folder of insertContentFolderOptions(); track folder.id) {
+                        <option [value]="folder.id">{{ folder.name }}</option>
+                      }
+                    </select>
+                  </label>
+                </div>
                 <div class="tenant-group-insert-content-list" role="listbox" aria-label="Available lesson material">
-                  @for (option of insertContentOptions(); track option.type + option.id) {
+                  @for (option of filteredInsertContentOptions(); track option.type + option.id) {
                     <button
                       type="button"
                       class="tenant-group-insert-content-option"
@@ -1375,12 +1576,17 @@
                         <em>Inserted</em>
                       }
                     </button>
+                  } @empty {
+                    <div class="tenant-group-sessions-empty">
+                      <mat-icon>folder_open</mat-icon>
+                      <p>No material found in this folder.</p>
+                    </div>
                   }
                 </div>
               } @else {
                 <div class="tenant-group-sessions-empty">
                   <mat-icon>folder_open</mat-icon>
-                  <p>No material found in the parent directory.</p>
+                  <p>No material found in the group library.</p>
                 </div>
               }
             </div>

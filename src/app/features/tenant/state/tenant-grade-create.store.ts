@@ -8,8 +8,10 @@ export class TenantGradeCreateStore {
   readonly countryOptions = signal<TenantGradeCountryOption[]>([]);
   readonly academicLevelOptions = signal<TenantGradeAcademicLevelOption[]>([]);
   readonly countriesLoading = signal(false);
+  readonly countryCreating = signal(false);
   readonly levelsLoading = signal(false);
   readonly countriesError = signal<string | null>(null);
+  readonly countryCreateError = signal<string | null>(null);
   readonly levelsError = signal<string | null>(null);
   readonly loadError = signal<string | null>(null);
   readonly isEditMode = signal(false);

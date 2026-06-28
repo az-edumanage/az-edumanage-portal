@@ -79,6 +79,20 @@
 
                   <div class="space-y-4">
                     <div [formGroup]="filterForm">
+                      <label for="filter-stage" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Stage</label>
+                      <select
+                        id="filter-stage"
+                        formControlName="stage"
+                        class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                      >
+                        <option value="">All Stages</option>
+                        @for (stage of stageOptions(); track stage.id) {
+                          <option [value]="stage.id">{{ stage.name }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div [formGroup]="filterForm">
                       <label for="filter-grade" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Grade</label>
                       <select 
                         id="filter-grade"
@@ -86,9 +100,9 @@
                         class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
                       >
                         <option value="">All Grades</option>
-                        <option value="Grade 10">Grade 10</option>
-                        <option value="Grade 11">Grade 11</option>
-                        <option value="Grade 12">Grade 12</option>
+                        @for (grade of gradeOptions(); track grade.id) {
+                          <option [value]="grade.id">{{ grade.name }}</option>
+                        }
                       </select>
                     </div>
 
@@ -170,8 +184,11 @@
                 
                 <div class="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
                   <div class="flex flex-col">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Grade</span>
-                    <span class="text-xs font-medium text-slate-500 dark:text-slate-500">{{ student.grade }}</span>
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Grade, Stage</span>
+                    <span class="text-sm font-bold text-slate-900 dark:text-white">{{ student.grade }}</span>
+                    @if (student.stage) {
+                      <span class="text-xs text-slate-500">{{ student.stage }}</span>
+                    }
                   </div>
                   <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
                     [class.bg-emerald-100]="student.status === 'Active'"
@@ -194,7 +211,7 @@
                 <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
                   <tr>
                     <th class="tenant-students-student-header px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Student</th>
-                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Grade</th>
+                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Grade, Stage</th>
                     <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Status</th>
                     <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Enrolled</th>
                     <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px] text-right tenant-students-actions-header">Actions</th>
@@ -202,7 +219,15 @@
                 </thead>
                 <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
                   @for (student of pagedStudents(); track student.id) {
-                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                    <tr
+                      class="tenant-students-clickable-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer focus-within:bg-slate-50 dark:focus-within:bg-slate-800/50"
+                      role="link"
+                      tabindex="0"
+                      [attr.aria-label]="'Open details for ' + student.name"
+                      (click)="openStudentDetails(student.id)"
+                      (keydown.enter)="openStudentDetailsFromKeyboard($event, student.id)"
+                      (keydown.space)="openStudentDetailsFromKeyboard($event, student.id)"
+                    >
                       <td class="tenant-students-cell px-6 py-4">
                         <div class="tenant-students-student-cell flex items-center gap-3">
                           <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-xs">
@@ -215,9 +240,12 @@
                         </div>
                       </td>
                       <td class="tenant-students-cell px-6 py-4">
-                        <span class="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-md text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider">
-                          {{ student.grade }}
-                        </span>
+                        <div>
+                          <div class="font-bold text-slate-900 dark:text-white">{{ student.grade }}</div>
+                          @if (student.stage) {
+                            <div class="text-xs text-slate-500">{{ student.stage }}</div>
+                          }
+                        </div>
                       </td>
                       <td class="tenant-students-cell px-6 py-4">
                         <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
@@ -234,13 +262,13 @@
                       <td class="tenant-students-cell px-6 py-4 text-slate-500 dark:text-slate-500">{{ student.enrollmentDate }}</td>
                       <td class="tenant-students-actions-cell px-6 py-4 text-right">
                         <div class="tenant-students-actions flex items-center justify-end gap-2">
-                          <a [routerLink]="['/tenant/students', student.id]" class="p-2 text-indigo-600 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="View Details">
+                          <a [routerLink]="['/tenant/students', student.id]" (click)="$event.stopPropagation()" class="p-2 text-indigo-600 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="View Details">
                             <mat-icon class="text-sm block">visibility</mat-icon>
                           </a>
-                          <button class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Edit">
+                          <button type="button" (click)="$event.stopPropagation()" class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Edit">
                             <mat-icon class="text-sm block">edit</mat-icon>
                           </button>
-                          <button class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-colors" title="Delete">
+                          <button type="button" (click)="$event.stopPropagation()" class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-colors" title="Delete">
                             <mat-icon class="text-sm block">delete</mat-icon>
                           </button>
                         </div>

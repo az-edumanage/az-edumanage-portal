@@ -2,19 +2,29 @@
   <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div class="space-y-1">
       <div class="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
-        <a [routerLink]="subjectsListLink()" class="hover:text-indigo-600 transition-colors">{{ label('subject') }}</a>
-        <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
-        <a [routerLink]="subjectDetailsLink()" class="hover:text-indigo-600 transition-colors">{{ label('subjectDetails') }}</a>
-        <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
-        <a [routerLink]="curriculumLink()" class="hover:text-indigo-600 transition-colors">{{ label('curriculum') }}</a>
-        @for (item of selectedPath(); track item.id; let first = $first; let last = $last) {
+        @if (isExamQuestionRoute()) {
+          <a routerLink="/tenant/exams" class="hover:text-indigo-600 transition-colors">Exams</a>
           <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
-          @if (first) {
-            <a [routerLink]="curriculumLink()" class="hover:text-indigo-600 transition-colors">{{ breadcrumbPathLabel(item, first) }}</a>
-          } @else if (!last) {
-            <span>{{ breadcrumbPathLabel(item, first) }}</span>
-          } @else {
-            <a [routerLink]="detailsLink()" class="hover:text-indigo-600 transition-colors">{{ breadcrumbPathLabel(item, first) }}</a>
+          <a routerLink="/tenant/exams/basic-education" class="hover:text-indigo-600 transition-colors">Basic Education</a>
+          <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+          <a [routerLink]="examCreateLink()" [queryParams]="examCreateQueryParams()" class="hover:text-indigo-600 transition-colors">{{ subject()?.gradeName || 'Create Exam' }}</a>
+          <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+          <span>{{ subject()?.name || label('subject') }}</span>
+        } @else {
+          <a [routerLink]="subjectsListLink()" class="hover:text-indigo-600 transition-colors">{{ label('subject') }}</a>
+          <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+          <a [routerLink]="subjectDetailsLink()" class="hover:text-indigo-600 transition-colors">{{ label('subjectDetails') }}</a>
+          <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+          <a [routerLink]="curriculumLink()" class="hover:text-indigo-600 transition-colors">{{ label('curriculum') }}</a>
+          @for (item of selectedPath(); track item.id; let first = $first; let last = $last) {
+            <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+            @if (first) {
+              <a [routerLink]="curriculumLink()" class="hover:text-indigo-600 transition-colors">{{ breadcrumbPathLabel(item, first) }}</a>
+            } @else if (!last) {
+              <span>{{ breadcrumbPathLabel(item, first) }}</span>
+            } @else {
+              <a [routerLink]="detailsLink()" class="hover:text-indigo-600 transition-colors">{{ breadcrumbPathLabel(item, first) }}</a>
+            }
           }
         }
         <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
@@ -171,45 +181,48 @@
               <div class="mb-1">
                 <label for="question" class="block text-sm font-medium text-slate-700 dark:text-slate-300">{{ label('question') }}</label>
               </div>
-              <div class="relative">
-                <input
+              <div class="overflow-hidden rounded-xl border border-indigo-200 bg-indigo-50/60 shadow-sm transition focus-within:border-indigo-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-500/20 dark:border-indigo-900/60 dark:bg-indigo-950/20 dark:focus-within:bg-slate-900">
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-indigo-100 bg-white/75 px-3 py-2 dark:border-indigo-900/50 dark:bg-slate-900/80">
+                  <div class="flex items-center gap-2 text-xs font-bold text-indigo-700 dark:text-indigo-300">
+                    <mat-icon class="text-base">edit_note</mat-icon>
+                    <span>{{ label('questionEditor') }}</span>
+                  </div>
+                  @if (isChoiceQuestionType()) {
+                    <div class="flex items-center gap-1">
+                      <button
+                        type="button"
+                        (click)="openMathEditor('question')"
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-indigo-700 transition-colors hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:text-indigo-300 dark:hover:bg-indigo-950/40"
+                        [title]="label('openMathEditor')"
+                        [attr.aria-label]="label('openMathEditor')"
+                      >
+                        <mat-icon class="text-base">functions</mat-icon>
+                      </button>
+                      <label
+                        for="question-media"
+                        class="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-indigo-700 transition-colors hover:bg-indigo-100 focus-within:ring-2 focus-within:ring-indigo-500/30 dark:text-indigo-300 dark:hover:bg-indigo-950/40"
+                        [title]="label('uploadMediaOption')"
+                        [attr.aria-label]="label('uploadMediaOption')"
+                      >
+                        <mat-icon class="text-base">upload</mat-icon>
+                        <input
+                          id="question-media"
+                          type="file"
+                          class="sr-only"
+                          (change)="onQuestionMediaSelected($event)"
+                        >
+                      </label>
+                    </div>
+                  }
+                </div>
+                <textarea
                   id="question"
-                  type="text"
+                  rows="5"
                   [value]="questionForm.controls.question.value"
                   (input)="setQuestionValue($any($event.target).value)"
                   [placeholder]="label('enterQuestion')"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                  [ngClass]="isChoiceQuestionType() ? inputPaddingWithActions() : ''"
-                >
-                @if (isChoiceQuestionType()) {
-                  <button
-                    type="button"
-                    (click)="openMathEditor('question')"
-                    class="absolute top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-indigo-700 transition-colors hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:text-indigo-300 dark:hover:bg-indigo-950/40"
-                    [ngClass]="mathActionPosition('far')"
-                    [title]="label('openMathEditor')"
-                    [attr.aria-label]="label('openMathEditor')"
-                  >
-                    <mat-icon class="text-base">functions</mat-icon>
-                  </button>
-                }
-                @if (isChoiceQuestionType()) {
-                  <label
-                    for="question-media"
-                    class="absolute top-1/2 inline-flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-lg text-indigo-700 transition-colors hover:bg-indigo-50 focus-within:ring-2 focus-within:ring-indigo-500/30 dark:text-indigo-300 dark:hover:bg-indigo-950/40"
-                    [ngClass]="mathActionPosition('near')"
-                    [title]="label('uploadMediaOption')"
-                    [attr.aria-label]="label('uploadMediaOption')"
-                  >
-                    <mat-icon class="text-base">upload</mat-icon>
-                    <input
-                      id="question-media"
-                      type="file"
-                      class="sr-only"
-                      (change)="onQuestionMediaSelected($event)"
-                    >
-                  </label>
-                }
+                  class="min-h-36 w-full resize-y border-0 bg-transparent px-4 py-3 text-base font-medium leading-7 text-slate-900 outline-none placeholder:text-slate-500 dark:text-slate-100 dark:placeholder:text-slate-400"
+                ></textarea>
               </div>
               @if (questionContentError()) {
                 <p class="mt-1 text-xs font-medium text-rose-600 dark:text-rose-300">{{ questionContentError() }}</p>
@@ -269,30 +282,64 @@
                 <button
                   type="button"
                   (click)="selectTrueFalseAnswer(true)"
-                  class="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 transition-colors hover:border-indigo-300 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30"
+                  class="group flex min-h-28 items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 text-start shadow-sm transition-all hover:border-indigo-300 hover:bg-indigo-50/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-800/70 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30"
+                  [ngClass]="{
+                    'border-indigo-500 bg-indigo-50 shadow-indigo-500/10 ring-1 ring-indigo-200 dark:bg-indigo-950/30 dark:ring-indigo-800': trueFalseAnswer() === true
+                  }"
                   [class.text-right]="isArabic()"
                   [class.text-left]="!isArabic()"
-                  [class.border-indigo-500]="trueFalseAnswer() === true"
-                  [class.bg-indigo-50]="trueFalseAnswer() === true"
+                  [attr.aria-pressed]="trueFalseAnswer() === true"
                 >
-                  <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-900/60">
-                    <mat-icon class="text-base">check</mat-icon>
+                  <span
+                    class="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-colors group-hover:bg-indigo-100 group-hover:text-indigo-700 dark:bg-slate-900 dark:text-slate-400 dark:group-hover:bg-indigo-950/60 dark:group-hover:text-indigo-300"
+                    [ngClass]="{
+                      'bg-indigo-600 text-white dark:bg-indigo-500': trueFalseAnswer() === true
+                    }"
+                  >
+                    <mat-icon class="text-base">{{ trueFalseAnswer() === true ? 'check' : 'task_alt' }}</mat-icon>
                   </span>
-                  <span class="text-sm font-bold text-slate-900 dark:text-white">{{ label('true') }}</span>
+                  <span class="min-w-0 flex-1">
+                    <span class="flex flex-wrap items-center gap-2">
+                      <span class="text-sm font-bold text-slate-900 dark:text-white">{{ label('true') }}</span>
+                      @if (trueFalseAnswer() === true) {
+                        <span class="inline-flex items-center rounded-full bg-indigo-600 px-2 py-0.5 text-[11px] font-bold text-white dark:bg-indigo-500">
+                          {{ label('selected') }}
+                        </span>
+                      }
+                    </span>
+                    <span class="mt-1 block text-xs font-medium leading-5 text-slate-500 dark:text-slate-400">{{ label('selectTrueFalse') }}</span>
+                  </span>
                 </button>
                 <button
                   type="button"
                   (click)="selectTrueFalseAnswer(false)"
-                  class="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 transition-colors hover:border-indigo-300 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30"
+                  class="group flex min-h-28 items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 text-start shadow-sm transition-all hover:border-indigo-300 hover:bg-indigo-50/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-800/70 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30"
+                  [ngClass]="{
+                    'border-indigo-500 bg-indigo-50 shadow-indigo-500/10 ring-1 ring-indigo-200 dark:bg-indigo-950/30 dark:ring-indigo-800': trueFalseAnswer() === false
+                  }"
                   [class.text-right]="isArabic()"
                   [class.text-left]="!isArabic()"
-                  [class.border-indigo-500]="trueFalseAnswer() === false"
-                  [class.bg-indigo-50]="trueFalseAnswer() === false"
+                  [attr.aria-pressed]="trueFalseAnswer() === false"
                 >
-                  <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-700 ring-1 ring-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:ring-rose-900/60">
-                    <mat-icon class="text-base">close</mat-icon>
+                  <span
+                    class="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-colors group-hover:bg-indigo-100 group-hover:text-indigo-700 dark:bg-slate-900 dark:text-slate-400 dark:group-hover:bg-indigo-950/60 dark:group-hover:text-indigo-300"
+                    [ngClass]="{
+                      'bg-indigo-600 text-white dark:bg-indigo-500': trueFalseAnswer() === false
+                    }"
+                  >
+                    <mat-icon class="text-base">{{ trueFalseAnswer() === false ? 'check' : 'close' }}</mat-icon>
                   </span>
-                  <span class="text-sm font-bold text-slate-900 dark:text-white">{{ label('false') }}</span>
+                  <span class="min-w-0 flex-1">
+                    <span class="flex flex-wrap items-center gap-2">
+                      <span class="text-sm font-bold text-slate-900 dark:text-white">{{ label('false') }}</span>
+                      @if (trueFalseAnswer() === false) {
+                        <span class="inline-flex items-center rounded-full bg-indigo-600 px-2 py-0.5 text-[11px] font-bold text-white dark:bg-indigo-500">
+                          {{ label('selected') }}
+                        </span>
+                      }
+                    </span>
+                    <span class="mt-1 block text-xs font-medium leading-5 text-slate-500 dark:text-slate-400">{{ label('selectTrueFalse') }}</span>
+                  </span>
                 </button>
               </div>
               @if (trueFalseAnswerError()) {
@@ -448,8 +495,9 @@
           </div>
         </div>
 
+        @if (showSingleQuestionForm()) {
         <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 dark:border-slate-800 sm:flex-row sm:items-start sm:justify-between">
+          <div class="border-b border-slate-200 pb-4 dark:border-slate-800">
             <div>
               <h3 class="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                 <mat-icon class="text-base text-indigo-600 dark:text-indigo-300">analytics</mat-icon>
@@ -457,72 +505,115 @@
               </h3>
               <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ label('analyticalDataHint') }}</p>
             </div>
-            <button
-              type="button"
-              role="switch"
-              [attr.aria-checked]="analyticalDataActive()"
-              [attr.aria-label]="label('toggleAnalyticalData')"
-              (click)="analyticalDataActive.set(!analyticalDataActive())"
-              class="analytical-data-switch inline-flex w-fit items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-bold text-slate-600 transition-colors hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
-              [class.analytical-data-switch--active]="analyticalDataActive()"
-            >
-              <span
-                class="analytical-data-switch-track inline-flex h-6 w-11 items-center rounded-full bg-slate-300 p-0.5 transition-colors dark:bg-slate-700"
-              >
-                <span
-                  class="analytical-data-switch-knob h-5 w-5 rounded-full bg-white shadow-sm transition-transform dark:bg-slate-100"
-                ></span>
-              </span>
-              <span>{{ analyticalDataActive() ? label('active') : label('inactive') }}</span>
-            </button>
           </div>
-          <div class="mt-4 space-y-2">
-            <p class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ label('topic') }}</p>
+          <div class="mt-4 rounded-xl border border-indigo-200 bg-indigo-50/60 p-4 ring-1 ring-indigo-100 dark:border-indigo-900/60 dark:bg-indigo-950/20 dark:ring-indigo-900/50">
+            <div class="mb-3 flex items-center gap-2">
+              <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white dark:bg-indigo-500">
+                <mat-icon class="text-base">topic</mat-icon>
+              </span>
+              <p class="text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">{{ label('topic') }}</p>
+            </div>
             <div class="space-y-2">
-              @for (item of selectedPath(); track item.id) {
-                <div class="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700 dark:bg-slate-800/70 dark:text-slate-200">
-                  <mat-icon class="text-sm text-slate-500">{{ pathItemIcon() }}</mat-icon>
+              @for (item of curriculumContextPath(); track item.id) {
+                <div class="flex items-center gap-2 rounded-lg border border-indigo-100 bg-white px-3 py-2 text-sm font-medium text-slate-800 shadow-sm dark:border-indigo-900/60 dark:bg-slate-900/80 dark:text-slate-100">
+                  <mat-icon class="text-sm text-indigo-600 dark:text-indigo-300">{{ pathItemIcon() }}</mat-icon>
                   <span class="truncate">{{ item.label }}</span>
                 </div>
               }
             </div>
           </div>
-          <div class="mt-4">
-            <label for="bloomTaxonomy" class="block text-sm font-medium text-slate-700 dark:text-slate-300">{{ label('bloomTaxonomy') }}</label>
-            <select
-              id="bloomTaxonomy"
-              formControlName="bloomId"
-              [attr.disabled]="bloomLevelsLoading() || !!bloomLevelsError() ? '' : null"
-              class="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition-all focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-            >
-              <option value="">{{ bloomTaxonomyPlaceholder() }}</option>
-              @for (level of bloomLevels(); track level.id) {
-                <option [value]="level.id">{{ bloomLevelLabel(level) }}</option>
-              }
-            </select>
+          <div class="relative mt-4">
+            <app-tenant-group-searchable-selector
+              triggerId="bloomTaxonomy"
+              [label]="label('bloomTaxonomy')"
+              [placeholder]="bloomTaxonomyPlaceholder()"
+              [selectedValue]="selectedBloomTaxonomyLabel()"
+              [isOpen]="bloomTaxonomySelectorOpen()"
+              [disabled]="bloomLevelsLoading() || !!bloomLevelsError() || bloomLevels().length === 0"
+              [options]="bloomTaxonomyOptions()"
+              [searchQuery]="bloomTaxonomySearchQuery()"
+              [searchPlaceholder]="label('searchBloomTaxonomy')"
+              [emptyText]="label('noBloomTaxonomyFound')"
+              (toggled)="toggleBloomTaxonomySelector()"
+              (searchQueryChanged)="setBloomTaxonomySearchQuery($event)"
+              (selected)="selectBloomTaxonomy($event)"
+            />
             @if (bloomLevelsError()) {
               <p class="mt-2 text-xs font-medium text-rose-600 dark:text-rose-300">{{ bloomLevelsError() }}</p>
             }
           </div>
-          <div class="mt-4 space-y-2">
-            <p class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ label('difficulty') }}</p>
+          <div class="relative mt-4">
+            <app-tenant-group-searchable-selector
+              triggerId="questionSkill"
+              [label]="label('skill')"
+              [placeholder]="skillPlaceholder()"
+              [selectedValue]="selectedSkillLabel()"
+              [isOpen]="skillSelectorOpen()"
+              [disabled]="skillsLoading() || skillSaving() || !!skillsError()"
+              [options]="skillOptions()"
+              [searchQuery]="skillSearchQuery()"
+              [searchPlaceholder]="label('searchSkills')"
+              [emptyText]="label('noSkillsFound')"
+              footerIcon="add"
+              [footerButton]="addSkillFooterLabel()"
+              (toggled)="toggleSkillSelector()"
+              (searchQueryChanged)="setSkillSearchQuery($event)"
+              (selected)="selectSkill($event)"
+              (footerClicked)="addSkillFromSearch()"
+            />
+            @if (skillsError()) {
+              <p class="mt-2 text-xs font-medium text-rose-600 dark:text-rose-300">{{ skillsError() }}</p>
+            } @else if (skillInlineError()) {
+              <p class="mt-2 text-xs font-medium text-rose-600 dark:text-rose-300">{{ skillInlineError() }}</p>
+            }
+          </div>
+          <div class="mt-4 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <p class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ label('difficulty') }}</p>
+              @if (selectedQuestionDifficultyLabel()) {
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700 ring-1 ring-indigo-100 dark:bg-indigo-950/50 dark:text-indigo-300 dark:ring-indigo-900/60">
+                  <mat-icon class="text-sm">check_circle</mat-icon>
+                  {{ selectedQuestionDifficultyLabel() }}
+                </span>
+              }
+            </div>
             @if (questionDifficultiesLoading()) {
               <p class="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-500 dark:bg-slate-800/70 dark:text-slate-400">{{ label('loadingQuestionDifficulties') }}</p>
             } @else if (questionDifficultiesError()) {
               <p class="rounded-lg bg-rose-50 px-3 py-2 text-sm font-medium text-rose-600 dark:bg-rose-950/30 dark:text-rose-300">{{ questionDifficultiesError() }}</p>
             } @else {
-              <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 @for (difficulty of questionDifficulties(); track difficulty.id) {
                   <button
                     type="button"
                     (click)="selectQuestionDifficulty(difficulty.id)"
-                    class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700 transition-colors hover:border-indigo-300 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-200 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30"
-                    [class.border-indigo-500]="questionForm.controls.difficultyId.value === difficulty.id"
-                    [class.bg-indigo-50]="questionForm.controls.difficultyId.value === difficulty.id"
-                    [class.text-indigo-700]="questionForm.controls.difficultyId.value === difficulty.id"
-                    [attr.aria-pressed]="questionForm.controls.difficultyId.value === difficulty.id"
+                    class="group flex min-h-28 w-full items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 text-start shadow-sm transition-all hover:border-indigo-300 hover:bg-indigo-50/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-800/70 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30"
+                    [ngClass]="{
+                      'border-indigo-500 bg-indigo-50 shadow-indigo-500/10 ring-1 ring-indigo-200 dark:bg-indigo-950/30 dark:ring-indigo-800': selectedQuestionDifficultyId() === difficulty.id
+                    }"
+                    [class.text-right]="isArabic()"
+                    [class.text-left]="!isArabic()"
+                    [attr.aria-pressed]="selectedQuestionDifficultyId() === difficulty.id"
                   >
-                    {{ questionDifficultyLabel(difficulty) }}
+                    <span
+                      class="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-colors group-hover:bg-indigo-100 group-hover:text-indigo-700 dark:bg-slate-900 dark:text-slate-400 dark:group-hover:bg-indigo-950/60 dark:group-hover:text-indigo-300"
+                      [ngClass]="{
+                        'bg-indigo-600 text-white dark:bg-indigo-500': selectedQuestionDifficultyId() === difficulty.id
+                      }"
+                    >
+                      <mat-icon class="text-base">{{ selectedQuestionDifficultyId() === difficulty.id ? 'check' : 'speed' }}</mat-icon>
+                    </span>
+                    <span class="min-w-0 flex-1">
+                      <span class="flex flex-wrap items-center gap-2">
+                        <span class="text-sm font-bold text-slate-900 dark:text-white">{{ questionDifficultyLabel(difficulty) }}</span>
+                        @if (selectedQuestionDifficultyId() === difficulty.id) {
+                          <span class="inline-flex items-center rounded-full bg-indigo-600 px-2 py-0.5 text-[11px] font-bold text-white dark:bg-indigo-500">
+                            {{ label('selected') }}
+                          </span>
+                        }
+                      </span>
+                      <span class="mt-1 block text-xs font-medium leading-5 text-slate-500 dark:text-slate-400">{{ questionDifficultyDescription(difficulty) }}</span>
+                    </span>
                   </button>
                 }
               </div>
@@ -540,7 +631,7 @@
               (input)="setQuestionWeightValue($any($event.target).value)"
               (paste)="pasteQuestionWeightValue($event)"
               [placeholder]="label('enterWeight')"
-              class="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition-all focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              class="mt-1 h-[46px] w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition-all focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             >
           </div>
         </div>
@@ -596,21 +687,30 @@
             </div>
           </div>
 
-          <div class="mt-4">
-            <label for="questionSource" class="block text-sm font-medium text-slate-700 dark:text-slate-300">
-              {{ label('questionSource') }}
-              <span class="text-xs text-slate-500 dark:text-slate-400">{{ label('optional') }}</span>
-            </label>
-            <select
-              id="questionSource"
-              formControlName="questionSource"
-              class="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition-all focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-            >
-              <option value="">{{ label('selectQuestionSource') }}</option>
-              <option value="formalPreviousExam">{{ label('formalPreviousExam') }}</option>
-              <option value="teacherMade">{{ label('teacherMade') }}</option>
-              <option value="trainingQuestion">{{ label('trainingQuestion') }}</option>
-            </select>
+          <div class="relative mt-4">
+            <app-tenant-group-searchable-selector
+              triggerId="questionSource"
+              [label]="questionSourceOptionalLabel()"
+              [placeholder]="questionSourcePlaceholder()"
+              [selectedValue]="selectedQuestionSourceLabel()"
+              [isOpen]="questionSourceSelectorOpen()"
+              [disabled]="questionSourcesLoading() || questionSourceSaving() || !!questionSourcesError()"
+              [options]="questionSourceOptions()"
+              [searchQuery]="questionSourceSearchQuery()"
+              [searchPlaceholder]="label('searchQuestionSources')"
+              [emptyText]="label('noQuestionSourcesFound')"
+              footerIcon="add"
+              [footerButton]="addQuestionSourceFooterLabel()"
+              (toggled)="toggleQuestionSourceSelector()"
+              (searchQueryChanged)="setQuestionSourceSearchQuery($event)"
+              (selected)="selectQuestionSource($event)"
+              (footerClicked)="addQuestionSourceFromSearch()"
+            />
+            @if (questionSourcesError()) {
+              <p class="mt-2 text-xs font-medium text-rose-600 dark:text-rose-300">{{ questionSourcesError() }}</p>
+            } @else if (questionSourceInlineError()) {
+              <p class="mt-2 text-xs font-medium text-rose-600 dark:text-rose-300">{{ questionSourceInlineError() }}</p>
+            }
           </div>
 
           <div class="mt-4">
@@ -627,6 +727,7 @@
             ></textarea>
           </div>
         </div>
+        }
       </div>
 
       <aside class="space-y-6">
@@ -635,28 +736,26 @@
             <mat-icon class="text-base text-indigo-600 dark:text-indigo-300">account_tree</mat-icon>
             {{ label('curriculumItem') }}
           </h3>
-          @if (selectedNode(); as node) {
-            <div class="mt-4 space-y-4">
-              <div>
-                <p class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ label('currentItem') }}</p>
-                <p class="mt-1 text-base font-bold text-slate-900 dark:text-white">{{ node.label }}</p>
-              </div>
-              @if (node.description) {
-                <p class="rounded-lg bg-slate-50 p-3 text-sm leading-6 text-slate-600 dark:bg-slate-800/70 dark:text-slate-300">{{ node.description }}</p>
-              }
+          <div class="mt-4 space-y-4">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ label('currentItem') }}</p>
+              <p class="mt-1 text-base font-bold text-slate-900 dark:text-white">{{ curriculumContextTitle() }}</p>
+            </div>
+            @if (curriculumContextDescription(); as description) {
+              <p class="rounded-lg bg-slate-50 p-3 text-sm leading-6 text-slate-600 dark:bg-slate-800/70 dark:text-slate-300">{{ description }}</p>
+            }
+            <div class="space-y-2">
+              <p class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ label('path') }}</p>
               <div class="space-y-2">
-                <p class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ label('path') }}</p>
-                <div class="space-y-2">
-                  @for (item of selectedPath(); track item.id) {
-                    <div class="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700 dark:bg-slate-800/70 dark:text-slate-200">
-                      <mat-icon class="text-sm text-slate-500">{{ pathItemIcon() }}</mat-icon>
-                      <span class="truncate">{{ item.label }}</span>
-                    </div>
-                  }
-                </div>
+                @for (item of curriculumContextPath(); track item.id) {
+                  <div class="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700 dark:bg-slate-800/70 dark:text-slate-200">
+                    <mat-icon class="text-sm text-slate-500">{{ pathItemIcon() }}</mat-icon>
+                    <span class="truncate">{{ item.label }}</span>
+                  </div>
+                }
               </div>
             </div>
-          }
+          </div>
         </div>
 
         <div class="rounded-xl border border-indigo-100 bg-indigo-50/70 p-5 text-sm text-indigo-900 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-200">

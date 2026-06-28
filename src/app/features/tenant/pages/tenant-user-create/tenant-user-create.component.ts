@@ -22,6 +22,10 @@ export class TenantUserCreateComponent implements OnInit, OnDestroy {
     return this.facade.isSubmitting;
   }
 
+  get isEditMode(): boolean {
+    return this.facade.isEditMode;
+  }
+
   ngOnInit(): void {
     this.facade.initialize();
   }

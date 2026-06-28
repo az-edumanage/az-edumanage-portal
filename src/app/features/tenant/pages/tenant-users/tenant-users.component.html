@@ -170,6 +170,7 @@
                   <tr>
                     <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">User</th>
                     <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Role</th>
+                    <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Permissions</th>
                     <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Status</th>
                     <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px]">Last Login</th>
                     <th class="px-6 py-4 font-bold uppercase tracking-wider text-[10px] text-right">Actions</th>
@@ -198,6 +199,9 @@
                           {{ user.role }}
                         </span>
                       </td>
+                      <td class="px-6 py-4 text-slate-500 dark:text-slate-500 text-xs">
+                        {{ user.permissions?.length || 0 }} permissions
+                      </td>
                       <td class="px-6 py-4">
                         <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
                           [class.bg-emerald-100]="user.status === 'Active'"
@@ -213,10 +217,7 @@
                       <td class="px-6 py-4 text-slate-500 dark:text-slate-500 text-xs">{{ user.lastLogin }}</td>
                       <td class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-2">
-                          <button class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Edit Permissions">
-                            <mat-icon class="text-sm block">security</mat-icon>
-                          </button>
-                          <button class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Edit Profile">
+                          <button [routerLink]="['/tenant/users', user.id, 'edit']" class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Edit Profile">
                             <mat-icon class="text-sm block">edit</mat-icon>
                           </button>
                           <button class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-colors" title="Deactivate">
@@ -297,4 +298,3 @@
         </div>
       }
     </div>
-  

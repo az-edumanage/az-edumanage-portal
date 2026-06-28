@@ -7,6 +7,8 @@ export class TenantRoomDetailsFacade {
 
   readonly room = this.store.room;
   readonly schedule = this.store.schedule;
+  readonly loading = this.store.loading;
+  readonly error = this.store.error;
   readonly totalOccupiedHours = this.store.totalOccupiedHours;
   readonly occupiedDaysCount = this.store.occupiedDaysCount;
   readonly totalStudents = this.store.totalStudents;
@@ -15,7 +17,7 @@ export class TenantRoomDetailsFacade {
   readonly occupancyRate = this.store.occupancyRate;
   readonly avgGroupSize = this.store.avgGroupSize;
 
-  loadRoom(id: string | null): void {
-    this.store.loadRoom(id);
+  loadRoom(id: string | null): Promise<void> {
+    return this.store.loadRoom(id);
   }
 }
