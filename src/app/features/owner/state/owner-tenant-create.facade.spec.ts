@@ -1,7 +1,7 @@
 import { signal, WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { OwnerTenantCreateDataService } from '../data-access/owner-tenant-create-data.service';
 import { TenantCreatePayload, TenantLocationOption, TenantPlanOption } from '../models/owner-tenant-create.models';
 import { OwnerTenantCreateFacade } from './owner-tenant-create.facade';
@@ -30,6 +30,8 @@ describe('OwnerTenantCreateFacade', () => {
     findCountryById: ReturnType<typeof vi.fn>;
     findCityById: ReturnType<typeof vi.fn>;
     findExisting: ReturnType<typeof vi.fn>;
+    loadExistingTenants: ReturnType<typeof vi.fn>;
+    hasProvisionedTenant: ReturnType<typeof vi.fn>;
     createTenant: ReturnType<typeof vi.fn>;
   };
 
@@ -54,6 +56,8 @@ describe('OwnerTenantCreateFacade', () => {
       findCountryById: vi.fn((id: number | null | undefined) => (id === 1 ? { id: 1, value: '1', label: 'Egypt' } as TenantLocationOption : null)),
       findCityById: vi.fn((id: number | null | undefined) => (id === 10 ? { id: 10, value: '10', label: 'Cairo' } as TenantLocationOption : null)),
       findExisting: vi.fn().mockReturnValue(null),
+      loadExistingTenants: vi.fn().mockResolvedValue([]),
+      hasProvisionedTenant: vi.fn().mockResolvedValue(false),
       createTenant: vi.fn().mockReturnValue(of(void 0)),
     };
     router = { navigate: vi.fn().mockResolvedValue(true) };
@@ -279,6 +283,47 @@ describe('OwnerTenantCreateFacade', () => {
 
     expect(facade.showSuccessModal()).toBe(true);
     expect(router.navigate).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(1600);
+
+    expect(router.navigate).toHaveBeenCalledWith(['/owner/tenants']);
+    vi.useRealTimers();
+  });
+
+  it('should show success modal when duplicate response matches an already provisioned tenant', async () => {
+    vi.useFakeTimers();
+    dataService.createTenant.mockReturnValue(throwError(() => ({ error: { message: 'Tenant name already exists' } })));
+    dataService.hasProvisionedTenant.mockResolvedValue(true);
+    facade.tenantForm.setValue({
+      centerName: 'ABC Center',
+      tenantType: 'Center',
+      tenantUsername: 'abc-admin',
+      temporaryPassword: 'TempPass123!',
+      subdomain: 'abc-center',
+      domain: '.az-edumanage.com',
+      contactName: 'Tenant Admin',
+      contactEmail: 'admin@example.com',
+      contactPhone: '+1555012345',
+      address: '123 Street',
+      countryId: 1,
+      cityId: 10,
+      planId: 'plan-1',
+      isTrial: true,
+      trialDays: 14,
+      region: 'me-south-1',
+      autoProvision: true,
+      sendInvite: true,
+      onboardingLink: false,
+      sendOnboardingWhatsapp: false,
+      sendOnboardingEmail: false,
+    });
+
+    facade.onSubmit();
+    await Promise.resolve();
+
+    expect(dataService.hasProvisionedTenant).toHaveBeenCalledWith('ABC Center', 'abc-center');
+    expect(facade.showSuccessModal()).toBe(true);
+    expect(facade.submitStatus()?.success).toBe(true);
 
     vi.advanceTimersByTime(1600);
 
