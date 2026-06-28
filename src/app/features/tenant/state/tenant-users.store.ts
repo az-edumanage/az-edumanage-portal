@@ -48,4 +48,11 @@ export class TenantUsersStore {
 
     return filtered;
   });
+
+  async load(): Promise<void> {
+    await this.data.loadUsers({
+      search: this.searchQuery(),
+      status: this.statusFilter(),
+    });
+  }
 }

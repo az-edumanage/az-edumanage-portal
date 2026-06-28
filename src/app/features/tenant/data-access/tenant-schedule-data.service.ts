@@ -32,11 +32,14 @@ export class TenantScheduleDataService {
       id: session.id,
       groupId: session.groupId,
       groupName: session.groupName,
+      subjectName: session.subjectName ?? '',
       teacherName: session.teacherName,
+      roomId: session.roomId ?? null,
       roomName: session.roomName,
       day: session.day,
       startTime: session.startTime,
       duration: session.duration,
+      studentsCount: session.studentsCount ?? 0,
       color: this.colors[index % this.colors.length],
     };
   }

@@ -3,7 +3,7 @@ import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { safeRedirect } from '../auth/auth-url.utils';
 
-export type UserRole = 'owner' | 'tenant' | 'teacher';
+export type UserRole = 'owner' | 'tenant' | 'teacher' | 'student' | 'parent';
 export type WorkspaceRole = UserRole | null;
 export type TenantTheme = 'default' | 'ocean';
 
@@ -26,7 +26,7 @@ export class DashboardService {
   resolveWorkspaceFromUrl(url: string | null | undefined): WorkspaceRole {
     const path = (url ?? '').split('?')[0]?.split('#')[0] ?? '';
     const firstSegment = path.split('/').filter(Boolean)[0];
-    if (firstSegment === 'owner' || firstSegment === 'tenant' || firstSegment === 'teacher') {
+    if (firstSegment === 'owner' || firstSegment === 'tenant' || firstSegment === 'teacher' || firstSegment === 'student' || firstSegment === 'parent') {
       return firstSegment;
     }
     return null;

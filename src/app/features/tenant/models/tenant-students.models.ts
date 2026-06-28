@@ -5,6 +5,9 @@ export interface Student {
   name: string;
   email: string;
   grade: string;
+  gradeId?: string;
+  stage?: string;
+  stageId?: string;
   status: StudentStatus;
   enrollmentDate: string;
 }
@@ -57,7 +60,13 @@ export interface TenantStudentBackendRecord {
   notifyParent?: boolean | null;
   educationCategory: string | null;
   stageIds?: string[] | null;
+  stageName?: string | null;
+  stage_name?: string | null;
+  stageNames?: string[] | null;
   gradeIds?: string[] | null;
+  gradeName?: string | null;
+  grade_name?: string | null;
+  gradeNames?: string[] | null;
   universityIds?: string[] | null;
   collegeIds?: string[] | null;
   scheduleSummary?: StudentScheduleSummary | null;

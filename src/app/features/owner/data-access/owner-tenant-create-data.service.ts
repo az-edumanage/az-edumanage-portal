@@ -31,7 +31,7 @@ export class OwnerTenantCreateDataService {
     'Teacher'
   ];
 
-  readonly domains = ['.remix.com', '.academy.com', '.edu.com', '.school.com'];
+  readonly domains = ['.az-edumanage.com'];
 
   async loadBootstrapData(): Promise<void> {
     await this.authApi.ensureLoggedIn();

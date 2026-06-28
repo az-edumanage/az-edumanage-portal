@@ -4,7 +4,12 @@ import { passwordChangeRequiredGuard, roleGuard } from './core/guards/role.guard
 import { authActivateGuard, authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'owner/login', pathMatch: 'full' },
+  {
+    path: '',
+    pathMatch: 'full',
+    loadComponent: () =>
+      import('./features/auth/pages/login/login.component').then((m) => m.LoginComponent),
+  },
   {
     path: 'owner/login',
     loadComponent: () =>
@@ -17,6 +22,16 @@ export const routes: Routes = [
   },
   {
     path: 'teacher/login',
+    loadComponent: () =>
+      import('./features/auth/pages/login/login.component').then((m) => m.LoginComponent),
+  },
+  {
+    path: 'student/login',
+    loadComponent: () =>
+      import('./features/auth/pages/login/login.component').then((m) => m.LoginComponent),
+  },
+  {
+    path: 'parent/login',
     loadComponent: () =>
       import('./features/auth/pages/login/login.component').then((m) => m.LoginComponent),
   },
@@ -79,7 +94,21 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/teacher/routes').then((m) => m.TEACHER_ROUTES),
       },
+      {
+        path: 'student',
+        canMatch: [authGuard, roleGuard],
+        data: { role: 'student' },
+        loadChildren: () =>
+          import('./features/student/routes').then((m) => m.STUDENT_ROUTES),
+      },
+      {
+        path: 'parent',
+        canMatch: [authGuard, roleGuard],
+        data: { role: 'parent' },
+        loadChildren: () =>
+          import('./features/parent/routes').then((m) => m.PARENT_ROUTES),
+      },
     ],
   },
-  { path: '**', redirectTo: 'owner/login' },
+  { path: '**', redirectTo: '' },
 ];

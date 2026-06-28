@@ -7,7 +7,7 @@ import 'mathlive';
 import { I18nService } from '../../../../core/services/i18n.service';
 import { TenantQuestionType, TenantQuestionTypeSettingsService } from '../../data-access/tenant-question-type-settings.service';
 import { TenantSubjectsDataService } from '../../data-access/tenant-subjects-data.service';
-import { TenantCurriculumMaterialFile, TenantCurriculumMaterialFolder, TenantCurriculumQuestion, TenantSubjectCurriculumNode } from '../../models/tenant-subjects.models';
+import { TenantCurriculumMaterialFile, TenantCurriculumMaterialFolder, TenantCurriculumQuestion, TenantCurriculumSkill, TenantSubjectCurriculumNode } from '../../models/tenant-subjects.models';
 import { TenantSubjectDetailsFacade } from '../../state/tenant-subject-details.facade';
 
 interface CurriculumPathItem {
@@ -28,7 +28,7 @@ interface CurriculumQuestionTreeRow {
   children: CurriculumQuestionTreeRow[];
 }
 
-type CurriculumDetailsTab = 'questions' | 'material';
+type CurriculumDetailsTab = 'questions' | 'material' | 'skills';
 
 interface QuestionTextSegment {
   kind: 'text' | 'math';
@@ -38,6 +38,13 @@ interface QuestionTextSegment {
 interface MaterialFolderModalState {
   mode: 'create' | 'edit';
   folder: TenantCurriculumMaterialFolder | null;
+  name: string;
+  description: string;
+}
+
+interface SkillModalState {
+  mode: 'create' | 'edit';
+  skill: TenantCurriculumSkill | null;
   name: string;
   description: string;
 }
@@ -93,6 +100,13 @@ export class TenantSubjectCurriculumDetailsComponent implements OnInit {
   readonly materialFolderDeleteError = signal<string | null>(null);
   readonly materialFolderModal = signal<MaterialFolderModalState | null>(null);
   readonly materialFolderModalError = signal<string | null>(null);
+  readonly skills = signal<TenantCurriculumSkill[]>([]);
+  readonly skillsLoading = signal(false);
+  readonly skillsError = signal<string | null>(null);
+  readonly skillSaving = signal(false);
+  readonly skillDeleteBusyId = signal<string | null>(null);
+  readonly skillModal = signal<SkillModalState | null>(null);
+  readonly skillModalError = signal<string | null>(null);
   readonly selectedNodeId = signal<string | null>(null);
   readonly activeTab = signal<CurriculumDetailsTab>('questions');
   readonly expandedQuestionIds = signal(new Set<string>());
@@ -133,8 +147,9 @@ export class TenantSubjectCurriculumDetailsComponent implements OnInit {
     this.route.queryParamMap
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((params) => {
-        if (params.get('tab') === 'material') {
-          this.selectTab('material');
+        const tab = params.get('tab');
+        if (tab === 'material' || tab === 'skills') {
+          this.selectTab(tab);
         }
       });
   }
@@ -154,6 +169,8 @@ export class TenantSubjectCurriculumDetailsComponent implements OnInit {
     this.activeTab.set(tab);
     if (tab === 'material') {
       void this.reloadMaterialFolders();
+    } else if (tab === 'skills') {
+      void this.reloadSkills();
     }
   }
 
@@ -165,6 +182,7 @@ export class TenantSubjectCurriculumDetailsComponent implements OnInit {
     const labels = {
       questions: { en: 'Questions', ar: 'الأسئلة' },
       material: { en: 'Material', ar: 'الملحقات' },
+      skills: { en: 'Skills', ar: 'المهارات' },
     } as const;
     return labels[tab][this.i18n.language()];
   }
@@ -329,6 +347,156 @@ export class TenantSubjectCurriculumDetailsComponent implements OnInit {
     return this.i18n.language() === 'ar'
       ? 'أنشئ مجلداً ثم ارفع ملفات PDF أو Word أو PowerPoint أو صوراً داخله.'
       : 'Create a folder, then upload PDFs, Word files, PowerPoint files, or images inside it.';
+  }
+
+  skillsEmptyTitle(): string {
+    return this.i18n.language() === 'ar' ? 'لا توجد مهارات بعد' : 'No skills yet';
+  }
+
+  skillsEmptyDescription(): string {
+    return this.i18n.language() === 'ar'
+      ? 'ستظهر المهارات المرتبطة بعنصر المنهج هنا عند إضافتها.'
+      : 'Skills linked to this curriculum item will appear here when they are added.';
+  }
+
+  skillsLoadErrorFallback(): string {
+    return this.i18n.language() === 'ar' ? 'تعذر تحميل المهارات. حاول مرة أخرى.' : 'Unable to load skills. Please try again.';
+  }
+
+  skillsCountLabel(): string {
+    const count = this.skills().length;
+    if (this.i18n.language() === 'ar') {
+      return `${count} مهارة`;
+    }
+    return count === 1 ? '1 skill' : `${count} skills`;
+  }
+
+  addSkillLabel(): string {
+    return this.i18n.language() === 'ar' ? 'إضافة مهارة جديدة' : 'Add New Skill';
+  }
+
+  skillNameLabel(): string {
+    return this.i18n.language() === 'ar' ? 'اسم المهارة' : 'Name of skill';
+  }
+
+  skillDescriptionLabel(): string {
+    return this.i18n.language() === 'ar' ? 'الوصف' : 'Description';
+  }
+
+  skillModalTitle(modal: SkillModalState): string {
+    if (this.i18n.language() === 'ar') {
+      return modal.mode === 'edit' ? 'تعديل المهارة' : 'إضافة مهارة جديدة';
+    }
+    return modal.mode === 'edit' ? 'Edit skill' : 'Add new skill';
+  }
+
+  skillModalDescription(): string {
+    return this.i18n.language() === 'ar'
+      ? 'أدخل اسم المهارة ووصفاً مختصراً لها.'
+      : 'Enter the skill name and a short description.';
+  }
+
+  saveSkillLabel(modal: SkillModalState): string {
+    if (this.i18n.language() === 'ar') {
+      return modal.mode === 'edit' ? 'حفظ المهارة' : 'إضافة المهارة';
+    }
+    return modal.mode === 'edit' ? 'Save skill' : 'Add skill';
+  }
+
+  skillTableHeaderLabel(key: 'name' | 'description' | 'actions'): string {
+    const labels = {
+      name: { en: 'Name', ar: 'الاسم' },
+      description: { en: 'Description', ar: 'الوصف' },
+      actions: { en: 'Actions', ar: 'الاجرائات' },
+    } as const;
+    return labels[key][this.i18n.language()];
+  }
+
+  skillActionLabel(action: 'edit' | 'delete', skill: TenantCurriculumSkill): string {
+    const actionLabel = this.i18n.language() === 'ar'
+      ? action === 'edit' ? 'تعديل' : 'حذف'
+      : action === 'edit' ? 'Edit' : 'Delete';
+    return `${actionLabel} ${skill.name}`;
+  }
+
+  openCreateSkillModal(): void {
+    this.skillModalError.set(null);
+    this.skillModal.set({ mode: 'create', skill: null, name: '', description: '' });
+  }
+
+  openEditSkillModal(skill: TenantCurriculumSkill): void {
+    this.skillModalError.set(null);
+    this.skillModal.set({ mode: 'edit', skill, name: skill.name, description: skill.description ?? '' });
+  }
+
+  closeSkillModal(): void {
+    this.skillModal.set(null);
+    this.skillModalError.set(null);
+  }
+
+  updateSkillModalName(event: Event): void {
+    const value = event.target instanceof HTMLInputElement ? event.target.value : '';
+    this.skillModal.update((modal) => modal ? { ...modal, name: value } : modal);
+  }
+
+  updateSkillModalDescription(event: Event): void {
+    const value = event.target instanceof HTMLTextAreaElement ? event.target.value : '';
+    this.skillModal.update((modal) => modal ? { ...modal, description: value } : modal);
+  }
+
+  async saveSkillModal(): Promise<void> {
+    if (this.skillSaving()) {
+      return;
+    }
+
+    const subject = this.subject();
+    const nodeId = this.selectedNodeId();
+    const modal = this.skillModal();
+    if (!subject || !nodeId || !modal) {
+      return;
+    }
+
+    const name = modal.name.trim();
+    const description = modal.description.trim();
+    if (!name) {
+      this.skillModalError.set(this.i18n.language() === 'ar' ? 'اسم المهارة مطلوب.' : 'Skill name is required.');
+      return;
+    }
+
+    this.skillSaving.set(true);
+    this.skillModalError.set(null);
+    try {
+      if (modal.mode === 'edit' && modal.skill) {
+        await this.data.updateCurriculumSkill(subject.id, nodeId, modal.skill.id, { name, description });
+      } else {
+        await this.data.createCurriculumSkill(subject.id, nodeId, { name, description });
+      }
+      this.closeSkillModal();
+      await this.reloadSkills();
+    } catch (error) {
+      this.skillModalError.set(this.data.toUserMessage(error, this.i18n.language() === 'ar' ? 'تعذر حفظ المهارة. حاول مرة أخرى.' : 'Unable to save skill. Please try again.'));
+    } finally {
+      this.skillSaving.set(false);
+    }
+  }
+
+  async deleteSkill(skillId: string): Promise<void> {
+    const subject = this.subject();
+    const nodeId = this.selectedNodeId();
+    if (!subject || !nodeId || this.skillDeleteBusyId()) {
+      return;
+    }
+
+    this.skillDeleteBusyId.set(skillId);
+    this.skillsError.set(null);
+    try {
+      await this.data.deleteCurriculumSkill(subject.id, nodeId, skillId);
+      await this.reloadSkills();
+    } catch (error) {
+      this.skillsError.set(this.data.toUserMessage(error, this.i18n.language() === 'ar' ? 'تعذر حذف المهارة. حاول مرة أخرى.' : 'Unable to delete skill. Please try again.'));
+    } finally {
+      this.skillDeleteBusyId.set(null);
+    }
   }
 
   materialFolderFilesLabel(folder: TenantCurriculumMaterialFolder): string {
@@ -667,6 +835,7 @@ export class TenantSubjectCurriculumDetailsComponent implements OnInit {
   private async loadSubjectAndCurriculum(subjectId: string | null): Promise<void> {
     this.curriculumRoot.set(null);
     this.questionRows.set([]);
+    this.skills.set([]);
     await this.facade.loadSubject(subjectId);
     const subject = this.subject();
     if (subject) {
@@ -676,6 +845,7 @@ export class TenantSubjectCurriculumDetailsComponent implements OnInit {
       if (nodeId) {
         await this.loadQuestions(subject.id, nodeId);
         await this.loadMaterialFolders(subject.id, nodeId);
+        await this.loadSkills(subject.id, nodeId);
       }
     }
   }
@@ -701,6 +871,15 @@ export class TenantSubjectCurriculumDetailsComponent implements OnInit {
       return;
     }
     await this.loadMaterialFolders(subject.id, nodeId);
+  }
+
+  private async reloadSkills(): Promise<void> {
+    const subject = this.subject();
+    const nodeId = this.selectedNodeId();
+    if (!subject || !nodeId) {
+      return;
+    }
+    await this.loadSkills(subject.id, nodeId);
   }
 
   private async loadQuestionTypes(): Promise<void> {
@@ -763,6 +942,18 @@ export class TenantSubjectCurriculumDetailsComponent implements OnInit {
       this.materialError.set(this.data.toUserMessage(error, 'Unable to load material folders. Please try again.'));
     } finally {
       this.materialLoading.set(false);
+    }
+  }
+
+  private async loadSkills(subjectId: string, nodeId: string): Promise<void> {
+    this.skillsLoading.set(true);
+    this.skillsError.set(null);
+    try {
+      this.skills.set(await this.data.listCurriculumSkills(subjectId, nodeId));
+    } catch (error) {
+      this.skillsError.set(this.data.toUserMessage(error, this.skillsLoadErrorFallback()));
+    } finally {
+      this.skillsLoading.set(false);
     }
   }
 

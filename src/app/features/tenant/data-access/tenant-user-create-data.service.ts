@@ -1,80 +1,90 @@
 import { Injectable, inject } from '@angular/core';
-import { map, Observable, of } from 'rxjs';
-import { catchError, delay } from 'rxjs/operators';
-import { TenantApiService } from './tenant-api.service';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+
+import { environment } from '../../../../environments/environment';
+import type { TenantAccessUserSummary, TenantRoleSummary, TenantUserWriteRequest } from '../models/tenant-access-management.models';
 import {
   TenantUserCreateForm,
-  TenantUserExisting,
   TenantUserRoleOption,
   TenantUserStatusOption,
 } from '../models/tenant-user-create.models';
 
 @Injectable({ providedIn: 'root' })
 export class TenantUserCreateDataService {
-  private readonly tenantApi = inject(TenantApiService);
-
-  readonly roles: TenantUserRoleOption[] = [
-    {
-      id: 'Staff',
-      label: 'Staff',
-      icon: 'person',
-      description: 'Basic administrative tasks and read-only data access.',
-    },
-    {
-      id: 'Teacher',
-      label: 'Teacher',
-      icon: 'school',
-      description: 'Manage groups, attendance, and student grades.',
-    },
-    {
-      id: 'Manager',
-      label: 'Manager',
-      icon: 'manage_accounts',
-      description: 'Department management and academic reporting.',
-    },
-    {
-      id: 'Admin',
-      label: 'Admin',
-      icon: 'admin_panel_settings',
-      description: 'Full system access including billing and settings.',
-    },
-  ];
+  private readonly http = inject(HttpClient);
 
   readonly statuses: TenantUserStatusOption[] = [
     { id: 'Active', label: 'Active', color: 'bg-emerald-500' },
-    { id: 'Pending', label: 'Pending', color: 'bg-amber-500' },
     { id: 'Inactive', label: 'Inactive', color: 'bg-slate-400' },
   ];
 
-  private readonly existingUsers: TenantUserExisting[] = [
-    { name: 'Ahmed Admin', email: 'admin@school.com' },
-    { name: 'Sara Manager', email: 'sara.m@school.com' },
-    { name: 'John Staff', email: 'john.s@school.com' },
-  ];
-
-  isDuplicateName(name: string): Observable<boolean> {
-    return of(name).pipe(
-      delay(800),
-      map((value) =>
-        this.existingUsers.some((user) => user.name.toLowerCase() === value.toLowerCase()),
-      ),
-      catchError(() => of(false)),
+  loadActiveRoles(): Observable<TenantUserRoleOption[]> {
+    return this.http.get<{ roles: TenantRoleSummary[] }>(`${environment.apiBaseUrl}/tenant/access/roles`, {
+      params: { status: 'ACTIVE' },
+    }).pipe(
+      map((response) => response.roles.map((role) => ({
+        id: role.id,
+        label: role.name,
+        icon: role.protectedRole ? 'admin_panel_settings' : 'security',
+        description: `${role.permissions.length} permissions`,
+        permissions: role.permissions,
+      }))),
+      catchError(() => of([])),
     );
   }
 
-  isDuplicateEmail(email: string): Observable<boolean> {
-    return of(email).pipe(
-      delay(800),
-      map((value) =>
-        this.existingUsers.some((user) => user.email.toLowerCase() === value.toLowerCase()),
-      ),
-      catchError(() => of(false)),
+  isDuplicateName(_name: string): Observable<boolean> {
+    return of(false);
+  }
+
+  isDuplicateEmail(_email: string): Observable<boolean> {
+    return of(false);
+  }
+
+  createUser(payload: TenantUserCreateForm): Observable<TenantAccessUserSummary> {
+    return this.http.post<TenantAccessUserSummary>(
+      `${environment.apiBaseUrl}/tenant/users`,
+      this.toCreateRequest(payload),
     );
   }
 
-  createUser(payload: TenantUserCreateForm): Observable<void> {
-    return this.tenantApi
-      .createUser(payload as unknown as Record<string, unknown>)
-      .pipe(map(() => void 0));
+  updateUser(userId: string, payload: TenantUserCreateForm): Observable<TenantAccessUserSummary> {
+    return this.http.put<TenantAccessUserSummary>(
+      `${environment.apiBaseUrl}/tenant/users/${userId}`,
+      this.toUpdateRequest(payload),
+    );
+  }
+
+  loadUser(userId: string): Observable<TenantAccessUserSummary | null> {
+    return this.http.get<{ users: TenantAccessUserSummary[] }>(`${environment.apiBaseUrl}/tenant/users`).pipe(
+      map((response) => response.users.find((user) => user.userId === userId) ?? null),
+      catchError(() => of(null)),
+    );
+  }
+
+  private toCreateRequest(payload: TenantUserCreateForm): TenantUserWriteRequest {
+    return {
+      fullName: payload.fullName.trim(),
+      email: payload.email.trim(),
+      username: payload.username.trim(),
+      roleId: payload.roleId,
+      enabled: payload.enabled,
+      sendInvite: payload.sendInvite,
+      password: payload.password,
+    };
+  }
+
+  private toUpdateRequest(payload: TenantUserCreateForm): TenantUserWriteRequest {
+    return {
+      fullName: payload.fullName.trim(),
+      email: payload.email.trim(),
+      username: payload.username.trim(),
+      roleId: payload.roleId,
+      enabled: payload.enabled,
+      sendInvite: payload.sendInvite,
+      password: null,
+    };
   }
 }

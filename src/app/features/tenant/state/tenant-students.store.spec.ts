@@ -14,6 +14,9 @@ describe('TenantStudentsStore', () => {
       name: 'Ahmed Ali',
       email: 'ahmed@example.com',
       grade: 'Grade 12',
+      gradeId: 'grade-12',
+      stage: 'Secondary Stage',
+      stageId: 'stage-secondary',
       status: 'Active',
       enrollmentDate: '2024-01-10',
     },
@@ -22,6 +25,9 @@ describe('TenantStudentsStore', () => {
       name: 'Sara Mohamed',
       email: 'sara@example.com',
       grade: 'Grade 11',
+      gradeId: 'grade-11',
+      stage: 'Secondary Stage',
+      stageId: 'stage-secondary',
       status: 'Inactive',
       enrollmentDate: '2023-09-15',
     },
@@ -30,6 +36,9 @@ describe('TenantStudentsStore', () => {
       name: 'Omar Hassan',
       email: 'omar@example.com',
       grade: 'Grade 10',
+      gradeId: 'grade-10',
+      stage: 'Preparatory Stage',
+      stageId: 'stage-prep',
       status: 'Pending',
       enrollmentDate: '2023-10-20',
     },
@@ -46,8 +55,9 @@ describe('TenantStudentsStore', () => {
     store.loadStudents();
   });
 
-  it('filters by grade and status', () => {
-    store.gradeFilter.set('Grade 12');
+  it('filters by stage, grade, and status', () => {
+    store.stageFilter.set('stage-secondary');
+    store.gradeFilter.set('grade-12');
     store.statusFilter.set('Active');
 
     const filtered = store.filteredStudents();

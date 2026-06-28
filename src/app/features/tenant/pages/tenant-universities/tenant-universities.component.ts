@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { TenantUniversitiesFacade } from '../../state/tenant-universities.facade';
 import { TenantUniversitySort } from '../../state/tenant-universities.store';
@@ -16,6 +16,7 @@ import { TenantUniversityCreateComponent } from '../tenant-university-create/ten
 })
 export class TenantUniversitiesComponent implements OnInit, OnDestroy {
   private readonly facade = inject(TenantUniversitiesFacade);
+  private readonly router = inject(Router);
 
   readonly searchQuery = this.facade.searchQuery;
   readonly countryFilter = this.facade.countryFilter;
@@ -100,6 +101,18 @@ export class TenantUniversitiesComponent implements OnInit, OnDestroy {
 
   deleteUniversity(id: string): void {
     void this.facade.deleteUniversity(id);
+  }
+
+  isExamsUniversityEducationRoute(): boolean {
+    return this.router.url.startsWith('/tenant/exams/university-education');
+  }
+
+  openRelatedColleges(universityId: string): void {
+    if (this.isExamsUniversityEducationRoute()) {
+      void this.router.navigate(['/tenant/exams/university-education', universityId]);
+      return;
+    }
+    void this.router.navigate(['/tenant/colleges'], { queryParams: { universityId } });
   }
 
   private scheduleFilteredLoad(): void {

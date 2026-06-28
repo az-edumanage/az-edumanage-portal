@@ -52,6 +52,7 @@ export interface Teacher {
   collegeIds: string[];
   universitySubjectIds: string[];
   groups?: TeacherGroup[];
+  tenantBound?: boolean;
   canManageAttendance: boolean;
   canManageExams: boolean;
   canMessageStudents: boolean;

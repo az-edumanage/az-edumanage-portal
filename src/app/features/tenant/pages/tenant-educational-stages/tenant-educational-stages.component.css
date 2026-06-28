@@ -264,6 +264,15 @@
   transition: background-color 0.2s ease;
 }
 
+.tenant-educational-stages-tr--clickable {
+  cursor: pointer;
+}
+
+.tenant-educational-stages-tr--clickable:focus-visible {
+  outline: 2px solid var(--color-action-primary);
+  outline-offset: -2px;
+}
+
 .tenant-educational-stages-tr:hover {
   background: var(--color-bg-muted);
 }

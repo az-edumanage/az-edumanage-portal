@@ -8,10 +8,18 @@ export class TenantRoomDetailsStore {
 
   readonly room = signal<RoomDetails | null>(null);
   readonly schedule = signal<RoomSchedule[]>([]);
+  readonly loading = signal(false);
+  readonly error = signal('');
 
   readonly totalOccupiedHours = computed(() => this.schedule().reduce((acc, curr) => acc + curr.durationHours, 0));
   readonly occupiedDaysCount = computed(() => new Set(this.schedule().map((item) => item.day)).size);
-  readonly totalStudents = computed(() => this.schedule().reduce((acc, curr) => acc + curr.studentsCount, 0));
+  readonly totalStudents = computed(() => {
+    const studentsByGroup = new Map<string, number>();
+    this.schedule().forEach((item) => {
+      studentsByGroup.set(item.groupId, item.studentsCount);
+    });
+    return Array.from(studentsByGroup.values()).reduce((acc, count) => acc + count, 0);
+  });
   readonly uniqueGroupsCount = computed(() => new Set(this.schedule().map((item) => item.group)).size);
 
   readonly freeDays = computed(() => {
@@ -26,12 +34,29 @@ export class TenantRoomDetailsStore {
   });
 
   readonly avgGroupSize = computed(() => {
-    if (this.schedule().length === 0) return 0;
-    return Math.round(this.totalStudents() / this.schedule().length);
+    const groupsCount = this.uniqueGroupsCount();
+    if (groupsCount === 0) return 0;
+    return Math.round(this.totalStudents() / groupsCount);
   });
 
-  loadRoom(id: string | null): void {
-    this.room.set(this.data.getRoomById(id));
-    this.schedule.set(this.data.getScheduleByRoomId());
+  async loadRoom(id: string | null): Promise<void> {
+    this.loading.set(true);
+    this.error.set('');
+    this.schedule.set([]);
+
+    try {
+      const [room, schedule] = await Promise.all([
+        this.data.getRoomById(id),
+        this.data.getScheduleByRoomId(id),
+      ]);
+      this.room.set(room);
+      this.schedule.set(schedule);
+    } catch (error) {
+      this.room.set(null);
+      this.schedule.set([]);
+      this.error.set(this.data.toUserMessage(error));
+    } finally {
+      this.loading.set(false);
+    }
   }
 }

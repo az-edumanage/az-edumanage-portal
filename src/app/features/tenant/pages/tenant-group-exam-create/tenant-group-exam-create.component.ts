@@ -18,10 +18,25 @@ export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
 
   readonly groupId = this.facade.groupId;
   readonly isSubmitting = this.facade.isSubmitting;
+  readonly groupContext = this.facade.groupContext;
+  readonly isGroupContextLoading = this.facade.isGroupContextLoading;
+  readonly groupContextError = this.facade.groupContextError;
+  readonly publishedExamOptions = this.facade.publishedExamOptions;
+  readonly examSearchQuery = this.facade.examSearchQuery;
+  readonly isExamOptionsLoading = this.facade.isExamOptionsLoading;
+  readonly examOptionsError = this.facade.examOptionsError;
+  readonly previewExam = this.facade.previewExam;
+  readonly previewQuestions = this.facade.previewQuestions;
+  readonly isPreviewOpen = this.facade.isPreviewOpen;
+  readonly isPreviewLoading = this.facade.isPreviewLoading;
+  readonly previewError = this.facade.previewError;
   readonly examForm = this.facade.examForm;
 
   ngOnInit(): void {
-    this.facade.initialize(this.route.snapshot.paramMap.get('id'));
+    this.facade.initialize(
+      this.route.snapshot.paramMap.get('id'),
+      this.route.snapshot.queryParamMap.get('freshCreate') === 'true',
+    );
   }
 
   ngOnDestroy(): void {
@@ -34,5 +49,35 @@ export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     this.facade.onSubmit();
+  }
+
+  onSelectExam(examId: string): void {
+    const exam = this.facade.allPublishedExamOptions().find((option) => option.id === examId);
+    if (exam) {
+      this.facade.selectPublishedExam(exam);
+    }
+  }
+
+  onSearchExams(event: Event): void {
+    this.facade.setExamSearchQuery((event.target as HTMLInputElement).value);
+  }
+
+  onPreviewExam(examId: string): void {
+    const exam = this.facade.allPublishedExamOptions().find((option) => option.id === examId);
+    if (exam) {
+      this.facade.openQuestionPreview(exam);
+    }
+  }
+
+  onClosePreview(): void {
+    this.facade.closeQuestionPreview();
+  }
+
+  onRetryPreview(): void {
+    this.facade.retryQuestionPreview();
+  }
+
+  onRetryExamOptions(): void {
+    this.facade.retryExamOptions();
   }
 }

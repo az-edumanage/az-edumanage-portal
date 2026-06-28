@@ -86,7 +86,7 @@ describe('OwnerTenantCreateDataService', () => {
       tenantUsername: 'abc-admin',
       temporaryPassword: 'TempPass123!',
       subdomain: 'abc-center',
-      domain: '.remix.com',
+      domain: '.az-edumanage.com',
       contactName: 'Tenant Admin',
       contactEmail: 'admin@example.com',
       contactPhone: '+1555012345',

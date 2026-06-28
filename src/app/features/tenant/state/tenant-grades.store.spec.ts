@@ -46,6 +46,16 @@ describe('TenantGradesStore', () => {
     expect(filtered[0].name).toBe('Primary 2');
   });
 
+  it('filters grades by stage id', async () => {
+    await store.loadGrades();
+    store.stageFilter.set('stage-primary');
+
+    const filtered = store.filteredGrades();
+
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0].id).toBe('grade-primary');
+  });
+
   it('sorts real rows by student count ascending', async () => {
     await store.loadGrades();
     store.sortBy.set('students-asc');

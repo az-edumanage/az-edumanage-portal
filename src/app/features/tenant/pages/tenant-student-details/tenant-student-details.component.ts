@@ -20,6 +20,7 @@ const EMPTY_SCHEDULE_SUMMARY: StudentScheduleSummary = {
   standalone: true,
   imports: [CommonModule, RouterModule, MatIconModule],
   templateUrl: './tenant-student-details.component.html',
+  styleUrl: './tenant-student-details.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TenantStudentDetailsComponent implements OnInit {
@@ -32,6 +33,25 @@ export class TenantStudentDetailsComponent implements OnInit {
   readonly isLoading = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly scheduleSummary = computed(() => this.student()?.scheduleSummary ?? EMPTY_SCHEDULE_SUMMARY);
+  readonly studentInitial = computed(() => this.student()?.name?.trim().charAt(0).toUpperCase() || 'S');
+  readonly currentGroupLabel = computed(() => {
+    const student = this.student();
+    if (!student) {
+      return 'Not assigned';
+    }
+    const firstGroup = student.scheduleRows.find((row) => row.group?.trim());
+    return firstGroup?.group?.trim() || `${student.stage || student.educationCategory} ${student.grade ? `- ${student.grade}` : ''}`.trim();
+  });
+  readonly nextClass = computed(() => {
+    const row = this.student()?.scheduleRows.find((item) => item.day || item.time || item.group);
+    if (!row) {
+      return null;
+    }
+    return {
+      title: row.day && row.time ? `${row.day}, ${row.time}` : row.day || row.time || 'Scheduled class',
+      meta: [row.group, row.room].filter(Boolean).join(' - '),
+    };
+  });
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');

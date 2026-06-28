@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subject, throwError } from 'rxjs';
 import { TaskService } from '../../../core/services/task.service';
 import { TenantTeacherCreateDataService } from '../data-access/tenant-teacher-create-data.service';
 import { TenantTeacherEditSeed, TenantTeacherLookupData } from '../models/tenant-teacher-create.models';
@@ -71,7 +71,79 @@ describe('TenantTeacherCreateFacade', () => {
     expect(facade.availableColleges().map((college) => college.id)).toEqual(['college-1']);
     expect(facade.availableUniversitySubjects().map((subject) => subject.id)).toEqual(['university-subject-1']);
   });
+
+  it('requires username and initial password in create mode before submit', () => {
+    facade.initialize(null);
+    lookups$.next(emptyLookups());
+    facade.teacherForm.patchValue({
+      fullName: 'Teacher Alpha',
+      email: 'teacher.alpha@example.com',
+      username: '',
+      password: '',
+    });
+
+    facade.onSubmit();
+
+    expect(facade.teacherForm.controls.username.invalid).toBe(true);
+    expect(facade.teacherForm.controls.password.invalid).toBe(true);
+    expect(facade.teacherForm.controls.username.touched).toBe(true);
+    expect(facade.teacherForm.controls.password.touched).toBe(true);
+    expect(dataServiceMock.createOrUpdateTeacher).not.toHaveBeenCalled();
+  });
+
+  it('does not require username or password in edit mode', () => {
+    facade.initialize('teacher-1');
+    lookups$.next(emptyLookups());
+    teacher$.next({
+      fullName: 'Teacher Alpha',
+      email: 'teacher.alpha@example.com',
+      username: '',
+      password: '',
+      educationCategory: 'BASIC_EDUCATION',
+      stageIds: ['stage-1'],
+      gradeIds: ['grade-1'],
+      subjectIds: ['subject-1'],
+      status: 'Active',
+    });
+
+    expect(facade.teacherForm.controls.username.validator).toBeNull();
+    expect(facade.teacherForm.controls.password.validator).toBeNull();
+    expect(facade.teacherForm.controls.username.valid).toBe(true);
+    expect(facade.teacherForm.controls.password.valid).toBe(true);
+  });
+
+  it('surfaces backend teacher save errors in state', () => {
+    dataServiceMock.createOrUpdateTeacher.mockReturnValue(throwError(() => new Error('User name already exists')));
+    facade.initialize(null);
+    lookups$.next(emptyLookups());
+    facade.teacherForm.patchValue({
+      fullName: 'Teacher Alpha',
+      email: 'teacher.alpha@example.com',
+      username: 'teacher.alpha',
+      password: 'Teacher123!',
+      educationCategory: 'BASIC_EDUCATION',
+      stageIds: ['stage-1'],
+      gradeIds: ['grade-1'],
+      subjectIds: ['subject-1'],
+      status: 'Active',
+    });
+
+    facade.onSubmit();
+
+    expect(facade.errorMessage()).toBe('User name already exists');
+  });
 });
+
+function emptyLookups(): TenantTeacherLookupData {
+  return {
+    stages: [{ id: 'stage-1', name: 'Secondary' }],
+    grades: [{ id: 'grade-1', name: 'Grade 10', stageId: 'stage-1' }],
+    subjects: [{ id: 'subject-1', name: 'Physics', stageId: 'stage-1', gradeId: 'grade-1' }],
+    universities: [],
+    colleges: [],
+    universitySubjects: [],
+  };
+}
 
 function defaultFormValue() {
   return {

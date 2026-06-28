@@ -6,7 +6,7 @@ import { TenantAccessContextService } from '../../data-access/tenant-access-cont
 
 describe('TenantAccessStateComponent', () => {
   async function createComponent(
-      status: 'pending' | 'suspended' | 'disabled' | 'blocked',
+      status: 'pending' | 'suspended' | 'disabled' | 'blocked' | 'denied' | 'unavailable',
       reason: string | null = null,
   ): Promise<ComponentFixture<TenantAccessStateComponent>> {
     const accessContextService = {
@@ -62,5 +62,19 @@ describe('TenantAccessStateComponent', () => {
 
     expect(fixture.nativeElement.textContent).toContain('workspace is blocked');
     expect(fixture.nativeElement.textContent).toContain('security or policy');
+  });
+
+  it('renders tenant mismatch access denied as a host-aware failure', async () => {
+    const fixture = await createComponent('denied');
+
+    expect(fixture.nativeElement.textContent).toContain('Access denied for this tenant');
+    expect(fixture.nativeElement.textContent).toContain('correct subdomain');
+  });
+
+  it('renders unavailable tenant host failures', async () => {
+    const fixture = await createComponent('unavailable');
+
+    expect(fixture.nativeElement.textContent).toContain('tenant host is not available');
+    expect(fixture.nativeElement.textContent).toContain('not mapped to an active tenant');
   });
 });

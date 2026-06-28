@@ -13,3 +13,14 @@ export interface ProvisioningJob {
   isActive: boolean;
   error: string | null;
 }
+
+export interface TenantMigrationStatus {
+  tenantId: string;
+  schemaName: string;
+  targetVersion: string | null;
+  currentVersion: string | null;
+  status: string;
+  startedAt: string | null;
+  completedAt: string | null;
+  errorMessage: string | null;
+}

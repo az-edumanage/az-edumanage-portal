@@ -36,4 +36,8 @@ export class TenantUsersFacade {
   toggleFilterPanel(): void {
     this.showFilterPanel.update((value) => !value);
   }
+
+  load(): Promise<void> {
+    return this.store.load();
+  }
 }

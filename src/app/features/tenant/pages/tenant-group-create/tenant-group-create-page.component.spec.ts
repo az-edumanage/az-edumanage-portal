@@ -6,7 +6,7 @@ import { of } from 'rxjs';
 import { TenantGroupCreatePageComponent } from './tenant-group-create-page.component';
 import { TenantGroupCreateDataService } from '../../data-access/tenant-group-create-data.service';
 import { TenantGroupCreateFacade } from '../../state/tenant-group-create.facade';
-import { TenantSubscriptionPeriodSettingsService } from '../../data-access/tenant-subscription-period-settings.service';
+import { TenantSubscriptionPeriod, TenantSubscriptionPeriodSettingsService } from '../../data-access/tenant-subscription-period-settings.service';
 import { TaskService } from '../../../../core/services/task.service';
 
 @Component({
@@ -110,12 +110,13 @@ describe('TenantGroupCreatePageComponent', () => {
     setCollegeSearchQuery: (_value: string) => {},
     setSubjectSearchQuery: (_value: string) => {},
     setRoomSearchQuery: (_value: string) => {},
+    closeAllDropdowns: () => {},
     onCancel: () => {},
     onSubmit: () => {},
   };
 
   const subscriptionPeriodSettings = {
-    listSubscriptionPeriods: vi.fn(() => Promise.resolve([
+    listSubscriptionPeriods: vi.fn<() => Promise<TenantSubscriptionPeriod[]>>(() => Promise.resolve([
       {
         id: 'period-1',
         name: 'Monthly',
@@ -126,6 +127,16 @@ describe('TenantGroupCreatePageComponent', () => {
         updatedAt: '2026-06-06T00:00:00Z',
       },
     ])),
+    createSubscriptionPeriod: vi.fn(() => Promise.resolve({
+      id: 'period-2',
+      name: 'Weekly',
+      durationType: 'Day' as const,
+      durationValue: 7,
+      description: 'Weekly subscription',
+      createdAt: '2026-06-06T00:00:00Z',
+      updatedAt: '2026-06-06T00:00:00Z',
+    })),
+    toUserMessage: vi.fn(() => 'Unable to save subscription period. Please try again.'),
   };
 
   const mockActivatedRoute = { 
@@ -178,6 +189,16 @@ describe('TenantGroupCreatePageComponent', () => {
         updatedAt: '2026-06-06T00:00:00Z',
       },
     ]);
+    subscriptionPeriodSettings.createSubscriptionPeriod.mockResolvedValue({
+      id: 'period-2',
+      name: 'Weekly',
+      durationType: 'Day' as const,
+      durationValue: 7,
+      description: 'Weekly subscription',
+      createdAt: '2026-06-06T00:00:00Z',
+      updatedAt: '2026-06-06T00:00:00Z',
+    });
+    subscriptionPeriodSettings.toUserMessage.mockReturnValue('Unable to save subscription period. Please try again.');
     mockFacade.initialize.mockClear();
 
     await TestBed.configureTestingModule({
@@ -264,6 +285,79 @@ describe('TenantGroupCreatePageComponent', () => {
     expect(conflictingButtons.every((button) => button.disabled)).toBe(true);
 
     mockFacade.hasRoomAvailabilityConflict.set(false);
+  });
+
+  it('adds a new subscription period method from the dropdown and selects it', async () => {
+    const fixture = TestBed.createComponent(TenantGroupCreatePageComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    component.openAddPaymentMethodModal();
+    component.setNewPaymentMethodName('Weekly');
+    component.selectNewPaymentMethodDurationType('Day');
+    component.setNewPaymentMethodDurationValue(7);
+    component.setNewPaymentMethodDescription('Weekly subscription');
+    await component.saveNewPaymentMethod();
+
+    expect(subscriptionPeriodSettings.createSubscriptionPeriod).toHaveBeenCalledWith({
+      name: 'Weekly',
+      durationType: 'Day',
+      durationValue: 7,
+      description: 'Weekly subscription',
+    });
+    expect(mockFacade.groupForm.get('paymentMethod')?.value).toBe('Weekly');
+    expect(mockFacade.groupForm.get('paymentMethodId')?.value).toBe('period-2');
+    expect(component.paymentMethodOptions().map((option) => option.name)).toContain('Weekly');
+    expect(component.showAddPaymentMethodModal()).toBe(false);
+  });
+
+  it('reloads subscription periods when opening the Method dropdown so settings changes appear', async () => {
+    subscriptionPeriodSettings.listSubscriptionPeriods
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        {
+          id: 'period-settings',
+          name: 'Quarterly',
+          durationType: 'Month' as const,
+          durationValue: 3,
+          description: 'Added from General settings',
+          createdAt: '2026-06-06T00:00:00Z',
+          updatedAt: '2026-06-06T00:00:00Z',
+        },
+      ]);
+    const fixture = TestBed.createComponent(TenantGroupCreatePageComponent);
+    const component = fixture.componentInstance;
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(component.paymentMethodOptions()).toEqual([]);
+
+    component.togglePaymentMethodDropdown();
+    await fixture.whenStable();
+
+    expect(subscriptionPeriodSettings.listSubscriptionPeriods).toHaveBeenCalledTimes(2);
+    expect(component.paymentMethodOptions()).toEqual([
+      expect.objectContaining({
+        id: 'period-settings',
+        name: 'Quarterly',
+      }),
+    ]);
+    expect(component.filteredPaymentMethods().map((option) => option.name)).toContain('Quarterly');
+  });
+
+  it('shows validation when adding a method without a name', async () => {
+    const fixture = TestBed.createComponent(TenantGroupCreatePageComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    component.openAddPaymentMethodModal();
+    component.setNewPaymentMethodName(' ');
+    await component.saveNewPaymentMethod();
+
+    expect(subscriptionPeriodSettings.createSubscriptionPeriod).not.toHaveBeenCalled();
+    expect(component.newPaymentMethodNameError()).toBe('Method name is required.');
   });
 });
 

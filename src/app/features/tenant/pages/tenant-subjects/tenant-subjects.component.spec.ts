@@ -92,6 +92,64 @@ describe('TenantSubjectsComponent', () => {
     expect(facade.deleteSubject).toHaveBeenCalledWith('subject-1');
   });
 
+  it('opens subject details when a table row is clicked', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    facade.viewMode.set('list');
+    fixture.detectChanges();
+
+    const row = fixture.nativeElement.querySelector('.tenant-grades-tbody tr') as HTMLTableRowElement;
+    row.click();
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/tenant/subjects', 'subject-1']);
+  });
+
+  it('does not open subject details when delete action is clicked from a table row', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    facade.viewMode.set('list');
+    fixture.detectChanges();
+
+    const deleteButton = fixture.nativeElement.querySelector('.tenant-grades-row-btn--delete') as HTMLButtonElement;
+    deleteButton.click();
+
+    expect(facade.deleteSubject).toHaveBeenCalledWith('subject-1');
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  it('applies stage query parameter as the subjects filter', () => {
+    const router = TestBed.inject(Router);
+    const route = TestBed.inject(ActivatedRoute);
+    const originalUrlDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(router), 'url');
+    const originalSnapshotDescriptor = Object.getOwnPropertyDescriptor(route, 'snapshot');
+    Object.defineProperty(router, 'url', {
+      configurable: true,
+      get: () => '/tenant/subjects',
+    });
+    Object.defineProperty(route, 'snapshot', {
+      configurable: true,
+      value: {
+        paramMap: convertToParamMap({}),
+        queryParamMap: convertToParamMap({ stageId: 'stage-1' }),
+      },
+    });
+    vi.clearAllMocks();
+
+    const filteredFixture = TestBed.createComponent(TenantSubjectsComponent);
+    filteredFixture.detectChanges();
+
+    expect(facade.setFilters).toHaveBeenCalledWith('stage-1', '', 'name');
+    expect(facade.loadSubjects).toHaveBeenCalledWith();
+    expect(filteredFixture.componentInstance.filterForm.controls.stageId.value).toBe('stage-1');
+
+    if (originalUrlDescriptor) {
+      Object.defineProperty(router, 'url', originalUrlDescriptor);
+    }
+    if (originalSnapshotDescriptor) {
+      Object.defineProperty(route, 'snapshot', originalSnapshotDescriptor);
+    }
+  });
+
   it('uses list view and hides edit and delete actions in the questions bank route', () => {
     const router = TestBed.inject(Router);
     const originalUrlDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(router), 'url');

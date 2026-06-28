@@ -1,5 +1,6 @@
 import { signal, computed } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter, Router } from '@angular/router';
 import { TenantEducationalStagesFacade } from '../../state/tenant-educational-stages.facade';
 import { TenantEducationalStagesComponent } from './tenant-educational-stages.component';
 
@@ -13,6 +14,7 @@ describe('TenantEducationalStagesComponent', () => {
       imports: [TenantEducationalStagesComponent],
       providers: [
         { provide: TenantEducationalStagesFacade, useValue: facade },
+        provideRouter([]),
       ],
     }).compileComponents();
 
@@ -36,6 +38,29 @@ describe('TenantEducationalStagesComponent', () => {
       description: 'Description',
       countryId: 'country-eg',
     });
+  });
+
+  it('routes a stage row to related grades', () => {
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const row = fixture.nativeElement.querySelector('.tenant-educational-stages-tr--clickable') as HTMLTableRowElement;
+
+    row.click();
+
+    expect(navigate).toHaveBeenCalledWith(['/tenant/grades'], {
+      queryParams: { stageId: 'stage-primary' },
+    });
+  });
+
+  it('does not route when row action buttons are clicked', () => {
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const editButton = fixture.nativeElement.querySelector('button[title="Edit"]') as HTMLButtonElement;
+
+    editButton.click();
+
+    expect(navigate).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.editingStage()?.id).toBe('stage-primary');
   });
 
   it('does not render grade or group creation controls', () => {

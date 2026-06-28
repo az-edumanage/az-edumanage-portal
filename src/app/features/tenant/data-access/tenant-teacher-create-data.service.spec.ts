@@ -24,13 +24,7 @@ describe('TenantTeacherCreateDataService', () => {
   });
 
   it('sends university education assignments when creating a teacher', () => {
-    service.createOrUpdateTeacher({
-      fullName: 'Teacher Alpha',
-      email: 'teacher.alpha@example.com',
-      phone: '+20 100 000 0000',
-      username: 'teacher.alpha',
-      password: 'Teacher123!',
-      forcePasswordChange: true,
+    service.createOrUpdateTeacher(defaultCreatePayload({
       educationCategory: 'UNIVERSITY_EDUCATION',
       stageIds: ['stage-1'],
       gradeIds: ['grade-1'],
@@ -38,13 +32,7 @@ describe('TenantTeacherCreateDataService', () => {
       universityIds: ['university-1'],
       collegeIds: ['college-1'],
       universitySubjectIds: ['university-subject-1'],
-      status: 'Active',
-      joinDate: '2026-05-31',
-      canManageAttendance: true,
-      canManageExams: true,
-      canMessageStudents: true,
-      documents: [],
-    }, null).subscribe();
+    }), null).subscribe();
 
     const request = httpTesting.expectOne((req) => req.url.endsWith('/tenant/teachers'));
     expect(request.request.method).toBe('POST');
@@ -60,6 +48,53 @@ describe('TenantTeacherCreateDataService', () => {
     request.flush(teacherResponse());
   });
 
+  it('sends teacher login credentials and profile fields when creating a teacher', () => {
+    service.createOrUpdateTeacher(defaultCreatePayload(), null).subscribe();
+
+    const request = httpTesting.expectOne((req) => req.url.endsWith('/tenant/teachers'));
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual(expect.objectContaining({
+      fullName: 'Teacher Alpha',
+      email: 'teacher.alpha@example.com',
+      phone: '+20 100 000 0000',
+      username: 'teacher.alpha',
+      password: 'Teacher123!',
+      forcePasswordChange: true,
+      educationCategory: 'BASIC_EDUCATION',
+      stageIds: ['stage-1'],
+      gradeIds: ['grade-1'],
+      subjectIds: ['subject-1'],
+      status: 'Active',
+    }));
+    request.flush(teacherResponse());
+  });
+
+  it('removes username password and force-password-change fields when editing a teacher', () => {
+    service.createOrUpdateTeacher(defaultCreatePayload(), 'teacher-1').subscribe();
+
+    const request = httpTesting.expectOne((req) => req.url.endsWith('/tenant/teachers/teacher-1'));
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body.username).toBeUndefined();
+    expect(request.request.body.password).toBeUndefined();
+    expect(request.request.body.forcePasswordChange).toBeUndefined();
+    expect(request.request.body.fullName).toBe('Teacher Alpha');
+    request.flush(teacherResponse());
+  });
+
+  it('surfaces duplicate username API errors as save errors', () => {
+    let errorMessage = '';
+    service.createOrUpdateTeacher(defaultCreatePayload(), null).subscribe({
+      error: (error: Error) => {
+        errorMessage = error.message;
+      },
+    });
+
+    const request = httpTesting.expectOne((req) => req.url.endsWith('/tenant/teachers'));
+    request.flush({ message: 'User name already exists' }, { status: 400, statusText: 'Bad Request' });
+
+    expect(errorMessage).toBe('User name already exists');
+  });
+
   it('maps returned university education assignments for editing', () => {
     service.getTeacherForEdit('teacher-1').subscribe((seed) => {
       expect(seed.educationCategory).toBe('UNIVERSITY_EDUCATION');
@@ -73,6 +108,31 @@ describe('TenantTeacherCreateDataService', () => {
     request.flush(teacherResponse());
   });
 });
+
+function defaultCreatePayload(overrides = {}) {
+  return {
+    fullName: 'Teacher Alpha',
+    email: 'teacher.alpha@example.com',
+    phone: '+20 100 000 0000',
+    username: 'teacher.alpha',
+    password: 'Teacher123!',
+    forcePasswordChange: true,
+    educationCategory: 'BASIC_EDUCATION' as const,
+    stageIds: ['stage-1'],
+    gradeIds: ['grade-1'],
+    subjectIds: ['subject-1'],
+    universityIds: [],
+    collegeIds: [],
+    universitySubjectIds: [],
+    status: 'Active' as const,
+    joinDate: '2026-05-31',
+    canManageAttendance: true,
+    canManageExams: true,
+    canMessageStudents: true,
+    documents: [],
+    ...overrides,
+  };
+}
 
 function teacherResponse() {
   return {
@@ -98,6 +158,7 @@ function teacherResponse() {
     collegeIds: ['college-1'],
     universitySubjectIds: ['university-subject-1'],
     groups: [],
+    tenantBound: true,
     canManageAttendance: true,
     canManageExams: true,
     canMessageStudents: true,

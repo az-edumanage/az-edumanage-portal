@@ -9,6 +9,7 @@ export class TenantGradesFacade {
   readonly showFilterPanel = this.store.showFilterPanel;
   readonly viewMode = this.store.viewMode;
   readonly levelFilter = this.store.levelFilter;
+  readonly stageFilter = this.store.stageFilter;
   readonly minStudentsFilter = this.store.minStudentsFilter;
   readonly maxStudentsFilter = this.store.maxStudentsFilter;
   readonly sortBy = this.store.sortBy;
@@ -32,12 +33,17 @@ export class TenantGradesFacade {
     this.sortBy.set(sortBy || 'name');
   }
 
+  setStageFilter(stageId: string): void {
+    this.stageFilter.set(stageId);
+  }
+
   clearAdvancedFilters(): void {
     this.setFilters('', null, null, 'name');
   }
 
   clearAllFilters(): void {
     this.searchQuery.set('');
+    this.stageFilter.set('');
     this.clearAdvancedFilters();
   }
 

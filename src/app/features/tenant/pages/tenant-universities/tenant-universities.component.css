@@ -282,7 +282,17 @@
   transition: background-color 0.2s ease;
 }
 
+.tenant-universities-tr--clickable {
+  cursor: pointer;
+}
+
 .tenant-universities-tr:hover {
+  background: var(--color-bg-muted);
+}
+
+.tenant-universities-tr:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-action-primary) 45%, transparent);
+  outline-offset: -2px;
   background: var(--color-bg-muted);
 }
 

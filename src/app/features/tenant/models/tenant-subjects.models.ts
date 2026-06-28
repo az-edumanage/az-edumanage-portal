@@ -38,6 +38,7 @@ export interface TenantCurriculumQuestionAnswer {
 
 export interface TenantCurriculumQuestion {
   id: string;
+  curriculumNodeId?: string | null;
   question: string;
   type: string;
   answer: string | null;
@@ -50,6 +51,9 @@ export interface TenantCurriculumQuestion {
   bloomId: string | null;
   difficultyId: string | null;
   weight: number | null;
+  skillId: string | null;
+  questionSource: string | null;
+  answerExplanation: string | null;
   tags?: string[];
   answers: TenantCurriculumQuestionAnswer[];
   createdAt: string;
@@ -82,6 +86,39 @@ export interface TenantCurriculumQuestionPage {
   totalPages: number;
   page: number;
   size: number;
+}
+
+export interface TenantQuestionBankTagSummary {
+  name: string;
+  totalQuestions: number;
+}
+
+export interface TenantQuestionBankTaggedQuestion {
+  id: string;
+  question: string;
+  type: string;
+  subjectId: string;
+  subjectName: string;
+  curriculumNodeId: string;
+  curriculumNodeName: string;
+  track: 'BASIC_EDUCATION' | 'UNIVERSITY_EDUCATION';
+  stageId: string | null;
+  stageName: string | null;
+  gradeId: string | null;
+  gradeName: string | null;
+  universityId: string | null;
+  universityName: string | null;
+  tags: string[];
+  createdAt: string;
+}
+
+export interface TenantQuestionBankOverview {
+  basicEducationQuestions: number;
+  universityEducationQuestions: number;
+  stagesCount: number;
+  universitiesCount: number;
+  tags: TenantQuestionBankTagSummary[];
+  taggedQuestions: TenantQuestionBankTaggedQuestion[];
 }
 
 export interface TenantCurriculumMaterialFolder {
@@ -117,6 +154,14 @@ export interface TenantCurriculumMaterialLink {
   id: string;
   title: string;
   url: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TenantCurriculumSkill {
+  id: string;
+  name: string;
+  description: string | null;
   createdAt: string;
   updatedAt: string;
 }

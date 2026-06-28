@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,7 +13,7 @@ import { TenantUsersFacade } from '../../state/tenant-users.facade';
   imports: [CommonModule, RouterModule, MatIconModule, FormsModule, ReactiveFormsModule],
   templateUrl: './tenant-users.component.html',
   styleUrl: './tenant-users.component.css'})
-export class TenantUsersComponent {
+export class TenantUsersComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
   private readonly facade = inject(TenantUsersFacade);
@@ -38,6 +38,10 @@ export class TenantUsersComponent {
       .subscribe((value) => {
         this.facade.setFilters(value.role ?? '', value.status ?? '', value.sortBy ?? 'name');
       });
+  }
+
+  ngOnInit(): void {
+    void this.facade.load();
   }
 
   toggleFilterPanel(): void {

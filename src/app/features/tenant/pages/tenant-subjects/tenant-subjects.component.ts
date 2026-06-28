@@ -99,6 +99,20 @@ export class TenantSubjectsComponent implements OnInit {
       return;
     }
 
+    const queryStageId = this.route.snapshot.queryParamMap.get('stageId') ?? '';
+    const queryGradeId = this.route.snapshot.queryParamMap.get('gradeId') ?? '';
+
+    if (queryStageId || queryGradeId) {
+      this.filterForm.patchValue({
+        stageId: queryStageId,
+        gradeId: queryGradeId,
+        sortBy: 'name',
+      }, {
+        emitEvent: false,
+      });
+      this.facade.setFilters(queryStageId, queryGradeId, 'name');
+    }
+
     void this.facade.loadSubjects();
   }
 

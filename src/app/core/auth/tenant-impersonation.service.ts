@@ -12,6 +12,8 @@ interface BackendTenantImpersonationStartResponse {
   tenantId: string;
   tenantName: string;
   allowed: boolean;
+  sessionId?: string;
+  expiresAt?: string;
 }
 
 export interface TenantImpersonationContext {
@@ -53,8 +55,8 @@ export class TenantImpersonationService {
     await this.authApi.ensureLoggedIn();
     const response = await firstValueFrom(
       this.http.post<BackendTenantImpersonationStartResponse>(
-        `${environment.apiBaseUrl}/owner/tenants/${tenantId}/impersonation/start`,
-        {},
+        `${environment.apiBaseUrl}/owner/tenants/${tenantId}/support-session`,
+        { reason: 'Owner support access from tenant details' },
       ),
     );
 
@@ -116,7 +118,7 @@ export class TenantImpersonationService {
     }
 
     const workspace = this.authIdentityService.currentWorkspace();
-    if (workspace === 'owner' || workspace === 'tenant' || workspace === 'teacher') {
+    if (workspace === 'owner' || workspace === 'tenant' || workspace === 'teacher' || workspace === 'student' || workspace === 'parent') {
       this.dashboardService.setRole(workspace, false);
     }
   }

@@ -58,6 +58,20 @@ export class TenantAccessStateComponent {
           description: 'Access is blocked for security or policy reasons. Contact support or your administrator immediately.',
           icon: 'block',
         };
+      case 'denied':
+        return {
+          badge: 'Tenant mismatch',
+          title: 'Access denied for this tenant',
+          description: 'Your session does not match this tenant host. Sign in again from the correct subdomain.',
+          icon: 'lock',
+        };
+      case 'unavailable':
+        return {
+          badge: 'Unavailable host',
+          title: 'This tenant host is not available',
+          description: 'The hostname is not mapped to an active tenant workspace.',
+          icon: 'domain_disabled',
+        };
       default:
         return {
           badge: 'Access restricted',

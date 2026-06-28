@@ -87,6 +87,19 @@
           <mat-icon>menu_book</mat-icon>
           <span>{{ tabLabel('material') }}</span>
         </button>
+        <button
+          type="button"
+          class="curriculum-details-tab"
+          [class.curriculum-details-tab--active]="activeTab() === 'skills'"
+          role="tab"
+          [attr.aria-selected]="activeTab() === 'skills'"
+          aria-controls="curriculum-details-skills-panel"
+          id="curriculum-details-skills-tab"
+          (click)="selectTab('skills')"
+        >
+          <mat-icon>psychology</mat-icon>
+          <span>{{ tabLabel('skills') }}</span>
+        </button>
       </div>
       @if (activeTab() === 'questions') {
         <div
@@ -324,6 +337,82 @@
             </div>
           }
         </div>
+      } @else if (activeTab() === 'skills') {
+        <div
+          class="curriculum-details-section curriculum-details-skills-panel"
+          id="curriculum-details-skills-panel"
+          role="tabpanel"
+          aria-labelledby="curriculum-details-skills-tab"
+        >
+          <div class="curriculum-skills-toolbar">
+            <div>
+              <h4>{{ tabLabel('skills') }}</h4>
+              <p>{{ skillsCountLabel() }}</p>
+            </div>
+            <button type="button" class="curriculum-details-primary-action" (click)="openCreateSkillModal()">
+              <mat-icon>add</mat-icon>
+              <span>{{ addSkillLabel() }}</span>
+            </button>
+          </div>
+          @if (skillsLoading()) {
+            <div class="curriculum-details-empty">Loading skills...</div>
+          } @else if (skillsError()) {
+            <div class="curriculum-details-empty">{{ skillsError() }}</div>
+          } @else if (skills().length) {
+            <div class="curriculum-details-table-wrap">
+              <table class="curriculum-details-table curriculum-skills-table" aria-label="Curriculum item skills">
+                <thead>
+                  <tr>
+                    <th>{{ skillTableHeaderLabel('name') }}</th>
+                    <th>{{ skillTableHeaderLabel('description') }}</th>
+                    <th class="curriculum-details-actions-column">{{ skillTableHeaderLabel('actions') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (skill of skills(); track skill.id) {
+                    <tr>
+                      <td>
+                        <div class="curriculum-skill-name-cell">
+                          <span class="curriculum-skill-icon">
+                            <mat-icon>psychology</mat-icon>
+                          </span>
+                          <span>{{ skill.name }}</span>
+                        </div>
+                      </td>
+                      <td>{{ skill.description || '-' }}</td>
+                      <td class="curriculum-details-actions-column">
+                        <div class="curriculum-details-table-actions">
+                          <button type="button" class="curriculum-details-table-action" [attr.aria-label]="skillActionLabel('edit', skill)" (click)="openEditSkillModal(skill)">
+                            <mat-icon>edit</mat-icon>
+                          </button>
+                          <button
+                            type="button"
+                            class="curriculum-details-table-action curriculum-details-table-action--danger"
+                            [disabled]="skillDeleteBusyId() === skill.id"
+                            [attr.aria-label]="skillActionLabel('delete', skill)"
+                            (click)="deleteSkill(skill.id)"
+                          >
+                            <mat-icon>delete</mat-icon>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="curriculum-details-empty-state">
+              <div class="curriculum-details-empty-state-icon">
+                <mat-icon>psychology</mat-icon>
+              </div>
+              <div>
+                <h4>{{ skillsEmptyTitle() }}</h4>
+                <p>{{ skillsEmptyDescription() }}</p>
+              </div>
+            </div>
+          }
+        </div>
       }
     </div>
   } @else {
@@ -477,6 +566,51 @@
         <button type="button" class="curriculum-details-modal-secondary" [disabled]="deletingQuestion()" (click)="closeDeleteQuestionModal()">Cancel</button>
         <button type="button" class="curriculum-details-modal-danger" [disabled]="deletingQuestion()" (click)="deleteQuestion()">
           {{ deletingQuestion() ? 'Deleting...' : 'Delete Question' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (skillModal(); as modal) {
+  <div class="curriculum-details-modal-backdrop" role="presentation" (click)="closeSkillModal()">
+    <div
+      class="curriculum-details-modal curriculum-skill-modal bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="skill-modal-title"
+      [attr.dir]="pageDirection()"
+      [class.curriculum-details-modal--rtl]="isRtl()"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="curriculum-details-modal-header border-b border-slate-200 dark:border-slate-800">
+        <div>
+          <h3 id="skill-modal-title" class="text-base font-bold text-slate-900 dark:text-white">
+            {{ skillModalTitle(modal) }}
+          </h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ skillModalDescription() }}</p>
+        </div>
+        <button type="button" class="curriculum-details-modal-icon-btn" aria-label="Close skill modal" (click)="closeSkillModal()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="curriculum-details-modal-body">
+        <label class="curriculum-material-modal-field">
+          <span>{{ skillNameLabel() }}</span>
+          <input type="text" [value]="modal.name" (input)="updateSkillModalName($event)" />
+        </label>
+        <label class="curriculum-material-modal-field">
+          <span>{{ skillDescriptionLabel() }}</span>
+          <textarea rows="4" [value]="modal.description" (input)="updateSkillModalDescription($event)"></textarea>
+        </label>
+        @if (skillModalError()) {
+          <div class="curriculum-details-modal-error">{{ skillModalError() }}</div>
+        }
+      </div>
+      <div class="curriculum-details-modal-footer border-t border-slate-200 dark:border-slate-800">
+        <button type="button" class="curriculum-details-modal-secondary" [disabled]="skillSaving()" (click)="closeSkillModal()">{{ cancelLabel() }}</button>
+        <button type="button" class="curriculum-details-modal-primary" [disabled]="skillSaving()" (click)="saveSkillModal()">
+          {{ skillSaving() ? savingLabel() : saveSkillLabel(modal) }}
         </button>
       </div>
     </div>

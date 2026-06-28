@@ -101,7 +101,7 @@ export class OwnerTenantCreateFacade {
         this.checkExisting("subdomain"),
       ],
     ],
-    domain: [".remix.com", Validators.required],
+    domain: [".az-edumanage.com", Validators.required],
     contactName: [""],
     contactEmail: ["", [Validators.email, this.checkExisting("email")]],
     contactPhone: ["", [this.checkExisting("phone")]],
@@ -181,7 +181,7 @@ export class OwnerTenantCreateFacade {
   onReset(): void {
     this.tenantForm.reset({
       tenantUsername: '',
-      domain: '.remix.com',
+      domain: '.az-edumanage.com',
       temporaryPassword: '',
       isTrial: true,
       trialDays: 14,
@@ -225,7 +225,7 @@ export class OwnerTenantCreateFacade {
       .pipe(finalize(() => this.store.setSubmitting(false)))
       .subscribe({
         next: () => {
-          this.submitStatus.set({ success: true, message: 'Tenant provisioned successfully.' });
+          this.submitStatus.set({ success: true, message: 'Tenant provisioning verified successfully.' });
           this.isSuccess = true;
           this.taskService.removeTask(this.taskId);
           this.router.navigate(['/owner/tenants']);

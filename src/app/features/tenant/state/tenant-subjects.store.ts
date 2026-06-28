@@ -8,7 +8,7 @@ export class TenantSubjectsStore {
 
   readonly searchQuery = signal('');
   readonly showFilterPanel = signal(false);
-  readonly viewMode = signal<'grid' | 'list'>('grid');
+  readonly viewMode = signal<'grid' | 'list'>('list');
   readonly stageFilter = signal('');
   readonly gradeFilter = signal('');
   readonly sortBy = signal('name');

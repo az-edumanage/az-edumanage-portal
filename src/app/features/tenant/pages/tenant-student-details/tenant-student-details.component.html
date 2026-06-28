@@ -1,219 +1,294 @@
-<div class="space-y-6 relative min-h-screen">
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-    <div class="space-y-1">
-      <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
-        <a routerLink="/tenant/students" class="hover:text-indigo-600 transition-colors">Students</a>
-        <mat-icon class="text-[10px]">chevron_right</mat-icon>
-        <span>Student Details</span>
-      </div>
-      <div class="flex items-center gap-3">
-        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ student()?.name || 'Student Details' }}</h2>
-        @if (student(); as currentStudent) {
-          <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase rounded-full">
-            {{ currentStudent.status }}
-          </span>
-        }
-      </div>
-      <p class="text-slate-500 dark:text-slate-500 text-sm">{{ student()?.email || 'Loading student profile' }}</p>
-    </div>
-  </div>
+<div class="student-details-page">
+  <nav class="student-details-breadcrumb" aria-label="Student breadcrumb">
+    <a routerLink="/tenant/students">Students</a>
+    <mat-icon aria-hidden="true">chevron_right</mat-icon>
+    <span>Student Details</span>
+  </nav>
 
   @if (errorMessage()) {
-    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center">
-      <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-        <mat-icon class="text-slate-500">error_outline</mat-icon>
+    <section class="student-details-state" aria-live="polite">
+      <div class="student-details-state-icon">
+        <mat-icon aria-hidden="true">error_outline</mat-icon>
       </div>
-      <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ errorMessage() }}</h3>
-    </div>
+      <h2>{{ errorMessage() }}</h2>
+      <a routerLink="/tenant/students">Back to students</a>
+    </section>
   } @else if (isLoading()) {
-    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center">
-      <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-        <mat-icon class="text-slate-500">sync</mat-icon>
+    <section class="student-details-state" aria-live="polite">
+      <div class="student-details-state-icon">
+        <mat-icon aria-hidden="true">sync</mat-icon>
       </div>
-      <h3 class="text-lg font-bold text-slate-900 dark:text-white">Loading student</h3>
-    </div>
+      <h2>Loading student</h2>
+      <p>Preparing the full student profile.</p>
+    </section>
   } @else if (student(); as currentStudent) {
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div class="flex items-center gap-3 mb-3">
-          <div class="w-10 h-10 rounded-xl bg-indigo-600/10 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600">
-            <mat-icon>schedule</mat-icon>
+    <section class="student-profile-hero" aria-label="Student profile summary">
+      <div class="student-profile-main">
+        <div class="student-avatar" aria-hidden="true">{{ studentInitial() }}</div>
+        <div class="student-profile-copy">
+          <div class="student-name-row">
+            <h1>{{ currentStudent.name }}</h1>
+            <span class="student-status-pill">{{ currentStudent.status }}</span>
           </div>
-          <div>
-            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Attendance</p>
-            <h4 class="text-xl font-bold text-slate-900 dark:text-white">{{ scheduleSummary().attendanceLabel }}</h4>
+          <p class="student-id">Student ID: #{{ currentStudent.id.slice(0, 8) }}</p>
+          <div class="student-profile-facts" aria-label="Student academic facts">
+            <span>
+              <mat-icon aria-hidden="true">school</mat-icon>
+              {{ currentStudent.stage || currentStudent.educationCategory }}
+            </span>
+            <span>
+              <mat-icon aria-hidden="true">workspace_premium</mat-icon>
+              {{ currentStudent.grade || 'Grade not set' }}
+            </span>
+            <span>
+              <mat-icon aria-hidden="true">event</mat-icon>
+              Joined: {{ currentStudent.enrollmentDate || 'Not set' }}
+            </span>
           </div>
         </div>
-        <div class="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+      </div>
+
+      <div class="student-hero-divider" aria-hidden="true"></div>
+
+      <div class="student-parent-strip" aria-label="Primary guardian">
+        <span>Parent:</span>
+        <strong>
+          <mat-icon aria-hidden="true">person</mat-icon>
+          {{ currentStudent.parentName || 'Not set' }}
+        </strong>
+        <strong>
+          <mat-icon aria-hidden="true">phone</mat-icon>
+          {{ currentStudent.parentPhone || 'Not set' }}
+        </strong>
+      </div>
+
+      <div class="student-hero-actions" aria-label="Student actions">
+        <a routerLink="/tenant/attendance" class="student-action-btn student-action-btn-primary">
+          <mat-icon aria-hidden="true">how_to_reg</mat-icon>
+          Attendance
+        </a>
+        <a routerLink="/tenant/billing" class="student-action-btn">
+          <mat-icon aria-hidden="true">payments</mat-icon>
+          Billing
+        </a>
+        <a [routerLink]="['/tenant/students', currentStudent.id, 'barcode', 'print']" class="student-action-btn">
+          <mat-icon aria-hidden="true">print</mat-icon>
+          Print Barcode
+        </a>
+      </div>
+    </section>
+
+    <section class="student-metric-grid" aria-label="Student overview">
+      <article class="student-metric-card student-metric-card-green">
+        <span class="student-metric-icon"><mat-icon aria-hidden="true">fact_check</mat-icon></span>
+        <div>
+          <p>Attendance</p>
+          <strong>{{ scheduleSummary().attendanceLabel }}</strong>
+          <small>Current rate</small>
+        </div>
+        <div class="student-metric-progress">
           <div class="ds-progress-fill" [style.--ds-progress]="scheduleSummary().attendanceProgress + '%'"></div>
         </div>
-      </div>
+      </article>
 
-      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div class="flex items-center gap-3 mb-3">
-          <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600">
-            <mat-icon>calendar_view_day</mat-icon>
+      <article class="student-metric-card">
+        <span class="student-metric-icon student-metric-icon-blue"><mat-icon aria-hidden="true">calendar_month</mat-icon></span>
+        <div>
+          <p>Schedule days</p>
+          <strong>{{ scheduleSummary().scheduleDaysCount }}</strong>
+          <small>Active weekly days</small>
+        </div>
+      </article>
+
+      <article class="student-metric-card">
+        <span class="student-metric-icon student-metric-icon-purple"><mat-icon aria-hidden="true">groups</mat-icon></span>
+        <div>
+          <p>total groups</p>
+          <strong>{{ scheduleSummary().totalGroups }}</strong>
+          <small>Groups: {{ currentGroupLabel() }}</small>
+        </div>
+      </article>
+
+      <article class="student-metric-card">
+        <span class="student-metric-icon student-metric-icon-amber"><mat-icon aria-hidden="true">schedule</mat-icon></span>
+        <div>
+          <p>Next Class</p>
+          @if (nextClass(); as classInfo) {
+            <strong>{{ classInfo.title }}</strong>
+            <small>{{ classInfo.meta || 'Class details' }}</small>
+          } @else {
+            <strong>Not scheduled</strong>
+            <small>No class rows yet</small>
+          }
+        </div>
+      </article>
+    </section>
+
+    <div class="student-details-grid">
+      <section class="student-panel student-academic-panel">
+        <header>
+          <mat-icon aria-hidden="true">school</mat-icon>
+          <h2>Academic Details</h2>
+        </header>
+        <dl class="student-info-grid">
+          <div>
+            <dt>Education</dt>
+            <dd>{{ currentStudent.educationCategory }}</dd>
           </div>
           <div>
-            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Schedule days</p>
-            <h4 class="text-xl font-bold text-slate-900 dark:text-white">{{ scheduleSummary().scheduleDaysCount }} Days</h4>
-          </div>
-        </div>
-        <p class="text-[10px] text-slate-500">Student schedule</p>
-      </div>
-
-      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div class="flex items-center gap-3 mb-3">
-          <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-amber-600">
-            <mat-icon>groups</mat-icon>
+            <dt>Stage</dt>
+            <dd>{{ currentStudent.stage || 'Not set' }}</dd>
           </div>
           <div>
-            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">total groups</p>
-            <h4 class="text-xl font-bold text-slate-900 dark:text-white">{{ scheduleSummary().totalGroups }}</h4>
-          </div>
-        </div>
-        <p class="text-[10px] text-slate-500">Enrolled groups</p>
-      </div>
-
-      <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div class="flex items-center gap-3 mb-3">
-          <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-600">
-            <mat-icon>group_work</mat-icon>
+            <dt>Grade</dt>
+            <dd>{{ currentStudent.grade || 'Not set' }}</dd>
           </div>
           <div>
-            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Groups</p>
-            <h4 class="text-xl font-bold text-slate-900 dark:text-white">{{ scheduleSummary().groupsCount }}</h4>
+            <dt>Enrolled</dt>
+            <dd>{{ currentStudent.enrollmentDate || 'Not set' }}</dd>
           </div>
-        </div>
-        <p class="text-[10px] text-slate-500">Scheduled groups</p>
-      </div>
-    </div>
+          <div>
+            <dt>Status</dt>
+            <dd><span class="student-status-soft">{{ currentStudent.status }}</span></dd>
+          </div>
+          <div>
+            <dt>Barcode</dt>
+            <dd>{{ currentStudent.barcodeNumber || 'Not set' }}</dd>
+          </div>
+        </dl>
+      </section>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div class="lg:col-span-2 space-y-6">
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-          <div class="flex items-center gap-4">
-            <div class="w-14 h-14 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xl font-bold">
-              {{ currentStudent.name.charAt(0) }}
-            </div>
-            <div>
-              <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ currentStudent.name }}</h3>
-              <p class="text-sm text-slate-500">{{ currentStudent.email }}</p>
-            </div>
+      <section class="student-panel">
+        <header>
+          <mat-icon aria-hidden="true">contact_phone</mat-icon>
+          <h2>Contact Information</h2>
+        </header>
+        <dl class="student-contact-list">
+          <div>
+            <dt><mat-icon aria-hidden="true">phone</mat-icon>Phone</dt>
+            <dd>{{ currentStudent.phone || 'Not set' }}</dd>
           </div>
+          <div>
+            <dt><mat-icon aria-hidden="true">mail</mat-icon>Email</dt>
+            <dd>{{ currentStudent.email || 'Not set' }}</dd>
+          </div>
+          <div>
+            <dt><mat-icon aria-hidden="true">badge</mat-icon>Gender</dt>
+            <dd>{{ currentStudent.gender || 'Not set' }}</dd>
+          </div>
+          <div>
+            <dt><mat-icon aria-hidden="true">cake</mat-icon>Date of Birth</dt>
+            <dd>{{ currentStudent.birthDate || 'Not set' }}</dd>
+          </div>
+          <div>
+            <dt><mat-icon aria-hidden="true">location_on</mat-icon>Address</dt>
+            <dd>{{ currentStudent.address || 'Not set' }}</dd>
+          </div>
+        </dl>
+      </section>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 mt-6 border-t border-slate-200 dark:border-slate-800">
-            <div>
-              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Phone</p>
-              <p class="text-sm font-medium text-slate-900 dark:text-white">{{ currentStudent.phone || 'Not set' }}</p>
-            </div>
-            <div>
-              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Barcode</p>
-              <p class="text-sm font-medium text-slate-900 dark:text-white">{{ currentStudent.barcodeNumber || 'Not set' }}</p>
-              @if (barcodeSvg()) {
-                <div class="mt-2 max-w-64" data-testid="student-barcode-shape" [innerHTML]="barcodeSvg()"></div>
-              }
-            </div>
-            <div>
-              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Gender</p>
-              <p class="text-sm font-medium text-slate-900 dark:text-white">{{ currentStudent.gender || 'Not set' }}</p>
-            </div>
-            <div>
-              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Date of Birth</p>
-              <p class="text-sm font-medium text-slate-900 dark:text-white">{{ currentStudent.birthDate || 'Not set' }}</p>
-            </div>
+      <section class="student-panel">
+        <header>
+          <mat-icon aria-hidden="true">supervisor_account</mat-icon>
+          <h2>Parent Details</h2>
+        </header>
+        <dl class="student-contact-list">
+          <div>
+            <dt>Parent Name</dt>
+            <dd>{{ currentStudent.parentName || 'Not set' }}</dd>
           </div>
-        </div>
+          <div>
+            <dt>Parent Phone</dt>
+            <dd>{{ currentStudent.parentPhone || 'Not set' }}</dd>
+          </div>
+          <div>
+            <dt>Notifications</dt>
+            <dd>{{ currentStudent.notifyParent ? 'Enabled' : 'Disabled' }}</dd>
+          </div>
+          <div>
+            <dt>Address</dt>
+            <dd>{{ currentStudent.address || 'Not set' }}</dd>
+          </div>
+        </dl>
+      </section>
 
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-          <h3 class="font-bold text-slate-900 dark:text-white mb-4">Academic Details</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Education</p>
-              <p class="text-sm font-medium text-slate-900 dark:text-white">{{ currentStudent.educationCategory }}</p>
-            </div>
-            <div>
-              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Enrolled</p>
-              <p class="text-sm font-medium text-slate-900 dark:text-white">{{ currentStudent.enrollmentDate || 'Not set' }}</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-          <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-            <h3 class="font-bold text-slate-900 dark:text-white">Weekly Schedule</h3>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500 border-b border-slate-200 dark:border-slate-800">
+      <section class="student-panel student-schedule-panel">
+        <header>
+          <mat-icon aria-hidden="true">calendar_today</mat-icon>
+          <h2>Weekly Schedule</h2>
+        </header>
+        <div class="student-schedule-table-wrap">
+          <table class="student-schedule-table">
+            <thead>
+              <tr>
+                <th>Group</th>
+                <th>Day</th>
+                <th>Time</th>
+                <th>Room</th>
+                <th>Teacher</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of currentStudent.scheduleRows; track (row.groupId || row.group) + row.day + row.time) {
                 <tr>
-                  <th class="px-6 py-3 font-medium">Group</th>
-                  <th class="px-6 py-3 font-medium">Day</th>
-                  <th class="px-6 py-3 font-medium">Time</th>
-                  <th class="px-6 py-3 font-medium">Room</th>
-                  <th class="px-6 py-3 font-medium">Teacher</th>
+                  <td>
+                    <strong>{{ row.group || 'Not set' }}</strong>
+                  </td>
+                  <td>{{ row.day || 'Not set' }}</td>
+                  <td>{{ row.time || 'Not set' }}</td>
+                  <td>{{ row.room || 'Not set' }}</td>
+                  <td>{{ row.teacher || 'Not set' }}</td>
                 </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
-                @for (row of currentStudent.scheduleRows; track (row.groupId || row.group) + row.day + row.time) {
-                  <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">{{ row.group || 'Not set' }}</td>
-                    <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ row.day || 'Not set' }}</td>
-                    <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ row.time || 'Not set' }}</td>
-                    <td class="px-6 py-4 text-slate-500 dark:text-slate-300">{{ row.room || 'Not set' }}</td>
-                    <td class="px-6 py-4 text-slate-500 dark:text-slate-300">{{ row.teacher || 'Not set' }}</td>
-                  </tr>
-                } @empty {
-                  <tr>
-                    <td colspan="5" class="px-6 py-12 text-center text-slate-500">
-                      <mat-icon class="text-4xl mb-2">calendar_today</mat-icon>
-                      <p>No schedule rows</p>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+              } @empty {
+                <tr>
+                  <td colspan="5" class="student-empty-cell">
+                    <mat-icon aria-hidden="true">event_busy</mat-icon>
+                    No schedule rows
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
-      </div>
+      </section>
 
-      <div class="space-y-6">
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Parent Details</h3>
-          <div class="space-y-3">
-            <div class="flex items-center gap-3">
-              <mat-icon class="text-slate-500 text-sm">person</mat-icon>
-              <span class="text-sm text-slate-700 dark:text-slate-300">{{ currentStudent.parentName || 'Not set' }}</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <mat-icon class="text-slate-500 text-sm">phone</mat-icon>
-              <span class="text-sm text-slate-700 dark:text-slate-300">{{ currentStudent.parentPhone || 'Not set' }}</span>
-            </div>
-            <div class="flex items-start gap-3">
-              <mat-icon class="text-slate-500 text-sm">location_on</mat-icon>
-              <span class="text-sm text-slate-700 dark:text-slate-300">{{ currentStudent.address || 'Not set' }}</span>
-            </div>
-          </div>
-        </div>
+      <aside class="student-side-stack">
+        <section class="student-panel student-barcode-panel">
+          <header>
+            <mat-icon aria-hidden="true">qr_code_2</mat-icon>
+            <h2>Student Barcode</h2>
+          </header>
+          <p>{{ currentStudent.barcodeNumber || 'Not set' }}</p>
+          @if (barcodeSvg()) {
+            <div class="student-barcode-shape" data-testid="student-barcode-shape" [innerHTML]="barcodeSvg()"></div>
+          }
+        </section>
 
-        <div class="bg-indigo-600 rounded-xl p-6 text-white space-y-4">
-          <h3 class="font-bold">Quick Actions</h3>
-          <div class="grid grid-cols-2 gap-2">
-            <button class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
-              <mat-icon>how_to_reg</mat-icon>
-              <span class="text-[10px] font-bold uppercase">Attendance</span>
-            </button>
-            <button class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
-              <mat-icon>payments</mat-icon>
-              <span class="text-[10px] font-bold uppercase">Billing</span>
-            </button>
-            <a [routerLink]="['/tenant/students', currentStudent.id, 'barcode', 'print']" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
-              <mat-icon>print</mat-icon>
-              <span class="text-[10px] font-bold uppercase">Print Barcode</span>
+        <section class="student-quick-actions" aria-label="Quick actions">
+          <h2>
+            <mat-icon aria-hidden="true">bolt</mat-icon>
+            Quick Actions
+          </h2>
+          <div>
+            <a routerLink="/tenant/attendance">
+              <mat-icon aria-hidden="true">how_to_reg</mat-icon>
+              Take Attendance
+            </a>
+            <a routerLink="/tenant/billing">
+              <mat-icon aria-hidden="true">receipt_long</mat-icon>
+              View Billing
+            </a>
+            <a [routerLink]="['/tenant/students', currentStudent.id, 'barcode', 'print']">
+              <mat-icon aria-hidden="true">print</mat-icon>
+              Print Barcode
+            </a>
+            <a routerLink="/tenant/students">
+              <mat-icon aria-hidden="true">arrow_back</mat-icon>
+              Back to Students
             </a>
           </div>
-        </div>
-      </div>
+        </section>
+      </aside>
     </div>
   }
 </div>

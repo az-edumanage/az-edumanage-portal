@@ -33,6 +33,8 @@ describe('TenantStudentCreateComponent', () => {
         fullName: [''],
         email: [''],
         phone: [''],
+        username: [''],
+        password: [''],
         birthDate: [''],
         gender: ['Male'],
         parentName: [''],
@@ -79,5 +81,18 @@ describe('TenantStudentCreateComponent', () => {
     expect(fixture.nativeElement.querySelector('[formcontrolname="barcodeNumber"]')).toBeNull();
     expect(fixture.nativeElement.querySelector('[data-testid="student-barcode-shape"]')).toBeNull();
     expect(fixture.nativeElement.querySelector('svg[data-student-barcode-value]')).toBeNull();
+  });
+
+  it('renders account access controls for student login', () => {
+    expect(fixture.nativeElement.querySelector('[formcontrolname="username"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('[formcontrolname="password"]')).not.toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Account Access');
+  });
+
+  it('renders save errors from the facade', () => {
+    facade.errorMessage.set('User name already exists');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('User name already exists');
   });
 });

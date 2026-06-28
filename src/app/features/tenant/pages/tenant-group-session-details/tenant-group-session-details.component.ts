@@ -6,7 +6,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { firstValueFrom } from 'rxjs';
 import { TenantGroupAttendanceDataService } from '../../data-access/tenant-group-attendance-data.service';
-import { GroupDetails, GroupLesson, GroupLessonContent, GroupSessionLibraryContent, GroupStudent } from '../../models/tenant-group-details.models';
+import { GroupDetails, GroupLesson, GroupLessonContent, GroupSessionLibraryContent, GroupSessionPublication, GroupStudent } from '../../models/tenant-group-details.models';
 import { TenantBarcodeAttendanceScanResponse } from '../../models/tenant-group-attendance.models';
 import { TenantGroupDetailsDataService } from '../../data-access/tenant-group-details-data.service';
 import { TenantSubjectsDataService } from '../../data-access/tenant-subjects-data.service';
@@ -125,6 +125,10 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
   readonly selectedLibraryFileIds = signal<ReadonlySet<string>>(new Set());
   readonly selectedLibraryNoteIds = signal<ReadonlySet<string>>(new Set());
   readonly sessionLibraryContent = signal<GroupSessionLibraryContent[]>([]);
+  readonly sessionPublication = signal<GroupSessionPublication | null>(null);
+  readonly publishingSession = signal(false);
+  readonly publishSessionMessage = signal<string | null>(null);
+  readonly publishSessionError = signal<string | null>(null);
   readonly savingLessonNodeId = signal<string | null>(null);
   readonly removingLessonId = signal<string | null>(null);
   readonly updatingLessonCompletionId = signal<string | null>(null);
@@ -176,6 +180,7 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     void this.loadGroup();
     void this.loadLessons();
     void this.loadSessionLibraryContent();
+    void this.loadSessionPublication();
   }
 
   ngOnDestroy(): void {
@@ -642,6 +647,25 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  async publishSession(): Promise<void> {
+    if (this.publishingSession()) {
+      return;
+    }
+
+    this.publishingSession.set(true);
+    this.publishSessionMessage.set(null);
+    this.publishSessionError.set(null);
+    try {
+      const publication = await firstValueFrom(this.data.publishGroupSession(this.groupId, this.sessionId));
+      this.sessionPublication.set(publication);
+      this.publishSessionMessage.set(`${publication.mediaCount} session media ${publication.mediaCount === 1 ? 'item' : 'items'} published for students.`);
+    } catch (error) {
+      this.publishSessionError.set(error instanceof Error ? error.message : 'Unable to publish session');
+    } finally {
+      this.publishingSession.set(false);
+    }
+  }
+
   onLessonPickerSearch(value: string): void {
     this.lessonPickerSearch.set(value);
   }
@@ -982,6 +1006,20 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  private async loadSessionPublication(): Promise<void> {
+    if (!this.sessionId) {
+      return;
+    }
+
+    try {
+      const publication = await firstValueFrom(this.data.loadGroupSessionPublication(this.groupId, this.sessionId));
+      this.sessionPublication.set(publication);
+      this.publishSessionMessage.set(publication.published ? `${publication.mediaCount} session media ${publication.mediaCount === 1 ? 'item' : 'items'} published for students.` : null);
+    } catch {
+      this.sessionPublication.set(null);
+    }
+  }
+
   private async loadLibraryFolderContent(folderId: string): Promise<void> {
     if ((this.libraryFilesByFolderId().has(folderId) && this.libraryNotesByFolderId().has(folderId)) || this.libraryFileLoadingIds().has(folderId)) {
       return;
@@ -1230,7 +1268,7 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
 
   private materialOptionToContent(option: LessonMaterialOption): GroupLessonContent {
     return {
-      id: `material-${option.type}-${option.id}`,
+      id: `material-${option.type}-${option.source.folder.id}-${option.id}`,
       curriculumNodeId: option.source.nodeId,
       curriculumNodeLabel: option.source.nodeLabel,
       folderId: option.source.folder.id,
@@ -1246,10 +1284,10 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
 
   private mergeContentList(primary: GroupLessonContent[], material: GroupLessonContent[]): GroupLessonContent[] {
     const merged = new Map<string, GroupLessonContent>();
-    for (const content of primary) {
+    for (const content of material) {
       merged.set(this.contentKey(content), content);
     }
-    for (const content of material) {
+    for (const content of primary) {
       merged.set(this.contentKey(content), content);
     }
     return Array.from(merged.values());
@@ -1269,19 +1307,24 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     return Array.from(merged.values());
   }
 
-  private contentKey(content: Pick<GroupLessonContent, 'contentType' | 'contentId'>): string {
-    return `${content.contentType}:${content.contentId}`;
+  private contentKey(content: Pick<GroupLessonContent, 'contentType' | 'contentId' | 'folderId'>): string {
+    return `${content.contentType}:${content.folderId}:${content.contentId}`;
   }
 
   private async loadPreviewNote(content: GroupLessonContent): Promise<void> {
-    const group = this.group();
-    if (!group?.subjectId) {
-      this.previewError.set('Unable to load this note because the group has no linked subject.');
-      return;
-    }
-
     this.previewLoading.set(true);
     try {
+      const libraryNote = await this.loadPreviewLibraryNote(content);
+      if (libraryNote) {
+        this.previewNote.set(libraryNote);
+        return;
+      }
+
+      const group = this.group();
+      if (!group?.subjectId) {
+        this.previewError.set('Unable to load this note because the group has no linked subject.');
+        return;
+      }
       const notes = await this.subjectsData.listCurriculumMaterialNotes(
         group.subjectId,
         content.curriculumNodeId,
@@ -1296,6 +1339,25 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
       this.previewError.set(error instanceof Error ? error.message : 'Unable to load note content');
     } finally {
       this.previewLoading.set(false);
+    }
+  }
+
+  private async loadPreviewLibraryNote(content: GroupLessonContent): Promise<TenantCurriculumMaterialNote | null> {
+    const cachedNotes = this.libraryNotesByFolderId().get(content.folderId);
+    if (cachedNotes) {
+      return cachedNotes.find((note) => note.id === content.contentId) ?? null;
+    }
+
+    try {
+      const notes = await firstValueFrom(this.data.loadGroupLibraryNotes(this.groupId, content.folderId));
+      this.libraryNotesByFolderId.update((notesByFolderId) => {
+        const next = new Map(notesByFolderId);
+        next.set(content.folderId, notes);
+        return next;
+      });
+      return notes.find((note) => note.id === content.contentId) ?? null;
+    } catch {
+      return null;
     }
   }
 

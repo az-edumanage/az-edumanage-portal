@@ -3,6 +3,7 @@ export interface TenantUserRoleOption {
   label: string;
   icon: string;
   description: string;
+  permissions?: string[];
 }
 
 export interface TenantUserStatusOption {
@@ -19,8 +20,9 @@ export interface TenantUserExisting {
 export interface TenantUserCreateForm {
   fullName: string;
   email: string;
-  role: string;
-  status: string;
+  username: string;
+  roleId: string;
+  enabled: boolean;
   sendInvite: boolean;
-  password: string;
+  password: string | null;
 }

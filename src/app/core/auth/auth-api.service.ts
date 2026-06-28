@@ -6,7 +6,7 @@ import { AuthTokenService } from './auth-token.service';
 import { AuthIdentityService } from './auth-identity.service';
 import type { AuthIdentity } from './auth-identity.service';
 
-export type AuthWorkspace = 'owner' | 'tenant' | 'teacher';
+export type AuthWorkspace = 'owner' | 'tenant' | 'teacher' | 'student' | 'parent' | 'public';
 
 export interface TenantPlanContext {
   tenantId: string;
@@ -25,7 +25,13 @@ export interface LoginResponse {
   workspace?: AuthWorkspace;
   tenantId?: string | null;
   tenantPlan?: TenantPlanContext | null;
+  permissions?: string[];
+  roleAssignment?: TenantRoleAssignmentContext | null;
   passwordChangeRequired?: boolean;
+}
+
+export interface PasswordResetRequestResponse {
+  message: string;
 }
 
 export interface MeResponse {
@@ -36,6 +42,8 @@ export interface MeResponse {
   tenantId: string | null;
   tenantAccess: TenantAccessContext | null;
   tenantPlan: TenantPlanContext | null;
+  permissions?: string[];
+  roleAssignment?: TenantRoleAssignmentContext | null;
   originalUsername?: string | null;
   impersonating?: boolean;
   impersonatedTenantId?: string | null;
@@ -52,16 +60,22 @@ export interface TenantAccessContext {
   operationalStatusReason: string | null;
 }
 
+export interface TenantRoleAssignmentContext {
+  roleId: string | null;
+  roleName: string | null;
+  assignedAt?: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthApiService {
   private readonly http = inject(HttpClient);
   private readonly tokenService = inject(AuthTokenService);
   private readonly identityService = inject(AuthIdentityService);
 
-  async login(username: string, password: string, workspace: AuthWorkspace): Promise<LoginResponse> {
+  async login(usernameOrEmail: string, password: string, workspace: AuthWorkspace): Promise<LoginResponse> {
     const response = await firstValueFrom(
       this.http.post<LoginResponse>(`${environment.apiBaseUrl}/auth/login`, {
-        username,
+        username: usernameOrEmail,
         password,
         workspace,
       }, { withCredentials: true }),
@@ -96,6 +110,15 @@ export class AuthApiService {
     return response;
   }
 
+  async requestPasswordReset(email: string, frontendBaseUrl: string): Promise<PasswordResetRequestResponse> {
+    return firstValueFrom(
+      this.http.post<PasswordResetRequestResponse>(`${environment.apiBaseUrl}/public/funnel/password/forgot`, {
+        email,
+        frontendBaseUrl,
+      }),
+    );
+  }
+
   async logout(): Promise<void> {
     try {
       await firstValueFrom(this.http.post(`${environment.apiBaseUrl}/auth/logout`, {}, { withCredentials: true }));
@@ -122,6 +145,8 @@ export class AuthApiService {
       workspace: source.workspace ?? this.inferWorkspace(primaryRole, source.tenantId ?? null),
       tenantId: source.tenantId ?? null,
       tenantPlan: source.tenantPlan ?? null,
+      permissions: source.permissions ?? [],
+      roleAssignment: source.roleAssignment ?? null,
       passwordChangeRequired: source.passwordChangeRequired ?? false,
     };
   }
@@ -135,9 +160,9 @@ export class AuthApiService {
     if (normalizedRole === 'TENANT_ADMIN' || (normalizedRole === 'WEB_USER' && tenantId)) {
       return 'tenant';
     }
-    if (normalizedRole === 'TEACHER') {
-      return 'teacher';
-    }
+    if (normalizedRole === 'TEACHER') return 'teacher';
+    if (normalizedRole === 'STUDENT') return 'student';
+    if (normalizedRole === 'PARENT') return 'parent';
     return 'owner';
   }
 }

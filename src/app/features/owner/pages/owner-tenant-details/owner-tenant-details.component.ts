@@ -93,6 +93,10 @@ export class OwnerTenantDetailsComponent implements OnInit {
     this.facade.impersonate();
   }
 
+  retryProvisioning(): void {
+    this.facade.retryProvisioning();
+  }
+
   goBack(): void {
     this.facade.goBack();
   }

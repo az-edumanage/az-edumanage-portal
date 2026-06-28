@@ -38,51 +38,138 @@
                 type="text" 
                 formControlName="name"
                 placeholder="e.g. Grade 10 or Primary 1"
-                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                class="w-full h-[46px] px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
               >
             </div>
 
-            <div>
-              <label for="country" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Country</label>
-              <select
-                id="country"
-                formControlName="countryId"
-                (change)="onCountryChange($event)"
-                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+            <div class="relative">
+              <label id="country-label" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Country</label>
+              <button
+                type="button"
+                class="w-full min-h-10 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-left outline-none transition-all flex items-center justify-between gap-3 focus:ring-2 focus:ring-indigo-500 disabled:opacity-60"
+                [disabled]="countriesLoading()"
+                [attr.aria-expanded]="countryPanelOpen()"
+                aria-labelledby="country-label"
+                aria-haspopup="listbox"
+                (click)="toggleCountryPanel()"
               >
-                @if (countriesLoading()) {
-                  <option value="">Loading countries...</option>
-                } @else {
-                  <option value="">Select country</option>
-                }
-                @for (country of countryOptions(); track country.value) {
-                  <option [value]="country.value">{{ country.label }}</option>
-                }
-              </select>
+                <span class="flex min-w-0 items-center gap-2">
+                  <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-300">
+                    <mat-icon class="text-sm">public</mat-icon>
+                  </span>
+                  <span class="truncate text-slate-700 dark:text-slate-200">{{ selectedCountryLabel() }}</span>
+                </span>
+                <mat-icon class="text-base text-slate-400 transition-transform" [class.rotate-180]="countryPanelOpen()">expand_more</mat-icon>
+              </button>
+
+              @if (countryPanelOpen()) {
+                <div class="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-200/70 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/30">
+                  <div class="max-h-56 overflow-y-auto p-2" role="listbox" aria-labelledby="country-label">
+                    @if (countriesLoading()) {
+                      <div class="flex items-center gap-2 px-3 py-2 text-sm text-slate-500 dark:text-slate-400">
+                        <mat-icon class="text-sm animate-spin">sync</mat-icon>
+                        Loading countries...
+                      </div>
+                    } @else {
+                      @for (country of countryOptions(); track country.value) {
+                        <button
+                          type="button"
+                          class="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50 focus:bg-slate-50 focus:outline-none dark:text-slate-200 dark:hover:bg-slate-800 dark:focus:bg-slate-800"
+                          role="option"
+                          [attr.aria-selected]="gradeForm.controls.countryId.value === country.value"
+                          (click)="selectCountry(country.value)"
+                        >
+                          <span class="min-w-0">
+                            <span class="block truncate font-medium">{{ country.label }}</span>
+                            @if (country.code) {
+                              <span class="block text-xs text-slate-500 dark:text-slate-400">{{ country.code }}</span>
+                            }
+                          </span>
+                          @if (gradeForm.controls.countryId.value === country.value) {
+                            <mat-icon class="text-sm text-indigo-600 dark:text-indigo-300">check</mat-icon>
+                          }
+                        </button>
+                      } @empty {
+                        <div class="px-3 py-4 text-sm text-slate-500 dark:text-slate-400">No countries available yet.</div>
+                      }
+                    }
+                  </div>
+
+                  <div class="border-t border-slate-100 bg-slate-50/80 p-3 dark:border-slate-800 dark:bg-slate-950/40">
+                    <label for="new-country" class="mb-2 block text-xs font-semibold text-slate-600 dark:text-slate-300">Add new country</label>
+                    <div class="flex gap-2">
+                      <input
+                        id="new-country"
+                        type="text"
+                        [value]="newCountryName()"
+                        (input)="updateNewCountryName($event)"
+                        (keydown.enter)="addCountry(); $event.preventDefault()"
+                        placeholder="Country name"
+                        class="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                      >
+                      <button
+                        type="button"
+                        class="inline-flex items-center justify-center gap-1 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        [disabled]="!newCountryName().trim() || countryCreating()"
+                        (click)="addCountry()"
+                      >
+                        @if (countryCreating()) {
+                          <mat-icon class="text-sm animate-spin">sync</mat-icon>
+                        } @else {
+                          <mat-icon class="text-sm">add</mat-icon>
+                        }
+                        Add
+                      </button>
+                    </div>
+                    @if (countryCreateError()) {
+                      <p class="mt-2 text-xs text-rose-600 dark:text-rose-300">{{ countryCreateError() }}</p>
+                    }
+                  </div>
+                </div>
+              }
               @if (countriesError()) {
                 <p class="mt-1 text-xs text-rose-600">{{ countriesError() }}</p>
               }
             </div>
 
-            <div>
-              <label for="level" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Academic Level</label>
-              <select 
-                id="level"
-                formControlName="stageId"
+            <div class="relative">
+              <label id="level-label" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Academic Level</label>
+              <button
+                type="button"
+                class="w-full min-h-10 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-left outline-none transition-all flex items-center justify-between gap-3 focus:ring-2 focus:ring-indigo-500 disabled:opacity-60"
                 [disabled]="levelsLoading() || academicLevelOptions().length === 0"
-                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                [attr.aria-expanded]="levelPanelOpen()"
+                aria-labelledby="level-label"
+                aria-haspopup="listbox"
+                (click)="toggleLevelPanel()"
               >
-                @if (levelsLoading()) {
-                  <option value="">Loading academic levels...</option>
-                } @else if (academicLevelOptions().length === 0) {
-                  <option value="">No academic levels available</option>
-                } @else {
-                  <option value="">Select academic level</option>
-                }
-                @for (stage of academicLevelOptions(); track stage.value) {
-                  <option [value]="stage.value">{{ stage.label }}</option>
-                }
-              </select>
+                <span class="flex min-w-0 items-center gap-2">
+                  <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-300">
+                    <mat-icon class="text-sm">account_tree</mat-icon>
+                  </span>
+                  <span class="truncate text-slate-700 dark:text-slate-200">{{ selectedLevelLabel() }}</span>
+                </span>
+                <mat-icon class="text-base text-slate-400 transition-transform" [class.rotate-180]="levelPanelOpen()">expand_more</mat-icon>
+              </button>
+
+              @if (levelPanelOpen()) {
+                <div class="absolute left-0 right-0 top-full z-20 mt-2 max-h-64 overflow-y-auto rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-slate-200/70 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/30" role="listbox" aria-labelledby="level-label">
+                  @for (stage of academicLevelOptions(); track stage.value) {
+                    <button
+                      type="button"
+                      class="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50 focus:bg-slate-50 focus:outline-none dark:text-slate-200 dark:hover:bg-slate-800 dark:focus:bg-slate-800"
+                      role="option"
+                      [attr.aria-selected]="gradeForm.controls.stageId.value === stage.value"
+                      (click)="selectLevel(stage.value)"
+                    >
+                      <span class="truncate font-medium">{{ stage.label }}</span>
+                      @if (gradeForm.controls.stageId.value === stage.value) {
+                        <mat-icon class="text-sm text-indigo-600 dark:text-indigo-300">check</mat-icon>
+                      }
+                    </button>
+                  }
+                </div>
+              }
               @if (levelsError()) {
                 <p class="mt-1 text-xs text-rose-600">{{ levelsError() }}</p>
               }

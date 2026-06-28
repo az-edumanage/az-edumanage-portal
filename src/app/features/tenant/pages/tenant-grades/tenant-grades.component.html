@@ -28,7 +28,7 @@
           <mat-icon class="text-sm block">view_list</mat-icon>
         </button>
       </div>
-      <a routerLink="/tenant/grades/create" class="tenant-grades-add-btn">
+      <a routerLink="/tenant/grades/create" [queryParams]="{ freshCreate: 'true' }" class="tenant-grades-add-btn">
         <mat-icon class="text-sm">add</mat-icon>
         Add Grade
       </a>
@@ -221,7 +221,7 @@
             </thead>
             <tbody class="tenant-grades-tbody">
               @for (grade of filteredGrades(); track grade.id) {
-                <tr class="tenant-grades-tr">
+                <tr class="tenant-grades-tr tenant-grades-tr--clickable" role="link" tabindex="0" (click)="openGradeSubjects(grade)" (keydown.enter)="openGradeSubjects(grade)" (keydown.space)="openGradeSubjects(grade); $event.preventDefault()">
                   <td class="tenant-grades-td">
                     <div class="tenant-grades-row-name-wrap">
                       <div class="tenant-grades-row-icon-wrap">
@@ -243,13 +243,13 @@
                   </td>
                   <td class="tenant-grades-td tenant-grades-td--actions">
                     <div class="tenant-grades-row-actions">
-                      <a [routerLink]="['/tenant/grades', grade.id]" class="tenant-grades-row-btn tenant-grades-row-btn--view" title="View Details">
+                      <a [routerLink]="['/tenant/grades', grade.id]" (click)="$event.stopPropagation()" class="tenant-grades-row-btn tenant-grades-row-btn--view" title="View Details">
                         <mat-icon class="text-sm block">visibility</mat-icon>
                       </a>
-                      <a [routerLink]="['/tenant/grades', grade.id, 'edit']" class="tenant-grades-row-btn tenant-grades-row-btn--edit" title="Edit">
+                      <a [routerLink]="['/tenant/grades', grade.id, 'edit']" (click)="$event.stopPropagation()" class="tenant-grades-row-btn tenant-grades-row-btn--edit" title="Edit">
                         <mat-icon class="text-sm block">edit</mat-icon>
                       </a>
-                      <button type="button" (click)="openDeleteConfirmation(grade)" class="tenant-grades-row-btn tenant-grades-row-btn--delete" title="Delete">
+                      <button type="button" (click)="$event.stopPropagation(); openDeleteConfirmation(grade)" class="tenant-grades-row-btn tenant-grades-row-btn--delete" title="Delete">
                         <mat-icon class="text-sm block">delete</mat-icon>
                       </button>
                     </div>

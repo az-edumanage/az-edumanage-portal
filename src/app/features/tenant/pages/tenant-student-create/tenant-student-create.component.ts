@@ -17,6 +17,7 @@ type StudentEducationControl = 'stageIds' | 'gradeIds' | 'universityIds' | 'coll
 export class TenantStudentCreateComponent implements OnInit, OnDestroy {
   private readonly location = inject(Location);
   private readonly facade = inject(TenantStudentCreateFacade);
+  readonly genderOptions = ['Male', 'Female'] as const;
 
   readonly isSubmitting = this.facade.isSubmitting;
   readonly isLoading = this.facade.isLoading;
@@ -27,6 +28,8 @@ export class TenantStudentCreateComponent implements OnInit, OnDestroy {
   readonly availableGrades = this.facade.availableGrades;
   readonly availableColleges = this.facade.availableColleges;
   readonly openEducationDropdown = signal<StudentEducationDropdown | null>(null);
+  readonly genderPanelOpen = signal(false);
+  readonly showPassword = signal(false);
 
   ngOnInit(): void {
     this.facade.initialize();
@@ -59,7 +62,20 @@ export class TenantStudentCreateComponent implements OnInit, OnDestroy {
     return this.openEducationDropdown() === dropdown;
   }
 
+  toggleGenderPanel(): void {
+    this.openEducationDropdown.set(null);
+    this.genderPanelOpen.update((open) => !open);
+  }
+
+  selectGender(gender: 'Male' | 'Female'): void {
+    this.studentForm.controls.gender.setValue(gender);
+    this.studentForm.controls.gender.markAsDirty();
+    this.studentForm.controls.gender.markAsTouched();
+    this.genderPanelOpen.set(false);
+  }
+
   toggleMultiValue(controlName: StudentEducationControl, id: string): void {
+    this.genderPanelOpen.set(false);
     const control = this.studentForm.controls[controlName];
     const current = control.value ?? [];
     control.setValue(current.includes(id) ? current.filter((value) => value !== id) : [...current, id]);

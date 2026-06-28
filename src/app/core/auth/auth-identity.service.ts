@@ -1,14 +1,16 @@
 import { Injectable, computed, signal } from '@angular/core';
 
-import type { TenantPlanContext } from './auth-api.service';
+import type { TenantPlanContext, TenantRoleAssignmentContext } from './auth-api.service';
 
 export interface AuthIdentity {
   username: string;
   roles: string[];
   primaryRole: string;
-  workspace: 'owner' | 'tenant' | 'teacher';
+  workspace: 'owner' | 'tenant' | 'teacher' | 'student' | 'parent' | 'public';
   tenantId: string | null;
   tenantPlan: TenantPlanContext | null;
+  permissions?: string[];
+  roleAssignment?: TenantRoleAssignmentContext | null;
   passwordChangeRequired: boolean;
 }
 
@@ -20,6 +22,8 @@ export class AuthIdentityService {
   readonly username = computed(() => this.identityState()?.username ?? null);
   readonly primaryRole = computed(() => this.identityState()?.primaryRole ?? null);
   readonly workspace = computed(() => this.identityState()?.workspace ?? null);
+  readonly permissions = computed(() => this.identityState()?.permissions ?? []);
+  readonly roleAssignment = computed(() => this.identityState()?.roleAssignment ?? null);
 
   setIdentity(identity: AuthIdentity): void {
     this.identityState.set(identity);
@@ -29,7 +33,7 @@ export class AuthIdentityService {
     this.identityState.set(null);
   }
 
-  currentWorkspace(): 'owner' | 'tenant' | 'teacher' | null {
+  currentWorkspace(): 'owner' | 'tenant' | 'teacher' | 'student' | 'parent' | null {
     const identity = this.identityState();
     if (!identity) {
       return null;
@@ -39,7 +43,7 @@ export class AuthIdentityService {
       return identity.tenantId ? 'tenant' : null;
     }
 
-    if (identity.workspace === 'owner' || identity.workspace === 'teacher') {
+    if (identity.workspace === 'owner' || identity.workspace === 'teacher' || identity.workspace === 'student' || identity.workspace === 'parent') {
       return identity.workspace;
     }
 
@@ -50,9 +54,32 @@ export class AuthIdentityService {
     if (role === 'TENANT_ADMIN' || (role === 'WEB_USER' && identity.tenantId)) {
       return 'tenant';
     }
-    if (role === 'TEACHER') {
-      return 'teacher';
-    }
+    if (role === 'TEACHER') return 'teacher';
+    if (role === 'STUDENT') return 'student';
+    if (role === 'PARENT') return 'parent';
     return null;
+  }
+
+  hasPermission(permission: string): boolean {
+    if (this.hasFullTenantAccess()) {
+      return true;
+    }
+    return this.permissions().includes(permission);
+  }
+
+  hasAnyPermission(permissions: readonly string[]): boolean {
+    return permissions.some((permission) => this.hasPermission(permission));
+  }
+
+  private hasFullTenantAccess(): boolean {
+    const identity = this.identityState();
+    if (!identity) {
+      return false;
+    }
+    const roles = new Set([
+      identity.primaryRole,
+      ...identity.roles,
+    ].map((role) => role.trim().toUpperCase()));
+    return roles.has('SUPER_ADMIN') || roles.has('OWNER') || roles.has('TENANT_ADMIN');
   }
 }

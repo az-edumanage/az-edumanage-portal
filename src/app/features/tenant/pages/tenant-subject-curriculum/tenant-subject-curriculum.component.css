@@ -51,6 +51,16 @@
   justify-content: flex-start;
 }
 
+.curriculum-content-row {
+  cursor: pointer;
+}
+
+.curriculum-content-row:focus-visible {
+  background: rgb(238 242 255);
+  outline: 2px solid rgb(99 102 241);
+  outline-offset: -2px;
+}
+
 .curriculum-panel-breadcrumb-button {
   min-width: 0;
   overflow: hidden;

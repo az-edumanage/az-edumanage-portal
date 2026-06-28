@@ -61,6 +61,11 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "allowedHosts": [
+              "test-tenant.local.az-edumanage.test"
+            ]
+          },
           "configurations": {
             "production": {
               "buildTarget": "app:build:production"

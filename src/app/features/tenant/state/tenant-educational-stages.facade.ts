@@ -16,10 +16,12 @@ export class TenantEducationalStagesFacade {
   readonly filteredStages = this.store.filteredStages;
   readonly loading = this.store.loading;
   readonly countriesLoading = this.store.countriesLoading;
+  readonly countryCreating = this.store.countryCreating;
   readonly saving = this.store.saving;
   readonly deletingStageId = this.store.deletingStageId;
   readonly loadError = this.store.loadError;
   readonly countriesError = this.store.countriesError;
+  readonly countryCreateError = this.store.countryCreateError;
   readonly saveError = this.store.saveError;
   readonly deleteError = this.store.deleteError;
 
@@ -47,6 +49,14 @@ export class TenantEducationalStagesFacade {
 
   createStage(payload: TenantStagePayload): Promise<boolean> {
     return this.store.createStage(payload);
+  }
+
+  createCountryOption(name: string) {
+    return this.store.createCountryOption(name);
+  }
+
+  clearCountryCreateError(): void {
+    this.store.clearCountryCreateError();
   }
 
   updateStage(stageId: string, payload: TenantStagePayload): Promise<boolean> {
