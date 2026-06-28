@@ -81,6 +81,7 @@ describe('SidebarComponent', () => {
       .find((item) => item.labelKey === 'sidebar.item.basicEducation');
     const mainItems = sections.find((section) => section.titleKey === 'sidebar.section.main')?.items ?? [];
     const academicItems = sections.find((section) => section.titleKey === 'sidebar.section.academic')?.items ?? [];
+    const settingsItems = sections.find((section) => section.titleKey === 'sidebar.section.settings')?.items ?? [];
     const universityEducation = mainItems.find((item) => item.labelKey === 'sidebar.item.universityEducation');
 
     expect(routes).toContain('/tenant/overview');
@@ -93,13 +94,16 @@ describe('SidebarComponent', () => {
     expect(basicEducation?.children?.map((child) => child.route)).toEqual(educationRoutes);
     expect(mainItems.findIndex((item) => item.labelKey === 'sidebar.item.universityEducation'))
       .toBe(mainItems.findIndex((item) => item.labelKey === 'sidebar.item.basicEducation') + 1);
-    expect(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.grades'))
+    expect(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.examsEvaluation'))
       .toBe(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.examsGrades') + 1);
     expect(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.questionsBank'))
-      .toBe(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.grades') + 1);
+      .toBe(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.examsEvaluation') + 1);
     expect(academicItems.find((item) => item.labelKey === 'sidebar.item.examsGrades')?.route).toBe('/tenant/exams');
-    expect(academicItems.find((item) => item.labelKey === 'sidebar.item.grades')?.route).toBe('/tenant/grades');
+    expect(academicItems.find((item) => item.labelKey === 'sidebar.item.examsEvaluation')?.route).toBe('/tenant/grades');
     expect(academicItems.find((item) => item.labelKey === 'sidebar.item.questionsBank')?.route).toBe('/tenant/questions-bank');
+    expect(settingsItems.find((item) => item.labelKey === 'sidebar.item.lms')?.route).toBe('/tenant/web-settings');
+    expect(sections.some((section) => section.titleKey === 'sidebar.section.development')).toBe(false);
+    expect(routes).not.toContain('/design-system');
     expect(universityEducation?.route).toBeUndefined();
     expect(universityEducation?.children?.map((child) => child.route)).toEqual(universityEducationRoutes);
     educationRoutes.filter((route) => route !== '/tenant/grades').forEach((route) => expect(routes).not.toContain(route));

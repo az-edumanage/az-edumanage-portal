@@ -230,7 +230,7 @@ export class SidebarComponent {
               { labelKey: 'sidebar.item.schedule', icon: 'calendar_today', route: '/tenant/schedule', permission: 'tenant.attendance.view' },
               { labelKey: 'sidebar.item.attendance', icon: 'fact_check', route: '/tenant/attendance', permission: 'tenant.attendance.view' },
               { labelKey: 'sidebar.item.examsGrades', icon: 'assignment', route: '/tenant/exams', permission: 'tenant.exams.manage' },
-              { labelKey: 'sidebar.item.grades', icon: 'grades', route: '/tenant/grades', permission: 'tenant.grades.view' },
+              { labelKey: 'sidebar.item.examsEvaluation', icon: 'grades', route: '/tenant/grades', permission: 'tenant.grades.view' },
               { labelKey: 'sidebar.item.questionsBank', icon: 'quiz', route: '/tenant/questions-bank', permission: 'tenant.questionBank.manage' },
             ]
           },
@@ -245,13 +245,7 @@ export class SidebarComponent {
             titleKey: 'sidebar.section.settings',
             items: [
               { labelKey: 'sidebar.item.platformSettings', icon: 'settings', route: '/tenant/settings', permission: 'tenant.settings.manage' },
-              { labelKey: 'sidebar.item.webSettings', icon: 'public', route: '/tenant/web-settings', permission: 'tenant.settings.manage' },
-            ]
-          },
-          {
-            titleKey: 'sidebar.section.development',
-            items: [
-              { labelKey: 'sidebar.item.designSystem', icon: 'palette', route: '/design-system' },
+              { labelKey: 'sidebar.item.lms', icon: 'public', route: '/tenant/web-settings', permission: 'tenant.settings.manage' },
             ]
           },
             {
