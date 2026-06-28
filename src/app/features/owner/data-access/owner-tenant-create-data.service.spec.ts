@@ -49,17 +49,32 @@ describe('OwnerTenantCreateDataService', () => {
     const promise = service.loadBootstrapData();
     await Promise.resolve();
 
-    const tenantsRequest = httpTesting.expectOne((req) => req.url.endsWith('/tenant-catalog/tenants'));
-    tenantsRequest.flush([{ centerName: 'ABC Center', subdomain: 'abc', contactEmail: 'abc@example.com', contactPhone: '+100' }]);
-
     const plansRequest = httpTesting.expectOne((req) => req.url.endsWith('/plan-catalog/plans'));
     plansRequest.flush([{ id: 'plan-1', name: 'Starter', monthlyPrice: 99, currency: 'EGP' }]);
+
+    await Promise.resolve();
+    const tenantsRequest = httpTesting.expectOne((req) => req.url.endsWith('/tenant-catalog/tenants'));
+    tenantsRequest.flush([{
+      centerName: 'ABC Center',
+      subdomain: 'abc',
+      contactEmail: 'abc@example.com',
+      contactPhone: '+100',
+      provisioningStatus: 'PROVISIONED',
+      isActive: true,
+    }]);
 
     await promise;
 
     expect(authApiMock.ensureLoggedIn).toHaveBeenCalled();
     expect(locationSettingsMock.listCountries).toHaveBeenCalledWith(true);
-    expect(service.existingTenants()).toEqual([{ name: 'ABC Center', subdomain: 'abc', email: 'abc@example.com', phone: '+100' }]);
+    expect(service.existingTenants()).toEqual([{
+      name: 'ABC Center',
+      subdomain: 'abc',
+      email: 'abc@example.com',
+      phone: '+100',
+      provisioningStatus: 'PROVISIONED',
+      isActive: true,
+    }]);
     expect(service.subscriptionTemplates()).toEqual([{ id: 'plan-1', name: 'Starter', price: 'LE 99/mo', popular: false }]);
     expect(service.countryOptions()).toEqual([{ id: 1, value: '1', label: 'Egypt' }]);
     expect(service.countryDropdownOptions()).toEqual([{ value: '1', label: 'Egypt' }]);
@@ -116,5 +131,25 @@ describe('OwnerTenantCreateDataService', () => {
     expect(request.request.body[obsoleteField]).toBeUndefined();
     request.flush({ id: 'tenant-1' });
     subscription.unsubscribe();
+  });
+
+  it('detects a provisioned tenant by submitted name and subdomain', async () => {
+    const promise = service.hasProvisionedTenant('ABC Center', 'abc');
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const tenantsRequest = httpTesting.expectOne((req) => req.url.endsWith('/tenant-catalog/tenants'));
+    tenantsRequest.flush([
+      {
+        centerName: 'ABC Center',
+        subdomain: 'abc',
+        contactEmail: 'abc@example.com',
+        contactPhone: '+100',
+        provisioningStatus: 'PROVISIONED',
+        isActive: true,
+      },
+    ]);
+
+    await expect(promise).resolves.toBe(true);
   });
 });
