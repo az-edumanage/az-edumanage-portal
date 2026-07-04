@@ -109,8 +109,41 @@ describe('TenantGroupStudentAddComponent', () => {
     expect(nativeElement.textContent).toContain('Enrollment Date');
     expect(nativeElement.textContent).toContain('Discount (%)');
     expect(nativeElement.textContent).toContain('Notify student & parent');
-    expect(nativeElement.textContent).toContain('Generate initial invoice');
+    expect(nativeElement.textContent).not.toContain('Generate initial invoice');
     expect(cancelButton).toBeTruthy();
+  });
+
+  it('paginates the find student results', () => {
+    facade.filteredStudents.set(Array.from({ length: 6 }, (_, index) => ({
+      id: `student-${index + 1}`,
+      name: `Student ${index + 1}`,
+      email: `student${index + 1}@example.com`,
+      grade: 'Grade 12',
+    })));
+
+    fixture.detectChanges();
+
+    const nativeElement = fixture.nativeElement as HTMLElement;
+    expect(nativeElement.textContent).toContain('Showing 1-5 of 6 students');
+    expect(nativeElement.textContent).toContain('Rows');
+    expect(nativeElement.textContent).toContain('Page 1 of 2');
+    expect(nativeElement.textContent).toContain('Student 1');
+    expect(nativeElement.textContent).not.toContain('Student 6');
+
+    const nextButton = nativeElement.querySelector('button[aria-label="Next student search page"]') as HTMLButtonElement;
+    nextButton.click();
+    fixture.detectChanges();
+
+    expect(nativeElement.textContent).toContain('Showing 6-6 of 6 students');
+    expect(nativeElement.textContent).toContain('Student 6');
+
+    const rowsSelect = nativeElement.querySelector('select') as HTMLSelectElement;
+    rowsSelect.value = '10';
+    rowsSelect.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    expect(nativeElement.textContent).toContain('Showing 1-6 of 6 students');
+    expect(nativeElement.textContent).toContain('Page 1 of 1');
   });
 
   it('delegates search over loaded candidates', () => {
@@ -226,7 +259,7 @@ describe('TenantGroupStudentAddFacade', () => {
       enrollDate: expect.any(String),
       discount: 0,
       sendNotification: true,
-      generateInitialInvoice: true,
+      generateInitialInvoice: false,
       studentIds: ['student-1', 'student-2'],
     });
     expect(navigationTarget).toEqual(['/tenant/groups', 'group-123']);

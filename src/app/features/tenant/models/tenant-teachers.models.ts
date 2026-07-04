@@ -1,6 +1,18 @@
 import { TenantTeacherEducationCategory, TenantTeacherStatus } from './tenant-teacher-create.models';
 
 export type TeacherStatus = TenantTeacherStatus;
+export type TeacherStatusFilter = 'all' | 'inGroupNow' | 'absence';
+
+export interface TeacherStatusSummary {
+  totalTeachers: number;
+  inGroupNow: number;
+  absenceTeachers: number;
+  inGroupNowTeacherIds: string[];
+  absenceTeacherIds: string[];
+  today: string;
+  asOf: string;
+  unavailableReason?: string | null;
+}
 
 export interface TeacherSubject {
   id: string;

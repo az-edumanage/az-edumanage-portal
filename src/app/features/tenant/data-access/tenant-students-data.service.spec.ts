@@ -120,6 +120,167 @@ describe('TenantStudentsDataService', () => {
     request.flush([]);
   });
 
+  it('loads the tenant student attendance summary', () => {
+    service.loadAttendanceSummary().subscribe((summary) => {
+      expect(summary).toEqual({
+        totalStudents: 3,
+        totalAbsent: 1,
+        totalPresent: 2,
+        absentStudentIds: ['student-2'],
+        presentStudentIds: ['student-1', 'student-3'],
+        today: '2026-06-29',
+        asOf: '2026-06-29T10:45:00+03:00',
+        unavailableReason: null,
+      });
+    });
+
+    const request = httpTesting.expectOne((req) => req.url.endsWith('/tenant/students/attendance-summary'));
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      totalStudents: 3,
+      totalAbsent: 1,
+      totalPresent: 2,
+      absentStudentIds: ['student-2'],
+      presentStudentIds: ['student-1', 'student-3'],
+      today: '2026-06-29',
+      asOf: '2026-06-29T10:45:00+03:00',
+      unavailableReason: null,
+    });
+  });
+
+  it('surfaces attendance summary HTTP errors', () => {
+    service.loadAttendanceSummary().subscribe({
+      next: () => expect.unreachable('expected attendance summary loading to fail'),
+      error: (error: Error) => expect(error.message).toBe('Summary unavailable'),
+    });
+
+    const request = httpTesting.expectOne((req) => req.url.endsWith('/tenant/students/attendance-summary'));
+    request.flush({ message: 'Summary unavailable' }, { status: 500, statusText: 'Server Error' });
+  });
+
+  it('posts student password changes', () => {
+    service.changeStudentPassword('student-1', 'Student123!').subscribe((value) => {
+      expect(value).toBeNull();
+    });
+
+    const request = httpTesting.expectOne((req) => req.url.endsWith('/tenant/students/student-1/password'));
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ newPassword: 'Student123!' });
+    request.flush(null);
+  });
+
+  it('loads parent accounts from the parent endpoint', () => {
+    service.loadParents().subscribe((parents) => {
+      expect(parents).toEqual([
+        {
+          id: 'parent-user-1',
+          appUserId: 'parent-user-1',
+          name: 'Parent Ali',
+          phone: '',
+          email: '',
+          notifyParent: false,
+          students: [],
+        },
+      ]);
+    });
+
+    const request = httpTesting.expectOne((req) => req.url.endsWith('/tenant/parents'));
+    expect(request.request.method).toBe('GET');
+    request.flush([
+      {
+        id: 'parent-user-1',
+        appUserId: 'parent-user-1',
+        name: 'Parent Ali',
+        phone: null,
+        email: null,
+        notifyParent: false,
+        students: null,
+      },
+    ]);
+  });
+
+  it('creates a parent login account', () => {
+    service.createParent({
+      fullName: 'Parent Ali',
+      phone: '01000000000',
+      email: '',
+      username: 'parent.ali',
+      password: 'Parent123!',
+    }).subscribe((parent) => {
+      expect(parent).toEqual(expect.objectContaining({
+        id: 'parent-user-1',
+        appUserId: 'parent-user-1',
+        name: 'Parent Ali',
+        phone: '01000000000',
+        email: '',
+        students: [],
+      }));
+    });
+
+    const request = httpTesting.expectOne((req) => req.url.endsWith('/tenant/parents'));
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({
+      fullName: 'Parent Ali',
+      phone: '01000000000',
+      email: '',
+      username: 'parent.ali',
+      password: 'Parent123!',
+    });
+    request.flush({
+      id: 'parent-user-1',
+      appUserId: 'parent-user-1',
+      name: 'Parent Ali',
+      phone: '01000000000',
+      email: '',
+      notifyParent: false,
+      students: [],
+    });
+  });
+
+  it('updates a parent account', () => {
+    service.updateParent('parent-user-1', {
+      fullName: 'Parent Updated',
+      phone: '01000000001',
+      email: 'parent.updated@example.com',
+    }).subscribe((parent) => {
+      expect(parent).toEqual(expect.objectContaining({
+        id: 'parent-user-1',
+        appUserId: 'parent-user-1',
+        name: 'Parent Updated',
+        phone: '01000000001',
+        email: 'parent.updated@example.com',
+        students: [],
+      }));
+    });
+
+    const request = httpTesting.expectOne((req) => req.url.endsWith('/tenant/parents/parent-user-1'));
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toEqual({
+      fullName: 'Parent Updated',
+      phone: '01000000001',
+      email: 'parent.updated@example.com',
+    });
+    request.flush({
+      id: 'parent-user-1',
+      appUserId: 'parent-user-1',
+      name: 'Parent Updated',
+      phone: '01000000001',
+      email: 'parent.updated@example.com',
+      notifyParent: false,
+      students: null,
+    });
+  });
+
+  it('deletes a parent account', () => {
+    service.deleteParent('parent-user-1').subscribe((value) => {
+      expect(value).toBeNull();
+    });
+
+    const request = httpTesting.expectOne((req) => req.url.endsWith('/tenant/parents/parent-user-1'));
+    expect(request.request.method).toBe('DELETE');
+    request.flush(null);
+  });
+
   it('loads one student detail record', () => {
     service.getStudent('student-1').subscribe((student) => {
       expect(student).toEqual(expect.objectContaining({

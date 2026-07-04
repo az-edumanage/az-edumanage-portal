@@ -3,15 +3,13 @@ export type TenantStudentEducationCategory = 'BASIC_EDUCATION' | 'UNIVERSITY_EDU
 
 export interface TenantStudentCreatePayload {
   fullName: string;
-  email: string;
-  phone: string;
+  email: string | null;
+  phone: string | null;
   username: string;
   password: string;
   birthDate: string;
   gender: TenantStudentGender;
-  parentName: string;
-  parentPhone: string;
-  address: string;
+  parentAppUserId: string;
   notifyParent: boolean;
   educationCategory: TenantStudentEducationCategory;
   stageIds: string[];

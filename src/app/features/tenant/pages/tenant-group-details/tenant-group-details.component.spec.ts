@@ -43,6 +43,10 @@ describe('TenantGroupDetailsComponent', () => {
       id: 'student-1',
       name: 'Ahmed Ali',
       email: 'ahmed@example.com',
+      phone: '+201000000001',
+      parentName: 'Parent Ali',
+      parentPhone: '+201111111111',
+      notifyParent: true,
       attendanceRate: 0,
       lastAttendance: '',
     },
@@ -50,8 +54,13 @@ describe('TenantGroupDetailsComponent', () => {
       id: 'student-2',
       name: 'Sara Mohamed',
       email: 'sara@example.com',
+      phone: '+201000000002',
+      parentName: 'Parent Mohamed',
+      parentPhone: '+201222222222',
+      notifyParent: false,
       attendanceRate: 87,
       lastAttendance: '2026-05-31',
+      attendanceState: 'Present',
     },
   ];
   const students = signal<GroupStudent[]>(initialStudents);
@@ -114,6 +123,7 @@ describe('TenantGroupDetailsComponent', () => {
     selectedStudent.set(null);
     exitStudentError.set(null);
     exitingStudentId.set(null);
+    localStorage.removeItem('tenant-group:group-123:display-payment-status');
     facade.isLoading.set(false);
     facade.error.set(null);
     groupDetailsData.loadGroupExams.mockReset();
@@ -220,6 +230,7 @@ describe('TenantGroupDetailsComponent', () => {
             snapshot: {
               paramMap: convertToParamMap({ id: 'group-123' }),
               queryParamMap: convertToParamMap({}),
+              data: {},
             },
           },
         },
@@ -250,7 +261,8 @@ describe('TenantGroupDetailsComponent', () => {
     const text = fixture.nativeElement.textContent as string;
 
     expect(text).toContain('Total Students');
-    expect(text).toContain('Avg. Attendance');
+    expect(text).toContain('Total Sessions');
+    expect(text).toContain('2 sessions');
     expect(text).toContain('Absence Rate');
     expect(text).toContain('Monthly Revenue');
   });
@@ -911,6 +923,21 @@ describe('TenantGroupDetailsComponent', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/tenant/groups', 'group-123', 'sessions', 'schedule-Monday']);
   });
 
+  it('opens the teacher session details page from the teacher group view', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    (fixture.componentInstance as unknown as { isTeacherGroupView: boolean; groupListRoute: string }).isTeacherGroupView = true;
+    (fixture.componentInstance as unknown as { isTeacherGroupView: boolean; groupListRoute: string }).groupListRoute = '/teacher/groups';
+    fixture.componentInstance.selectTab('sessions');
+    fixture.detectChanges();
+
+    const firstSessionRow = fixture.nativeElement.querySelector('.tenant-group-session-row') as HTMLElement;
+    firstSessionRow.click();
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/teacher/groups', 'group-123', 'sessions', 'schedule-Monday']);
+  });
+
   it('paginates session rows when the group has more than five sessions', () => {
     group.set({
       ...initialGroup,
@@ -1510,6 +1537,7 @@ describe('TenantGroupDetailsComponent', () => {
     expect(text).toContain('Self Enrollment');
     expect(text).toContain('Teacher Approval');
     expect(text).toContain('Auto Invoicing');
+    expect(text).toContain('Display payment status');
     expect(text).toContain('Schedule Details');
     expect(text).toContain('Quick Actions');
     expect(text).toContain('Attendance');
@@ -1517,6 +1545,21 @@ describe('TenantGroupDetailsComponent', () => {
     expect(text).toContain('Broadcast');
     expect(text).toContain('Calendar');
     expect(text).toContain('Report');
+  });
+
+  it('toggles display payment status for the current group', () => {
+    const switchButton = fixture.nativeElement.querySelector('[role="switch"][aria-label="Display payment status"]') as HTMLButtonElement;
+
+    expect(switchButton).toBeTruthy();
+    expect(switchButton.getAttribute('aria-checked')).toBe('false');
+    expect(switchButton.textContent).toContain('Off');
+
+    switchButton.click();
+    fixture.detectChanges();
+
+    expect(switchButton.getAttribute('aria-checked')).toBe('true');
+    expect(switchButton.textContent).toContain('On');
+    expect(localStorage.getItem('tenant-group:group-123:display-payment-status')).toBe('true');
   });
 
   it('opens the group calendar from Quick Actions', () => {
@@ -1670,8 +1713,38 @@ describe('TenantGroupDetailsComponent', () => {
     expect(facade.selectStudent).toHaveBeenCalledWith(students()[0]);
     expect((fixture.nativeElement.textContent as string)).toContain('Student Profile');
     expect((fixture.nativeElement.textContent as string)).toContain('Ahmed Ali');
+    expect((fixture.nativeElement.textContent as string)).toContain('Parent Ali');
+    expect((fixture.nativeElement.textContent as string)).toContain('+201111111111');
+    expect((fixture.nativeElement.textContent as string)).toContain('Remove from group');
+    expect((fixture.nativeElement.textContent as string)).not.toContain('Financial Status');
+    expect((fixture.nativeElement.textContent as string)).not.toContain('Forbid Attendance');
+    expect((fixture.nativeElement.textContent as string)).not.toContain('Set Inactive');
     expect((fixture.nativeElement.textContent as string)).not.toContain('18 Sessions');
     expect((fixture.nativeElement.textContent as string)).not.toContain('Feb 15, 2026');
+  });
+
+  it('uses the selected student attendance values in the profile drawer', () => {
+    selectedStudent.set(initialStudents[1]);
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+
+    expect(text).toContain('87%');
+    expect(text).toContain('13%');
+    expect(text).toContain('Present on 2026-05-31');
+  });
+
+  it('runs the real remove enrollment action from the student profile drawer', () => {
+    selectedStudent.set(initialStudents[0]);
+    fixture.detectChanges();
+
+    const removeButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .find((button) => (button as HTMLButtonElement).textContent?.includes('Remove from group')) as HTMLButtonElement;
+
+    removeButton.click();
+    fixture.detectChanges();
+
+    expect(facade.removeStudentFromGroup).toHaveBeenCalledWith('group-123', initialStudents[0]);
   });
 
   it('renders backend-bound metric values in the existing cards', () => {

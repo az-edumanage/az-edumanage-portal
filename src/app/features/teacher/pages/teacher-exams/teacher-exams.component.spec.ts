@@ -4,8 +4,8 @@ import { Observable, of, throwError } from 'rxjs';
 import { TeacherApiService } from '../../data-access/teacher-api.service';
 import { TeacherExamSetup } from '../../models/teacher.models';
 import { TEACHER_ROUTES } from '../../routes';
+import { TenantExamsBasicEducationExamCreateComponent } from '../../../tenant/pages/tenant-exams-basic-education-exam-create/tenant-exams-basic-education-exam-create.component';
 import { TeacherExamsBasicEducationComponent } from '../teacher-exams-basic-education/teacher-exams-basic-education.component';
-import { TeacherExamsBasicEducationExamCreateComponent } from '../teacher-exams-basic-education-exam-create/teacher-exams-basic-education-exam-create.component';
 import { TeacherExamsBasicEducationGradesComponent } from '../teacher-exams-basic-education-grades/teacher-exams-basic-education-grades.component';
 import { TeacherExamsBasicEducationSubjectsComponent } from '../teacher-exams-basic-education-subjects/teacher-exams-basic-education-subjects.component';
 import { TeacherExamsUniversityEducationComponent } from '../teacher-exams-university-education/teacher-exams-university-education.component';
@@ -51,9 +51,9 @@ describe('TeacherExamsComponent', () => {
     expect(TEACHER_ROUTES.find((candidate) => candidate.path === 'exams/basic-education/:stageId/grades/:gradeId')?.component)
       .toBe(TeacherExamsBasicEducationSubjectsComponent);
     expect(TEACHER_ROUTES.find((candidate) => candidate.path === 'exams/basic-education/:stageId/grades/:gradeId/create')?.component)
-      .toBe(TeacherExamsBasicEducationExamCreateComponent);
+      .toBe(TenantExamsBasicEducationExamCreateComponent);
     expect(TEACHER_ROUTES.find((candidate) => candidate.path === 'exams/basic-education/:stageId/grades/:gradeId/create/new')?.component)
-      .toBe(TeacherExamsBasicEducationExamCreateComponent);
+      .toBe(TenantExamsBasicEducationExamCreateComponent);
     expect(TEACHER_ROUTES.find((candidate) => candidate.path === 'exams/university-education')?.component)
       .toBe(TeacherExamsUniversityEducationComponent);
     expect(TEACHER_ROUTES.find((candidate) => candidate.path === 'exams/university-education/:universityId')?.component)

@@ -77,11 +77,6 @@ export class LoginComponent implements OnInit {
     const { username, password } = this.form.getRawValue();
     const usernameOrEmail = username.trim();
     const role = this.workspaceRole();
-    const redirect = safeRedirect(this.route.snapshot.queryParamMap.get('redirect'))
-      ?? safeRedirect(this.route.snapshot.queryParamMap.get('returnUrl'));
-    if (redirect) {
-      this.dashboardService.returnUrl.set(redirect);
-    }
 
     let loginResponse: LoginResponse;
     try {
@@ -95,6 +90,7 @@ export class LoginComponent implements OnInit {
     try {
       this.authSession.scheduleExpiry(loginResponse.accessToken);
       const authenticatedRole = this.authenticatedRole(loginResponse) ?? role;
+      this.dashboardService.returnUrl.set(this.workspaceRedirect(authenticatedRole));
       if (loginResponse.passwordChangeRequired === true) {
         const changePasswordUrl = this.changePasswordUrlForRole(authenticatedRole);
         if (changePasswordUrl) {

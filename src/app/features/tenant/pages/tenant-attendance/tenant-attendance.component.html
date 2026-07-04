@@ -105,10 +105,11 @@
               class="barcode-scan-notification"
               [class.barcode-scan-notification-success]="barcodeScanNotification.state === 'success'"
               [class.barcode-scan-notification-error]="barcodeScanNotification.state === 'error'"
+              [class.barcode-scan-notification-info]="barcodeScanNotification.state === 'info'"
               role="status"
               aria-live="polite"
             >
-              <mat-icon>{{ barcodeScanNotification.state === 'success' ? 'check_circle' : 'error' }}</mat-icon>
+              <mat-icon>{{ barcodeScanNotification.state === 'success' ? 'check_circle' : (barcodeScanNotification.state === 'info' ? 'info' : 'error') }}</mat-icon>
               <span>{{ barcodeScanNotification.message }}</span>
             </div>
           }
@@ -328,4 +329,57 @@
       </div>
     </section>
   </div>
+
+  @if (paymentWarningDialog; as warning) {
+    <div class="attendance-payment-dialog-backdrop" role="presentation">
+      <section
+        class="attendance-payment-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="attendance-payment-dialog-title"
+      >
+        <button
+          type="button"
+          class="attendance-payment-dialog-close"
+          aria-label="Close payment warning"
+          (click)="closePaymentWarningDialog()"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+
+        <div class="attendance-payment-dialog-icon" aria-hidden="true">
+          <mat-icon>payments</mat-icon>
+        </div>
+
+        <div class="attendance-payment-dialog-copy">
+          <span>Payment status</span>
+          <h2 id="attendance-payment-dialog-title">Student has an unpaid subscription invoice</h2>
+          <p>
+            {{ warning.studentName }} was scanned for {{ warning.groupName }}, but this group has payment status display enabled
+            and the subscription invoice is still unpaid.
+          </p>
+        </div>
+
+        <dl class="attendance-payment-dialog-details">
+          <div>
+            <dt>Invoice</dt>
+            <dd>{{ warning.invoiceRef }}</dd>
+          </div>
+          <div>
+            <dt>Amount</dt>
+            <dd>{{ warning.amount }}</dd>
+          </div>
+          <div>
+            <dt>Due date</dt>
+            <dd>{{ warning.dueDate }}</dd>
+          </div>
+        </dl>
+
+        <div class="attendance-payment-dialog-actions">
+          <button type="button" (click)="continueAttendanceAfterPaymentWarning()">Continue attendance</button>
+          <a routerLink="/tenant/billing" (click)="closePaymentWarningDialog()">Open billing</a>
+        </div>
+      </section>
+    </div>
+  }
 </div>

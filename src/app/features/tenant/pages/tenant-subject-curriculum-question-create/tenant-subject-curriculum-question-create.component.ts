@@ -455,11 +455,18 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     return subject && nodeId ? [this.subjectsRootLink(), subject.id, 'curriculum', nodeId] : this.curriculumLink();
   });
   readonly examCreateLink = computed(() => {
+    if (this.isUniversityExamQuestionRoute()) {
+      const universityId = this.route.snapshot?.paramMap?.get('universityId');
+      const collegeId = this.route.snapshot?.paramMap?.get('collegeId');
+      return universityId && collegeId
+        ? [this.universityEducationExamsRoot(), universityId, 'colleges', collegeId, 'create', 'new']
+        : [this.universityEducationExamsRoot()];
+    }
     const stageId = this.routeStageId();
     const gradeId = this.routeGradeId();
     return stageId && gradeId
-      ? ['/tenant/exams/basic-education', stageId, 'grades', gradeId, 'create', 'new']
-      : ['/tenant/exams/basic-education'];
+      ? [this.basicEducationExamsRoot(), stageId, 'grades', gradeId, 'create', 'new']
+      : [this.basicEducationExamsRoot()];
   });
   readonly examCreateQueryParams = computed(() => {
     const subjectId = this.subject()?.id ?? null;
@@ -721,11 +728,19 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   }
 
   usesBasicEducationQuestionBankStore(): boolean {
-    return this.isExamQuestionRoute() || this.router.url.startsWith('/tenant/questions-bank/basic-education');
+    return (this.isExamQuestionRoute() && !this.isUniversityExamQuestionRoute()) || this.router.url.startsWith('/tenant/questions-bank/basic-education');
   }
 
   isExamQuestionRoute(): boolean {
-    return this.router.url.startsWith('/tenant/exams/basic-education');
+    return this.isBasicEducationExamQuestionRoute() || this.isUniversityExamQuestionRoute();
+  }
+
+  private isBasicEducationExamQuestionRoute(): boolean {
+    return this.router.url.startsWith('/tenant/exams/basic-education') || this.router.url.startsWith('/teacher/exams/basic-education');
+  }
+
+  private isUniversityExamQuestionRoute(): boolean {
+    return this.router.url.startsWith('/tenant/exams/university-education') || this.router.url.startsWith('/teacher/exams/university-education');
   }
 
   isArabic(): boolean {
@@ -1080,7 +1095,10 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     this.skillSaving.set(true);
     this.skillInlineError.set(null);
     try {
-      const created = await this.data.createCurriculumSkill(subject.id, nodeId, { name, description: null });
+      const educationCategory = this.routeEducationCategory();
+      const created = educationCategory
+        ? await this.data.createCurriculumSkillForCategory(subject.id, nodeId, educationCategory, { name, description: null })
+        : await this.data.createCurriculumSkill(subject.id, nodeId, { name, description: null });
       this.skills.update((skills) => [...skills, created]);
       this.questionForm.controls.skillId.setValue(created.id);
       this.questionForm.controls.skillId.markAsDirty();
@@ -1129,7 +1147,11 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     this.questionSourceSaving.set(true);
     this.questionSourceInlineError.set(null);
     try {
-      const created = await this.questionSourceSettings.createQuestionSource({ source, description: null });
+      const created = await this.questionSourceSettings.createQuestionSource({
+        source,
+        educationCategory: this.currentQuestionSourceEducationCategory(),
+        description: null,
+      });
       this.questionSources.update((sources) => [...sources, created]);
       this.questionForm.controls.questionSource.setValue(created.source);
       this.questionForm.controls.questionSource.markAsDirty();
@@ -1483,7 +1505,12 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
 
   private async loadSubjectAndCurriculum(subjectId: string | null): Promise<void> {
     this.curriculumRoot.set(null);
-    await this.facade.loadSubject(subjectId);
+    const educationCategory = this.routeEducationCategory();
+    if (educationCategory) {
+      await this.facade.loadSubject(subjectId, educationCategory);
+    } else {
+      await this.facade.loadSubject(subjectId);
+    }
     const subject = this.subject();
     if (subject) {
       await this.loadCurriculum(subject.id);
@@ -1522,7 +1549,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
         ? await this.data.listBasicEducationExamLinkedQuestions(stageId, gradeId, subjectId, examId)
         : this.usesBasicEducationQuestionBankStore() && stageId && gradeId
           ? await this.data.listBasicEducationExamQuestions(stageId, gradeId, subjectId)
-          : await this.data.listCurriculumQuestions(subjectId, nodeId);
+          : await this.listCurriculumQuestionsForCurrentCategory(subjectId, nodeId);
       const question = questions.find((item) => item.id === questionId);
       if (!question) {
         throw new Error(this.isArabic() ? 'السؤال غير موجود.' : 'Question not found.');
@@ -1565,7 +1592,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     this.curriculumLoading.set(true);
     this.curriculumError.set(null);
     try {
-      this.curriculumRoot.set(await this.data.getSubjectCurriculum(subjectId));
+      this.curriculumRoot.set(await this.getSubjectCurriculumForCurrentCategory(subjectId));
     } catch (error) {
       this.curriculumError.set(this.data.toUserMessage(error, this.label('loadErrorTitle')));
     } finally {
@@ -1590,7 +1617,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     this.questionSourcesLoading.set(true);
     this.questionSourcesError.set(null);
     try {
-      this.questionSources.set(await this.questionSourceSettings.listQuestionSources());
+      this.questionSources.set(await this.questionSourceSettings.listQuestionSources(this.currentQuestionSourceEducationCategory()));
     } catch (error) {
       this.questionSourcesError.set(this.questionSourceSettings.toUserMessage(error));
     } finally {
@@ -1641,7 +1668,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     if (uniqueNodeIds.length === 0) {
       return [];
     }
-    const results = await Promise.allSettled(uniqueNodeIds.map((id) => this.data.listCurriculumSkills(subjectId, id)));
+    const results = await Promise.allSettled(uniqueNodeIds.map((id) => this.listCurriculumSkillsForCurrentCategory(subjectId, id)));
     const firstRejected = results.find((result): result is PromiseRejectedResult => result.status === 'rejected');
     if (firstRejected && results.every((result) => result.status === 'rejected')) {
       throw firstRejected.reason;
@@ -1758,7 +1785,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     payload: Parameters<TenantSubjectsDataService['createCurriculumQuestion']>[2],
   ): Promise<TenantCurriculumQuestion> {
     if (!this.usesBasicEducationQuestionBankStore()) {
-      return await this.data.createCurriculumQuestion(subjectId, nodeId, payload);
+      return await this.createCurriculumQuestionForCurrentCategory(subjectId, nodeId, payload);
     }
     const stageId = this.routeStageId();
     const gradeId = this.routeGradeId();
@@ -1775,7 +1802,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     payload: Parameters<TenantSubjectsDataService['createCurriculumQuestion']>[2],
   ): Promise<TenantCurriculumQuestion> {
     if (!this.usesBasicEducationQuestionBankStore()) {
-      return await this.data.updateCurriculumQuestion(subjectId, nodeId, questionId, payload);
+      return await this.updateCurriculumQuestionForCurrentCategory(subjectId, nodeId, questionId, payload);
     }
     const stageId = this.routeStageId();
     const gradeId = this.routeGradeId();
@@ -1792,7 +1819,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     payload: Parameters<TenantSubjectsDataService['createCurriculumQuestionAnswer']>[3],
   ): Promise<TenantCurriculumQuestionAnswer> {
     if (!this.usesBasicEducationQuestionBankStore()) {
-      return await this.data.createCurriculumQuestionAnswer(subjectId, nodeId, questionId, payload);
+      return await this.createCurriculumQuestionAnswerForCurrentCategory(subjectId, nodeId, questionId, payload);
     }
     const stageId = this.routeStageId();
     const gradeId = this.routeGradeId();
@@ -1810,7 +1837,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     payload: Parameters<TenantSubjectsDataService['updateCurriculumQuestionAnswer']>[4],
   ): Promise<TenantCurriculumQuestionAnswer> {
     if (!this.usesBasicEducationQuestionBankStore()) {
-      return await this.data.updateCurriculumQuestionAnswer(subjectId, nodeId, questionId, answerId, payload);
+      return await this.updateCurriculumQuestionAnswerForCurrentCategory(subjectId, nodeId, questionId, answerId, payload);
     }
     const stageId = this.routeStageId();
     const gradeId = this.routeGradeId();
@@ -2282,24 +2309,33 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   }
 
   private subjectsRootLink(): string {
-    if (this.router.url.startsWith('/tenant/exams/basic-education')) {
+    if (this.isBasicEducationExamQuestionRoute()) {
       const stageId = this.routeStageId();
       const gradeId = this.routeGradeId();
       if (stageId && gradeId) {
-        return `/tenant/exams/basic-education/${stageId}/grades/${gradeId}/create/new/subjects`;
+        return `${this.basicEducationExamsRoot()}/${stageId}/grades/${gradeId}/create/new/subjects`;
       }
     }
 
+    if (this.isUniversityExamQuestionRoute()) {
+      const universityId = this.route.snapshot?.paramMap?.get('universityId');
+      const collegeId = this.route.snapshot?.paramMap?.get('collegeId');
+      if (universityId && collegeId) {
+        return `${this.universityEducationExamsRoot()}/${universityId}/colleges/${collegeId}/create/new/subjects`;
+      }
+      return this.universityEducationExamsRoot();
+    }
+
     if (this.router.url.startsWith('/tenant/questions-bank/basic-education')) {
-      const stageId = this.route.snapshot.paramMap.get('stageId');
-      const gradeId = this.route.snapshot.paramMap.get('gradeId');
+      const stageId = this.route.snapshot?.paramMap?.get('stageId');
+      const gradeId = this.route.snapshot?.paramMap?.get('gradeId');
       if (stageId && gradeId) {
         return `/tenant/questions-bank/basic-education/${stageId}/grades/${gradeId}/subjects`;
       }
     }
 
     if (this.router.url.startsWith('/tenant/questions-bank/university-education')) {
-      const collegeId = this.route.snapshot.paramMap.get('collegeId');
+      const collegeId = this.route.snapshot?.paramMap?.get('collegeId');
       if (collegeId) {
         return `/tenant/questions-bank/university-education/colleges/${collegeId}/subjects`;
       }
@@ -2307,5 +2343,99 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     }
 
     return this.router.url.startsWith('/tenant/university-subjects') ? '/tenant/university-subjects' : '/tenant/subjects';
+  }
+
+  private routeEducationCategory(): string | null {
+    return this.router.url.startsWith('/tenant/questions-bank/university-education')
+      || this.router.url.startsWith('/tenant/university-subjects')
+      || this.router.url.startsWith('/tenant/exams/university-education')
+      || this.router.url.startsWith('/teacher/exams/university-education')
+      ? 'UNIVERSITY_EDUCATION'
+      : null;
+  }
+
+  examsRoot(): string {
+    return this.router.url.startsWith('/teacher/exams') ? '/teacher/exams' : '/tenant/exams';
+  }
+
+  basicEducationExamsRoot(): string {
+    return `${this.examsRoot()}/basic-education`;
+  }
+
+  private universityEducationExamsRoot(): string {
+    return `${this.examsRoot()}/university-education`;
+  }
+
+  private currentQuestionSourceEducationCategory(): 'BASIC_EDUCATION' | 'UNIVERSITY_EDUCATION' {
+    return this.routeEducationCategory() === 'UNIVERSITY_EDUCATION' ? 'UNIVERSITY_EDUCATION' : 'BASIC_EDUCATION';
+  }
+
+  private async getSubjectCurriculumForCurrentCategory(subjectId: string): Promise<TenantSubjectCurriculumNode> {
+    const educationCategory = this.routeEducationCategory();
+    return educationCategory
+      ? await this.data.getSubjectCurriculumForCategory(subjectId, educationCategory)
+      : await this.data.getSubjectCurriculum(subjectId);
+  }
+
+  private async listCurriculumQuestionsForCurrentCategory(subjectId: string, nodeId: string): Promise<TenantCurriculumQuestion[]> {
+    const educationCategory = this.routeEducationCategory();
+    return educationCategory
+      ? await this.data.listCurriculumQuestionsForCategory(subjectId, nodeId, educationCategory)
+      : await this.data.listCurriculumQuestions(subjectId, nodeId);
+  }
+
+  private async listCurriculumSkillsForCurrentCategory(subjectId: string, nodeId: string): Promise<TenantCurriculumSkill[]> {
+    const educationCategory = this.routeEducationCategory();
+    return educationCategory
+      ? await this.data.listCurriculumSkillsForCategory(subjectId, nodeId, educationCategory)
+      : await this.data.listCurriculumSkills(subjectId, nodeId);
+  }
+
+  private async createCurriculumQuestionForCurrentCategory(
+    subjectId: string,
+    nodeId: string,
+    payload: Parameters<TenantSubjectsDataService['createCurriculumQuestion']>[2],
+  ): Promise<TenantCurriculumQuestion> {
+    const educationCategory = this.routeEducationCategory();
+    return educationCategory
+      ? await this.data.createCurriculumQuestionForCategory(subjectId, nodeId, educationCategory, payload)
+      : await this.data.createCurriculumQuestion(subjectId, nodeId, payload);
+  }
+
+  private async updateCurriculumQuestionForCurrentCategory(
+    subjectId: string,
+    nodeId: string,
+    questionId: string,
+    payload: Parameters<TenantSubjectsDataService['createCurriculumQuestion']>[2],
+  ): Promise<TenantCurriculumQuestion> {
+    const educationCategory = this.routeEducationCategory();
+    return educationCategory
+      ? await this.data.updateCurriculumQuestionForCategory(subjectId, nodeId, questionId, educationCategory, payload)
+      : await this.data.updateCurriculumQuestion(subjectId, nodeId, questionId, payload);
+  }
+
+  private async createCurriculumQuestionAnswerForCurrentCategory(
+    subjectId: string,
+    nodeId: string,
+    questionId: string,
+    payload: Parameters<TenantSubjectsDataService['createCurriculumQuestionAnswer']>[3],
+  ): Promise<TenantCurriculumQuestionAnswer> {
+    const educationCategory = this.routeEducationCategory();
+    return educationCategory
+      ? await this.data.createCurriculumQuestionAnswerForCategory(subjectId, nodeId, questionId, educationCategory, payload)
+      : await this.data.createCurriculumQuestionAnswer(subjectId, nodeId, questionId, payload);
+  }
+
+  private async updateCurriculumQuestionAnswerForCurrentCategory(
+    subjectId: string,
+    nodeId: string,
+    questionId: string,
+    answerId: string,
+    payload: Parameters<TenantSubjectsDataService['updateCurriculumQuestionAnswer']>[4],
+  ): Promise<TenantCurriculumQuestionAnswer> {
+    const educationCategory = this.routeEducationCategory();
+    return educationCategory
+      ? await this.data.updateCurriculumQuestionAnswerForCategory(subjectId, nodeId, questionId, answerId, educationCategory, payload)
+      : await this.data.updateCurriculumQuestionAnswer(subjectId, nodeId, questionId, answerId, payload);
   }
 }

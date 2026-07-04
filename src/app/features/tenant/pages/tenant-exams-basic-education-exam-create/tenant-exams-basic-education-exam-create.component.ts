@@ -69,24 +69,24 @@ function scopeText(gradeName: string, subjectName: string): string {
   template: `
     <div class="space-y-6">
       <nav class="flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400" aria-label="Breadcrumb">
-        <a routerLink="/tenant/exams" class="font-medium text-slate-600 transition hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300">Exams</a>
+        <a [routerLink]="examsRoot()" class="font-medium text-slate-600 transition hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300">Exams</a>
         <mat-icon class="text-base text-slate-400">chevron_right</mat-icon>
         <a [routerLink]="educationTrackRoute()" class="font-medium text-slate-600 transition hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300">{{ educationTrackLabel() }}</a>
         <mat-icon class="text-base text-slate-400">chevron_right</mat-icon>
         <a [routerLink]="parentContextRoute()" class="font-medium text-slate-600 transition hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300">{{ parentContextLabel() }}</a>
         <mat-icon class="text-base text-slate-400">chevron_right</mat-icon>
+        <a [routerLink]="scopeContextRoute()" class="font-medium text-slate-600 transition hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300">{{ scopeName() }}</a>
+        <mat-icon class="text-base text-slate-400">chevron_right</mat-icon>
         @if (!isUniversityEducationContext()) {
-          <a [routerLink]="gradeContextRoute()" class="font-medium text-slate-600 transition hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300">{{ scopeName() }}</a>
-          <mat-icon class="text-base text-slate-400">chevron_right</mat-icon>
           <span class="font-medium text-slate-600 dark:text-slate-300">{{ selectedSubjectLabel() }}</span>
           <mat-icon class="text-base text-slate-400">chevron_right</mat-icon>
         }
         @if (isCreateMode()) {
-          <a [routerLink]="listRoute()" [queryParams]="routeQueryParams()" class="font-medium text-slate-600 transition hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300">{{ scopeTypeLabel() }} Exams</a>
+          <a [routerLink]="listRoute()" [queryParams]="routeQueryParams()" class="font-medium text-slate-600 transition hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300">Exams List</a>
           <mat-icon class="text-base text-slate-400">chevron_right</mat-icon>
           <span class="font-semibold text-slate-900 dark:text-slate-100">Create Exam</span>
         } @else {
-          <span class="font-semibold text-slate-900 dark:text-slate-100">{{ scopeTypeLabel() }} Exams</span>
+          <span class="font-semibold text-slate-900 dark:text-slate-100">Exams List</span>
         }
       </nav>
 
@@ -136,7 +136,24 @@ function scopeText(gradeName: string, subjectName: string): string {
                     {{ editingExamId() ? 'Edit Exam' : 'Create Exam' }}
                   </h3>
                   <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                  @if (!isUniversityEducationContext()) {
+                  @if (isUniversityEducationContext()) {
+                    <label class="md:col-span-2">
+                      <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Subject</span>
+                      <select
+                        formControlName="subjectId"
+                        class="h-[46px] w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:border-indigo-100 disabled:bg-indigo-50 disabled:text-indigo-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-indigo-500/20 dark:disabled:border-indigo-500/20 dark:disabled:bg-indigo-500/10 dark:disabled:text-indigo-100"
+                        (change)="setSelectedSubjectId($any($event.target).value)"
+                      >
+                        <option value="">Select subject</option>
+                        @for (subject of universitySubjects(); track subject.id) {
+                          <option [value]="subject.id">{{ subject.name }}</option>
+                        }
+                      </select>
+                      @if (!selectedUniversitySubject()) {
+                        <span class="mt-1 block text-xs font-semibold text-rose-600 dark:text-rose-300">Choose a subject so this exam is linked correctly.</span>
+                      }
+                    </label>
+                  } @else {
                     <label class="md:col-span-2">
                       <span class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Subject</span>
                       <select
@@ -288,6 +305,11 @@ function scopeText(gradeName: string, subjectName: string): string {
                       <dt class="text-slate-500 dark:text-slate-400">Subject</dt>
                       <dd class="font-semibold text-slate-900 dark:text-slate-100">{{ selectedSubjectLabel() }}</dd>
                     </div>
+                  } @else {
+                    <div>
+                      <dt class="text-slate-500 dark:text-slate-400">Subject</dt>
+                      <dd class="font-semibold text-slate-900 dark:text-slate-100">{{ selectedSubjectLabel() }}</dd>
+                    </div>
                   }
                   <div>
                     <dt class="text-slate-500 dark:text-slate-400">{{ isUniversityEducationContext() ? 'Subjects' : 'Students' }}</dt>
@@ -321,7 +343,7 @@ function scopeText(gradeName: string, subjectName: string): string {
               }
 
               <div class="flex flex-col gap-3">
-                <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="savingExam() || examForm.invalid || (!isUniversityEducationContext() && !selectedSubject())">
+                <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="savingExam() || examForm.invalid || !selectedExamSubjectId()">
                   <mat-icon class="text-base">assignment</mat-icon>
                     {{ savingExam() ? 'Saving Exam' : editingExamId() ? 'Save Exam' : 'Create Exam' }}
                 </button>
@@ -929,23 +951,25 @@ function scopeText(gradeName: string, subjectName: string): string {
                           </td>
                           <td class="px-5 py-4">
                             <div class="flex items-center justify-end gap-2">
-                              <button
-                                type="button"
-                                class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-200 dark:border-slate-700 dark:text-slate-300 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-200"
-                                [attr.aria-label]="'Edit ' + exam.title"
-                                (click)="editExam(exam, $event)"
-                              >
-                                <mat-icon class="text-base">edit</mat-icon>
-                              </button>
-                              <button
-                                type="button"
-                                class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-200 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:border-rose-500/40 dark:hover:bg-rose-500/10 dark:hover:text-rose-200"
-                                [attr.aria-label]="'Delete ' + exam.title"
-                                [disabled]="deletingExamId() === exam.id"
-                                (click)="openDeleteExamModal(exam, $event)"
-                              >
-                                <mat-icon class="text-base">{{ deletingExamId() === exam.id ? 'hourglass_empty' : 'delete' }}</mat-icon>
-                              </button>
+                              @if (!isUniversityEducationContext()) {
+                                <button
+                                  type="button"
+                                  class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-200 dark:border-slate-700 dark:text-slate-300 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-200"
+                                  [attr.aria-label]="'Edit ' + exam.title"
+                                  (click)="editExam(exam, $event)"
+                                >
+                                  <mat-icon class="text-base">edit</mat-icon>
+                                </button>
+                                <button
+                                  type="button"
+                                  class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-200 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:border-rose-500/40 dark:hover:bg-rose-500/10 dark:hover:text-rose-200"
+                                  [attr.aria-label]="'Delete ' + exam.title"
+                                  [disabled]="deletingExamId() === exam.id"
+                                  (click)="openDeleteExamModal(exam, $event)"
+                                >
+                                  <mat-icon class="text-base">{{ deletingExamId() === exam.id ? 'hourglass_empty' : 'delete' }}</mat-icon>
+                                </button>
+                              }
                               <button
                                 type="button"
                                 class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-200"
@@ -1256,6 +1280,16 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
 
     return this.subjects().length === 1 ? this.subjects()[0] : null;
   });
+  readonly selectedUniversitySubject = computed(() => {
+    if (!this.isUniversityEducationContext()) {
+      return null;
+    }
+    const selectedId = this.subjectId();
+    if (selectedId) {
+      return this.universitySubjects().find((subject) => subject.id === selectedId) ?? null;
+    }
+    return this.universitySubjects().length === 1 ? this.universitySubjects()[0] : null;
+  });
   readonly publishedExamCount = computed(() => this.exams().filter((exam) => exam.status === 'Published').length);
   readonly draftExamCount = computed(() => this.exams().filter((exam) => exam.status === 'Draft').length);
   readonly filteredExams = computed(() => {
@@ -1307,8 +1341,8 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
   });
   readonly listRoute = computed(() =>
     this.isUniversityEducationContext()
-      ? ['/tenant/exams/university-education', this.universityId(), 'colleges', this.collegeId(), 'create']
-      : ['/tenant/exams/basic-education', this.stageId(), 'grades', this.gradeId(), 'create'],
+      ? [this.universityEducationExamsRoot(), this.universityId(), 'colleges', this.collegeId(), 'create']
+      : [this.basicEducationExamsRoot(), this.stageId(), 'grades', this.gradeId(), 'create'],
   );
   readonly createRoute = computed(() => [...this.listRoute(), 'new']);
 
@@ -1337,7 +1371,7 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
 
   async onSubmit(): Promise<void> {
     this.submitMessage.set(null);
-    if (this.examForm.invalid || !this.hasExamScope() || (!this.isUniversityEducationContext() && !this.selectedSubject())) {
+    if (this.examForm.invalid || !this.hasExamScope() || !this.selectedExamSubjectId()) {
       this.examForm.markAllAsTouched();
       return;
     }
@@ -1370,32 +1404,30 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
       return;
     }
 
-    this.exams.update((exams) => [
-      {
-        id: `draft-${Date.now()}`,
-        title: value.title,
-        instructions: value.instructions || null,
-        subjectId: this.isUniversityEducationContext() ? null : subject?.id ?? null,
-        subjectName: this.isUniversityEducationContext() ? null : subject?.name ?? null,
-        date: this.todayDateString(),
-        status: 'Draft',
-        shuffleQuestions: value.shuffleQuestions,
-        showResultsImmediately: value.showResultsImmediately,
-        allowRetakes: value.allowRetakes,
-        questionCount: 0,
-        submissionCount: 0,
-      },
-      ...exams,
-    ]);
-    this.submitMessage.set(`Exam draft is ready for ${scopeText(this.scopeName(), this.selectedSubjectLabel())}.`);
-    this.examForm.reset({
-      title: '',
-      instructions: '',
-      subjectId: subject?.id ?? '',
-      shuffleQuestions: true,
-      showResultsImmediately: false,
-      allowRetakes: false,
-    });
+    const universitySubject = this.selectedUniversitySubject();
+    if (this.isUniversityEducationContext() && universitySubject) {
+      this.savingExam.set(true);
+      try {
+        const payload = {
+          title: value.title.trim() || this.defaultDraftExamTitle(universitySubject.name),
+          instructions: value.instructions || null,
+          shuffleQuestions: value.shuffleQuestions,
+          showResultsImmediately: value.showResultsImmediately,
+          allowRetakes: value.allowRetakes,
+          questionIds: [],
+        };
+        if (this.editingExamId()) {
+          await this.subjectsData.updateUniversityEducationExam(this.universityId(), this.collegeId(), universitySubject.id, this.editingExamId(), payload);
+        } else {
+          await this.subjectsData.createUniversityEducationExam(this.universityId(), this.collegeId(), universitySubject.id, payload);
+        }
+        await this.router.navigate(this.listRoute(), { queryParams: this.routeQueryParams() });
+      } catch (error) {
+        this.submitMessage.set(this.subjectsData.toUserMessage(error, 'Unable to save exam. Please try again.'));
+      } finally {
+        this.savingExam.set(false);
+      }
+    }
   }
 
   statusClass(status: BasicEducationExamStatus): string {
@@ -1428,7 +1460,7 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
   async editExam(exam: BasicEducationGradeExam, event: Event): Promise<void> {
     event.stopPropagation();
     const subjectId = exam.subjectId || this.selectedSubject()?.id;
-    if (!subjectId || this.isUniversityEducationContext()) {
+    if (!subjectId) {
       return;
     }
 
@@ -1459,14 +1491,18 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
       return;
     }
     const subjectId = exam.subjectId || this.selectedSubject()?.id;
-    if (!subjectId || this.isUniversityEducationContext()) {
+    if (!subjectId) {
       return;
     }
 
     this.deletingExamId.set(exam.id);
     this.submitMessage.set(null);
     try {
-      await this.subjectsData.deleteBasicEducationExam(this.stageId(), this.gradeId(), subjectId, exam.id);
+      if (this.isUniversityEducationContext()) {
+        await this.subjectsData.deleteUniversityEducationExam(this.universityId(), this.collegeId(), subjectId, exam.id);
+      } else {
+        await this.subjectsData.deleteBasicEducationExam(this.stageId(), this.gradeId(), subjectId, exam.id);
+      }
       this.exams.update((exams) => exams.filter((item) => item.id !== exam.id));
       if (this.selectedListExamId() === exam.id) {
         this.closeExamQuestionsDrawer();
@@ -1482,7 +1518,7 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
   async toggleExamStatus(exam: BasicEducationGradeExam, event?: Event): Promise<void> {
     event?.stopPropagation();
     const subjectId = exam.subjectId || this.selectedSubject()?.id;
-    if (!subjectId || this.isUniversityEducationContext()) {
+    if (!subjectId) {
       return;
     }
 
@@ -1490,13 +1526,21 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
     this.updatingExamStatusId.set(exam.id);
     this.submitMessage.set(null);
     try {
-      const updated = await this.subjectsData.updateBasicEducationExamStatus(
-        this.stageId(),
-        this.gradeId(),
-        subjectId,
-        exam.id,
-        { status: this.toApiExamStatus(nextStatus) },
-      );
+      const updated = this.isUniversityEducationContext()
+        ? await this.subjectsData.updateUniversityEducationExamStatus(
+            this.universityId(),
+            this.collegeId(),
+            subjectId,
+            exam.id,
+            { status: this.toApiExamStatus(nextStatus) },
+          )
+        : await this.subjectsData.updateBasicEducationExamStatus(
+            this.stageId(),
+            this.gradeId(),
+            subjectId,
+            exam.id,
+            { status: this.toApiExamStatus(nextStatus) },
+          );
       const row = this.toGradeExamRow(updated);
       this.exams.update((exams) => exams.map((item) => item.id === row.id ? row : item));
       if (this.selectedListExamId() === row.id) {
@@ -1522,7 +1566,7 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
   }
 
   educationTrackRoute(): string {
-    return this.isUniversityEducationContext() ? '/tenant/exams/university-education' : '/tenant/exams/basic-education';
+    return this.isUniversityEducationContext() ? this.universityEducationExamsRoot() : this.basicEducationExamsRoot();
   }
 
   parentContextLabel(): string {
@@ -1535,14 +1579,20 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
 
   parentContextRoute(): string[] {
     if (this.isUniversityEducationContext()) {
-      return ['/tenant/exams/university-education', this.universityId()];
+      return [this.universityEducationExamsRoot(), this.universityId()];
     }
 
-    return ['/tenant/exams/basic-education', this.stageId()];
+    return [this.basicEducationExamsRoot(), this.stageId()];
   }
 
   gradeContextRoute(): string[] {
-    return ['/tenant/exams/basic-education', this.stageId(), 'grades', this.gradeId()];
+    return [this.basicEducationExamsRoot(), this.stageId(), 'grades', this.gradeId()];
+  }
+
+  scopeContextRoute(): string[] {
+    return this.isUniversityEducationContext()
+      ? [this.universityEducationExamsRoot(), this.universityId(), 'colleges', this.collegeId()]
+      : this.gradeContextRoute();
   }
 
   parentScopeTypeLabel(): string {
@@ -1566,7 +1616,16 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
   }
 
   selectedSubjectLabel(): string {
+    if (this.isUniversityEducationContext()) {
+      return this.selectedUniversitySubject()?.name || (this.universitySubjects().length > 1 ? 'All subjects' : 'Subject');
+    }
     return this.selectedSubject()?.name || (this.subjects().length > 1 ? 'All subjects' : 'Subject');
+  }
+
+  selectedExamSubjectId(): string {
+    return this.isUniversityEducationContext()
+      ? this.selectedUniversitySubject()?.id ?? ''
+      : this.selectedSubject()?.id ?? '';
   }
 
   isSubjectSelectorLocked(): boolean {
@@ -1590,7 +1649,7 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
   }
 
   async openBasicQuestionsDrawer(): Promise<void> {
-    const subject = this.selectedSubject();
+    const subject = this.selectedExamSubject();
     if (!subject) {
       this.questionContextError.set('Choose a subject before adding basic questions.');
       return;
@@ -1598,7 +1657,7 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
 
     this.prepareBasicQuestionsDrawer('basic');
     try {
-      const curriculum = await this.subjectsData.getSubjectCurriculum(subject.id);
+      const curriculum = await this.getSelectedSubjectCurriculum(subject.id);
       await this.loadCurriculumSkills(subject.id, curriculum);
       const questions = await this.loadSubjectCurriculumQuestions(subject.id, curriculum);
       this.basicQuestionRows.set(questions.map(({ question, nodeId }) => this.toExamQuestionRow(question, curriculum, nodeId)));
@@ -1611,7 +1670,7 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
   }
 
   async openQuestionsBankDrawer(): Promise<void> {
-    const subject = this.selectedSubject();
+    const subject = this.selectedExamSubject();
     if (!subject) {
       this.questionContextError.set('Choose a subject before adding questions from the bank.');
       return;
@@ -1619,12 +1678,15 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
 
     this.prepareBasicQuestionsDrawer('bank');
     try {
-      const [curriculum, questions] = await Promise.all([
-        this.subjectsData.getSubjectCurriculum(subject.id),
-        this.subjectsData.listBasicEducationExamQuestions(this.stageId(), this.gradeId(), subject.id),
-      ]);
+      const curriculum = await this.getSelectedSubjectCurriculum(subject.id);
       await this.loadCurriculumSkills(subject.id, curriculum);
-      this.basicQuestionRows.set(questions.map((question) => this.toExamQuestionRow(question, curriculum)));
+      if (this.isUniversityEducationContext()) {
+        const questions = await this.loadSubjectCurriculumQuestions(subject.id, curriculum);
+        this.basicQuestionRows.set(questions.map(({ question, nodeId }) => this.toExamQuestionRow(question, curriculum, nodeId)));
+      } else {
+        const questions = await this.subjectsData.listBasicEducationExamQuestions(this.stageId(), this.gradeId(), subject.id);
+        this.basicQuestionRows.set(questions.map((question) => this.toExamQuestionRow(question, curriculum)));
+      }
     } catch (error) {
       this.basicQuestionRows.set([]);
       this.basicQuestionsError.set(this.subjectsData.toUserMessage(error, 'Unable to load questions bank. Please try again.'));
@@ -1671,7 +1733,7 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
   }
 
   async addSelectedBasicQuestions(): Promise<void> {
-    const subject = this.selectedSubject();
+    const subject = this.selectedExamSubject();
     if (!subject) {
       this.basicQuestionsError.set('Choose a subject before adding basic questions.');
       return;
@@ -1712,14 +1774,23 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
         allowRetakes: value.allowRetakes,
         questionIds: mergedIds,
       };
-      const savedExam = this.editingExamId()
-        ? await this.subjectsData.updateBasicEducationExam(this.stageId(), this.gradeId(), subject.id, this.editingExamId(), payload)
-        : await this.subjectsData.createBasicEducationExam(this.stageId(), this.gradeId(), subject.id, payload);
+      const savedExam = this.isUniversityEducationContext()
+        ? this.editingExamId()
+          ? await this.subjectsData.updateUniversityEducationExam(this.universityId(), this.collegeId(), subject.id, this.editingExamId(), payload)
+          : await this.subjectsData.createUniversityEducationExam(this.universityId(), this.collegeId(), subject.id, payload)
+        : this.editingExamId()
+          ? await this.subjectsData.updateBasicEducationExam(this.stageId(), this.gradeId(), subject.id, this.editingExamId(), payload)
+          : await this.subjectsData.createBasicEducationExam(this.stageId(), this.gradeId(), subject.id, payload);
 
       this.editingExamId.set(savedExam.id);
       sessionStorage.setItem(this.examQuestionDraftStorageKey(subject.id), JSON.stringify(mergedIds));
-      await this.loadPersistedExamQuestionRows(subject.id, savedExam.id);
-      await this.loadBasicEducationExams();
+      if (this.isUniversityEducationContext()) {
+        this.examQuestionRows.set(this.basicQuestionRows().filter((question) => mergedIds.includes(question.id)));
+        await this.loadUniversityEducationExams();
+      } else {
+        await this.loadPersistedExamQuestionRows(subject.id, savedExam.id);
+        await this.loadBasicEducationExams();
+      }
       await this.router.navigate(this.createRoute(), {
         queryParams: { subjectId: subject.id, examId: savedExam.id },
         replaceUrl: true,
@@ -1806,7 +1877,7 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
       queryParams.examId = examId;
     }
     await this.router.navigate([
-      '/tenant/exams/basic-education',
+      this.basicEducationExamsRoot(),
       this.stageId(),
       'grades',
       this.gradeId(),
@@ -1864,6 +1935,11 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
       return;
     }
 
+    if (this.isUniversityEducationContext()) {
+      await this.openUniversityInsertQuestion();
+      return;
+    }
+
     const subject = this.selectedSubject();
     if (!subject) {
       this.questionContextError.set('Choose a subject before adding questions.');
@@ -1879,7 +1955,7 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
         queryParams.examId = this.editingExamId();
       }
       await this.router.navigate([
-        '/tenant/exams/basic-education',
+        this.basicEducationExamsRoot(),
         subject.stageId || this.stageId(),
         'grades',
         subject.gradeId || this.gradeId(),
@@ -1888,6 +1964,64 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
         'subjects',
         subject.id,
         'curriculum',
+        'addQuestion',
+      ], { queryParams });
+    } catch (error) {
+      this.questionContextError.set(this.subjectsData.toUserMessage(error, 'Unable to load question setup. Please try again.'));
+    } finally {
+      this.questionContextLoading.set(false);
+    }
+  }
+
+  private async openUniversityQuestionBankSubject(): Promise<void> {
+    const subject = this.selectedUniversitySubject();
+    if (!subject) {
+      this.questionContextError.set('Choose a subject before opening questions.');
+      return;
+    }
+
+    this.questionContextError.set(null);
+    this.questionOptionsOpen.set(false);
+    await this.router.navigate([
+      '/tenant/questions-bank/university-education/colleges',
+      this.collegeId(),
+      'subjects',
+      subject.id,
+      'curriculum',
+    ]);
+  }
+
+  private async openUniversityInsertQuestion(): Promise<void> {
+    const subject = this.selectedUniversitySubject();
+    if (!subject) {
+      this.questionContextError.set('Choose a subject before adding questions.');
+      return;
+    }
+
+    this.questionContextLoading.set(true);
+    this.questionContextError.set(null);
+    try {
+      this.questionOptionsOpen.set(false);
+      const queryParams: { subjectId: string; examId?: string } = { subjectId: subject.id };
+      if (this.editingExamId()) {
+        queryParams.examId = this.editingExamId();
+      }
+      const curriculum = await this.subjectsData.getSubjectCurriculumForCategory(subject.id, 'UNIVERSITY_EDUCATION');
+      const nodeId = this.firstCurriculumNodeId(curriculum);
+      if (!nodeId) {
+        throw new Error('Create a curriculum topic before adding questions.');
+      }
+      await this.router.navigate([
+        this.universityEducationExamsRoot(),
+        this.universityId(),
+        'colleges',
+        this.collegeId(),
+        'create',
+        'new',
+        'subjects',
+        subject.id,
+        'curriculum',
+        nodeId,
         'addQuestion',
       ], { queryParams });
     } catch (error) {
@@ -1912,8 +2046,8 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
   }
 
   routeQueryParams(): { subjectId: string } | null {
-    const subjectId = this.selectedSubject()?.id ?? this.subjectId();
-    return !this.isUniversityEducationContext() && subjectId ? { subjectId } : null;
+    const subjectId = this.selectedExamSubjectId() || this.subjectId();
+    return subjectId ? { subjectId } : null;
   }
 
   resetQuestionDraftForNewExam(): void {
@@ -2029,12 +2163,21 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
 
     try {
       if (this.isUniversityEducationContext()) {
-        const [college, subjects] = await Promise.all([
+        const [college, subjects, bloomLevels, questionDifficulties] = await Promise.all([
           this.collegesData.getCollege(this.collegeId()),
           this.universitySubjectsData.listSubjects({ collegeId: this.collegeId() }),
+          this.subjectsData.listBloomLevels(),
+          this.subjectsData.listQuestionDifficulties(),
         ]);
         this.college.set(college);
         this.universitySubjects.set(subjects);
+        this.bloomLevels.set(bloomLevels);
+        this.questionDifficulties.set(questionDifficulties);
+        this.syncSelectedUniversitySubject();
+        await this.loadUniversityEducationExams();
+        if (this.isCreateMode() && this.editingExamId()) {
+          await this.loadExamForEditing();
+        }
       } else {
         const [stages, grades, subjects, bloomLevels, questionDifficulties] = await Promise.all([
           this.stagesData.listStages(),
@@ -2054,9 +2197,6 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
         if (this.isCreateMode() && this.editingExamId()) {
           await this.loadExamForEditing();
         }
-      }
-      if (this.isUniversityEducationContext()) {
-        this.exams.set(this.buildInitialExams());
       }
     } catch (error) {
       this.loadError.set(
@@ -2085,10 +2225,19 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
     this.exams.set(exams.map((exam) => this.toGradeExamRow(exam)));
   }
 
+  private async loadUniversityEducationExams(): Promise<void> {
+    if (!this.college()) {
+      this.exams.set([]);
+      return;
+    }
+    const exams = await this.subjectsData.listUniversityEducationExams(this.universityId(), this.collegeId());
+    this.exams.set(exams.map((exam) => this.toGradeExamRow(exam)));
+  }
+
   private async loadExamForEditing(): Promise<void> {
-    const subject = this.selectedSubject();
+    const subjectId = this.selectedExamSubjectId();
     const examId = this.editingExamId();
-    if (!subject || !examId) {
+    if (!subjectId || !examId) {
       return;
     }
 
@@ -2101,15 +2250,18 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
     this.examForm.patchValue({
       title: exam.title,
       instructions: exam.instructions ?? '',
-      subjectId: subject.id,
+      subjectId,
       shuffleQuestions: exam.shuffleQuestions,
       showResultsImmediately: exam.showResultsImmediately,
       allowRetakes: exam.allowRetakes,
     }, { emitEvent: false });
+    if (this.isUniversityEducationContext()) {
+      return;
+    }
     this.examQuestionsLoading.set(true);
     this.examQuestionsError.set(null);
     try {
-      await this.loadPersistedExamQuestionRows(subject.id, exam.id);
+      await this.loadPersistedExamQuestionRows(subjectId, exam.id);
     } catch (error) {
       this.examQuestionRows.set([]);
       this.examQuestionsError.set(this.subjectsData.toUserMessage(error, 'Unable to load exam questions. Please try again.'));
@@ -2138,7 +2290,9 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
   }
 
   private toGradeExamRow(exam: TenantBasicEducationExam): BasicEducationGradeExam {
-    const subject = this.subjects().find((item) => item.id === exam.subjectId);
+    const subject = this.isUniversityEducationContext()
+      ? this.universitySubjects().find((item) => item.id === exam.subjectId)
+      : this.subjects().find((item) => item.id === exam.subjectId);
     return {
       id: exam.id,
       title: exam.title,
@@ -2209,6 +2363,18 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
     ];
   }
 
+  examsRoot(): string {
+    return this.router.url.startsWith('/teacher/exams') ? '/teacher/exams' : '/tenant/exams';
+  }
+
+  private basicEducationExamsRoot(): string {
+    return `${this.examsRoot()}/basic-education`;
+  }
+
+  private universityEducationExamsRoot(): string {
+    return `${this.examsRoot()}/university-education`;
+  }
+
   private syncSelectedSubject(): void {
     const selectedId = this.subjectId();
     const hasSelectedSubject = !!selectedId && this.subjects().some((subject) => subject.id === selectedId);
@@ -2226,6 +2392,25 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
 
     this.setSelectedSubjectId('');
     this.syncSubjectControlLock();
+  }
+
+  private syncSelectedUniversitySubject(): void {
+    const selectedId = this.subjectId();
+    const hasSelectedSubject = !!selectedId && this.universitySubjects().some((subject) => subject.id === selectedId);
+    if (hasSelectedSubject) {
+      this.examForm.controls.subjectId.setValue(selectedId, { emitEvent: false });
+      this.examForm.controls.subjectId.enable({ emitEvent: false });
+      return;
+    }
+
+    if (this.universitySubjects().length === 1) {
+      this.setSelectedSubjectId(this.universitySubjects()[0].id);
+      this.examForm.controls.subjectId.enable({ emitEvent: false });
+      return;
+    }
+
+    this.setSelectedSubjectId('');
+    this.examForm.controls.subjectId.enable({ emitEvent: false });
   }
 
   private syncSubjectControlLock(): void {
@@ -2293,7 +2478,9 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
   }
 
   private examQuestionDraftStorageKey(subjectId: string): string {
-    return `tenant.exam-draft.questions.basic.${this.stageId()}.${this.gradeId()}.${subjectId}`;
+    return this.isUniversityEducationContext()
+      ? `tenant.exam-draft.questions.university.${this.universityId()}.${this.collegeId()}.${subjectId}`
+      : `tenant.exam-draft.questions.basic.${this.stageId()}.${this.gradeId()}.${subjectId}`;
   }
 
   private async loadCurriculumSkills(subjectId: string, curriculum: TenantSubjectCurriculumNode | null): Promise<void> {
@@ -2303,7 +2490,11 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
       return;
     }
 
-    const results = await Promise.allSettled(nodeIds.map((nodeId) => this.subjectsData.listCurriculumSkills(subjectId, nodeId)));
+    const results = await Promise.allSettled(nodeIds.map((nodeId) =>
+      this.isUniversityEducationContext()
+        ? this.subjectsData.listCurriculumSkillsForCategory(subjectId, nodeId, 'UNIVERSITY_EDUCATION')
+        : this.subjectsData.listCurriculumSkills(subjectId, nodeId),
+    ));
     const skills = results
       .flatMap((result) => result.status === 'fulfilled' ? result.value : [])
       .filter((skill, index, all) => all.findIndex((item) => item.id === skill.id) === index);
@@ -2317,6 +2508,22 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
     ].filter((id) => !!id && id !== 'curriculum');
   }
 
+  private firstCurriculumNodeId(node: TenantSubjectCurriculumNode | null): string | null {
+    if (!node) {
+      return null;
+    }
+    if (node.id && node.id !== 'curriculum') {
+      return node.id;
+    }
+    for (const child of node.children) {
+      const childId = this.firstCurriculumNodeId(child);
+      if (childId) {
+        return childId;
+      }
+    }
+    return null;
+  }
+
   private async loadSubjectCurriculumQuestions(subjectId: string, curriculum: TenantSubjectCurriculumNode | null): Promise<BasicQuestionLoadResult[]> {
     const nodeIds = curriculum ? this.collectCurriculumNodeIds(curriculum) : [];
     if (nodeIds.length === 0) {
@@ -2324,12 +2531,24 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
     }
     const results = await Promise.allSettled(nodeIds.map(async (nodeId) => ({
       nodeId,
-      questions: await this.subjectsData.listCurriculumQuestions(subjectId, nodeId),
+      questions: this.isUniversityEducationContext()
+        ? await this.subjectsData.listCurriculumQuestionsForCategory(subjectId, nodeId, 'UNIVERSITY_EDUCATION')
+        : await this.subjectsData.listCurriculumQuestions(subjectId, nodeId),
     })));
     return results
       .flatMap((result) => result.status === 'fulfilled' ? result.value : [])
       .flatMap(({ nodeId, questions }) => questions.map((question) => ({ question, nodeId })))
       .filter(({ question }, index, all) => all.findIndex((item) => item.question.id === question.id) === index);
+  }
+
+  private selectedExamSubject(): TenantSubject | TenantUniversitySubject | null {
+    return this.isUniversityEducationContext() ? this.selectedUniversitySubject() : this.selectedSubject();
+  }
+
+  private async getSelectedSubjectCurriculum(subjectId: string): Promise<TenantSubjectCurriculumNode> {
+    return this.isUniversityEducationContext()
+      ? await this.subjectsData.getSubjectCurriculumForCategory(subjectId, 'UNIVERSITY_EDUCATION')
+      : await this.subjectsData.getSubjectCurriculum(subjectId);
   }
 
   private removeSelectedExamQuestionId(subjectId: string, questionId: string): void {

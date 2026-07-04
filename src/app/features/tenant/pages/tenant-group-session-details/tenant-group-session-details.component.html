@@ -2,9 +2,9 @@
   <div class="tenant-group-session-details-header">
     <div class="tenant-group-session-details-title">
       <div class="tenant-group-session-details-breadcrumb">
-        <a routerLink="/tenant/groups">Groups</a>
+        <a [routerLink]="groupListRoute">Groups</a>
         <mat-icon>chevron_right</mat-icon>
-        <a [routerLink]="['/tenant/groups', groupId]">{{ group()?.name || 'Group' }}</a>
+        <a [routerLink]="[groupListRoute, groupId]">{{ group()?.name || 'Group' }}</a>
         <mat-icon>chevron_right</mat-icon>
         <span>Session Details</span>
       </div>
@@ -12,11 +12,11 @@
       <p>{{ group()?.subject || 'Group session' }}</p>
     </div>
     <div class="tenant-group-session-details-actions">
-      <a [routerLink]="['/tenant/groups', groupId]" [queryParams]="{ tab: 'sessions' }" class="tenant-group-session-details-secondary">
+      <a [routerLink]="[groupListRoute, groupId]" [queryParams]="{ tab: 'sessions' }" class="tenant-group-session-details-secondary">
         <mat-icon>arrow_back</mat-icon>
         Back to sessions
       </a>
-      <a [routerLink]="['/tenant/groups', groupId, 'attendance']" class="tenant-group-session-details-primary">
+      <a [routerLink]="[groupListRoute, groupId, 'attendance']" class="tenant-group-session-details-primary">
         <mat-icon>how_to_reg</mat-icon>
         Open attendance
       </a>
@@ -91,30 +91,40 @@
       <section class="tenant-group-session-quick-actions" aria-label="Quick actions">
         <h3>Quick Actions</h3>
         <div>
-          <a [routerLink]="['/tenant/groups', groupId, 'attendance']">
+          <a [routerLink]="[groupListRoute, groupId, 'attendance']">
             <mat-icon>how_to_reg</mat-icon>
             <span>Attendance</span>
           </a>
-          <a [routerLink]="['/tenant/groups', groupId, 'exam']">
+          <a [routerLink]="[groupListRoute, groupId, 'exam']" [queryParams]="sessionExamQueryParams(selectedSession)">
             <mat-icon>assignment</mat-icon>
-            <span>Exam</span>
+            <span>Home Work</span>
           </a>
-          <a [routerLink]="['/tenant/groups', groupId, 'broadcast']">
+          <a [routerLink]="[groupListRoute, groupId, 'broadcast']">
             <mat-icon>mail</mat-icon>
             <span>Broadcast</span>
           </a>
-          <a [routerLink]="['/tenant/groups', groupId]" [queryParams]="{ tab: 'sessions' }">
+          <a [routerLink]="[groupListRoute, groupId]" [queryParams]="{ tab: 'sessions' }">
             <mat-icon>calendar_month</mat-icon>
             <span>Calendar</span>
           </a>
-          <a [routerLink]="['/tenant/groups', groupId]" [queryParams]="{ tab: 'overview' }">
+          <button type="button" [disabled]="generatingReport()" (click)="previewSessionReport(selectedSession)">
             <mat-icon>analytics</mat-icon>
-            <span>Report</span>
-          </a>
-          <button type="button" [disabled]="publishingSession()" (click)="publishSession()">
+            <span>{{ generatingReport() ? 'Generating...' : 'Report' }}</span>
+          </button>
+          <button type="button" [disabled]="publishingSession() || !canPublishSelectedSession()" (click)="publishSession()">
             <mat-icon>{{ publishingSession() ? 'sync' : sessionPublication()?.published ? 'published_with_changes' : 'publish' }}</mat-icon>
             <span>{{ publishingSession() ? 'Publishing...' : 'Publish Session' }}</span>
           </button>
+          @if (!isTeacherGroupView) {
+            <button type="button" (click)="openPostponeChoices()">
+              <mat-icon>event_repeat</mat-icon>
+              <span>Postpone Session</span>
+            </button>
+            <button type="button" (click)="openTeacherAbsence()">
+              <mat-icon>person_off</mat-icon>
+              <span>Teacher Absence</span>
+            </button>
+          }
         </div>
         @if (publishSessionMessage()) {
           <p class="tenant-group-session-publish-feedback tenant-group-session-publish-feedback--success">
@@ -125,6 +135,28 @@
           <p class="tenant-group-session-publish-feedback tenant-group-session-publish-feedback--error">
             <mat-icon>error</mat-icon>
             {{ publishSessionError() }}
+          </p>
+        } @else if (reportError()) {
+          <p class="tenant-group-session-publish-feedback tenant-group-session-publish-feedback--error">
+            <mat-icon>error</mat-icon>
+            {{ reportError() }}
+          </p>
+        }
+        @if (postponeSuccess(); as result) {
+          <p class="tenant-group-session-publish-feedback tenant-group-session-publish-feedback--success">
+            <mat-icon>check_circle</mat-icon>
+            {{ result.message }}
+          </p>
+        }
+        @if (teacherAbsenceSuccess()) {
+          <p class="tenant-group-session-publish-feedback tenant-group-session-publish-feedback--success">
+            <mat-icon>check_circle</mat-icon>
+            {{ teacherAbsenceSuccess() }}
+          </p>
+        } @else if (teacherAbsenceError()) {
+          <p class="tenant-group-session-publish-feedback tenant-group-session-publish-feedback--error">
+            <mat-icon>error</mat-icon>
+            {{ teacherAbsenceError() }}
           </p>
         }
       </section>
@@ -184,8 +216,17 @@
                 <mat-icon>person</mat-icon>
                 <span>Teacher</span>
               </div>
-              <strong>{{ group()?.teacher || 'Not assigned' }}</strong>
+              <strong>{{ sessionTeacherName() }}</strong>
             </div>
+            @if (teacherAbsence()?.replacementTeacherName) {
+              <div class="tenant-group-session-settings-row">
+                <div>
+                  <mat-icon>person_off</mat-icon>
+                  <span>Original Teacher</span>
+                </div>
+                <strong>{{ originalSessionTeacherName() }} absent</strong>
+              </div>
+            }
             <div class="tenant-group-session-settings-row">
               <div>
                 <mat-icon>school</mat-icon>
@@ -205,7 +246,7 @@
 
         <div class="tenant-group-session-settings-actions">
           <p>Use this dated session window to mark attendance for the enrolled students in this group.</p>
-          <a [routerLink]="['/tenant/groups', groupId, 'attendance']" class="tenant-group-session-attendance-link">
+          <a [routerLink]="[groupListRoute, groupId, 'attendance']" class="tenant-group-session-attendance-link">
             <mat-icon>how_to_reg</mat-icon>
             Open attendance
           </a>
@@ -213,7 +254,26 @@
       </section>
     </aside>
 
-    <section class="tenant-group-session-tables" aria-label="Session students and lessons">
+    <section class="tenant-group-session-tables" aria-label="Session students, lessons, and exams">
+      <nav class="tenant-group-session-tabs" aria-label="Session content tabs">
+        <button type="button" [class]="contentTabClass('students')" [attr.aria-pressed]="activeContentTab() === 'students'" (click)="setContentTab('students')">
+          <mat-icon>groups</mat-icon>
+          <span>Students</span>
+          <strong>{{ sessionStudents().length }}</strong>
+        </button>
+        <button type="button" [class]="contentTabClass('lessons')" [attr.aria-pressed]="activeContentTab() === 'lessons'" (click)="setContentTab('lessons')">
+          <mat-icon>menu_book</mat-icon>
+          <span>Lessons</span>
+          <strong>{{ lessons().length + sessionLibraryContent().length }}</strong>
+        </button>
+        <button type="button" [class]="contentTabClass('exams')" [attr.aria-pressed]="activeContentTab() === 'exams'" (click)="setContentTab('exams')">
+          <mat-icon>assignment</mat-icon>
+          <span>Home Work</span>
+          <strong>{{ assignedSessionExams().length }}</strong>
+        </button>
+      </nav>
+
+      @if (activeContentTab() === 'students') {
       <div class="tenant-group-session-table-card">
         <div class="tenant-group-session-table-head">
           <div>
@@ -324,7 +384,7 @@
                     <td>
                       <div class="tenant-group-session-student-row-actions">
                         <a
-                          [routerLink]="['/tenant/groups', groupId, 'sessions', sessionId, 'students', student.id, 'assessment']"
+                          [routerLink]="[groupListRoute, groupId, 'sessions', sessionId, 'students', student.id, 'assessment']"
                           class="tenant-group-session-row-action tenant-group-session-row-action--icon"
                           aria-label="Student assessment"
                           title="Student assessment"
@@ -362,7 +422,9 @@
           </div>
         }
       </div>
+      }
 
+      @if (activeContentTab() === 'lessons') {
       <div class="tenant-group-session-table-card">
         <div class="tenant-group-session-table-head">
           <div>
@@ -449,10 +511,10 @@
                         <button
                           type="button"
                           class="tenant-group-session-icon-action tenant-group-session-icon-action--danger"
-                          [disabled]="removingLessonId() === lesson.id || lesson.completed"
-                          aria-label="Remove lesson"
-                          title="Remove lesson"
-                          (click)="removeLessonFromSession(lesson)"
+                          [disabled]="lessonDeleteInProgress() || lesson.completed"
+                          [attr.aria-label]="'Delete ' + lesson.title + ' from session'"
+                          title="Delete lesson"
+                          (click)="requestDeleteLessonFromSession(lesson, $event)"
                         >
                           <mat-icon>{{ removingLessonId() === lesson.id ? 'sync' : 'delete' }}</mat-icon>
                         </button>
@@ -563,10 +625,10 @@
                         <button
                           type="button"
                           class="tenant-group-session-icon-action tenant-group-session-icon-action--danger"
-                          [disabled]="removingLessonId() === content.id || content.completed"
-                          aria-label="Remove library content"
-                          title="Remove library content"
-                          (click)="removeSessionLibraryContent(content)"
+                          [disabled]="lessonDeleteInProgress() || content.completed"
+                          [attr.aria-label]="'Delete ' + content.title + ' from session'"
+                          title="Delete lesson content"
+                          (click)="requestDeleteSessionLibraryContent(content, $event)"
                         >
                           <mat-icon>{{ removingLessonId() === content.id ? 'sync' : 'delete' }}</mat-icon>
                         </button>
@@ -605,7 +667,201 @@
           </div>
         }
       </div>
+      }
+
+      @if (activeContentTab() === 'exams') {
+      <div class="tenant-group-session-table-card">
+        <div class="tenant-group-session-table-head">
+          <div>
+            <h3>Home Work</h3>
+            <p>{{ assignedSessionExams().length }} assigned home work linked to this session</p>
+          </div>
+          <a [routerLink]="[groupListRoute, groupId, 'exam']" [queryParams]="sessionExamQueryParams(selectedSession)">
+            <mat-icon class="!h-4 !w-4 !text-base">assignment</mat-icon>
+            Manage Home Work
+          </a>
+        </div>
+
+        @if (sessionExamsLoading()) {
+          <div class="tenant-group-session-table-empty">
+            <mat-icon class="animate-spin">sync</mat-icon>
+            <p>Loading home work...</p>
+          </div>
+        } @else if (sessionExamsError()) {
+          <div class="tenant-group-session-table-empty tenant-group-session-table-empty--error">
+            <mat-icon>error</mat-icon>
+            <p>{{ sessionExamsError() }}</p>
+          </div>
+        } @else if (visibleSessionExams().length) {
+          <div class="tenant-group-session-table-shell">
+            <table class="tenant-group-session-table tenant-group-session-lessons-table">
+              <thead>
+                <tr>
+                  <th class="tenant-group-session-expand-column"></th>
+                  <th>Exam</th>
+                  <th>Instructions</th>
+                  <th>Time</th>
+                  <th>Questions</th>
+                  <th>Settings</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (exam of visibleSessionExams(); track exam.id) {
+                  <tr>
+                    <td>
+                      <span class="tenant-group-session-row-toggler tenant-group-session-row-toggler--static" aria-hidden="true">
+                        <mat-icon>assignment</mat-icon>
+                      </span>
+                    </td>
+                    <td>
+                      <div class="tenant-group-session-lesson-cell">
+                        <mat-icon>quiz</mat-icon>
+                        <div>
+                          <strong>{{ exam.title }}</strong>
+                          <small>{{ exam.status }}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{{ exam.instructions || 'No instructions' }}</td>
+                    <td>{{ examTimeLabel(exam) }} · {{ examDurationLabel(exam) }}</td>
+                    <td>{{ examQuestionCountLabel(exam) }}</td>
+                    <td>{{ examSettingsLabel(exam) }}</td>
+                    <td>
+                      <div class="tenant-group-session-row-actions" aria-label="Exam row actions">
+                        <button
+                          type="button"
+                          class="tenant-group-session-icon-action"
+                          [disabled]="sessionExamActionInProgress()"
+                          (click)="editSessionExam(selectedSession, exam, $event)"
+                          [attr.aria-label]="'Edit ' + exam.title + ' assignment'"
+                          title="Edit exam"
+                        >
+                          <mat-icon>edit</mat-icon>
+                        </button>
+                        <button
+                          type="button"
+                          class="tenant-group-session-icon-action tenant-group-session-icon-action--danger"
+                          [disabled]="sessionExamActionInProgress()"
+                          (click)="requestDeleteSessionExam(exam, $event)"
+                          [attr.aria-label]="'Delete ' + exam.title + ' from session'"
+                          title="Delete exam"
+                        >
+                          <mat-icon>{{ deletingSessionExamId() === exam.id ? 'sync' : 'delete' }}</mat-icon>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="tenant-group-session-table-pagination">
+            <span>Showing {{ examPageStart() }}-{{ examPageEnd() }} of {{ assignedSessionExams().length }} home work</span>
+            <label>
+              Rows
+              <select [value]="examPageSize()" (change)="onExamPageSize($any($event.target).value)">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+              </select>
+            </label>
+            <button type="button" aria-label="Previous exams page" [disabled]="examPageIndex() === 0" (click)="previousExamPage()">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            <strong>Page {{ examPageIndex() + 1 }} of {{ examTotalPages() }}</strong>
+            <button type="button" aria-label="Next exams page" [disabled]="examPageIndex() + 1 >= examTotalPages()" (click)="nextExamPage()">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+        } @else {
+          <div class="tenant-group-session-table-empty">
+            <mat-icon>assignment</mat-icon>
+            <p>No home work is assigned to this session.</p>
+            <a [routerLink]="[groupListRoute, groupId, 'exam']" [queryParams]="sessionExamQueryParams(selectedSession)" class="tenant-group-session-empty-action">Manage Home Work</a>
+          </div>
+        }
+      </div>
+      }
     </section>
+    @if (pendingDeleteSessionLesson(); as lessonToDelete) {
+      <section class="tenant-group-session-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="session-lesson-delete-title">
+        <button type="button" class="tenant-group-session-modal-backdrop" aria-label="Close delete lesson confirmation" (click)="closeDeleteSessionLessonModal()"></button>
+        <div class="tenant-group-session-modal tenant-group-session-delete-modal">
+          <header class="tenant-group-session-modal-head">
+            <div>
+              <span>Lesson</span>
+              <h3 id="session-lesson-delete-title">Delete lesson</h3>
+              <p>Delete {{ pendingSessionLessonTitle(lessonToDelete) }} from this session.</p>
+            </div>
+            <button type="button" aria-label="Close delete lesson confirmation" [disabled]="lessonDeleteInProgress()" (click)="closeDeleteSessionLessonModal()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </header>
+          <div class="tenant-group-session-modal-body">
+            @if (sessionLessonActionError()) {
+              <div class="tenant-group-session-material-state tenant-group-session-material-state--error" role="alert">
+                <mat-icon>error</mat-icon>
+                <p>{{ sessionLessonActionError() }}</p>
+              </div>
+            }
+            <div class="tenant-group-session-delete-summary">
+              <mat-icon>delete</mat-icon>
+              <div>
+                <strong>{{ pendingSessionLessonTitle(lessonToDelete) }}</strong>
+                <span>{{ pendingSessionLessonMeta(lessonToDelete) }}</span>
+              </div>
+            </div>
+            <p class="tenant-group-session-delete-copy">This removes the lesson from this session only. The curriculum lesson and library source remain available.</p>
+            <div class="tenant-group-session-delete-actions">
+              <button type="button" class="tenant-group-session-details-secondary" [disabled]="lessonDeleteInProgress()" (click)="closeDeleteSessionLessonModal()">Cancel</button>
+              <button type="button" class="tenant-group-session-delete-confirm" [disabled]="lessonDeleteInProgress()" (click)="confirmDeleteSessionLesson()">
+                {{ lessonDeleteInProgress() ? 'Deleting...' : 'Delete lesson' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    }
+    @if (pendingDeleteSessionExam(); as examToDelete) {
+      <section class="tenant-group-session-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="session-exam-delete-title">
+        <button type="button" class="tenant-group-session-modal-backdrop" aria-label="Close delete exam confirmation" (click)="closeDeleteSessionExamModal()"></button>
+        <div class="tenant-group-session-modal tenant-group-session-delete-modal">
+          <header class="tenant-group-session-modal-head">
+            <div>
+              <span>Exam</span>
+              <h3 id="session-exam-delete-title">Delete exam</h3>
+              <p>Delete {{ examToDelete.title }} from this session.</p>
+            </div>
+            <button type="button" aria-label="Close delete exam confirmation" [disabled]="sessionExamActionInProgress()" (click)="closeDeleteSessionExamModal()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </header>
+          <div class="tenant-group-session-modal-body">
+            @if (sessionExamActionError()) {
+              <div class="tenant-group-session-material-state tenant-group-session-material-state--error" role="alert">
+                <mat-icon>error</mat-icon>
+                <p>{{ sessionExamActionError() }}</p>
+              </div>
+            }
+            <div class="tenant-group-session-delete-summary">
+              <mat-icon>delete</mat-icon>
+              <div>
+                <strong>{{ examToDelete.title }}</strong>
+                <span>{{ examTimeLabel(examToDelete) }} · {{ examDurationLabel(examToDelete) }}</span>
+              </div>
+            </div>
+            <p class="tenant-group-session-delete-copy">This removes the exam assignment from the session. The saved exam in the questions bank is not deleted.</p>
+            <div class="tenant-group-session-delete-actions">
+              <button type="button" class="tenant-group-session-details-secondary" [disabled]="sessionExamActionInProgress()" (click)="closeDeleteSessionExamModal()">Cancel</button>
+              <button type="button" class="tenant-group-session-delete-confirm" [disabled]="sessionExamActionInProgress()" (click)="confirmDeleteSessionExam()">
+                {{ sessionExamActionInProgress() ? 'Deleting...' : 'Delete exam' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    }
   } @else {
     <section class="tenant-group-session-details-state">
       <mat-icon>event_busy</mat-icon>
@@ -613,6 +869,365 @@
     </section>
   }
 </div>
+
+@if (teacherAbsenceOpen()) {
+  <section class="tenant-group-session-modal-overlay" role="dialog" aria-modal="true" aria-label="Teacher absence">
+    <button type="button" class="tenant-group-session-modal-backdrop" aria-label="Close teacher absence" (click)="closeTeacherAbsenceModals()"></button>
+    <div class="tenant-group-session-modal tenant-group-session-postpone-modal">
+      <header class="tenant-group-session-modal-head">
+        <div>
+          <span>Teacher Attendance</span>
+          <h3>Teacher Absence</h3>
+          <p>Record the assigned teacher as absent for this session.</p>
+        </div>
+        <button type="button" aria-label="Close teacher absence" (click)="closeTeacherAbsenceModals()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </header>
+      <div class="tenant-group-session-modal-body">
+        <section class="tenant-group-session-postpone-summary">
+          <div>
+            <mat-icon>person</mat-icon>
+            <span>Teacher</span>
+            <strong>{{ originalSessionTeacherName() }}</strong>
+          </div>
+          <div>
+            <mat-icon>event_busy</mat-icon>
+            <span>Status</span>
+            <strong>Absent</strong>
+          </div>
+        </section>
+        <label class="tenant-group-session-postpone-form tenant-group-session-postpone-form--single">
+          <span>Reason</span>
+          <textarea rows="3" [value]="teacherAbsenceReason()" placeholder="Optional reason" (input)="onTeacherAbsenceReason($any($event.target).value)"></textarea>
+        </label>
+        @if (teacherAbsenceError()) {
+          <div class="tenant-group-session-postpone-availability tenant-group-session-postpone-availability--danger">
+            <p>
+              <mat-icon>error</mat-icon>
+              {{ teacherAbsenceError() }}
+            </p>
+          </div>
+        }
+        <footer class="tenant-group-session-postpone-footer">
+          <button type="button" class="tenant-group-session-details-secondary" [disabled]="teacherAbsenceSaving()" (click)="closeTeacherAbsenceModals()">Cancel</button>
+          <button type="button" class="tenant-group-session-details-primary" [disabled]="teacherAbsenceSaving()" (click)="saveTeacherAbsence()">
+            <mat-icon>{{ teacherAbsenceSaving() ? 'sync' : 'person_off' }}</mat-icon>
+            {{ teacherAbsenceSaving() ? 'Saving...' : 'Save absence' }}
+          </button>
+        </footer>
+      </div>
+    </div>
+  </section>
+}
+
+@if (teacherAbsenceOptionsOpen()) {
+  <section class="tenant-group-session-modal-overlay" role="dialog" aria-modal="true" aria-label="Teacher absence next action">
+    <button type="button" class="tenant-group-session-modal-backdrop" aria-label="Close teacher absence options" (click)="closeTeacherAbsenceModals()"></button>
+    <div class="tenant-group-session-modal tenant-group-session-postpone-modal">
+      <header class="tenant-group-session-modal-head">
+        <div>
+          <span>Teacher Absence</span>
+          <h3>Choose next action</h3>
+          <p>Postpone the session or choose another available teacher for this session only.</p>
+        </div>
+        <button type="button" aria-label="Close teacher absence options" (click)="closeTeacherAbsenceModals()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </header>
+      <div class="tenant-group-session-modal-body">
+        <div class="tenant-group-session-postpone-options">
+          <button type="button" class="tenant-group-session-postpone-option" (click)="continueTeacherAbsenceWithPostpone()">
+            <mat-icon>event_repeat</mat-icon>
+            <span>
+              <strong>Postpone Session</strong>
+              <small>Use the existing postpone session workflow.</small>
+            </span>
+          </button>
+          <button type="button" class="tenant-group-session-postpone-option" (click)="openTeacherReplacement()">
+            <mat-icon>manage_accounts</mat-icon>
+            <span>
+              <strong>Choose Teacher</strong>
+              <small>Replace the absent teacher for this session only.</small>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+}
+
+@if (teacherReplacementOpen()) {
+  <section class="tenant-group-session-modal-overlay" role="dialog" aria-modal="true" aria-label="Replacement teacher">
+    <button type="button" class="tenant-group-session-modal-backdrop" aria-label="Close replacement teacher" (click)="closeTeacherAbsenceModals()"></button>
+    <div class="tenant-group-session-modal tenant-group-session-postpone-modal">
+      <header class="tenant-group-session-modal-head">
+        <div>
+          <span>Replacement Teacher</span>
+          <h3>Choose Teacher</h3>
+          <p>Select an available teacher for this session.</p>
+        </div>
+        <button type="button" aria-label="Close replacement teacher" (click)="closeTeacherAbsenceModals()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </header>
+      <div class="tenant-group-session-modal-body">
+        <section class="tenant-group-session-postpone-summary">
+          <div>
+            <mat-icon>person_off</mat-icon>
+            <span>Absent Teacher</span>
+            <strong>{{ originalSessionTeacherName() }}</strong>
+          </div>
+        </section>
+        <label class="tenant-group-session-postpone-form tenant-group-session-postpone-form--single">
+          <span>Available Teacher</span>
+          <select [value]="selectedReplacementTeacherId()" [disabled]="replacementTeachersLoading()" (change)="onReplacementTeacher($any($event.target).value)">
+            @if (replacementTeachersLoading()) {
+              <option value="">Loading teachers...</option>
+            } @else if (replacementTeachers().length === 0) {
+              <option value="">No available teachers</option>
+            } @else {
+              @for (teacher of replacementTeachers(); track teacher.id) {
+                <option [value]="teacher.id">{{ teacher.name }}</option>
+              }
+            }
+          </select>
+        </label>
+        @if (teacherAbsenceError()) {
+          <div class="tenant-group-session-postpone-availability tenant-group-session-postpone-availability--danger">
+            <p>
+              <mat-icon>error</mat-icon>
+              {{ teacherAbsenceError() }}
+            </p>
+          </div>
+        }
+        <footer class="tenant-group-session-postpone-footer">
+          <button type="button" class="tenant-group-session-details-secondary" [disabled]="replacementTeacherSaving()" (click)="closeTeacherAbsenceModals()">Cancel</button>
+          <button type="button" class="tenant-group-session-details-primary" [disabled]="!selectedReplacementTeacherId() || replacementTeacherSaving()" (click)="saveReplacementTeacher()">
+            <mat-icon>{{ replacementTeacherSaving() ? 'sync' : 'manage_accounts' }}</mat-icon>
+            {{ replacementTeacherSaving() ? 'Saving...' : 'Save teacher' }}
+          </button>
+        </footer>
+      </div>
+    </div>
+  </section>
+}
+
+@if (postponeChoiceOpen()) {
+  <section class="tenant-group-session-modal-overlay" role="dialog" aria-modal="true" aria-label="Postpone session">
+    <button type="button" class="tenant-group-session-modal-backdrop" aria-label="Close postpone session" (click)="closePostponeModals()"></button>
+    <div class="tenant-group-session-modal tenant-group-session-postpone-modal">
+      <header class="tenant-group-session-modal-head">
+        <div>
+          <span>Schedule</span>
+          <h3>Postpone Session</h3>
+          <p>Choose how this session should be moved.</p>
+        </div>
+        <button type="button" aria-label="Close postpone session" (click)="closePostponeModals()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </header>
+      <div class="tenant-group-session-modal-body">
+        @if (postponeError()) {
+          <div class="tenant-group-session-material-state tenant-group-session-material-state--error">
+            <mat-icon>error</mat-icon>
+            <p>{{ postponeError() }}</p>
+          </div>
+        }
+        <div class="tenant-group-session-postpone-options">
+          <button type="button" class="tenant-group-session-postpone-option" (click)="openPostponeAppointment()">
+            <mat-icon>event_available</mat-icon>
+            <span>
+              <strong>Book an appointment</strong>
+              <small>Select another date, time, and available room for this single session.</small>
+            </span>
+          </button>
+          <button type="button" class="tenant-group-session-postpone-option" (click)="openReplaceSchedule()">
+            <mat-icon>low_priority</mat-icon>
+            <span>
+              <strong>Replace schedule</strong>
+              <small>Shift the following sessions and append one new session at the end.</small>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+}
+
+@if (postponeAppointmentOpen()) {
+  <section class="tenant-group-session-modal-overlay" role="dialog" aria-modal="true" aria-label="Book postponed appointment">
+    <button type="button" class="tenant-group-session-modal-backdrop" aria-label="Close book appointment" (click)="closePostponeModals()"></button>
+    <div class="tenant-group-session-modal tenant-group-session-postpone-modal">
+      <header class="tenant-group-session-modal-head">
+        <div>
+          <span>Appointment</span>
+          <h3>Book an appointment</h3>
+          <p>Select a slot that matches room and teacher availability.</p>
+        </div>
+        <button type="button" aria-label="Close book appointment" (click)="closePostponeModals()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </header>
+      <div class="tenant-group-session-modal-body">
+        <div class="tenant-group-session-postpone-form">
+          <label>
+            <span>Date</span>
+            <input type="date" [value]="postponeAppointmentDate()" (input)="onPostponeAppointmentDate($any($event.target).value)" />
+          </label>
+          <label>
+            <span>Time</span>
+            <input type="time" [value]="postponeAppointmentTime()" (input)="onPostponeAppointmentTime($any($event.target).value)" />
+          </label>
+          <label class="tenant-group-session-postpone-form--full">
+            <span>Room</span>
+            <select [value]="postponeAppointmentRoomId()" [disabled]="postponeLoadingAvailability()" (change)="onPostponeAppointmentRoom($any($event.target).value)">
+              <option value="">Select available room</option>
+              @for (room of availablePostponeRooms(); track room.id) {
+                <option [value]="room.id">
+                  {{ room.name }}
+                </option>
+              }
+            </select>
+          </label>
+          <label class="tenant-group-session-postpone-form--full">
+            <span>Reason</span>
+            <textarea rows="3" [value]="postponeReason()" placeholder="Optional reason" (input)="onPostponeReason($any($event.target).value)"></textarea>
+          </label>
+        </div>
+
+        @if (postponeLoadingAvailability()) {
+          <div class="tenant-group-session-material-state !min-h-20">
+            <mat-icon class="animate-spin">sync</mat-icon>
+            <p>Checking availability...</p>
+          </div>
+        } @else if (postponeAvailability(); as availability) {
+          <div class="tenant-group-session-postpone-availability">
+            <p [class.tenant-group-session-postpone-availability--danger]="!availability.teacherAvailable">
+              <mat-icon>{{ availability.teacherAvailable ? 'check_circle' : 'error' }}</mat-icon>
+              {{ availability.teacherAvailable ? 'Teacher is available for this slot.' : availability.teacherMessage }}
+            </p>
+            <p>
+              <mat-icon>meeting_room</mat-icon>
+              {{ availablePostponeRooms().length }} available rooms
+            </p>
+          </div>
+        }
+
+        @if (postponeError()) {
+          <div class="tenant-group-session-material-state tenant-group-session-material-state--error">
+            <mat-icon>error</mat-icon>
+            <p>{{ postponeError() }}</p>
+          </div>
+        }
+      </div>
+      <footer class="tenant-group-session-postpone-footer">
+        <button type="button" class="tenant-group-session-details-secondary" [disabled]="postponeSubmitting()" (click)="closePostponeModals()">Cancel</button>
+        <button type="button" class="tenant-group-session-details-primary" [disabled]="!canConfirmPostponeAppointment() || postponeSubmitting()" (click)="submitPostponeAppointment()">
+          <mat-icon>{{ postponeSubmitting() ? 'sync' : 'event_available' }}</mat-icon>
+          {{ postponeSubmitting() ? 'Saving...' : 'Confirm appointment' }}
+        </button>
+      </footer>
+    </div>
+  </section>
+}
+
+@if (postponeReplaceOpen()) {
+  <section class="tenant-group-session-modal-overlay" role="dialog" aria-modal="true" aria-label="Replace schedule">
+    <button type="button" class="tenant-group-session-modal-backdrop" aria-label="Close replace schedule" (click)="closePostponeModals()"></button>
+    <div class="tenant-group-session-modal tenant-group-session-postpone-modal">
+      <header class="tenant-group-session-modal-head">
+        <div>
+          <span>Schedule</span>
+          <h3>Replace schedule</h3>
+          <p>The current session will be removed, following content shifts forward, and one session is appended.</p>
+        </div>
+        <button type="button" aria-label="Close replace schedule" (click)="closePostponeModals()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </header>
+      <div class="tenant-group-session-modal-body">
+        <div class="tenant-group-session-postpone-summary">
+          <div>
+            <mat-icon>event_busy</mat-icon>
+            <span>
+              <strong>Remove current slot</strong>
+              <small>{{ session()?.date }} · {{ session()?.timeRange }}</small>
+            </span>
+          </div>
+          <div>
+            <mat-icon>low_priority</mat-icon>
+            <span>
+              <strong>Shift following sessions</strong>
+              <small>Lesson, library, publication, and exam assignments move to the next occurrence.</small>
+            </span>
+          </div>
+          <div>
+            <mat-icon>event_available</mat-icon>
+            <span>
+              <strong>Append one session</strong>
+              <small>A new future session is added using the normal group cadence.</small>
+            </span>
+          </div>
+        </div>
+        <label class="tenant-group-session-postpone-form tenant-group-session-postpone-form--single">
+          <span>Reason</span>
+          <textarea rows="3" [value]="postponeReason()" placeholder="Optional reason" (input)="onPostponeReason($any($event.target).value)"></textarea>
+        </label>
+        @if (postponeError()) {
+          <div class="tenant-group-session-material-state tenant-group-session-material-state--error">
+            <mat-icon>error</mat-icon>
+            <p>{{ postponeError() }}</p>
+          </div>
+        }
+      </div>
+      <footer class="tenant-group-session-postpone-footer">
+        <button type="button" class="tenant-group-session-details-secondary" [disabled]="postponeSubmitting()" (click)="closePostponeModals()">Cancel</button>
+        <button type="button" class="tenant-group-session-details-primary" [disabled]="postponeSubmitting()" (click)="submitReplaceSchedule()">
+          <mat-icon>{{ postponeSubmitting() ? 'sync' : 'low_priority' }}</mat-icon>
+          {{ postponeSubmitting() ? 'Saving...' : 'Replace schedule' }}
+        </button>
+      </footer>
+    </div>
+  </section>
+}
+
+@if (reportPreviewOpen()) {
+  <section class="tenant-group-session-preview-overlay" role="dialog" aria-modal="true" aria-label="Session report preview">
+    <button type="button" class="tenant-group-session-preview-backdrop" aria-label="Close report preview" (click)="closeSessionReportPreview()"></button>
+    <div class="tenant-group-session-preview-drawer">
+      <header class="tenant-group-session-preview-header">
+        <div>
+          <span>PDF report</span>
+          <h3>Session Report</h3>
+          <p>{{ reportPreviewFileName() }}</p>
+        </div>
+        <div>
+          @if (reportPreviewObjectUrl()) {
+            <a [href]="reportPreviewObjectUrl()" [download]="reportPreviewFileName()">
+              <mat-icon>download</mat-icon>
+              Download PDF
+            </a>
+          }
+          <button type="button" aria-label="Close report preview" (click)="closeSessionReportPreview()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </header>
+
+      <div class="tenant-group-session-preview-body">
+        @if (reportPreviewSafeObjectUrl()) {
+          <iframe class="tenant-group-session-drawer-file-frame" [src]="reportPreviewSafeObjectUrl()" title="Session report PDF"></iframe>
+        } @else {
+          <div class="tenant-group-session-preview-empty" aria-live="polite">
+            <mat-icon class="animate-spin">sync</mat-icon>
+            <p>Preparing report...</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}
 
 @if (previewContent(); as preview) {
   <section class="tenant-group-session-preview-overlay" role="dialog" aria-modal="true" [attr.aria-label]="'Preview ' + preview.title">

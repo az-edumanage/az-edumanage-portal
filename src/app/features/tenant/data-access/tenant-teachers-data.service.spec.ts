@@ -29,6 +29,26 @@ describe('TenantTeachersDataService', () => {
     request.flush(null);
   });
 
+  it('loads teacher status summary', () => {
+    service.statusSummary().subscribe((summary) => {
+      expect(summary.totalTeachers).toBe(5);
+      expect(summary.inGroupNowTeacherIds).toEqual(['teacher-1']);
+    });
+
+    const request = httpTesting.expectOne((req) => req.url.endsWith('/tenant/teachers/status-summary'));
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      totalTeachers: 5,
+      inGroupNow: 1,
+      absenceTeachers: 0,
+      inGroupNowTeacherIds: ['teacher-1'],
+      absenceTeacherIds: [],
+      today: '2026-06-29',
+      asOf: '2026-06-29T13:30:00+03:00',
+      unavailableReason: null,
+    });
+  });
+
   it('sends exit group requests for a teacher', () => {
     service.exitTeacherGroup('teacher-1', 'group-1').subscribe((result) => {
       expect(result).toBeNull();

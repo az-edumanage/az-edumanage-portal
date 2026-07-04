@@ -1,16 +1,23 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { MatIconModule } from '@angular/material/icon';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { TenantGroupExamCreateFacade } from '../../state/tenant-group-exam-create.facade';
+import { Component, OnDestroy, OnInit, inject } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { RouterModule, ActivatedRoute, Router } from "@angular/router";
+import { MatIconModule } from "@angular/material/icon";
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { TenantGroupExamCreateFacade } from "../../state/tenant-group-exam-create.facade";
 
 @Component({
-  selector: 'app-tenant-group-exam-create',
+  selector: "app-tenant-group-exam-create",
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule, FormsModule, ReactiveFormsModule],
-  templateUrl: './tenant-group-exam-create.component.html',
-  styleUrl: './tenant-group-exam-create.component.css'})
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatIconModule,
+    FormsModule,
+    ReactiveFormsModule,
+  ],
+  templateUrl: "./tenant-group-exam-create.component.html",
+  styleUrl: "./tenant-group-exam-create.component.css",
+})
 export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -31,11 +38,55 @@ export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
   readonly isPreviewLoading = this.facade.isPreviewLoading;
   readonly previewError = this.facade.previewError;
   readonly examForm = this.facade.examForm;
+  readonly isTeacherScope = this.route.snapshot.data["scope"] === "teacher";
+  readonly groupListRoute = this.isTeacherScope
+    ? "/teacher/groups"
+    : "/tenant/groups";
+  readonly isSessionHomeWork =
+    Boolean(
+      this.route.snapshot.queryParamMap.get("returnTo")?.includes("/sessions/"),
+    ) ||
+    Boolean(
+      this.route.snapshot.queryParamMap.get("examDate") ||
+      this.route.snapshot.queryParamMap.get("examStartTime"),
+    );
+  get assignmentContextLabel(): string {
+    return this.isSessionHomeWork ? "Session Home Work" : "Group Exam";
+  }
+  get detailsPanelTitle(): string {
+    return this.isSessionHomeWork ? "Home Work Details" : "Exam Details";
+  }
+  get titleFieldLabel(): string {
+    return this.isSessionHomeWork ? "Home Work Title" : "Exam Title";
+  }
+  get dateFieldLabel(): string {
+    return this.isSessionHomeWork ? "Home Work Date" : "Exam Date";
+  }
+  get sourcePanelTitle(): string {
+    return this.isSessionHomeWork ? "Published Exams" : "Exams";
+  }
+  get submitLabel(): string {
+    return this.isSessionHomeWork ? "Assign Home Work" : "Create & Publish";
+  }
+  get submittingLabel(): string {
+    return this.isSessionHomeWork ? "Assigning..." : "Creating...";
+  }
 
   ngOnInit(): void {
     this.facade.initialize(
-      this.route.snapshot.paramMap.get('id'),
-      this.route.snapshot.queryParamMap.get('freshCreate') === 'true',
+      this.route.snapshot.paramMap.get("id"),
+      this.route.snapshot.queryParamMap.get("freshCreate") === "true",
+      {
+        scope:
+          this.route.snapshot.data["scope"] === "teacher"
+            ? "teacher"
+            : "tenant",
+        returnTo: this.route.snapshot.queryParamMap.get("returnTo"),
+        returnTab: this.route.snapshot.queryParamMap.get("returnTab"),
+        assignmentId: this.route.snapshot.queryParamMap.get("assignmentId"),
+        examDate: this.route.snapshot.queryParamMap.get("examDate"),
+        examStartTime: this.route.snapshot.queryParamMap.get("examStartTime"),
+      },
     );
   }
 
@@ -52,7 +103,9 @@ export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
   }
 
   onSelectExam(examId: string): void {
-    const exam = this.facade.allPublishedExamOptions().find((option) => option.id === examId);
+    const exam = this.facade
+      .allPublishedExamOptions()
+      .find((option) => option.id === examId);
     if (exam) {
       this.facade.selectPublishedExam(exam);
     }
@@ -63,7 +116,9 @@ export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
   }
 
   onPreviewExam(examId: string): void {
-    const exam = this.facade.allPublishedExamOptions().find((option) => option.id === examId);
+    const exam = this.facade
+      .allPublishedExamOptions()
+      .find((option) => option.id === examId);
     if (exam) {
       this.facade.openQuestionPreview(exam);
     }

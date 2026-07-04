@@ -2,7 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { Group } from '../models/tenant-groups.models';
+import { Group, GroupScheduleSummary } from '../models/tenant-groups.models';
 
 @Injectable({ providedIn: 'root' })
 export class TenantGroupsDataService {
@@ -13,6 +13,12 @@ export class TenantGroupsDataService {
     return this.http
       .get<Group[]>(this.groupsUrl)
       .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load groups')));
+  }
+
+  loadScheduleSummary(): Observable<GroupScheduleSummary> {
+    return this.http
+      .get<GroupScheduleSummary>(`${this.groupsUrl}/schedule-summary`)
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load group schedule summary')));
   }
 
   deleteGroup(groupId: string): Observable<void> {

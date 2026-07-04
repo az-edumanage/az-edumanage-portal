@@ -11,11 +11,24 @@ describe('TenantStudentCreateComponent', () => {
     isSubmitting: ReturnType<typeof signal<boolean>>;
     isLoading: ReturnType<typeof signal<boolean>>;
     errorMessage: ReturnType<typeof signal<string | null>>;
+    isEditMode: ReturnType<typeof signal<boolean>>;
     studentForm: ReturnType<FormBuilder['group']>;
     stages: ReturnType<typeof signal<never[]>>;
     universities: ReturnType<typeof signal<never[]>>;
     availableGrades: ReturnType<typeof signal<never[]>>;
     availableColleges: ReturnType<typeof signal<never[]>>;
+    parentsLoading: ReturnType<typeof signal<boolean>>;
+    filteredParents: ReturnType<typeof signal<{ id: string; appUserId: string; name: string; phone: string; notifyParent: boolean; students: never[] }[]>>;
+    parentSearchQuery: ReturnType<typeof signal<string>>;
+    addParentModalOpen: ReturnType<typeof signal<boolean>>;
+    addParentSaving: ReturnType<typeof signal<boolean>>;
+    addParentError: ReturnType<typeof signal<string | null>>;
+    addParentForm: ReturnType<FormBuilder['group']>;
+    selectedParent: ReturnType<typeof vi.fn>;
+    selectParent: ReturnType<typeof vi.fn>;
+    openAddParentModal: ReturnType<typeof vi.fn>;
+    closeAddParentModal: ReturnType<typeof vi.fn>;
+    submitAddParent: ReturnType<typeof vi.fn>;
     initialize: ReturnType<typeof vi.fn>;
     onDestroy: ReturnType<typeof vi.fn>;
     resetForm: ReturnType<typeof vi.fn>;
@@ -29,6 +42,7 @@ describe('TenantStudentCreateComponent', () => {
       isSubmitting: signal(false),
       isLoading: signal(false),
       errorMessage: signal(null),
+      isEditMode: signal(false),
       studentForm: fb.group({
         fullName: [''],
         email: [''],
@@ -37,9 +51,7 @@ describe('TenantStudentCreateComponent', () => {
         password: [''],
         birthDate: [''],
         gender: ['Male'],
-        parentName: [''],
-        parentPhone: [''],
-        address: [''],
+        parentAppUserId: [''],
         notifyParent: [true],
         educationCategory: ['BASIC_EDUCATION'],
         stageIds: [[] as string[]],
@@ -51,6 +63,26 @@ describe('TenantStudentCreateComponent', () => {
       universities: signal([]),
       availableGrades: signal([]),
       availableColleges: signal([]),
+      parentsLoading: signal(false),
+      filteredParents: signal([
+        { id: 'parent-user-1', appUserId: 'parent-user-1', name: 'Parent Ali', phone: '+201000000001', notifyParent: true, students: [] },
+      ]),
+      parentSearchQuery: signal(''),
+      addParentModalOpen: signal(false),
+      addParentSaving: signal(false),
+      addParentError: signal(null),
+      addParentForm: fb.group({
+        fullName: [''],
+        phone: [''],
+        email: [''],
+        username: [''],
+        password: [''],
+      }),
+      selectedParent: vi.fn(() => null),
+      selectParent: vi.fn(),
+      openAddParentModal: vi.fn(),
+      closeAddParentModal: vi.fn(),
+      submitAddParent: vi.fn(),
       initialize: vi.fn(),
       onDestroy: vi.fn(),
       resetForm: vi.fn(),
@@ -83,10 +115,44 @@ describe('TenantStudentCreateComponent', () => {
     expect(fixture.nativeElement.querySelector('svg[data-student-barcode-value]')).toBeNull();
   });
 
-  it('renders account access controls for student login', () => {
+  it('renders account access controls for student login and parent selector', () => {
     expect(fixture.nativeElement.querySelector('[formcontrolname="username"]')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('[formcontrolname="password"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('[formcontrolname="parentUsername"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[formcontrolname="parentPassword"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[formcontrolname="address"]')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Select parent or guardian');
     expect(fixture.nativeElement.textContent).toContain('Account Access');
+  });
+
+  it('opens add parent modal from the parent selector', () => {
+    fixture.componentInstance.toggleParentPanel();
+    fixture.detectChanges();
+
+    const addButton = [...fixture.nativeElement.querySelectorAll('button')]
+      .find((button: HTMLButtonElement) => button.textContent?.includes('Add Parent')) as HTMLButtonElement;
+    addButton.click();
+
+    expect(facade.openAddParentModal).toHaveBeenCalledOnce();
+  });
+
+  it('opens reset confirmation modal before clearing the form', () => {
+    const confirmSpy = vi.spyOn(window, 'confirm');
+    const resetButton = [...fixture.nativeElement.querySelectorAll('button')]
+      .find((button: HTMLButtonElement) => button.textContent?.trim() === 'Reset') as HTMLButtonElement;
+
+    resetButton.click();
+    fixture.detectChanges();
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(facade.resetForm).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Reset student form?');
+
+    const resetFormButton = [...fixture.nativeElement.querySelectorAll('button')]
+      .find((button: HTMLButtonElement) => button.textContent?.includes('Reset form')) as HTMLButtonElement;
+    resetFormButton.click();
+
+    expect(facade.resetForm).toHaveBeenCalledOnce();
   });
 
   it('renders save errors from the facade', () => {

@@ -23,9 +23,9 @@ describe('TenantOverviewDataService', () => {
   });
 
   it('loads tenant overview data with the selected range', async () => {
-    const promise = firstValueFrom(service.loadOverview('week'));
+    const promise = firstValueFrom(service.loadOverview('week', 'week'));
 
-    const request = http.expectOne(`${environment.apiBaseUrl}/tenant/overview?range=week`);
+    const request = http.expectOne(`${environment.apiBaseUrl}/tenant/overview?range=week&revenueRange=week`);
     expect(request.request.method).toBe('GET');
     request.flush(overviewResponse());
 
@@ -36,16 +36,17 @@ describe('TenantOverviewDataService', () => {
         { key: 'totalStudents', value: '12', numericValue: 12 },
         { key: 'activeGroups', value: '4', numericValue: 4 },
         { key: 'todaySessions', value: '1', numericValue: 1 },
-        { key: 'attendanceRate', value: '90.0%', numericValue: 90 },
+        { key: 'totalTeachers', value: '3', numericValue: 3 },
         { key: 'overduePayments', value: '$750.00', numericValue: 750 },
       ],
+      rooms: { occupiedRooms: 1, freeRooms: 2, freeHours: '35h' },
     });
   });
 
   it('maps API errors to user-facing errors', async () => {
     const promise = firstValueFrom(service.loadOverview());
 
-    const request = http.expectOne(`${environment.apiBaseUrl}/tenant/overview?range=today`);
+    const request = http.expectOne(`${environment.apiBaseUrl}/tenant/overview?range=today&revenueRange=month`);
     request.flush({ message: 'Tenant overview access required' }, { status: 403, statusText: 'Forbidden' });
 
     await expect(promise).rejects.toThrow('Tenant overview access required');
@@ -91,13 +92,13 @@ function overviewResponse(): TenantOverviewView {
         iconClass: 'text-amber-600',
       },
       {
-        key: 'attendanceRate',
-        label: 'Attendance Rate',
-        value: '90.0%',
-        numericValue: 90,
+        key: 'totalTeachers',
+        label: 'Total Teachers',
+        value: '3',
+        numericValue: 3,
         trend: null,
-        subtext: "Today's records",
-        icon: 'fact_check',
+        subtext: 'Teaching staff',
+        icon: 'person',
         bgClass: 'bg-emerald-50',
         iconClass: 'text-emerald-600',
       },
@@ -116,6 +117,14 @@ function overviewResponse(): TenantOverviewView {
     attendanceTrend: { labels: [], datasets: [] },
     revenueTrend: { labels: [], datasets: [] },
     todaySessions: [],
+    runningGroups: [],
+    rooms: {
+      occupiedRooms: 1,
+      freeRooms: 2,
+      freeHours: '35h',
+      freeHoursValue: 35,
+      operatingWindow: '08:00 AM - 08:00 PM',
+    },
     pendingPayments: [],
     pendingPaymentCount: 2,
     sectionErrors: [],

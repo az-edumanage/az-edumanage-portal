@@ -11,6 +11,7 @@ export class TenantStudentCreateStore {
   readonly isSubmitting = signal(false);
   readonly isLoading = signal(false);
   readonly errorMessage = signal<string | null>(null);
+  readonly isEditMode = signal(false);
 
   readonly stages = signal<TenantStudentLookupStage[]>([]);
   readonly grades = signal<TenantStudentLookupGrade[]>([]);

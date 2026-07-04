@@ -2,6 +2,157 @@
   text-align: left;
 }
 
+:host .tenant-students-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+:host .tenant-students-summary-card {
+  display: flex;
+  min-height: 6.25rem;
+  align-items: center;
+  gap: 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgb(226 232 240);
+  background: rgb(255 255 255);
+  padding: 1rem;
+  text-align: left;
+  transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+:host .tenant-students-summary-card:hover:not(:disabled) {
+  border-color: rgb(165 180 252);
+  background: rgb(248 250 252);
+}
+
+:host .tenant-students-summary-card:focus-visible {
+  outline: 2px solid rgb(79 70 229 / 0.55);
+  outline-offset: 2px;
+}
+
+:host .tenant-students-summary-card-active {
+  border-color: rgb(99 102 241);
+  background: rgb(238 242 255);
+}
+
+:host .tenant-students-summary-card-unavailable {
+  border-color: rgb(253 230 138);
+  background: rgb(255 251 235);
+}
+
+:host .tenant-students-summary-card:disabled {
+  cursor: not-allowed;
+}
+
+:host .tenant-students-summary-icon {
+  display: inline-flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.875rem;
+  background: rgb(241 245 249);
+  color: rgb(71 85 105);
+}
+
+:host .tenant-students-summary-icon-active {
+  background: rgb(79 70 229);
+  color: white;
+}
+
+:host .tenant-students-summary-content {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+:host .tenant-students-summary-label {
+  color: rgb(71 85 105);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+:host .tenant-students-summary-value {
+  color: rgb(15 23 42);
+  font-size: 1.875rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+:host .tenant-students-summary-skeleton {
+  display: inline-block;
+  width: 3rem;
+  height: 1.875rem;
+  border-radius: 0.5rem;
+  background: linear-gradient(90deg, rgb(226 232 240), rgb(241 245 249), rgb(226 232 240));
+  background-size: 200% 100%;
+  animation: tenant-students-summary-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes tenant-students-summary-pulse {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 768px) {
+  :host .tenant-students-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host .tenant-students-summary-card,
+  :host .tenant-students-summary-skeleton {
+    animation: none;
+    transition: none;
+  }
+}
+
+:host-context(.dark) .tenant-students-summary-card {
+  border-color: rgb(30 41 59);
+  background: rgb(15 23 42);
+}
+
+:host-context(.dark) .tenant-students-summary-card:hover:not(:disabled) {
+  border-color: rgb(67 56 202);
+  background: rgb(30 41 59);
+}
+
+:host-context(.dark) .tenant-students-summary-card-active {
+  border-color: rgb(129 140 248);
+  background: rgb(49 46 129 / 0.35);
+}
+
+:host-context(.dark) .tenant-students-summary-card-unavailable {
+  border-color: rgb(146 64 14);
+  background: rgb(69 26 3 / 0.3);
+}
+
+:host-context(.dark) .tenant-students-summary-icon {
+  background: rgb(30 41 59);
+  color: rgb(148 163 184);
+}
+
+:host-context(.dark) .tenant-students-summary-icon-active {
+  background: rgb(99 102 241);
+  color: white;
+}
+
+:host-context(.dark) .tenant-students-summary-label {
+  color: rgb(203 213 225);
+}
+
+:host-context(.dark) .tenant-students-summary-value {
+  color: white;
+}
+
 :host .tenant-students-table thead th {
   text-align: left;
 }

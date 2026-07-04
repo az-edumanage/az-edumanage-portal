@@ -23,6 +23,7 @@ import {
 } from '../../models/tenant-subjects.models';
 import { TenantGroupDetailsDataService } from '../../data-access/tenant-group-details-data.service';
 import { TenantGroupDetailsFacade } from '../../state/tenant-group-details.facade';
+import { TenantGroupDetailsScope } from '../../state/tenant-group-details.store';
 import { TenantSubjectsDataService } from '../../data-access/tenant-subjects-data.service';
 
 Chart.register(...registerables);
@@ -240,6 +241,10 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   readonly enrolledStudentFilter = signal<EnrolledStudentFilter>('all');
   readonly enrolledStudentPageIndex = signal(0);
   readonly enrolledStudentPageSize = signal(5);
+  readonly displayPaymentStatus = signal(false);
+  readonly detailScope: TenantGroupDetailsScope = this.route.snapshot.data['scope'] === 'teacher' ? 'teacher' : 'tenant';
+  readonly isTeacherGroupView = this.detailScope === 'teacher';
+  readonly groupListRoute = this.isTeacherGroupView ? '/teacher/groups' : '/tenant/groups';
   readonly sessionRows = computed<GroupSessionRow[]>(() => this.buildSessionRows());
   readonly curriculumLessonOptions = computed<CurriculumLessonOption[]>(() => {
     const root = this.lessonCurriculumRoot();
@@ -528,10 +533,18 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
 
       queueMicrotask(() => this.renderOverviewAttendanceChart());
     });
+
+    effect(() => {
+      const groupId = this.group()?.id ?? this.groupId;
+      if (!groupId) {
+        return;
+      }
+      this.displayPaymentStatus.set(this.readDisplayPaymentStatus(groupId));
+    });
   }
 
   ngOnInit(): void {
-    this.facade.loadGroup(this.groupId);
+    this.facade.loadGroup(this.groupId, this.detailScope);
     const requestedTab = this.route.snapshot.queryParamMap.get('tab');
     if (this.isGroupDetailsTab(requestedTab)) {
       this.selectTab(requestedTab);
@@ -547,6 +560,10 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   ngOnDestroy(): void {
     this.destroyOverviewAttendanceChart();
     this.clearLibraryPreviewObjectUrl();
+  }
+
+  groupChildRoute(...segments: string[]): string[] {
+    return [this.groupListRoute, this.groupId ?? '', ...segments];
   }
 
   selectStudent(student: GroupStudent): void {
@@ -565,6 +582,28 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     this.facade.clearSelectedStudent();
   }
 
+  studentAbsenceRate(student: GroupStudent): number {
+    const attendanceRate = Number.isFinite(student.attendanceRate) ? student.attendanceRate : 0;
+    return Number(Math.max(0, 100 - attendanceRate).toFixed(3));
+  }
+
+  studentAttendanceRateLabel(student: GroupStudent): string {
+    return this.formatStudentRate(student.attendanceRate);
+  }
+
+  studentAbsenceRateLabel(student: GroupStudent): string {
+    return this.formatStudentRate(this.studentAbsenceRate(student));
+  }
+
+  studentLatestAttendanceLabel(student: GroupStudent): string {
+    const state = this.attendanceStateLabel(student);
+    const date = student.lastAttendance?.trim();
+    if (!date) {
+      return 'No attendance records yet';
+    }
+    return `${state} on ${date}`;
+  }
+
   selectTab(tab: GroupDetailsTab): void {
     this.activeTab.set(tab);
     if (tab === 'lessons') {
@@ -576,6 +615,15 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     }
   }
 
+  toggleDisplayPaymentStatus(): void {
+    const nextValue = !this.displayPaymentStatus();
+    this.displayPaymentStatus.set(nextValue);
+    const groupId = this.group()?.id ?? this.groupId;
+    if (groupId && isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(this.displayPaymentStatusStorageKey(groupId), String(nextValue));
+    }
+  }
+
   async loadGroupExams(force = false): Promise<void> {
     if (!this.groupId || this.groupExamsLoading() || (!force && this.groupExamsLoaded())) {
       return;
@@ -583,7 +631,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     this.groupExamsLoading.set(true);
     this.groupExamsError.set(null);
     try {
-      this.groupExams.set(await firstValueFrom(this.groupDetailsData.loadGroupExams(this.groupId)));
+      this.groupExams.set(await firstValueFrom(this.groupDetailsData.loadGroupExams(this.groupId, { scope: this.detailScope })));
       this.groupExamsLoaded.set(true);
       this.groupExamsLoadedGroupId.set(this.group()?.id ?? this.groupId);
       this.examPageIndex.set(0);
@@ -605,7 +653,9 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     this.lessonsLoading.set(true);
     this.lessonsError.set(null);
     try {
-      this.groupLessons.set(await firstValueFrom(this.groupDetailsData.loadGroupLessons(this.groupId)));
+      this.groupLessons.set(await firstValueFrom(
+        this.groupDetailsData.loadGroupLessons(this.groupId, { scope: this.detailScope }),
+      ));
       this.lessonsLoaded.set(true);
     } catch (error) {
       this.lessonsError.set(error instanceof Error ? error.message : 'Unable to load lessons');
@@ -616,6 +666,10 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
 
   async loadAndSyncGroupLessons(): Promise<void> {
     await this.loadGroupLessons();
+    if (this.isTeacherGroupView) {
+      this.lessonsSynced.set(true);
+      return;
+    }
     await this.syncGroupLessonsFromCurriculum();
   }
 
@@ -808,7 +862,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
 
   editGroupExam(_exam: GroupExamRow, event?: Event): void {
     event?.stopPropagation();
-    this.router.navigate(['/tenant/groups', this.groupId, 'exam']);
+    this.router.navigate(this.groupChildRoute('exam'));
   }
 
   requestDeleteGroupExam(exam: GroupExamRow, event?: Event): void {
@@ -948,7 +1002,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     if (!this.groupId) {
       return;
     }
-    void this.router.navigate(['/tenant/groups', this.groupId, 'sessions', session.id]);
+    void this.router.navigate(this.groupChildRoute('sessions', session.id));
   }
 
   activateSessionDetails(event: KeyboardEvent, session: GroupSessionRow): void {
@@ -963,7 +1017,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     if (!this.groupId) {
       return;
     }
-    void this.router.navigate(['/tenant/groups', this.groupId, 'lessons', lesson.id]);
+    void this.router.navigate(this.groupChildRoute('lessons', lesson.id));
   }
 
   async openLessonInsertContent(event: Event, lesson: GroupLesson): Promise<void> {
@@ -1029,7 +1083,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
       this.selectedInsertContent.set(null);
       this.insertContentFolderFilter.set('all');
       if (this.groupId) {
-        await this.router.navigate(['/tenant/groups', this.groupId, 'lessons', lesson.id]);
+        await this.router.navigate(this.groupChildRoute('lessons', lesson.id));
       }
     } catch (error) {
       this.insertContentError.set(error instanceof Error ? error.message : 'Unable to insert content');
@@ -1277,9 +1331,9 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     this.clearLibraryFilters();
     try {
       const [files, notes, links] = await Promise.all([
-        firstValueFrom(this.groupDetailsData.loadGroupLibraryFiles(this.groupId, folder.folder.id)),
-        firstValueFrom(this.groupDetailsData.loadGroupLibraryNotes(this.groupId, folder.folder.id)),
-        firstValueFrom(this.groupDetailsData.loadGroupLibraryLinks(this.groupId, folder.folder.id)),
+        firstValueFrom(this.groupDetailsData.loadGroupLibraryFiles(this.groupId, folder.folder.id, { scope: this.detailScope })),
+        firstValueFrom(this.groupDetailsData.loadGroupLibraryNotes(this.groupId, folder.folder.id, { scope: this.detailScope })),
+        firstValueFrom(this.groupDetailsData.loadGroupLibraryLinks(this.groupId, folder.folder.id, { scope: this.detailScope })),
       ]);
       this.libraryFiles.set(files);
       this.libraryNotes.set(notes);
@@ -1647,7 +1701,10 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
       const rows = await Promise.all(
         sessions.map(async (session) => ({
           sessionId: session.id,
-          lessons: await firstValueFrom(this.groupDetailsData.loadGroupLessons(this.groupId, { sync: false, sessionId: session.id })),
+          lessons: await firstValueFrom(this.groupDetailsData.loadGroupLessons(
+            this.groupId,
+            { sync: false, sessionId: session.id, scope: this.detailScope },
+          )),
         })),
       );
       this.sessionLessonsBySessionId.set(new Map(rows.map((row) => [row.sessionId, row.lessons])));
@@ -1674,7 +1731,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     this.insertContentError.set(null);
     try {
       const [insertedContent, sources] = await Promise.all([
-        firstValueFrom(this.groupDetailsData.loadGroupLessonContent(this.groupId, lesson.id)),
+        firstValueFrom(this.groupDetailsData.loadGroupLessonContent(this.groupId, lesson.id, { scope: this.detailScope })),
         this.loadGroupLibraryMaterialSources(),
       ]);
       const options = await Promise.all(
@@ -1692,7 +1749,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   private async loadGroupLibraryMaterialSources(): Promise<LessonMaterialSource[]> {
     const folders = this.libraryFolders().length
       ? this.libraryFolders().map((entry) => entry.folder)
-      : await firstValueFrom(this.groupDetailsData.loadGroupLibraryFolders(this.groupId));
+      : await firstValueFrom(this.groupDetailsData.loadGroupLibraryFolders(this.groupId, { scope: this.detailScope }));
     if (!this.libraryFolders().length) {
       const group = this.group();
       this.libraryFolders.set(folders.map((folder) => ({
@@ -1710,9 +1767,9 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
 
   private async loadGroupLibraryMaterialOptions(source: LessonMaterialSource): Promise<LessonMaterialOption[]> {
     const [files, notes, links] = await Promise.all([
-      firstValueFrom(this.groupDetailsData.loadGroupLibraryFiles(this.groupId, source.folder.id)),
-      firstValueFrom(this.groupDetailsData.loadGroupLibraryNotes(this.groupId, source.folder.id)),
-      firstValueFrom(this.groupDetailsData.loadGroupLibraryLinks(this.groupId, source.folder.id)),
+      firstValueFrom(this.groupDetailsData.loadGroupLibraryFiles(this.groupId, source.folder.id, { scope: this.detailScope })),
+      firstValueFrom(this.groupDetailsData.loadGroupLibraryNotes(this.groupId, source.folder.id, { scope: this.detailScope })),
+      firstValueFrom(this.groupDetailsData.loadGroupLibraryLinks(this.groupId, source.folder.id, { scope: this.detailScope })),
     ]);
     return [
       ...files.map((file) => this.fileOption(file, source)),
@@ -1730,7 +1787,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     this.libraryLoading.set(true);
     this.libraryError.set(null);
     try {
-      const folders = await firstValueFrom(this.groupDetailsData.loadGroupLibraryFolders(this.groupId));
+      const folders = await firstValueFrom(this.groupDetailsData.loadGroupLibraryFolders(this.groupId, { scope: this.detailScope }));
       this.libraryFolders.set(folders.map((folder) => ({
         nodeId: group.id,
         nodeLabel: 'Group Library',
@@ -2210,6 +2267,13 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     this.facade.removeStudentFromGroup(this.groupId, student);
   }
 
+  private formatStudentRate(value: number | null | undefined): string {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      return '0%';
+    }
+    return `${Number(value.toFixed(3))}%`;
+  }
+
   private calendarEvents(): EventInput[] {
     const group = this.group();
     if (!group) {
@@ -2577,5 +2641,16 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   private eventDateTime(date: string, time: string): Date | null {
     const value = new Date(`${date}T${time}:00`);
     return Number.isNaN(value.getTime()) ? null : value;
+  }
+
+  private readDisplayPaymentStatus(groupId: string): boolean {
+    if (!isPlatformBrowser(this.platformId)) {
+      return false;
+    }
+    return localStorage.getItem(this.displayPaymentStatusStorageKey(groupId)) === 'true';
+  }
+
+  private displayPaymentStatusStorageKey(groupId: string): string {
+    return `tenant-group:${groupId}:display-payment-status`;
   }
 }

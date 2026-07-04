@@ -1,6 +1,18 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { TenantBillingDataService } from '../data-access/tenant-billing-data.service';
-import { TenantStudentInvoice, TenantStudentInvoiceStatus } from '../models/tenant-billing.models';
+import {
+  TenantBillingInvoiceCategory,
+  TenantBillingInvoiceSummary,
+  TenantStudentInvoice,
+  TenantStudentInvoiceStatus,
+} from '../models/tenant-billing.models';
+
+const EMPTY_SUMMARY: TenantBillingInvoiceSummary = {
+  totalInvoices: 0,
+  paidInvoices: 0,
+  unpaidInvoices: 0,
+  overdueInvoices: 0,
+};
 
 @Injectable({ providedIn: 'root' })
 export class TenantBillingStore {
@@ -11,7 +23,10 @@ export class TenantBillingStore {
   readonly errorMessage = signal<string | null>(null);
   readonly actionMessage = signal<string | null>(null);
   readonly searchQuery = signal('');
+  readonly studentIdFilter = signal('');
   readonly statusFilter = signal<TenantStudentInvoiceStatus | ''>('');
+  readonly categoryFilter = signal<TenantBillingInvoiceCategory>('all');
+  readonly summary = signal<TenantBillingInvoiceSummary>(EMPTY_SUMMARY);
   readonly pageIndex = signal(0);
   readonly pageSize = signal(25);
   readonly totalItems = signal(0);
@@ -32,19 +47,23 @@ export class TenantBillingStore {
     this.errorMessage.set(null);
     this.data.listTenantStudentInvoices({
       search: this.searchQuery(),
+      studentId: this.studentIdFilter(),
       status: this.statusFilter(),
+      category: this.categoryFilter(),
       page: this.pageIndex(),
       size: this.pageSize(),
     }).subscribe({
       next: (response) => {
         this.invoices.set(response.items ?? []);
         this.totalItems.set(response.totalItems ?? 0);
+        this.summary.set(response.summary ?? EMPTY_SUMMARY);
         this.isLoading.set(false);
       },
       error: (error: Error) => {
         this.errorMessage.set(error.message);
         this.invoices.set([]);
         this.totalItems.set(0);
+        this.summary.set(EMPTY_SUMMARY);
         this.isLoading.set(false);
       },
     });
@@ -52,12 +71,25 @@ export class TenantBillingStore {
 
   setSearchQuery(value: string): void {
     this.searchQuery.set(value);
+    this.studentIdFilter.set('');
     this.pageIndex.set(0);
     this.loadInvoices();
   }
 
+  setStudentFilter(studentId: string, studentName = ''): void {
+    this.studentIdFilter.set(studentId.trim());
+    this.searchQuery.set(studentName.trim());
+    this.pageIndex.set(0);
+  }
+
   setStatusFilter(value: TenantStudentInvoiceStatus | ''): void {
     this.statusFilter.set(value);
+    this.pageIndex.set(0);
+    this.loadInvoices();
+  }
+
+  setCategoryFilter(value: TenantBillingInvoiceCategory): void {
+    this.categoryFilter.set(value || 'all');
     this.pageIndex.set(0);
     this.loadInvoices();
   }

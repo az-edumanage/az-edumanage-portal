@@ -201,6 +201,7 @@ export class SidebarComponent {
             items: [
               { labelKey: 'sidebar.item.overview', icon: 'dashboard', route: '/tenant/overview' },
               { labelKey: 'sidebar.item.students', icon: 'school', route: '/tenant/students', permission: 'tenant.students.view' },
+              { labelKey: 'sidebar.item.parents', icon: 'supervisor_account', route: '/tenant/parents', permission: 'tenant.students.view' },
               { labelKey: 'sidebar.item.teachers', icon: 'person_outline', route: '/tenant/teachers', permission: 'tenant.teachers.view' },
               { labelKey: 'sidebar.item.groupsClasses', icon: 'groups', route: '/tenant/groups', permission: 'tenant.groups.view' },
               { labelKey: 'sidebar.item.rooms', icon: 'rooms', route: '/tenant/rooms', permission: 'tenant.rooms.view' },
@@ -230,7 +231,7 @@ export class SidebarComponent {
               { labelKey: 'sidebar.item.schedule', icon: 'calendar_today', route: '/tenant/schedule', permission: 'tenant.attendance.view' },
               { labelKey: 'sidebar.item.attendance', icon: 'fact_check', route: '/tenant/attendance', permission: 'tenant.attendance.view' },
               { labelKey: 'sidebar.item.examsGrades', icon: 'assignment', route: '/tenant/exams', permission: 'tenant.exams.manage' },
-              { labelKey: 'sidebar.item.examsEvaluation', icon: 'grades', route: '/tenant/evaluation', permission: 'tenant.grades.view' },
+              { labelKey: 'sidebar.item.examsEvaluation', icon: 'grades', route: '/tenant/exams-evaluation', permission: 'tenant.grades.view' },
               { labelKey: 'sidebar.item.questionsBank', icon: 'quiz', route: '/tenant/questions-bank', permission: 'tenant.questionBank.manage' },
             ]
           },
@@ -266,6 +267,15 @@ export class SidebarComponent {
               { labelKey: 'sidebar.item.myGroups', icon: 'groups', route: '/teacher/groups' },
               { labelKey: 'sidebar.item.attendance', icon: 'fact_check', route: '/teacher/attendance' },
               { labelKey: 'sidebar.item.examsGrades', icon: 'assignment_turned_in', route: '/teacher/exams' },
+              {
+                labelKey: 'sidebar.item.examEvaluation',
+                icon: 'fact_check',
+                children: [
+                  { labelKey: 'sidebar.item.examsEvaluation', icon: '', route: '/teacher/evaluation/exams' },
+                  { labelKey: 'sidebar.item.homeWorkEvaluation', icon: '', route: '/teacher/evaluation/home-work' },
+                  { labelKey: 'sidebar.item.sessionAssessment', icon: '', route: '/teacher/evaluation/session-assessment' },
+                ],
+              },
               { labelKey: 'sidebar.item.messages', icon: 'chat', route: '/teacher/messages' },
               { labelKey: 'sidebar.item.profile', icon: 'person', route: '/teacher/profile' },
             ]
@@ -278,8 +288,11 @@ export class SidebarComponent {
             items: [
               { labelKey: 'sidebar.item.overview', icon: 'dashboard', route: '/student/overview' },
               { labelKey: 'sidebar.item.schedule', icon: 'calendar_today', route: '/student/schedule' },
-              { labelKey: 'sidebar.item.attendance', icon: 'fact_check', route: '/student/attendance' },
+              { labelKey: 'sidebar.item.myCourses', icon: 'school', route: '/student/my-courses' },
+              { labelKey: 'sidebar.item.myGroups', icon: 'groups', route: '/student/my-groups' },
               { labelKey: 'sidebar.item.examsGrades', icon: 'assignment', route: '/student/exams' },
+              { labelKey: 'sidebar.item.examEvaluation', icon: 'fact_check', route: '/student/exam-evaluation' },
+              { labelKey: 'sidebar.item.homeWork', icon: 'assignment_turned_in', route: '/student/home-work' },
               { labelKey: 'sidebar.item.billing', icon: 'receipt_long', route: '/student/billing' },
             ],
           },
@@ -290,9 +303,17 @@ export class SidebarComponent {
             titleKey: 'sidebar.section.main',
             items: [
               { labelKey: 'sidebar.item.overview', icon: 'dashboard', route: '/parent/overview' },
-              { labelKey: 'sidebar.item.students', icon: 'school', route: '/parent/students' },
+              { labelKey: 'sidebar.item.childs', icon: 'school', route: '/parent/students' },
               { labelKey: 'sidebar.item.attendance', icon: 'fact_check', route: '/parent/attendance' },
-              { labelKey: 'sidebar.item.examsGrades', icon: 'assignment', route: '/parent/exams' },
+              {
+                labelKey: 'sidebar.item.examEvaluation',
+                icon: 'fact_check',
+                children: [
+                  { labelKey: 'sidebar.item.examEvaluationList', icon: '', route: '/parent/exam-evaluation' },
+                  { labelKey: 'sidebar.item.homeWorkEvaluation', icon: '', route: '/parent/home-work-evaluation' },
+                  { labelKey: 'sidebar.item.sessionAssessment', icon: '', route: '/parent/session-assessment' },
+                ],
+              },
               { labelKey: 'sidebar.item.billing', icon: 'receipt_long', route: '/parent/billing' },
             ],
           },

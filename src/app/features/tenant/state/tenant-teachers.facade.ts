@@ -19,6 +19,11 @@ export class TenantTeachersFacade {
   readonly activeChatTeacher = this.store.activeChatTeacher;
   readonly isLoading = this.store.isLoading;
   readonly errorMessage = this.store.errorMessage;
+  readonly statusSummary = this.store.statusSummary;
+  readonly isStatusSummaryLoading = this.store.isStatusSummaryLoading;
+  readonly statusSummaryError = this.store.statusSummaryError;
+  readonly teacherStatusFilter = this.store.teacherStatusFilter;
+  readonly hasStatusFilter = this.store.hasStatusFilter;
 
   readonly teachers = this.store.teachers;
   readonly subjectOptions = this.store.subjectOptions;
@@ -31,6 +36,7 @@ export class TenantTeachersFacade {
   readonly pageSize = this.store.pageSize;
   readonly pageStart = this.store.pageStart;
   readonly pageEnd = this.store.pageEnd;
+  readonly activeStatusEmptyMessage = this.store.activeStatusEmptyMessage;
   readonly passwordModalTeacher = this.store.passwordModalTeacher;
   readonly passwordSaving = this.store.passwordSaving;
   readonly passwordError = this.store.passwordError;
@@ -39,13 +45,22 @@ export class TenantTeachersFacade {
 
   loadTeachers(): void {
     this.store.setLoading(true);
+    this.store.setStatusSummaryLoading(true);
     this.store.setError(null);
+    this.store.setStatusSummaryError(null);
     this.data
       .listTeachers()
       .pipe(finalize(() => this.store.setLoading(false)))
       .subscribe({
         next: (teachers) => this.store.setTeachers(teachers),
         error: (error: Error) => this.store.setError(error.message),
+      });
+    this.data
+      .statusSummary()
+      .pipe(finalize(() => this.store.setStatusSummaryLoading(false)))
+      .subscribe({
+        next: (summary) => this.store.setStatusSummary(summary),
+        error: (error: Error) => this.store.setStatusSummaryError(error.message),
       });
   }
 
@@ -62,7 +77,20 @@ export class TenantTeachersFacade {
 
   clearAllFilters(): void {
     this.searchQuery.set('');
+    this.store.setTeacherStatusFilter('all');
     this.clearAdvancedFilters();
+  }
+
+  selectAllTeachers(): void {
+    this.store.setTeacherStatusFilter('all');
+  }
+
+  selectTeachersInGroupNow(): void {
+    this.store.setTeacherStatusFilter('inGroupNow');
+  }
+
+  selectAbsentTeachers(): void {
+    this.store.setTeacherStatusFilter('absence');
   }
 
   setSearchQuery(value: string): void {

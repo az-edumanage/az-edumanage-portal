@@ -1,0 +1,76 @@
+<div class="teacher-attendance-page">
+  <header class="page-header">
+    <div>
+      <h2>Attendance</h2>
+      <p>Select a group to review its sessions and student attendance records.</p>
+    </div>
+
+    <button type="button" class="refresh-button" (click)="loadGroups()" [disabled]="groupsLoading()">
+      <mat-icon>refresh</mat-icon>
+      Refresh
+    </button>
+  </header>
+
+  @if (errorMessage()) {
+    <section class="alert-panel">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorMessage() }}</span>
+    </section>
+  }
+
+  <section class="data-panel">
+    <header class="panel-header">
+      <div>
+        <h3>Groups</h3>
+        <p>{{ groups().length }} assigned groups</p>
+      </div>
+    </header>
+
+    @if (groupsLoading()) {
+      <div class="state-panel">
+        <mat-icon>progress_activity</mat-icon>
+        <h4>Loading groups</h4>
+      </div>
+    } @else if (groups().length === 0) {
+      <div class="state-panel">
+        <mat-icon>groups_2</mat-icon>
+        <h4>No assigned groups</h4>
+        <p>Your teacher account does not have assigned groups yet.</p>
+      </div>
+    } @else {
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Group</th>
+              <th>Subject</th>
+              <th>Education</th>
+              <th>Schedule</th>
+              <th>Students</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (group of groups(); track trackByGroupId($index, group)) {
+              <tr
+                class="clickable-row"
+                [routerLink]="['/teacher/attendance/groups', group.id, 'sessions']"
+                tabindex="0"
+              >
+                <td>
+                  <strong>{{ group.name }}</strong>
+                  <span>{{ group.room || 'Room not set' }}</span>
+                </td>
+                <td>{{ group.subject || 'Not set' }}</td>
+                <td>{{ formatGroupEducation(group) }}</td>
+                <td>{{ group.schedule || 'Not set' }}</td>
+                <td>{{ group.studentsCount }}</td>
+                <td><span class="status-chip status-active">{{ group.status }}</span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</div>

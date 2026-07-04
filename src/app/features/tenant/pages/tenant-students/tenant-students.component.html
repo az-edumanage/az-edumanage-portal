@@ -29,12 +29,52 @@
               <mat-icon class="text-sm block">view_list</mat-icon>
             </button>
           </div>
-          <a routerLink="/tenant/students/create" class="flex items-center gap-2 px-4 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20">
+          <button type="button" (click)="openCreateStudent()" class="flex items-center gap-2 px-4 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20">
             <mat-icon class="text-sm">person_add</mat-icon>
             Add Student
-          </a>
+          </button>
         </div>
       </div>
+
+      <section class="tenant-students-summary-grid" aria-label="Student attendance summary">
+        @for (card of attendanceCards(); track card.key) {
+          <button
+            type="button"
+            class="tenant-students-summary-card"
+            [class.tenant-students-summary-card-active]="card.active"
+            [class.tenant-students-summary-card-unavailable]="card.unavailable"
+            [disabled]="card.disabled"
+            [attr.aria-pressed]="card.active"
+            (click)="setAttendanceFilter(card.key)"
+          >
+            <span class="tenant-students-summary-icon" [class.tenant-students-summary-icon-active]="card.active">
+              <mat-icon class="text-base">
+                {{ card.key === 'all' ? 'groups' : card.key === 'absent' ? 'person_off' : 'how_to_reg' }}
+              </mat-icon>
+            </span>
+            <span class="tenant-students-summary-content">
+              <span class="tenant-students-summary-label">{{ card.label }}</span>
+              <span class="tenant-students-summary-value">
+                @if (card.loading) {
+                  <span class="tenant-students-summary-skeleton" aria-label="Loading"></span>
+                } @else {
+                  {{ card.count }}
+                }
+              </span>
+            </span>
+          </button>
+        }
+      </section>
+
+      @if (attendanceSummaryError()) {
+        <div class="flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 sm:flex-row sm:items-center sm:justify-between dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-200">
+          <span>Attendance summary is unavailable. Student list controls are still available.</span>
+          <button type="button" class="inline-flex items-center gap-2 rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-bold hover:bg-amber-100 dark:border-amber-800 dark:hover:bg-amber-950/40" (click)="reloadAttendanceSummary()">
+            <mat-icon class="text-sm">refresh</mat-icon>
+            Retry
+          </button>
+        </div>
+      }
 
       <!-- Search & Filter Bar -->
       <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -170,10 +210,13 @@
                     {{ student.name.charAt(0) }}
                   </div>
                   <div class="flex gap-2">
-                    <button class="p-1.5 text-slate-500 hover:text-indigo-600 transition-colors">
+                    <button type="button" (click)="openPasswordModal($event, student.id)" class="p-1.5 text-slate-500 hover:text-sky-700 transition-colors" title="Change Password">
+                      <mat-icon class="text-sm">password</mat-icon>
+                    </button>
+                    <button type="button" (click)="openStudentEdit($event, student.id)" class="p-1.5 text-slate-500 hover:text-indigo-600 transition-colors" title="Edit">
                       <mat-icon class="text-sm">edit</mat-icon>
                     </button>
-                    <button class="p-1.5 text-slate-500 hover:text-red-600 transition-colors">
+                    <button type="button" (click)="requestDelete($event, student.id)" class="p-1.5 text-slate-500 hover:text-red-600 transition-colors" title="Delete">
                       <mat-icon class="text-sm">delete</mat-icon>
                     </button>
                   </div>
@@ -265,10 +308,13 @@
                           <a [routerLink]="['/tenant/students', student.id]" (click)="$event.stopPropagation()" class="p-2 text-indigo-600 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="View Details">
                             <mat-icon class="text-sm block">visibility</mat-icon>
                           </a>
-                          <button type="button" (click)="$event.stopPropagation()" class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Edit">
+                          <button type="button" (click)="openPasswordModal($event, student.id)" class="p-2 text-slate-500 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-colors" title="Change Password">
+                            <mat-icon class="text-sm block">password</mat-icon>
+                          </button>
+                          <button type="button" (click)="openStudentEdit($event, student.id)" class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Edit">
                             <mat-icon class="text-sm block">edit</mat-icon>
                           </button>
-                          <button type="button" (click)="$event.stopPropagation()" class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-colors" title="Delete">
+                          <button type="button" (click)="requestDelete($event, student.id)" class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-colors" title="Delete">
                             <mat-icon class="text-sm block">delete</mat-icon>
                           </button>
                         </div>
@@ -327,12 +373,107 @@
           <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
             <mat-icon class="text-slate-500">search_off</mat-icon>
           </div>
-          <h3 class="text-lg font-bold text-slate-900 dark:text-white">No students found</h3>
-          <p class="text-slate-500 dark:text-slate-500 text-sm max-w-xs mx-auto mt-1">We couldn't find any students matching your current search and filter criteria.</p>
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ emptyStateTitle() }}</h3>
+          <p class="text-slate-500 dark:text-slate-500 text-sm max-w-xs mx-auto mt-1">{{ emptyStateDescription() }}</p>
           <button (click)="clearAllFilters()" class="mt-6 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-all">
             Clear All Filters
           </button>
         </div>
       }
     </div>
+
+    @if (passwordModalStudent(); as student) {
+      <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/40 px-4" role="presentation" (click)="closePasswordModal()">
+        <div class="w-full max-w-md rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900" role="dialog" aria-modal="true" aria-labelledby="student-password-title" (click)="$event.stopPropagation()">
+          <div class="flex items-start justify-between gap-4 border-b border-slate-200 p-5 dark:border-slate-800">
+            <div>
+              <h3 id="student-password-title" class="text-base font-bold text-slate-900 dark:text-white">Change Password</h3>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ student.name }}</p>
+            </div>
+            <button type="button" class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="Close password change" (click)="closePasswordModal()">
+              <mat-icon class="text-sm">close</mat-icon>
+            </button>
+          </div>
+
+          <form [formGroup]="passwordForm" (ngSubmit)="submitPassword()" class="space-y-4 p-5">
+            <div>
+              <label for="student-new-password" class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">New password</label>
+              <input
+                id="student-new-password"
+                type="password"
+                formControlName="newPassword"
+                autocomplete="new-password"
+                class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition-all focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              >
+              @if (passwordForm.controls.newPassword.touched && passwordForm.controls.newPassword.invalid) {
+                <p class="mt-2 text-sm font-medium text-red-600">Password must be at least 8 characters.</p>
+              }
+              @if (passwordError()) {
+                <p class="mt-2 text-sm font-medium text-red-600">{{ passwordError() }}</p>
+              }
+              @if (passwordSuccess()) {
+                <p class="mt-2 text-sm font-medium text-emerald-700">{{ passwordSuccess() }}</p>
+              }
+            </div>
+
+            <div class="flex justify-end gap-3 pt-2">
+              <button type="button" class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800" (click)="closePasswordModal()">
+                Cancel
+              </button>
+              <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60" [disabled]="passwordSaving()">
+                @if (passwordSaving()) {
+                  <mat-icon class="text-sm animate-spin">sync</mat-icon>
+                  Saving
+                } @else {
+                  Save
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    @if (deleteState().status !== 'closed') {
+      <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/40 px-4" role="presentation" (click)="closeDeleteModal()">
+        <div class="w-full max-w-md rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900" role="dialog" aria-modal="true" aria-labelledby="student-delete-title" (click)="$event.stopPropagation()">
+          <div class="flex items-start justify-between gap-4 border-b border-slate-200 p-5 dark:border-slate-800">
+            <div>
+              <h3 id="student-delete-title" class="text-base font-bold text-slate-900 dark:text-white">Delete student</h3>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                @if (deleteState().student) {
+                  This will permanently delete {{ deleteState().student?.name }} and remove their login access.
+                } @else {
+                  {{ deleteState().message }}
+                }
+              </p>
+            </div>
+            <button type="button" class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="Close delete confirmation" (click)="closeDeleteModal()">
+              <mat-icon class="text-sm">close</mat-icon>
+            </button>
+          </div>
+          @if (deleteState().status === 'failed' || deleteState().status === 'success') {
+            <div class="px-5 pt-5">
+              <div
+                class="rounded-lg px-4 py-3 text-sm font-medium"
+                [class.bg-red-50]="deleteState().status === 'failed'"
+                [class.text-red-700]="deleteState().status === 'failed'"
+                [class.bg-emerald-50]="deleteState().status === 'success'"
+                [class.text-emerald-700]="deleteState().status === 'success'"
+              >
+                {{ deleteState().message }}
+              </div>
+            </div>
+          }
+          <div class="flex justify-end gap-3 p-5">
+            <button type="button" class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800" [disabled]="deleteState().status === 'deleting'" (click)="closeDeleteModal()">Cancel</button>
+            @if (deleteState().status !== 'success') {
+              <button type="button" class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-red-500/20 hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60" [disabled]="deleteState().status === 'deleting'" (click)="confirmDelete()">
+                {{ deleteState().status === 'deleting' ? 'Deleting...' : 'Delete Student' }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    }
   

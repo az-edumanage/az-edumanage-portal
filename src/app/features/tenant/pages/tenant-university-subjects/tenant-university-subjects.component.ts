@@ -88,4 +88,8 @@ export class TenantUniversitySubjectsComponent implements OnInit {
   deleteSubject(id: string): void {
     void this.facade.deleteSubject(id);
   }
+
+  openDetails(id: string): void {
+    void this.facade.goToDetails(id);
+  }
 }

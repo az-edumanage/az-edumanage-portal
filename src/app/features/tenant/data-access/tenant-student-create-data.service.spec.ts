@@ -24,7 +24,7 @@ describe('TenantStudentCreateDataService', () => {
     httpTesting.verify();
   });
 
-  it('submits enrollment payload with account credentials and without barcodeNumber', () => {
+  it('submits enrollment payload with student credentials, selected parent, and without barcodeNumber', () => {
     service.enrollStudent(createPayload()).subscribe((result) => {
       expect(result).toBeUndefined();
     });
@@ -34,9 +34,41 @@ describe('TenantStudentCreateDataService', () => {
     expect('barcodeNumber' in request.request.body).toBe(false);
     expect(request.request.body.username).toBe('student.alpha');
     expect(request.request.body.password).toBe('Student123!');
+    expect(request.request.body.parentAppUserId).toBe('parent-user-1');
+    expect('parentUsername' in request.request.body).toBe(false);
+    expect('parentPassword' in request.request.body).toBe(false);
+    expect('address' in request.request.body).toBe(false);
     request.flush({
       id: 'student-1',
       barcodeNumber: '123456789012',
+    });
+  });
+
+  it('submits blank student email as null', () => {
+    service.enrollStudent({ ...createPayload(), email: '   ' }).subscribe((result) => {
+      expect(result).toBeUndefined();
+    });
+
+    const request = httpTesting.expectOne((req) => req.url.endsWith('/tenant/students'));
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body.email).toBeNull();
+    request.flush({
+      id: 'student-optional-email',
+      barcodeNumber: '123456789013',
+    });
+  });
+
+  it('submits blank student phone as null', () => {
+    service.enrollStudent({ ...createPayload(), phone: '   ' }).subscribe((result) => {
+      expect(result).toBeUndefined();
+    });
+
+    const request = httpTesting.expectOne((req) => req.url.endsWith('/tenant/students'));
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body.phone).toBeNull();
+    request.flush({
+      id: 'student-optional-phone',
+      barcodeNumber: '123456789014',
     });
   });
 
@@ -63,9 +95,7 @@ function createPayload(): TenantStudentCreatePayload {
     password: 'Student123!',
     birthDate: '2008-01-10',
     gender: 'Male',
-    parentName: '',
-    parentPhone: '',
-    address: '',
+    parentAppUserId: 'parent-user-1',
     notifyParent: true,
     educationCategory: 'BASIC_EDUCATION',
     stageIds: ['stage-1'],

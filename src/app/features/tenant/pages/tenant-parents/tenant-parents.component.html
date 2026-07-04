@@ -1,0 +1,445 @@
+<div class="tenant-parents-page">
+  <header class="tenant-parents-header">
+    <div>
+      <p class="tenant-parents-eyebrow">Family Access</p>
+      <h2>Parents Directory</h2>
+      <p>View parent and guardian contacts linked to enrolled students.</p>
+    </div>
+    <div class="tenant-parents-header-actions">
+      <button type="button" class="tenant-parents-refresh" (click)="loadParents()" [disabled]="isLoading()">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+      </button>
+      <button type="button" class="tenant-parents-add" (click)="openAddParentModal()">
+        <mat-icon>person_add</mat-icon>
+        Add Parent
+      </button>
+    </div>
+  </header>
+
+  <section class="tenant-parents-stats" aria-label="Parents summary">
+    <article>
+      <span class="tenant-parents-stat-icon">
+        <mat-icon>supervisor_account</mat-icon>
+      </span>
+      <div>
+        <p>Total parents</p>
+        <strong>{{ parents().length }}</strong>
+      </div>
+    </article>
+    <article>
+      <span class="tenant-parents-stat-icon tenant-parents-stat-icon-alt">
+        <mat-icon>school</mat-icon>
+      </span>
+      <div>
+        <p>Linked students</p>
+        <strong>{{ totalLinkedStudents() }}</strong>
+      </div>
+    </article>
+  </section>
+
+  <section class="tenant-parents-toolbar">
+    <div class="tenant-parents-search">
+      <mat-icon>search</mat-icon>
+      <input
+        type="text"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="setSearchQuery($event)"
+        placeholder="Search parents, phone, student, or grade..."
+      >
+    </div>
+  </section>
+
+  @if (errorMessage()) {
+    <div class="tenant-parents-error">
+      <mat-icon>error</mat-icon>
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <section class="tenant-parents-table-shell">
+    @if (isLoading()) {
+      <div class="tenant-parents-empty">
+        <mat-icon>hourglass_top</mat-icon>
+        <h3>Loading parents...</h3>
+      </div>
+    } @else if (filteredParents().length) {
+      <div class="tenant-parents-table-scroll">
+        <table class="tenant-parents-table">
+          <thead>
+            <tr>
+              <th>Parent</th>
+              <th>Phone</th>
+              <th>Linked Students</th>
+              <th>Notifications</th>
+              <th class="tenant-parents-actions-head">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (parent of paginatedParents(); track parent.id) {
+              <tr>
+                <td>
+                  <div class="tenant-parents-person">
+                    <span>{{ parent.name.charAt(0).toUpperCase() }}</span>
+                    <div>
+                      <strong>{{ parent.name }}</strong>
+                      <small>{{ parent.students.length }} student{{ parent.students.length === 1 ? '' : 's' }}</small>
+                      @if (parent.email) {
+                        <small>{{ parent.email }}</small>
+                      }
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  @if (parent.phone) {
+                    <a [href]="'tel:' + parent.phone">{{ parent.phone }}</a>
+                  } @else {
+                    <span class="tenant-parents-muted">No phone</span>
+                  }
+                </td>
+                <td>
+                  <div class="tenant-parents-students">
+                    @for (student of parent.students; track student.id) {
+                      <a [routerLink]="['/tenant/students', student.id]">
+                        <span>{{ student.name }}</span>
+                        <small>{{ student.grade }}</small>
+                      </a>
+                    } @empty {
+                      <span class="tenant-parents-muted">No linked students</span>
+                    }
+                  </div>
+                </td>
+                <td>
+                  <span class="tenant-parents-status" [class.tenant-parents-status-on]="parent.notifyParent">
+                    <mat-icon>{{ parent.notifyParent ? 'notifications_active' : 'notifications_off' }}</mat-icon>
+                    {{ parent.notifyParent ? 'Enabled' : 'Disabled' }}
+                  </span>
+                </td>
+                <td class="tenant-parents-actions-cell">
+                  <button
+                    type="button"
+                    class="tenant-parents-row-btn tenant-parents-row-btn--edit"
+                    title="Edit Parent"
+                    aria-label="Edit parent"
+                    (click)="openEditParentModal(parent)"
+                  >
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button
+                    type="button"
+                    class="tenant-parents-row-btn tenant-parents-row-btn--password"
+                    [title]="canChangeParentPassword(parent) ? 'Change Password' : 'No linked login account'"
+                    aria-label="Change parent password"
+                    [disabled]="!canChangeParentPassword(parent)"
+                    (click)="openPasswordModal(parent)"
+                  >
+                    <mat-icon>password</mat-icon>
+                  </button>
+                  <button
+                    type="button"
+                    class="tenant-parents-row-btn tenant-parents-row-btn--delete"
+                    title="Delete Parent"
+                    aria-label="Delete parent"
+                    (click)="openDeleteParentModal(parent)"
+                  >
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <footer class="tenant-parents-pagination">
+        <span>Showing {{ paginationStart() }}-{{ paginationEnd() }} of {{ filteredParents().length }} parents</span>
+        <div class="tenant-parents-pagination-controls">
+          <label>
+            Rows
+            <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)">
+              <option [value]="5">5</option>
+              <option [value]="10">10</option>
+              <option [value]="25">25</option>
+            </select>
+          </label>
+          <button type="button" (click)="previousPage()" [disabled]="currentPage() <= 1" aria-label="Previous page">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <strong>Page {{ currentPage() }} of {{ totalPages() }}</strong>
+          <button type="button" (click)="nextPage()" [disabled]="currentPage() >= totalPages()" aria-label="Next page">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+      </footer>
+    } @else {
+      <div class="tenant-parents-empty">
+        <mat-icon>supervisor_account</mat-icon>
+        <h3>No parents found</h3>
+        <p>Parents appear here after students are created with parent or guardian details.</p>
+      </div>
+    }
+  </section>
+
+  @if (addParentModalOpen()) {
+    <div class="tenant-parents-modal-backdrop" (click)="closeAddParentModal()">
+      <div class="tenant-parents-password-modal tenant-parents-add-modal" role="dialog" aria-modal="true" aria-labelledby="parent-add-title" (click)="$event.stopPropagation()">
+        <div class="tenant-parents-password-head">
+          <div>
+            <h3 id="parent-add-title">Add Parent</h3>
+            <p>Create a parent login account for this center.</p>
+          </div>
+          <button type="button" (click)="closeAddParentModal()" class="tenant-parents-icon-btn" title="Close" aria-label="Close add parent">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <form [formGroup]="addParentForm" (ngSubmit)="submitAddParent()" class="tenant-parents-password-form tenant-parents-add-form">
+          <div>
+            <label for="parent-full-name">Full name</label>
+            <input
+              id="parent-full-name"
+              type="text"
+              formControlName="fullName"
+              autocomplete="name"
+            >
+            @if (addParentForm.controls.fullName.touched && addParentForm.controls.fullName.invalid) {
+              <p class="tenant-parents-password-error">Full name is required.</p>
+            }
+          </div>
+
+          <div class="tenant-parents-form-grid">
+            <div>
+              <label for="parent-phone">Phone number</label>
+              <input
+                id="parent-phone"
+                type="tel"
+                formControlName="phone"
+                autocomplete="tel"
+              >
+            </div>
+            <div>
+              <label for="parent-email">Email <span>Optional</span></label>
+              <input
+                id="parent-email"
+                type="email"
+                formControlName="email"
+                autocomplete="email"
+              >
+              @if (addParentForm.controls.email.touched && addParentForm.controls.email.hasError('email')) {
+                <p class="tenant-parents-password-error">Enter a valid email address.</p>
+              }
+            </div>
+          </div>
+
+          <div class="tenant-parents-form-grid">
+            <div>
+              <label for="parent-username">Username</label>
+              <input
+                id="parent-username"
+                type="text"
+                formControlName="username"
+                autocomplete="username"
+              >
+              @if (addParentForm.controls.username.touched && addParentForm.controls.username.invalid) {
+                <p class="tenant-parents-password-error">Username is required.</p>
+              }
+            </div>
+            <div>
+              <label for="parent-password">Password</label>
+              <input
+                id="parent-password"
+                type="password"
+                formControlName="password"
+                autocomplete="new-password"
+              >
+              @if (addParentForm.controls.password.touched && addParentForm.controls.password.invalid) {
+                <p class="tenant-parents-password-error">Password must be at least 8 characters.</p>
+              }
+            </div>
+          </div>
+
+          @if (addParentError()) {
+            <p class="tenant-parents-password-error">{{ addParentError() }}</p>
+          }
+
+          <div class="tenant-parents-password-actions">
+            <button type="button" (click)="closeAddParentModal()" class="tenant-parents-cancel-btn">
+              Cancel
+            </button>
+            <button type="submit" [disabled]="addParentSaving()" class="tenant-parents-save-btn">
+              @if (addParentSaving()) {
+                <mat-icon>sync</mat-icon>
+                Saving
+              } @else {
+                Add Parent
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (editParentModalParent(); as parent) {
+    <div class="tenant-parents-modal-backdrop" (click)="closeEditParentModal()">
+      <div class="tenant-parents-password-modal tenant-parents-add-modal" role="dialog" aria-modal="true" aria-labelledby="parent-edit-title" (click)="$event.stopPropagation()">
+        <div class="tenant-parents-password-head">
+          <div>
+            <h3 id="parent-edit-title">Edit Parent</h3>
+            <p>{{ parent.name }}</p>
+          </div>
+          <button type="button" (click)="closeEditParentModal()" class="tenant-parents-icon-btn" title="Close" aria-label="Close edit parent">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <form [formGroup]="editParentForm" (ngSubmit)="submitEditParent()" class="tenant-parents-password-form tenant-parents-add-form">
+          <div>
+            <label for="parent-edit-full-name">Full name</label>
+            <input
+              id="parent-edit-full-name"
+              type="text"
+              formControlName="fullName"
+              autocomplete="name"
+            >
+            @if (editParentForm.controls.fullName.touched && editParentForm.controls.fullName.invalid) {
+              <p class="tenant-parents-password-error">Full name is required.</p>
+            }
+          </div>
+
+          <div class="tenant-parents-form-grid">
+            <div>
+              <label for="parent-edit-phone">Phone number</label>
+              <input
+                id="parent-edit-phone"
+                type="tel"
+                formControlName="phone"
+                autocomplete="tel"
+              >
+            </div>
+            <div>
+              <label for="parent-edit-email">Email <span>Optional</span></label>
+              <input
+                id="parent-edit-email"
+                type="email"
+                formControlName="email"
+                autocomplete="email"
+              >
+              @if (editParentForm.controls.email.touched && editParentForm.controls.email.hasError('email')) {
+                <p class="tenant-parents-password-error">Enter a valid email address.</p>
+              }
+            </div>
+          </div>
+
+          @if (editParentError()) {
+            <p class="tenant-parents-password-error">{{ editParentError() }}</p>
+          }
+
+          <div class="tenant-parents-password-actions">
+            <button type="button" (click)="closeEditParentModal()" class="tenant-parents-cancel-btn">
+              Cancel
+            </button>
+            <button type="submit" [disabled]="editParentSaving()" class="tenant-parents-save-btn">
+              @if (editParentSaving()) {
+                <mat-icon>sync</mat-icon>
+                Saving
+              } @else {
+                Save changes
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (deleteParentModalParent(); as parent) {
+    <div class="tenant-parents-modal-backdrop" (click)="closeDeleteParentModal()">
+      <div class="tenant-parents-password-modal tenant-parents-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="parent-delete-title" (click)="$event.stopPropagation()">
+        <div class="tenant-parents-password-head">
+          <div>
+            <h3 id="parent-delete-title">Delete Parent</h3>
+            <p>{{ parent.name }}</p>
+          </div>
+          <button type="button" (click)="closeDeleteParentModal()" class="tenant-parents-icon-btn" title="Close" aria-label="Close delete parent">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <div class="tenant-parents-confirm-body">
+          <mat-icon>warning</mat-icon>
+          <p>Delete this parent account? This action cannot be undone.</p>
+          @if (parent.students.length) {
+            <small>This parent has linked students. The backend will prevent deletion until they are unlinked.</small>
+          }
+        </div>
+
+        @if (deleteParentError()) {
+          <p class="tenant-parents-password-error">{{ deleteParentError() }}</p>
+        }
+
+        <div class="tenant-parents-password-actions">
+          <button type="button" (click)="closeDeleteParentModal()" class="tenant-parents-cancel-btn">
+            Cancel
+          </button>
+          <button type="button" [disabled]="deleteParentSaving()" class="tenant-parents-danger-btn" (click)="confirmDeleteParent()">
+            @if (deleteParentSaving()) {
+              <mat-icon>sync</mat-icon>
+              Deleting
+            } @else {
+              Delete Parent
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (passwordModalParent(); as parent) {
+    <div class="tenant-parents-modal-backdrop" (click)="closePasswordModal()">
+      <div class="tenant-parents-password-modal" role="dialog" aria-modal="true" aria-labelledby="parent-password-title" (click)="$event.stopPropagation()">
+        <div class="tenant-parents-password-head">
+          <div>
+            <h3 id="parent-password-title">Change Password</h3>
+            <p>{{ parent.name }}</p>
+          </div>
+          <button type="button" (click)="closePasswordModal()" class="tenant-parents-icon-btn" title="Close" aria-label="Close password change">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <form [formGroup]="passwordForm" (ngSubmit)="submitPassword()" class="tenant-parents-password-form">
+          <label for="parent-new-password">New password</label>
+          <input
+            id="parent-new-password"
+            type="password"
+            formControlName="newPassword"
+            autocomplete="new-password"
+          >
+          @if (passwordForm.controls.newPassword.touched && passwordForm.controls.newPassword.invalid) {
+            <p class="tenant-parents-password-error">Password must be at least 8 characters.</p>
+          }
+          @if (passwordError()) {
+            <p class="tenant-parents-password-error">{{ passwordError() }}</p>
+          }
+          @if (passwordSuccess()) {
+            <p class="tenant-parents-password-success">{{ passwordSuccess() }}</p>
+          }
+
+          <div class="tenant-parents-password-actions">
+            <button type="button" (click)="closePasswordModal()" class="tenant-parents-cancel-btn">
+              Cancel
+            </button>
+            <button type="submit" [disabled]="passwordSaving()" class="tenant-parents-save-btn">
+              @if (passwordSaving()) {
+                <mat-icon>sync</mat-icon>
+                Saving
+              } @else {
+                Save
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

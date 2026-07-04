@@ -147,6 +147,8 @@ describe('TENANT_ROUTES', () => {
     const universityEducationSubjectsRoute = tenantShell?.children?.find((child) => child.path === 'exams/university-education/:universityId/colleges/:collegeId');
     const universityEducationExamListRoute = tenantShell?.children?.find((child) => child.path === 'exams/university-education/:universityId/colleges/:collegeId/create');
     const universityEducationExamCreateRoute = tenantShell?.children?.find((child) => child.path === 'exams/university-education/:universityId/colleges/:collegeId/create/new');
+    const universityEducationExamSubjectAddQuestionRoute = tenantShell?.children?.find((child) => child.path === 'exams/university-education/:universityId/colleges/:collegeId/create/new/subjects/:id/curriculum/addQuestion');
+    const universityEducationExamSubjectNodeAddQuestionRoute = tenantShell?.children?.find((child) => child.path === 'exams/university-education/:universityId/colleges/:collegeId/create/new/subjects/:id/curriculum/:nodeId/addQuestion');
 
     expect(examsRoute?.component).toBe(TenantExamsComponent);
     expect(basicEducationRoute?.component).toBe(TenantExamsBasicEducationComponent);
@@ -165,6 +167,8 @@ describe('TENANT_ROUTES', () => {
     expect(universityEducationExamListRoute?.component).toBe(TenantExamsBasicEducationExamCreateComponent);
     expect(universityEducationExamCreateRoute?.component).toBe(TenantExamsBasicEducationExamCreateComponent);
     expect(universityEducationExamCreateRoute?.data).toEqual({ mode: 'create' });
+    expect(universityEducationExamSubjectAddQuestionRoute?.component).toBe(TenantSubjectCurriculumQuestionCreateComponent);
+    expect(universityEducationExamSubjectNodeAddQuestionRoute?.component).toBe(TenantSubjectCurriculumQuestionCreateComponent);
   });
 
   it('routes student barcode print to the dedicated print page', () => {

@@ -17,14 +17,17 @@ describe('TenantOverviewStore', () => {
   });
 
   it('loads real overview data into computed state', () => {
-    store.load('week');
+    store.load('week', 'week');
 
-    expect(dataService.loadOverview).toHaveBeenCalledWith('week');
+    expect(dataService.loadOverview).toHaveBeenCalledWith('week', 'week');
     expect(store.status()).toBe('loaded');
-    expect(store.kpis().map((kpi) => kpi.key)).toEqual(['totalStudents', 'activeGroups', 'todaySessions', 'attendanceRate', 'overduePayments']);
-    expect(store.kpis().map((kpi) => kpi.numericValue)).toEqual([12, 4, 1, 90, 750]);
+    expect(store.revenueTrendRange()).toBe('week');
+    expect(store.kpis().map((kpi) => kpi.key)).toEqual(['totalStudents', 'activeGroups', 'todaySessions', 'totalTeachers', 'overduePayments']);
+    expect(store.kpis().map((kpi) => kpi.numericValue)).toEqual([12, 4, 1, 3, 750]);
     expect(store.kpis()[0].label).toBe('Total Students');
     expect(store.todaySessions()[0].group).toBe('Physics');
+    expect(store.runningGroups()[0].group).toBe('Physics');
+    expect(store.rooms().freeRooms).toBe(2);
     expect(store.pendingPaymentCount()).toBe(1);
   });
 
@@ -39,6 +42,14 @@ describe('TenantOverviewStore', () => {
     expect(store.attendanceTrend()).toEqual({ labels: [], datasets: [] });
     expect(store.revenueTrend()).toEqual({ labels: [], datasets: [] });
     expect(store.todaySessions()).toEqual([]);
+    expect(store.runningGroups()).toEqual([]);
+    expect(store.rooms()).toEqual({
+      occupiedRooms: 0,
+      freeRooms: 0,
+      freeHours: '0h',
+      freeHoursValue: 0,
+      operatingWindow: '08:00 AM - 08:00 PM',
+    });
     expect(store.pendingPayments()).toEqual([]);
     expect(store.pendingPaymentCount()).toBe(0);
   });
@@ -83,13 +94,13 @@ function overviewResponse(): TenantOverviewView {
         iconClass: '',
       },
       {
-        key: 'attendanceRate',
-        label: 'Attendance Rate',
-        value: '90.0%',
-        numericValue: 90,
+        key: 'totalTeachers',
+        label: 'Total Teachers',
+        value: '3',
+        numericValue: 3,
         trend: null,
-        subtext: "Today's records",
-        icon: 'fact_check',
+        subtext: 'Teaching staff',
+        icon: 'person',
         bgClass: '',
         iconClass: '',
       },
@@ -110,6 +121,16 @@ function overviewResponse(): TenantOverviewView {
     todaySessions: [
       { id: 'session-1', time: '09:00 AM', group: 'Physics', subject: 'Mechanics', teacher: 'Dr Ahmed', room: 'Lab 1', status: 'Scheduled' },
     ],
+    runningGroups: [
+      { id: 'session-1', group: 'Physics', subject: 'Mechanics', teacher: 'Dr Ahmed', room: 'Lab 1', time: '09:00 AM', endsAt: '10:00 AM' },
+    ],
+    rooms: {
+      occupiedRooms: 1,
+      freeRooms: 2,
+      freeHours: '35h',
+      freeHoursValue: 35,
+      operatingWindow: '08:00 AM - 08:00 PM',
+    },
     pendingPayments: [
       { invoiceId: 'invoice-1', student: 'Mona Ali', amount: '$500.00', amountValue: 500, currency: 'EGP', dueDate: 'Today' },
     ],

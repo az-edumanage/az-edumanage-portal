@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
-import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
 import { GroupDetails } from '../../models/tenant-group-details.models';
@@ -42,7 +42,8 @@ describe('TenantGroupSessionDetailsComponent', () => {
         email: 'ahmed@example.com',
         barcodeNumber: '30001',
         attendanceRate: 92,
-        lastAttendance: '2026-06-05 10:05',
+        lastAttendance: '2026-06-06 10:05',
+        attendanceTime: '2026-06-06T10:05:00',
         attendanceState: 'Present',
       },
       {
@@ -69,6 +70,8 @@ describe('TenantGroupSessionDetailsComponent', () => {
   const data = {
     loadGroupById: vi.fn(),
     loadGroupLessons: vi.fn(),
+    loadGroupExams: vi.fn(),
+    deleteGroupExam: vi.fn(),
     loadGroupLessonContent: vi.fn(),
     addGroupLesson: vi.fn(),
     deleteGroupLesson: vi.fn(),
@@ -82,6 +85,12 @@ describe('TenantGroupSessionDetailsComponent', () => {
     updateGroupSessionLibraryContentCompletion: vi.fn(),
     loadGroupSessionPublication: vi.fn(),
     publishGroupSession: vi.fn(),
+    loadSessionPostponeAvailability: vi.fn(),
+    postponeGroupSession: vi.fn(),
+    loadSessionTeacherAbsence: vi.fn(),
+    recordSessionTeacherAbsence: vi.fn(),
+    loadAvailableReplacementTeachers: vi.fn(),
+    replaceSessionTeacher: vi.fn(),
   };
   const attendanceData = {
     scanBarcode: vi.fn(),
@@ -137,6 +146,45 @@ describe('TenantGroupSessionDetailsComponent', () => {
         completed: false,
       },
     ]));
+    data.loadGroupExams.mockReset();
+    data.loadGroupExams.mockReturnValue(of([
+      {
+        id: 'assignment-1',
+        groupId: 'group-123',
+        examId: 'exam-1',
+        title: 'Forces Quiz',
+        status: 'PUBLISHED',
+        date: '2026-06-06',
+        startTime: '10:00',
+        duration: 45,
+        questionCount: 12,
+        instructions: 'Solve individually.',
+        updatedAt: '2026-06-01T00:00:00Z',
+        settings: {
+          showResultsImmediately: true,
+          allowRetakes: false,
+        },
+      },
+      {
+        id: 'assignment-2',
+        groupId: 'group-123',
+        examId: 'exam-2',
+        title: 'Previous Session Quiz',
+        status: 'PUBLISHED',
+        date: '2026-06-05',
+        startTime: '10:00',
+        duration: 30,
+        questionCount: 8,
+        instructions: null,
+        updatedAt: '2026-06-01T00:00:00Z',
+        settings: {
+          showResultsImmediately: false,
+          allowRetakes: true,
+        },
+      },
+    ]));
+    data.deleteGroupExam.mockReset();
+    data.deleteGroupExam.mockReturnValue(of(undefined));
     data.loadGroupLessonContent.mockReset();
     data.loadGroupLessonContent.mockReturnValue(of([
       {
@@ -331,6 +379,64 @@ describe('TenantGroupSessionDetailsComponent', () => {
         },
       ],
     }));
+    data.loadSessionPostponeAvailability.mockReset();
+    data.loadSessionPostponeAvailability.mockReturnValue(of({
+      date: '2026-06-06',
+      startTime: '10:00',
+      duration: 60,
+      teacherAvailable: true,
+      teacherMessage: null,
+      rooms: [
+        {
+          id: 'room-1',
+          name: 'Room B',
+          available: true,
+          unavailableReason: null,
+        },
+      ],
+    }));
+    data.postponeGroupSession.mockReset();
+    data.postponeGroupSession.mockReturnValue(of({
+      method: 'BOOK_APPOINTMENT',
+      originalSessionId: 'event-1',
+      newSessionId: 'group-123:2026-06-07:12:00',
+      message: 'Session postponed to the selected appointment.',
+      affectedSessions: [],
+    }));
+    data.loadSessionTeacherAbsence.mockReset();
+    data.loadSessionTeacherAbsence.mockReturnValue(of({
+      sessionId: 'event-1',
+      originalTeacherId: 'teacher-1',
+      originalTeacherName: 'Sarah Nabil',
+      absenceRecorded: false,
+      replacementTeacherId: null,
+      replacementTeacherName: null,
+      message: null,
+    }));
+    data.recordSessionTeacherAbsence.mockReset();
+    data.recordSessionTeacherAbsence.mockReturnValue(of({
+      sessionId: 'event-1',
+      originalTeacherId: 'teacher-1',
+      originalTeacherName: 'Sarah Nabil',
+      absenceRecorded: true,
+      replacementTeacherId: null,
+      replacementTeacherName: null,
+      message: 'Teacher marked absent for this session.',
+    }));
+    data.loadAvailableReplacementTeachers.mockReset();
+    data.loadAvailableReplacementTeachers.mockReturnValue(of([
+      { id: 'teacher-2', name: 'Mona Adel' },
+    ]));
+    data.replaceSessionTeacher.mockReset();
+    data.replaceSessionTeacher.mockReturnValue(of({
+      sessionId: 'event-1',
+      originalTeacherId: 'teacher-1',
+      originalTeacherName: 'Sarah Nabil',
+      absenceRecorded: true,
+      replacementTeacherId: 'teacher-2',
+      replacementTeacherName: 'Mona Adel',
+      message: 'Replacement teacher saved for this session.',
+    }));
     http.get.mockReset();
     http.get.mockReturnValue(of(new Blob(['pdf'], { type: 'application/pdf' })));
     attendanceData.scanBarcode.mockReset();
@@ -341,8 +447,8 @@ describe('TenantGroupSessionDetailsComponent', () => {
         studentId: request.studentId,
         attendanceState: request.attendanceState,
         source: 'Manual',
-        scanTime: '2026-06-11T05:07:00',
-        sessionDate: '2026-06-11',
+        scanTime: '2026-06-06T10:07:00',
+        sessionDate: '2026-06-06',
         message: 'Manual attendance saved',
       }),
     );
@@ -423,8 +529,11 @@ describe('TenantGroupSessionDetailsComponent', () => {
         {
           provide: ActivatedRoute,
           useValue: {
+            paramMap: of(convertToParamMap({ id: 'group-123', sessionId: 'event-1' })),
+            queryParamMap: of(convertToParamMap({})),
             snapshot: {
               paramMap: convertToParamMap({ id: 'group-123', sessionId: 'event-1' }),
+              data: {},
             },
           },
         },
@@ -450,8 +559,9 @@ describe('TenantGroupSessionDetailsComponent', () => {
     const text = fixture.nativeElement.textContent as string;
     const statCards = fixture.nativeElement.querySelectorAll('.tenant-group-session-stat-card');
 
-    expect(data.loadGroupById).toHaveBeenCalledWith('group-123');
-    expect(data.loadGroupLessons).toHaveBeenCalledWith('group-123', { sync: false, sessionId: 'event-1' });
+    expect(data.loadGroupById).toHaveBeenCalledWith('group-123', { sessionId: 'event-1', scope: 'tenant' });
+    expect(data.loadGroupLessons).toHaveBeenCalledWith('group-123', { sync: false, sessionId: 'event-1', scope: 'tenant' });
+    expect(data.loadGroupExams).toHaveBeenCalledWith('group-123', { scope: 'tenant' });
     expect(data.loadGroupSessionLibraryContent).toHaveBeenCalledWith('group-123', 'event-1');
     expect(data.loadGroupSessionPublication).toHaveBeenCalledWith('group-123', 'event-1');
     expect(text).toContain('Physics G12-A');
@@ -471,7 +581,7 @@ describe('TenantGroupSessionDetailsComponent', () => {
     expect(text).toContain('Status');
     expect(text).toContain('Quick Actions');
     expect(text).toContain('Attendance');
-    expect(text).toContain('Exam');
+    expect(text).toContain('Home Work');
     expect(text).toContain('Broadcast');
     expect(text).toContain('Calendar');
     expect(text).toContain('Report');
@@ -499,19 +609,95 @@ describe('TenantGroupSessionDetailsComponent', () => {
     const assessmentLink = fixture.nativeElement.querySelector('[aria-label="Student assessment"]') as HTMLAnchorElement;
     expect(assessmentLink).toBeTruthy();
     expect(assessmentLink.getAttribute('href')).toContain('/tenant/groups/group-123/sessions/event-1/students/student-1/assessment');
-    expect(text).toContain('Lessons');
-    expect(text).toContain('2 inserted lessons linked to this session');
-    expect(text).toContain('From library');
-    expect(text).toContain('Insert lesson');
-    expect(text).toContain('Showing 1-2 of 2 lessons');
-    expect(text).toContain('Page 1 of 1');
-    expect(text).toContain('Forces and Motion');
-    expect(text).toContain('Newton laws introduction');
-    expect(text).toContain('Acceleration Practice');
-    expect(text).toContain('No description');
-    expect(fixture.nativeElement.querySelector('[aria-label="Remove lesson"]')).toBeTruthy();
+
+    const quickExamLink = Array.from(fixture.nativeElement.querySelectorAll('a'))
+      .find((anchor) => (anchor as HTMLAnchorElement).textContent?.includes('Home Work')) as HTMLAnchorElement;
+    expect(quickExamLink.getAttribute('href')).toContain('/tenant/groups/group-123/exam');
+    expect(quickExamLink.getAttribute('href')).toContain('freshCreate=true');
+    expect(quickExamLink.getAttribute('href')).toContain('returnTab=exams');
+    expect(quickExamLink.getAttribute('href')).toContain('examDate=2026-06-06');
+    expect(quickExamLink.getAttribute('href')).toContain('examStartTime=10:00');
+
+    const tabButtons = Array.from(fixture.nativeElement.querySelectorAll('.tenant-group-session-tab')) as HTMLButtonElement[];
+    const examsTab = tabButtons.find((button) => button.textContent?.includes('Home Work')) as HTMLButtonElement;
+    examsTab.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const examsText = fixture.nativeElement.textContent as string;
+    expect(examsText).toContain('Home Work');
+    expect(examsText).toContain('1 assigned home work linked to this session');
+    expect(examsText).toContain('Forces Quiz');
+    expect(examsText).toContain('Solve individually.');
+    expect(examsText).toContain('10:00 AM start · 45 min');
+    expect(examsText).toContain('12 questions');
+    expect(examsText).toContain('Instant results');
+    expect(examsText).toContain('Showing 1-1 of 1 home work');
+    expect(examsText).not.toContain('Previous Session Quiz');
+    expect(fixture.nativeElement.querySelector('[aria-label="Edit Forces Quiz assignment"]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('[aria-label="Delete Forces Quiz from session"]')).toBeTruthy();
+
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const editExamButton = fixture.nativeElement.querySelector('[aria-label="Edit Forces Quiz assignment"]') as HTMLButtonElement;
+    editExamButton.click();
+    expect(navigate).toHaveBeenCalledWith(['/tenant/groups', 'group-123', 'exam'], {
+      queryParams: {
+        assignmentId: 'assignment-1',
+        returnTo: '/tenant/groups/group-123/sessions/event-1',
+        returnTab: 'exams',
+        examDate: '2026-06-06',
+        examStartTime: '10:00',
+      },
+    });
+
+    const deleteExamButton = fixture.nativeElement.querySelector('[aria-label="Delete Forces Quiz from session"]') as HTMLButtonElement;
+    deleteExamButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Delete exam');
+    const confirmDeleteButton = Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>)
+      .find((button) => button.textContent?.includes('Delete exam')) as HTMLButtonElement;
+    confirmDeleteButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(data.deleteGroupExam).toHaveBeenCalledWith('group-123', 'assignment-1');
+    expect(fixture.nativeElement.textContent).toContain('No home work is assigned to this session.');
+
+    const lessonsTab = tabButtons.find((button) => button.textContent?.includes('Lessons')) as HTMLButtonElement;
+    lessonsTab.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const lessonsText = fixture.nativeElement.textContent as string;
+    expect(lessonsText).toContain('Lessons');
+    expect(lessonsText).toContain('2 inserted lessons linked to this session');
+    expect(lessonsText).toContain('From library');
+    expect(lessonsText).toContain('Insert lesson');
+    expect(lessonsText).toContain('Showing 1-2 of 2 lessons');
+    expect(lessonsText).toContain('Page 1 of 1');
+    expect(lessonsText).toContain('Forces and Motion');
+    expect(lessonsText).toContain('Newton laws introduction');
+    expect(lessonsText).toContain('Acceleration Practice');
+    expect(lessonsText).toContain('No description');
+    expect(fixture.nativeElement.querySelector('[aria-label="Delete Forces and Motion from session"]')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('[aria-label="Mark lesson as complete"]')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('[aria-label="Choose from library"]')).toBeTruthy();
+
+    const deleteLessonButton = fixture.nativeElement.querySelector('[aria-label="Delete Acceleration Practice from session"]') as HTMLButtonElement;
+    deleteLessonButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(data.deleteGroupLesson).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Delete lesson');
+    expect(fixture.nativeElement.textContent).toContain('Delete Acceleration Practice from this session.');
+
+    const confirmDeleteLessonButton = Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>)
+      .find((button) => button.textContent?.includes('Delete lesson')) as HTMLButtonElement;
+    confirmDeleteLessonButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(data.deleteGroupLesson).toHaveBeenCalledWith('group-123', 'lesson-2');
+    expect(fixture.nativeElement.textContent).not.toContain('Acceleration Practice');
 
     const lessonToggle: HTMLButtonElement = fixture.nativeElement.querySelector('.tenant-group-session-row-toggler');
     expect(lessonToggle.getAttribute('aria-expanded')).toBe('false');
@@ -520,7 +706,7 @@ describe('TenantGroupSessionDetailsComponent', () => {
     fixture.detectChanges();
 
     const updatedText = fixture.nativeElement.textContent as string;
-    expect(data.loadGroupLessonContent).toHaveBeenCalledWith('group-123', 'lesson-1');
+    expect(data.loadGroupLessonContent).toHaveBeenCalledWith('group-123', 'lesson-1', { scope: 'tenant' });
     expect(lessonToggle.getAttribute('aria-expanded')).toBe('true');
     expect(updatedText).toContain('Lesson Material');
     expect(updatedText).toContain('Newton worksheet.pdf');
@@ -559,9 +745,37 @@ describe('TenantGroupSessionDetailsComponent', () => {
     fixture.detectChanges();
 
     const noteDrawerText = fixture.nativeElement.textContent as string;
-    expect(data.loadGroupLibraryNotes).toHaveBeenCalledWith('group-123', 'folder-1');
+    expect(data.loadGroupLibraryNotes).toHaveBeenCalledWith('group-123', 'folder-1', { scope: 'tenant' });
     expect(noteDrawerText).toContain('Class note');
     expect(noteDrawerText).toContain('Newton note content');
+  });
+
+  it('opens the session report as a PDF preview with a download link', async () => {
+    const reportButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .find((button) => (button as HTMLButtonElement).textContent?.includes('Report')) as HTMLButtonElement;
+    reportButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const drawer = fixture.nativeElement.querySelector('.tenant-group-session-preview-overlay') as HTMLElement;
+    const previewFrame = fixture.nativeElement.querySelector('.tenant-group-session-drawer-file-frame') as HTMLIFrameElement;
+    const downloadLink = Array.from(fixture.nativeElement.querySelectorAll('.tenant-group-session-preview-header a'))
+      .find((anchor) => (anchor as HTMLAnchorElement).textContent?.includes('Download PDF')) as HTMLAnchorElement;
+
+    expect(createObjectUrlSpy).toHaveBeenCalled();
+    expect(drawer).toBeTruthy();
+    expect(previewFrame).toBeTruthy();
+    expect(previewFrame.getAttribute('title')).toBe('Session report PDF');
+    expect(downloadLink).toBeTruthy();
+    expect(downloadLink.getAttribute('href')).toBe('blob:preview-pdf');
+    expect(downloadLink.getAttribute('download')).toBe('physics-g12-a-2026-06-06-1000-session-report.pdf');
+
+    const closeButton = fixture.nativeElement.querySelector('.tenant-group-session-preview-header button') as HTMLButtonElement;
+    closeButton.click();
+    fixture.detectChanges();
+
+    expect(revokeObjectUrlSpy).toHaveBeenCalledWith('blob:preview-pdf');
+    expect(fixture.nativeElement.querySelector('.tenant-group-session-preview-overlay')).toBeFalsy();
   });
 
   it('publishes the session media for the future student dashboard', async () => {
@@ -576,10 +790,194 @@ describe('TenantGroupSessionDetailsComponent', () => {
     expect(fixture.componentInstance.sessionPublication()?.published).toBe(true);
     expect(fixture.nativeElement.textContent).toContain('4 session media items published for students.');
   });
+  it('hides tenant-only quick actions for the teacher group session view', () => {
+    (fixture.componentInstance as unknown as { isTeacherGroupView: boolean }).isTeacherGroupView = true;
+    fixture.detectChanges();
+
+    const quickActions = fixture.nativeElement.querySelector('.tenant-group-session-quick-actions') as HTMLElement;
+    const text = quickActions.textContent ?? '';
+
+    expect(text).toContain('Quick Actions');
+    expect(text).toContain('Attendance');
+    expect(text).not.toContain('Postpone Session');
+    expect(text).not.toContain('Teacher Absence');
+  });
+
+
+  it('renders the postpone session quick action and opens the choice modal', async () => {
+    const postponeButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .find((button) => (button as HTMLButtonElement).textContent?.includes('Postpone Session')) as HTMLButtonElement;
+
+    expect(postponeButton).toBeTruthy();
+    postponeButton.click();
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Book an appointment');
+    expect(text).toContain('Replace schedule');
+    expect(text).toContain('Select another date, time, and available room');
+    expect(data.loadSessionPostponeAvailability).not.toHaveBeenCalled();
+  });
+
+  it('records teacher absence and opens the next action choices', async () => {
+    const absenceButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .find((button) => (button as HTMLButtonElement).textContent?.includes('Teacher Absence')) as HTMLButtonElement;
+
+    expect(absenceButton).toBeTruthy();
+    absenceButton.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Record the assigned teacher as absent');
+    expect(fixture.nativeElement.textContent).toContain('Sarah Nabil');
+
+    await fixture.componentInstance.saveTeacherAbsence();
+    fixture.detectChanges();
+
+    expect(data.recordSessionTeacherAbsence).toHaveBeenCalledWith('group-123', 'event-1', { reason: null });
+    expect(fixture.nativeElement.textContent).toContain('Choose next action');
+    expect(fixture.nativeElement.textContent).toContain('Choose Teacher');
+  });
+
+  it('saves a replacement teacher for the current session only', async () => {
+    fixture.componentInstance.teacherAbsenceOptionsOpen.set(true);
+    await fixture.componentInstance.openTeacherReplacement();
+    fixture.detectChanges();
+
+    expect(data.loadAvailableReplacementTeachers).toHaveBeenCalledWith('group-123', 'event-1');
+    expect(fixture.componentInstance.selectedReplacementTeacherId()).toBe('teacher-2');
+
+    await fixture.componentInstance.saveReplacementTeacher();
+    fixture.detectChanges();
+
+    expect(data.replaceSessionTeacher).toHaveBeenCalledWith('group-123', 'event-1', {
+      replacementTeacherId: 'teacher-2',
+      reason: null,
+    });
+    expect(fixture.componentInstance.sessionTeacherName()).toBe('Mona Adel');
+    expect(fixture.nativeElement.textContent).toContain('Replacement teacher saved for this session.');
+  });
+
+  it('closes the postpone choice modal without API calls', async () => {
+    fixture.componentInstance.openPostponeChoices();
+    fixture.detectChanges();
+
+    const closeButton = fixture.nativeElement.querySelector('[aria-label="Close postpone session"]') as HTMLButtonElement;
+    closeButton.click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.postponeChoiceOpen()).toBe(false);
+    expect(data.loadSessionPostponeAvailability).not.toHaveBeenCalled();
+    expect(data.postponeGroupSession).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).not.toContain('Choose how this session should be moved.');
+  });
+
+  it('loads appointment availability and submits the booking request', async () => {
+    fixture.componentInstance.openPostponeAppointment();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(data.loadSessionPostponeAvailability).toHaveBeenCalledWith('group-123', 'event-1', '2026-06-06', '10:00');
+    expect(fixture.nativeElement.textContent).toContain('Teacher is available for this slot.');
+    expect(fixture.nativeElement.textContent).toContain('1 available rooms');
+    expect(fixture.componentInstance.canConfirmPostponeAppointment()).toBe(true);
+
+    fixture.componentInstance.onPostponeAppointmentRoom('');
+    fixture.detectChanges();
+    expect(fixture.componentInstance.canConfirmPostponeAppointment()).toBe(false);
+
+    fixture.componentInstance.onPostponeAppointmentDate('2026-06-07');
+    fixture.componentInstance.onPostponeAppointmentTime('12:00');
+    fixture.componentInstance.onPostponeAppointmentRoom('room-1');
+    fixture.componentInstance.onPostponeReason('Teacher emergency');
+    await fixture.componentInstance.submitPostponeAppointment();
+    fixture.detectChanges();
+
+    expect(data.postponeGroupSession).toHaveBeenCalledWith('group-123', 'event-1', {
+      method: 'BOOK_APPOINTMENT',
+      date: '2026-06-07',
+      startTime: '12:00',
+      roomId: 'room-1',
+      reason: 'Teacher emergency',
+    });
+    expect(fixture.componentInstance.postponeSuccess()?.message).toBe('Session postponed to the selected appointment.');
+  });
+
+  it('omits unavailable rooms from the postpone room selector', async () => {
+    data.loadSessionPostponeAvailability.mockReturnValue(of({
+      date: '2026-06-06',
+      startTime: '10:00',
+      duration: 60,
+      teacherAvailable: true,
+      teacherMessage: null,
+      rooms: [
+        {
+          id: 'room-101',
+          name: 'Room 101',
+          available: false,
+          unavailableReason: 'This room cannot be selected; it is not available at this time.',
+        },
+        {
+          id: 'room-202',
+          name: 'Room 202',
+          available: true,
+          unavailableReason: null,
+        },
+      ],
+    }));
+
+    fixture.componentInstance.openPostponeAppointment();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const roomSelect = fixture.nativeElement.querySelector('.tenant-group-session-postpone-form select') as HTMLSelectElement;
+    const optionLabels = Array.from(roomSelect.options).map((option) => option.textContent?.trim());
+    expect(optionLabels).toContain('Room 202');
+    expect(optionLabels).not.toContain('Room 101');
+    expect(fixture.componentInstance.postponeAppointmentRoomId()).toBe('room-202');
+  });
+
+  it('opens replace schedule summary and submits the replace request', async () => {
+    data.postponeGroupSession.mockReturnValue(of({
+      method: 'REPLACE_SCHEDULE',
+      originalSessionId: 'event-1',
+      newSessionId: 'group-123:2026-06-13:10:00',
+      message: 'Schedule sequence replaced and one future session was appended.',
+      affectedSessions: [],
+    }));
+
+    fixture.componentInstance.openReplaceSchedule();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Remove current slot');
+    expect(fixture.nativeElement.textContent).toContain('Shift following sessions');
+    expect(fixture.nativeElement.textContent).toContain('Append one session');
+
+    fixture.componentInstance.onPostponeReason('Holiday');
+    await fixture.componentInstance.submitReplaceSchedule();
+    fixture.detectChanges();
+
+    expect(data.postponeGroupSession).toHaveBeenCalledWith('group-123', 'event-1', {
+      method: 'REPLACE_SCHEDULE',
+      reason: 'Holiday',
+    });
+    expect(fixture.componentInstance.postponeSuccess()?.message).toBe('Schedule sequence replaced and one future session was appended.');
+  });
 
   it('removes a lesson from the session lessons table', async () => {
+    fixture.componentInstance.setContentTab('lessons');
+    fixture.detectChanges();
+
     const removeButton: HTMLButtonElement = fixture.nativeElement.querySelector('.tenant-group-session-icon-action--danger');
     removeButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(data.deleteGroupLesson).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Delete lesson');
+    expect(fixture.nativeElement.textContent).toContain('Delete Forces and Motion from this session.');
+
+    const confirmDeleteLessonButton = Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>)
+      .find((button) => button.textContent?.includes('Delete lesson')) as HTMLButtonElement;
+    confirmDeleteLessonButton.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -591,6 +989,9 @@ describe('TenantGroupSessionDetailsComponent', () => {
   });
 
   it('marks a lesson complete and disables its delete action', async () => {
+    fixture.componentInstance.setContentTab('lessons');
+    fixture.detectChanges();
+
     const completeButton: HTMLButtonElement = fixture.nativeElement.querySelector('.tenant-group-session-icon-action--complete');
     completeButton.click();
     await fixture.whenStable();
@@ -604,6 +1005,9 @@ describe('TenantGroupSessionDetailsComponent', () => {
   });
 
   it('opens the from library modal, expands a folder, and selects multiple files and notes', async () => {
+    fixture.componentInstance.setContentTab('lessons');
+    fixture.detectChanges();
+
     const libraryButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
       .find((button) => (button as HTMLButtonElement).textContent?.includes('From library')) as HTMLButtonElement;
 
@@ -611,7 +1015,7 @@ describe('TenantGroupSessionDetailsComponent', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(data.loadGroupLibraryFolders).toHaveBeenCalledWith('group-123');
+    expect(data.loadGroupLibraryFolders).toHaveBeenCalledWith('group-123', { scope: 'tenant' });
     expect(fixture.nativeElement.textContent).toContain('Choose folder');
     expect(fixture.nativeElement.textContent).toContain('Session resources');
     expect(fixture.nativeElement.textContent).toContain('3 items');
@@ -622,8 +1026,8 @@ describe('TenantGroupSessionDetailsComponent', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(data.loadGroupLibraryFiles).toHaveBeenCalledWith('group-123', 'library-folder-1');
-    expect(data.loadGroupLibraryNotes).toHaveBeenCalledWith('group-123', 'library-folder-1');
+    expect(data.loadGroupLibraryFiles).toHaveBeenCalledWith('group-123', 'library-folder-1', { scope: 'tenant' });
+    expect(data.loadGroupLibraryNotes).toHaveBeenCalledWith('group-123', 'library-folder-1', { scope: 'tenant' });
     expect(fixture.componentInstance.selectedLibraryFolder()?.id).toBe('library-folder-1');
     expect(fixture.nativeElement.textContent).toContain('Session brief.pdf');
     expect(fixture.nativeElement.textContent).toContain('Session image.png');
@@ -681,7 +1085,7 @@ describe('TenantGroupSessionDetailsComponent', () => {
     expect(tableRows.some((row) => row.textContent?.includes('Session note') && row.textContent.includes('Library note'))).toBe(true);
     expect(fixture.nativeElement.querySelector('[aria-label="Preview library content"]')).toBeTruthy();
     const completeButton = fixture.nativeElement.querySelector('[aria-label="Mark library content as complete"]') as HTMLButtonElement;
-    const deleteButton = fixture.nativeElement.querySelector('[aria-label="Remove library content"]') as HTMLButtonElement;
+    const deleteButton = fixture.nativeElement.querySelector('[aria-label="Delete Session brief.pdf from session"]') as HTMLButtonElement;
     expect(completeButton).toBeTruthy();
     expect(deleteButton).toBeTruthy();
 
@@ -690,7 +1094,7 @@ describe('TenantGroupSessionDetailsComponent', () => {
     fixture.detectChanges();
 
     expect(data.updateGroupSessionLibraryContentCompletion).toHaveBeenCalledWith('group-123', 'session-library-library-file-1', true);
-    expect((fixture.nativeElement.querySelector('[aria-label="Remove library content"]') as HTMLButtonElement).disabled).toBe(true);
+    expect((fixture.nativeElement.querySelector('[aria-label="Delete Session brief.pdf from session"]') as HTMLButtonElement).disabled).toBe(true);
 
     await fixture.componentInstance.removeSessionLibraryContent(fixture.componentInstance.sessionLibraryContent()[1]);
     fixture.detectChanges();
@@ -728,19 +1132,39 @@ describe('TenantGroupSessionDetailsComponent', () => {
     fixture = TestBed.createComponent(TenantGroupSessionDetailsComponent);
     fixture.detectChanges();
     await fixture.whenStable();
+    fixture.componentInstance.setContentTab('lessons');
+    fixture.componentInstance.sessionLibraryContent.set([
+      {
+        id: 'session-library-note-1',
+        sessionId: 'event-1',
+        folderId: 'library-folder-1',
+        folderName: 'Session resources',
+        contentType: 'NOTE',
+        contentId: 'library-note-1',
+        title: 'Session note',
+        url: null,
+        fileContentType: null,
+        sizeBytes: null,
+        completed: false,
+      },
+    ]);
     fixture.detectChanges();
-
-    const previewButton = fixture.nativeElement.querySelector('[aria-label="Preview library content"]') as HTMLButtonElement;
-    previewButton.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(data.loadGroupLibraryNotes).toHaveBeenCalledWith('group-123', 'library-folder-1');
+    fixture.componentInstance.openSessionLibraryContentPreview(fixture.componentInstance.sessionLibraryContent()[0]);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(data.loadGroupLibraryNotes).toHaveBeenCalledWith('group-123', 'library-folder-1', { scope: 'tenant' });
     expect(fixture.componentInstance.previewError()).toBeNull();
     expect(fixture.nativeElement.textContent).toContain('Persisted note body');
   });
 
   it('inserts a selected curriculum lesson without auto syncing session lessons', async () => {
+    fixture.componentInstance.setContentTab('lessons');
+    fixture.detectChanges();
+
     const insertButton = Array.from(fixture.nativeElement.querySelectorAll('.tenant-group-session-insert-lesson-btn'))
       .find((button) => (button as HTMLButtonElement).textContent?.includes('Insert lesson')) as HTMLButtonElement;
 
@@ -769,6 +1193,9 @@ describe('TenantGroupSessionDetailsComponent', () => {
   });
 
   it('filters insert lesson modal options by search text and inserted status', async () => {
+    fixture.componentInstance.setContentTab('lessons');
+    fixture.detectChanges();
+
     const insertButton = Array.from(fixture.nativeElement.querySelectorAll('.tenant-group-session-insert-lesson-btn'))
       .find((button) => (button as HTMLButtonElement).textContent?.includes('Insert lesson')) as HTMLButtonElement;
 
@@ -812,7 +1239,7 @@ describe('TenantGroupSessionDetailsComponent', () => {
         message: 'Attendance recorded',
         student: { id: 'student-2', name: 'Sara Mohamed', barcodeNumber: '30002' },
         group: { id: 'group-123', name: 'Physics G12-A', startTime: '10:00', duration: 60 },
-        attendance: { state: 'Present', source: 'Auto', scanTime: '2026-06-11T05:05:00', sessionDate: '2026-06-11' },
+        attendance: { state: 'Present', source: 'Auto', scanTime: '2026-06-06T10:05:00', sessionDate: '2026-06-06' },
       }),
     );
 
@@ -825,7 +1252,7 @@ describe('TenantGroupSessionDetailsComponent', () => {
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent as string;
-    const rows = fixture.nativeElement.querySelectorAll('.tenant-group-session-table-card:first-child tbody tr');
+    const rows = fixture.nativeElement.querySelectorAll('.tenant-group-session-table-card tbody tr');
     const statCards = fixture.nativeElement.querySelectorAll('.tenant-group-session-stat-card');
     expect(attendanceData.scanBarcode).toHaveBeenCalledWith({ barcodeNumber: '30002', selectedGroupId: 'group-123' });
     expect(text).toContain('Attendance recorded');
@@ -833,8 +1260,8 @@ describe('TenantGroupSessionDetailsComponent', () => {
     expect(statCards[2].textContent).toMatch(/Present\s*2/);
     expect(rows[1].textContent).toContain('Sara Mohamed');
     expect(rows[1].textContent).toContain('Present');
-    expect(rows[1].textContent).toContain('05:05');
-    expect(rows[1].textContent).not.toContain('2026-06-11T05:05:00');
+    expect(rows[1].textContent).toContain('10:05');
+    expect(rows[1].textContent).not.toContain('2026-06-06T10:05:00');
     expect(rows[1].textContent).not.toContain('Absent');
   });
 
@@ -842,7 +1269,7 @@ describe('TenantGroupSessionDetailsComponent', () => {
     fixture.componentInstance.currentTime.set(new Date('2026-06-06T10:15:00'));
     fixture.detectChanges();
 
-    const rows = fixture.nativeElement.querySelectorAll('.tenant-group-session-table-card:first-child tbody tr');
+    const rows = fixture.nativeElement.querySelectorAll('.tenant-group-session-table-card tbody tr');
     const saraStatusButton = Array.from(rows[1].querySelectorAll('button')).find((button) =>
       (button as HTMLButtonElement).textContent?.includes('Absent'),
     ) as HTMLButtonElement;
@@ -851,7 +1278,7 @@ describe('TenantGroupSessionDetailsComponent', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const updatedRows = fixture.nativeElement.querySelectorAll('.tenant-group-session-table-card:first-child tbody tr');
+    const updatedRows = fixture.nativeElement.querySelectorAll('.tenant-group-session-table-card tbody tr');
     expect(attendanceData.saveManualAttendance).toHaveBeenCalledWith({
       groupId: 'group-123',
       studentId: 'student-2',
@@ -860,15 +1287,145 @@ describe('TenantGroupSessionDetailsComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Manual attendance saved');
     expect(updatedRows[1].textContent).toContain('Sara Mohamed');
     expect(updatedRows[1].textContent).toContain('Present');
-    expect(updatedRows[1].textContent).toContain('05:07');
+    expect(updatedRows[1].textContent).toContain('10:07');
     expect(updatedRows[1].textContent).not.toContain('Absent');
+  });
+
+  it('does not show published session media for an upcoming selected session', async () => {
+    fixture.componentInstance.currentTime.set(new Date('2026-07-03T02:00:00'));
+    fixture.componentInstance.group.set({
+      ...group,
+      calendarEvents: [
+        {
+          id: 'event-1',
+          date: '2026-07-05',
+          day: 'Sunday',
+          startTime: '14:00',
+          endTime: '15:30',
+          room: 'Room 101',
+        },
+      ],
+    });
+    data.loadGroupSessionPublication.mockReturnValueOnce(of({
+      id: 'publication-future',
+      groupId: 'group-123',
+      sessionId: 'event-1',
+      published: true,
+      publishedAt: '2026-07-01T00:00:00Z',
+      mediaCount: 1,
+      media: [],
+    }));
+
+    await (fixture.componentInstance as unknown as { loadSessionPublication: () => Promise<void> }).loadSessionPublication();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.sessionPublication()?.published).toBe(false);
+    expect(fixture.componentInstance.sessionPublication()?.mediaCount).toBe(0);
+    expect(fixture.nativeElement.textContent).not.toContain('published for students');
+    expect(fixture.componentInstance.canPublishSelectedSession()).toBe(false);
+  });
+
+  it('shows every student absent for an upcoming selected session even when stale attendance is present', () => {
+    fixture.componentInstance.currentTime.set(new Date('2026-07-03T02:00:00'));
+    fixture.componentInstance.group.set({
+      ...group,
+      calendarEvents: [
+        {
+          id: 'event-1',
+          date: '2026-07-09',
+          day: 'Thursday',
+          startTime: '14:00',
+          endTime: '15:30',
+          room: 'Room 101',
+        },
+      ],
+      students: group.students?.map((student) => ({
+        ...student,
+        attendanceState: student.id === 'student-1' ? 'Present' : student.attendanceState,
+      })),
+    });
+    fixture.detectChanges();
+
+    const statCards = fixture.nativeElement.querySelectorAll('.tenant-group-session-stat-card');
+    const rows = fixture.nativeElement.querySelectorAll('.tenant-group-session-table-card tbody tr');
+
+    expect(statCards[1].textContent).toMatch(/Absent\s*2/);
+    expect(statCards[2].textContent).toMatch(/Present\s*0/);
+    expect(rows[0].textContent).toContain('Ahmed Ali');
+    expect(rows[0].textContent).toContain('Absent');
+    expect(rows[0].textContent).not.toContain('Present');
+  });
+
+  it('shows a started selected session student absent when attendance was recorded before the session start', () => {
+    fixture.componentInstance.currentTime.set(new Date('2026-07-03T03:25:00'));
+    fixture.componentInstance.group.set({
+      ...group,
+      calendarEvents: [
+        {
+          id: 'event-1',
+          date: '2026-07-03',
+          day: 'Friday',
+          startTime: '03:22',
+          endTime: '04:22',
+          room: 'Room 101',
+        },
+      ],
+      students: group.students?.map((student) =>
+        student.id === 'student-1'
+          ? {
+              ...student,
+              attendanceState: 'Present',
+              attendanceTime: '2026-07-03T02:00:00',
+              lastAttendance: '2026-07-03T02:00:00',
+            }
+          : student,
+      ),
+    });
+    fixture.detectChanges();
+
+    const statCards = fixture.nativeElement.querySelectorAll('.tenant-group-session-stat-card');
+    const rows = fixture.nativeElement.querySelectorAll('.tenant-group-session-table-card tbody tr');
+
+    expect(statCards[1].textContent).toMatch(/Absent\s*2/);
+    expect(statCards[2].textContent).toMatch(/Present\s*0/);
+    expect(rows[0].textContent).toContain('Ahmed Ali');
+    expect(rows[0].textContent).toContain('Absent');
+    expect(rows[0].textContent).not.toContain('Present');
+  });
+
+  it('shows the status watch as a countdown before and during the selected session', () => {
+    fixture.componentInstance.group.set({
+      ...group,
+      calendarEvents: [
+        {
+          id: 'event-1',
+          date: '2026-07-05',
+          day: 'Sunday',
+          startTime: '14:00',
+          endTime: '15:30',
+          room: 'Room 101',
+        },
+      ],
+    });
+
+    const selectedSession = fixture.componentInstance.session();
+    expect(selectedSession).toBeTruthy();
+
+    fixture.componentInstance.currentTime.set(new Date('2026-07-05T13:59:50'));
+    expect(fixture.componentInstance.sessionStopwatchLabel(selectedSession as NonNullable<typeof selectedSession>)).toBe('00:00:10');
+
+    fixture.componentInstance.currentTime.set(new Date('2026-07-05T14:45:00'));
+    expect(fixture.componentInstance.sessionStopwatchLabel(selectedSession as NonNullable<typeof selectedSession>)).toBe('00:45:00');
+
+    fixture.componentInstance.currentTime.set(new Date('2026-07-05T15:30:01'));
+    expect(fixture.componentInstance.sessionStopwatchLabel(selectedSession as NonNullable<typeof selectedSession>)).toBe('00:00:00');
   });
 
   it('does not change student status when the selected session is not running', async () => {
     fixture.componentInstance.currentTime.set(new Date('2026-06-06T09:15:00'));
     fixture.detectChanges();
 
-    const rows = fixture.nativeElement.querySelectorAll('.tenant-group-session-table-card:first-child tbody tr');
+    const rows = fixture.nativeElement.querySelectorAll('.tenant-group-session-table-card tbody tr');
     const saraStatusButton = Array.from(rows[1].querySelectorAll('button')).find((button) =>
       (button as HTMLButtonElement).textContent?.includes('Absent'),
     ) as HTMLButtonElement;
@@ -892,7 +1449,8 @@ describe('TenantGroupSessionDetailsComponent', () => {
               ...student,
               attendanceState: 'Present',
               attendanceSource: 'Auto',
-              lastAttendance: '2026-06-12T02:07:00',
+              attendanceTime: '2026-06-06T10:07:00',
+              lastAttendance: '2026-06-06T10:07:00',
             }
           : student,
       ),
@@ -912,11 +1470,11 @@ describe('TenantGroupSessionDetailsComponent', () => {
     await (fixture.componentInstance as unknown as { refreshGroup: () => Promise<void> }).refreshGroup();
     fixture.detectChanges();
 
-    const rows = fixture.nativeElement.querySelectorAll('.tenant-group-session-table-card:first-child tbody tr');
+    const rows = fixture.nativeElement.querySelectorAll('.tenant-group-session-table-card tbody tr');
     expect(data.loadGroupById).toHaveBeenCalledTimes(2);
     expect(rows[1].textContent).toContain('Sara Mohamed');
     expect(rows[1].textContent).toContain('Present');
-    expect(rows[1].textContent).toContain('02:07');
+    expect(rows[1].textContent).toContain('10:07');
     expect(rows[1].textContent).not.toContain('Absent');
   });
 });

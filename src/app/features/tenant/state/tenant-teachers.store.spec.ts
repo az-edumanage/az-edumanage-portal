@@ -66,6 +66,52 @@ describe('TenantTeachersStore', () => {
     store.removeTeacher('teacher-1');
     expect(store.teachers().map((item) => item.id)).toEqual(['teacher-2']);
   });
+
+  it('filters teachers by in group now status card ids', () => {
+    store.setTeachers([
+      teacherFixture('teacher-1', 'Dr. Ahmed Zewail'),
+      teacherFixture('teacher-2', 'Mona Helmy'),
+      teacherFixture('teacher-3', 'Nadia Ali'),
+    ]);
+    store.setStatusSummary({
+      totalTeachers: 3,
+      inGroupNow: 2,
+      absenceTeachers: 0,
+      inGroupNowTeacherIds: ['teacher-1', 'teacher-1', 'teacher-3'],
+      absenceTeacherIds: [],
+      today: '2026-06-29',
+      asOf: '2026-06-29T13:30:00+03:00',
+      unavailableReason: null,
+    });
+
+    store.setTeacherStatusFilter('inGroupNow');
+
+    expect(store.filteredTeachers().map((teacher) => teacher.id)).toEqual(['teacher-1', 'teacher-3']);
+  });
+
+  it('filters teachers by absence status card ids and exposes empty copy', () => {
+    store.setTeachers([
+      teacherFixture('teacher-1', 'Dr. Ahmed Zewail'),
+      teacherFixture('teacher-2', 'Mona Helmy'),
+    ]);
+    store.setStatusSummary({
+      totalTeachers: 2,
+      inGroupNow: 0,
+      absenceTeachers: 1,
+      inGroupNowTeacherIds: [],
+      absenceTeacherIds: ['teacher-2'],
+      today: '2026-06-29',
+      asOf: '2026-06-29T13:30:00+03:00',
+      unavailableReason: null,
+    });
+
+    store.setTeacherStatusFilter('absence');
+    expect(store.filteredTeachers().map((teacher) => teacher.id)).toEqual(['teacher-2']);
+
+    store.searchQuery.set('not found');
+    expect(store.filteredTeachers()).toEqual([]);
+    expect(store.activeStatusEmptyMessage()).toContain('absent teachers');
+  });
 });
 
 function teacherFixture(id: string, name: string) {

@@ -9,7 +9,7 @@ export class TenantSubjectDetailsFacade {
   readonly loading = this.store.loading;
   readonly loadError = this.store.loadError;
 
-  loadSubject(id: string | null): Promise<void> {
-    return this.store.loadSubject(id);
+  loadSubject(id: string | null, educationCategory?: string | null): Promise<void> {
+    return this.store.loadSubject(id, educationCategory);
   }
 }

@@ -552,6 +552,14 @@ export class TenantSubjectCurriculumComponent implements OnInit {
   }
 
   private subjectsRootLink(): string {
+    if (this.router.url.startsWith('/teacher/exams/basic-education') || this.router.url.startsWith('/tenant/exams/basic-education')) {
+      const stageId = this.route.snapshot?.paramMap.get('stageId') ?? this.subject()?.stageId ?? '';
+      const gradeId = this.route.snapshot?.paramMap.get('gradeId') ?? this.subject()?.gradeId ?? '';
+      if (stageId && gradeId) {
+        const root = this.router.url.startsWith('/teacher/exams') ? '/teacher/exams/basic-education' : '/tenant/exams/basic-education';
+        return `${root}/${stageId}/grades/${gradeId}/create/new/subjects`;
+      }
+    }
     return this.router.url.startsWith('/tenant/university-subjects') ? '/tenant/university-subjects' : '/tenant/subjects';
   }
 

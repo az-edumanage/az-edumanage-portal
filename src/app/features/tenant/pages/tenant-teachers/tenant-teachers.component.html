@@ -35,6 +35,84 @@
         </div>
       </div>
 
+      <section class="tenant-teachers-status-grid" aria-label="Teacher status summary">
+        <button
+          type="button"
+          class="tenant-teachers-status-card"
+          [class.tenant-teachers-status-card--active]="teacherStatusFilter() === 'all'"
+          [attr.aria-pressed]="teacherStatusFilter() === 'all'"
+          aria-label="Show all teachers"
+          (click)="selectAllTeachers()"
+        >
+          <span class="tenant-teachers-status-icon tenant-teachers-status-icon--total">
+            <mat-icon>groups</mat-icon>
+          </span>
+          <span class="tenant-teachers-status-meta">
+            <span class="tenant-teachers-status-label">Total Teachers</span>
+            <span class="tenant-teachers-status-value">
+              @if (isStatusSummaryLoading()) {
+                ...
+              } @else {
+                {{ statusSummary().totalTeachers }}
+              }
+            </span>
+          </span>
+        </button>
+
+        <button
+          type="button"
+          class="tenant-teachers-status-card"
+          [class.tenant-teachers-status-card--active]="teacherStatusFilter() === 'inGroupNow'"
+          [attr.aria-pressed]="teacherStatusFilter() === 'inGroupNow'"
+          aria-label="Show teachers in running groups now"
+          (click)="selectTeachersInGroupNow()"
+        >
+          <span class="tenant-teachers-status-icon tenant-teachers-status-icon--running">
+            <mat-icon>play_circle</mat-icon>
+          </span>
+          <span class="tenant-teachers-status-meta">
+            <span class="tenant-teachers-status-label">In Group Now</span>
+            <span class="tenant-teachers-status-value">
+              @if (isStatusSummaryLoading()) {
+                ...
+              } @else {
+                {{ statusSummary().inGroupNow }}
+              }
+            </span>
+          </span>
+        </button>
+
+        <button
+          type="button"
+          class="tenant-teachers-status-card"
+          [class.tenant-teachers-status-card--active]="teacherStatusFilter() === 'absence'"
+          [attr.aria-pressed]="teacherStatusFilter() === 'absence'"
+          aria-label="Show absent teachers"
+          (click)="selectAbsentTeachers()"
+        >
+          <span class="tenant-teachers-status-icon tenant-teachers-status-icon--absence">
+            <mat-icon>person_off</mat-icon>
+          </span>
+          <span class="tenant-teachers-status-meta">
+            <span class="tenant-teachers-status-label">Absence Teachers</span>
+            <span class="tenant-teachers-status-value">
+              @if (isStatusSummaryLoading()) {
+                ...
+              } @else {
+                {{ statusSummary().absenceTeachers }}
+              }
+            </span>
+          </span>
+        </button>
+      </section>
+
+      @if (statusSummaryError()) {
+        <div class="tenant-teachers-status-warning">
+          <mat-icon class="text-sm">info</mat-icon>
+          {{ statusSummaryError() }}
+        </div>
+      }
+
       <!-- Search & Filter Bar -->
       <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div class="flex flex-col md:flex-row gap-4 items-center">
@@ -130,7 +208,7 @@
               }
             </div>
 
-            @if (activeFiltersCount() > 0 || searchQuery()) {
+            @if (activeFiltersCount() > 0 || searchQuery() || hasStatusFilter()) {
               <button 
                 (click)="clearAllFilters()"
                 class="flex items-center gap-1.5 px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl text-xs font-bold transition-all whitespace-nowrap"
@@ -355,7 +433,7 @@
             <mat-icon class="text-slate-500">search_off</mat-icon>
           </div>
           <h3 class="tenant-teachers-empty-title">No teachers found</h3>
-          <p class="tenant-teachers-empty-text">We couldn't find any teachers matching your current search and filter criteria.</p>
+          <p class="tenant-teachers-empty-text">{{ activeStatusEmptyMessage() }}</p>
           <button (click)="clearAllFilters()" class="tenant-teachers-empty-btn">
             Clear All Filters
           </button>

@@ -6,6 +6,26 @@
     </div>
   </header>
 
+  <section class="billing-summary-grid" aria-label="Invoice summary">
+    @for (card of billingCards; track card.category) {
+      <button
+        type="button"
+        class="summary-card"
+        [class.summary-card-active]="categoryFilter() === card.category"
+        [attr.aria-pressed]="categoryFilter() === card.category"
+        (click)="setCategoryFilter(card.category)"
+      >
+        <span class="summary-icon">
+          <mat-icon>{{ card.icon }}</mat-icon>
+        </span>
+        <span>
+          <strong>{{ summaryValue(card.key) }}</strong>
+          <small>{{ card.label }}</small>
+        </span>
+      </button>
+    }
+  </section>
+
   <section class="billing-toolbar" aria-label="Invoice filters">
     <div class="search-field">
       <mat-icon>search</mat-icon>
@@ -18,8 +38,7 @@
     </div>
 
     <label class="status-filter">
-      <span>Status</span>
-      <select [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)">
+      <select aria-label="Status" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)">
         <option value="">All</option>
         <option value="unpaid">Unpaid</option>
         <option value="paid">Paid</option>
@@ -57,7 +76,13 @@
             </tr>
           } @else if (!hasInvoices()) {
             <tr>
-              <td colspan="8" class="state-cell">No enrollment invoices yet.</td>
+              <td colspan="8" class="state-cell">
+                @if (searchQuery() || statusFilter() || categoryFilter() !== 'all') {
+                  No invoices match the current filters.
+                } @else {
+                  No enrollment invoices yet.
+                }
+              </td>
             </tr>
           } @else {
             @for (invoice of invoices(); track invoice.id) {

@@ -94,11 +94,12 @@ export class DashboardService {
     }
 
     const backUrl = safeRedirect(this.returnUrl());
-    if (backUrl) {
+    if (role && backUrl && backUrl !== '/' && backUrl.startsWith(`/${role}/`)) {
       const navigation = this.router.navigateByUrl(backUrl);
       this.returnUrl.set(null);
       return navigation;
     }
+    this.returnUrl.set(null);
 
     return this.router.navigate([`/${role}/overview`]);
   }

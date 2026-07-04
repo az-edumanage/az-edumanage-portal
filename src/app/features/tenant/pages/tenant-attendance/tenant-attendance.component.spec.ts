@@ -162,6 +162,7 @@ describe('TenantAttendanceComponent', () => {
 
   beforeEach(async () => {
     resetMockAttendanceStudents();
+    localStorage.removeItem('tenant-group:physics-g11-c:display-payment-status');
     scheduleDataService = { loadSessions: vi.fn() };
     groupAttendanceDataService = {
       getStudentsByGroupId: vi.fn((groupId: string | null) =>
@@ -196,6 +197,14 @@ describe('TenantAttendanceComponent', () => {
           scanTime: '2026-06-04T23:15:00+03:00',
           sessionDate: '2026-06-04',
           message: 'Manual attendance saved',
+          paymentStatus: {
+            hasUnpaidSubscriptionInvoice: false,
+            invoiceId: null,
+            invoiceRef: null,
+            amount: null,
+            currency: null,
+            dueDate: null,
+          },
         });
       }),
     };
@@ -269,6 +278,65 @@ describe('TenantAttendanceComponent', () => {
     expect(progressFill.style.width).toBe('25%');
   });
 
+  it('keeps a manually marked present student absent until continuing attendance from the unpaid invoice dialog', () => {
+    createComponent();
+    clickTimeSlot('11:00 PM');
+    groupAttendanceDataService.saveManualAttendance.mockReturnValue(
+      of({
+        groupId: 'physics-g11-c',
+        studentId: 'physics-g11-c-1',
+        attendanceState: 'Present',
+        source: 'Manual',
+        scanTime: '2026-06-04T23:15:00+03:00',
+        sessionDate: '2026-06-04',
+        message: 'Manual attendance saved for Physics G11-C',
+        paymentStatus: {
+          hasUnpaidSubscriptionInvoice: true,
+          invoiceId: 'invoice-1',
+          invoiceRef: 'INV-001',
+          amount: 500,
+          currency: 'EGP',
+          dueDate: '2026-06-10',
+        },
+      }),
+    );
+
+    const rowsBeforeClick = Array.from(fixture.nativeElement.querySelectorAll('tbody tr')) as HTMLTableRowElement[];
+    const scannedRowBeforeClick = rowsBeforeClick.find((row) => row.textContent?.includes('Omar Hassan'));
+    const presentButton: HTMLButtonElement | null = scannedRowBeforeClick?.querySelector('.present-button') ?? null;
+
+    presentButton?.click();
+    fixture.detectChanges();
+
+    const dialog: HTMLElement | null = fixture.nativeElement.querySelector('.attendance-payment-dialog');
+    const rowsBeforeContinue = Array.from(fixture.nativeElement.querySelectorAll('tbody tr')) as HTMLTableRowElement[];
+    const scannedRowBeforeContinue = rowsBeforeContinue.find((row) => row.textContent?.includes('Omar Hassan'));
+
+    expect(groupAttendanceDataService.saveManualAttendance).toHaveBeenCalledWith({
+      groupId: 'physics-g11-c',
+      studentId: 'physics-g11-c-1',
+      attendanceState: 'Present',
+    });
+    expect(dialog).toBeTruthy();
+    expect(dialog?.textContent).toContain('Omar Hassan');
+    expect(dialog?.textContent).toContain('Physics G11-C');
+    expect(dialog?.textContent).toContain('INV-001');
+    expect(scannedRowBeforeContinue?.classList).not.toContain('student-row-present');
+    expect(scannedRowBeforeContinue?.querySelector('.absent-pill')?.textContent).toContain('Absent');
+
+    const continueButton = Array.from(dialog!.querySelectorAll('button')).find((button) => button.textContent?.includes('Continue attendance'));
+    continueButton?.click();
+    fixture.detectChanges();
+
+    const rowsAfterContinue = Array.from(fixture.nativeElement.querySelectorAll('tbody tr')) as HTMLTableRowElement[];
+    const scannedRowAfterContinue = rowsAfterContinue.find((row) => row.textContent?.includes('Omar Hassan'));
+
+    expect(fixture.nativeElement.querySelector('.attendance-payment-dialog')).toBeNull();
+    expect(scannedRowAfterContinue?.classList).toContain('student-row-present');
+    expect(scannedRowAfterContinue?.querySelector('.present-pill')?.textContent).toContain('Present');
+    expect(scannedRowAfterContinue?.textContent).toContain('11:15 PM');
+  });
+
   it('submits barcode input and updates the matching student row after a saved scan response', () => {
     createComponent();
     clickTimeSlot('11:00 PM');
@@ -307,6 +375,94 @@ describe('TenantAttendanceComponent', () => {
     expect(scannedRow?.textContent).toContain('11:15 PM');
     expect(fixture.nativeElement.textContent).toContain('Omar Hassan present Physics G11-C');
     expect(input.value).toBe('');
+  });
+
+  it('keeps the scanned student absent until continuing attendance from the unpaid invoice dialog', () => {
+    createComponent();
+    clickTimeSlot('11:00 PM');
+    groupAttendanceDataService.scanBarcode.mockReturnValue(
+      of({
+        result: 'PRESENT_RECORDED',
+        message: 'Omar Hassan present Physics G11-C',
+        student: { id: 'physics-g11-c-1', name: 'Omar Hassan', barcodeNumber: '30001' },
+        group: { id: 'physics-g11-c', name: 'Physics G11-C', startTime: '23:00', duration: 60 },
+        attendance: { state: 'Present', source: 'Auto', scanTime: '2026-06-04T23:15:00+03:00', sessionDate: '2026-06-04' },
+        paymentStatus: {
+          hasUnpaidSubscriptionInvoice: true,
+          invoiceId: 'invoice-1',
+          invoiceRef: 'INV-001',
+          amount: 500,
+          currency: 'EGP',
+          dueDate: '2026-06-10',
+        },
+      }),
+    );
+    groupAttendanceDataService.loadStudentsByGroupId.mockReturnValue(
+      of([
+        {
+          ...mockAttendanceStudentsByGroupId.get('physics-g11-c')![0],
+          barcode: '30001',
+          isPresent: true,
+          attendanceState: 'Present',
+          attendanceTime: '2026-06-04T23:15:00+03:00',
+          manualStatus: 'Auto',
+        },
+        mockAttendanceStudentsByGroupId.get('physics-g11-c')![1],
+      ]),
+    );
+
+    submitBarcode('30001');
+
+    const dialog: HTMLElement | null = fixture.nativeElement.querySelector('.attendance-payment-dialog');
+    const rowsBeforeContinue = Array.from(fixture.nativeElement.querySelectorAll('tbody tr')) as HTMLTableRowElement[];
+    const scannedRowBeforeContinue = rowsBeforeContinue.find((row) => row.textContent?.includes('Omar Hassan'));
+
+    expect(dialog).toBeTruthy();
+    expect(dialog?.textContent).toContain('Student has an unpaid subscription invoice');
+    expect(dialog?.textContent).toContain('Omar Hassan');
+    expect(dialog?.textContent).toContain('Physics G11-C');
+    expect(dialog?.textContent).toContain('INV-001');
+    expect(dialog?.textContent).toContain('EGP');
+    expect(scannedRowBeforeContinue?.classList).not.toContain('student-row-present');
+    expect(scannedRowBeforeContinue?.querySelector('.absent-pill')?.textContent).toContain('Absent');
+
+    const continueButton = Array.from(dialog!.querySelectorAll('button')).find((button) => button.textContent?.includes('Continue attendance'));
+    continueButton?.click();
+    fixture.detectChanges();
+
+    const rowsAfterContinue = Array.from(fixture.nativeElement.querySelectorAll('tbody tr')) as HTMLTableRowElement[];
+    const scannedRowAfterContinue = rowsAfterContinue.find((row) => row.textContent?.includes('Omar Hassan'));
+
+    expect(fixture.nativeElement.querySelector('.attendance-payment-dialog')).toBeNull();
+    expect(scannedRowAfterContinue?.classList).toContain('student-row-present');
+    expect(scannedRowAfterContinue?.querySelector('.present-pill')?.textContent).toContain('Present');
+    expect(scannedRowAfterContinue?.textContent).toContain('11:15 PM');
+  });
+
+  it('does not show unpaid invoice dialog when group payment status display is disabled', () => {
+    createComponent();
+    clickTimeSlot('11:00 PM');
+    groupAttendanceDataService.scanBarcode.mockReturnValue(
+      of({
+        result: 'PRESENT_RECORDED',
+        message: 'Omar Hassan present Physics G11-C',
+        student: { id: 'physics-g11-c-1', name: 'Omar Hassan', barcodeNumber: '30001' },
+        group: { id: 'physics-g11-c', name: 'Physics G11-C', startTime: '23:00', duration: 60 },
+        attendance: { state: 'Present', source: 'Auto', scanTime: '2026-06-04T23:15:00+03:00', sessionDate: '2026-06-04' },
+        paymentStatus: {
+          hasUnpaidSubscriptionInvoice: true,
+          invoiceId: 'invoice-1',
+          invoiceRef: 'INV-001',
+          amount: 500,
+          currency: 'EGP',
+          dueDate: '2026-06-10',
+        },
+      }),
+    );
+
+    submitBarcode('30001');
+
+    expect(fixture.nativeElement.querySelector('.attendance-payment-dialog')).toBeNull();
   });
 
   it('syncs an already-present barcode response into a present row', () => {

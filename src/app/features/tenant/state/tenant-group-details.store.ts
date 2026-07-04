@@ -3,6 +3,8 @@ import { take } from 'rxjs';
 import { TenantGroupDetailsDataService } from '../data-access/tenant-group-details-data.service';
 import { GroupDetails, GroupStudent } from '../models/tenant-group-details.models';
 
+export type TenantGroupDetailsScope = 'tenant' | 'teacher';
+
 @Injectable({ providedIn: 'root' })
 export class TenantGroupDetailsStore {
   private readonly data = inject(TenantGroupDetailsDataService);
@@ -30,14 +32,14 @@ export class TenantGroupDetailsStore {
     return `${Math.round((group.enrolled / group.capacity) * 100)}%`;
   });
 
-  loadGroup(id: string | null): void {
+  loadGroup(id: string | null, scope: TenantGroupDetailsScope = 'tenant'): void {
     this.isLoading.set(true);
     this.error.set(null);
     this.exitStudentError.set(null);
     this.group.set(null);
     this.students.set([]);
     this.selectedStudent.set(null);
-    this.data.loadGroupById(id).pipe(take(1)).subscribe({
+    this.data.loadGroupById(id, { scope }).pipe(take(1)).subscribe({
       next: (group) => {
         this.group.set(group);
         this.students.set(group.students ?? []);

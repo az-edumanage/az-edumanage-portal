@@ -2,15 +2,15 @@ import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http'
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { TenantOverviewRange, TenantOverviewView } from '../models/tenant-overview.models';
+import { TenantOverviewRange, TenantOverviewView, TenantRevenueTrendRange } from '../models/tenant-overview.models';
 
 @Injectable({ providedIn: 'root' })
 export class TenantOverviewDataService {
   private readonly http = inject(HttpClient);
   private readonly overviewUrl = `${environment.apiBaseUrl}/tenant/overview`;
 
-  loadOverview(range: TenantOverviewRange = 'today'): Observable<TenantOverviewView> {
-    const params = new HttpParams().set('range', range);
+  loadOverview(range: TenantOverviewRange = 'today', revenueTrendRange: TenantRevenueTrendRange = 'month'): Observable<TenantOverviewView> {
+    const params = new HttpParams().set('range', range).set('revenueRange', revenueTrendRange);
     return this.http
       .get<TenantOverviewView>(this.overviewUrl, { params })
       .pipe(catchError((error: HttpErrorResponse) => this.handleError(error)));

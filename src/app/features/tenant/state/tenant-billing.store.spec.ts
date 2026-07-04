@@ -12,7 +12,7 @@ describe('TenantBillingStore', () => {
 
   beforeEach(() => {
     dataService = {
-      listTenantStudentInvoices: vi.fn(() => of({ items: [], page: 0, size: 25, totalItems: 0 })),
+      listTenantStudentInvoices: vi.fn(() => of({ items: [], page: 0, size: 25, totalItems: 0, summary: emptySummary() })),
       markTenantStudentInvoicePaid: vi.fn(() => of(invoice({ status: 'paid' }))),
     };
 
@@ -28,6 +28,7 @@ describe('TenantBillingStore', () => {
       page: 0,
       size: 25,
       totalItems: 1,
+      summary: summary(),
     }));
 
     store.loadInvoices();
@@ -35,7 +36,22 @@ describe('TenantBillingStore', () => {
     expect(store.invoices().length).toBe(1);
     expect(store.hasInvoices()).toBe(true);
     expect(store.totalItems()).toBe(1);
+    expect(store.summary().overdueInvoices).toBe(1);
     expect(store.errorMessage()).toBeNull();
+  });
+
+  it('selects a category filter, resets pagination, and reloads rows', () => {
+    store.setPageSize(10);
+    dataService.listTenantStudentInvoices.mockClear();
+
+    store.setCategoryFilter('overdue');
+
+    expect(store.categoryFilter()).toBe('overdue');
+    expect(store.pageIndex()).toBe(0);
+    expect(dataService.listTenantStudentInvoices).toHaveBeenCalledWith(expect.objectContaining({
+      category: 'overdue',
+      page: 0,
+    }));
   });
 
   it('shows empty state when no invoices are returned', () => {
@@ -83,5 +99,23 @@ function invoice(overrides = {}) {
     createdAt: '2026-06-01T08:00:00Z',
     updatedAt: '2026-06-01T08:00:00Z',
     ...overrides,
+  };
+}
+
+function summary() {
+  return {
+    totalInvoices: 3,
+    paidInvoices: 1,
+    unpaidInvoices: 2,
+    overdueInvoices: 1,
+  };
+}
+
+function emptySummary() {
+  return {
+    totalInvoices: 0,
+    paidInvoices: 0,
+    unpaidInvoices: 0,
+    overdueInvoices: 0,
   };
 }

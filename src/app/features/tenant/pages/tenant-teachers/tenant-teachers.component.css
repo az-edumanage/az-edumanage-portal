@@ -74,6 +74,105 @@
   background: var(--color-action-primary-hover, #4338ca);
 }
 
+.tenant-teachers-status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-4);
+}
+
+.tenant-teachers-status-card {
+  min-height: 6rem;
+  padding: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  border-radius: var(--radius-xl, 0.75rem);
+  border: 1px solid var(--color-border-primary, #e2e8f0);
+  background: var(--color-bg-card, #ffffff);
+  text-align: left;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.tenant-teachers-status-card:hover {
+  border-color: color-mix(in srgb, var(--color-action-primary, #4f46e5) 35%, #e2e8f0);
+  box-shadow: var(--shadow-md, 0 8px 12px -6px rgb(15 23 42 / 0.18));
+  transform: translateY(-1px);
+}
+
+.tenant-teachers-status-card:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-action-primary, #4f46e5) 45%, transparent);
+  outline-offset: 2px;
+}
+
+.tenant-teachers-status-card--active {
+  border-color: color-mix(in srgb, var(--color-action-primary, #4f46e5) 55%, #e2e8f0);
+  background: color-mix(in srgb, var(--color-action-primary, #4f46e5) 6%, #ffffff);
+}
+
+.tenant-teachers-status-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-xl, 0.75rem);
+}
+
+.tenant-teachers-status-icon mat-icon {
+  font-size: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.tenant-teachers-status-icon--total {
+  color: #4f46e5;
+  background: color-mix(in srgb, #4f46e5 12%, transparent);
+}
+
+.tenant-teachers-status-icon--running {
+  color: #047857;
+  background: color-mix(in srgb, #10b981 16%, transparent);
+}
+
+.tenant-teachers-status-icon--absence {
+  color: #be123c;
+  background: color-mix(in srgb, #f43f5e 14%, transparent);
+}
+
+.tenant-teachers-status-meta {
+  min-width: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.tenant-teachers-status-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-muted, #64748b);
+}
+
+.tenant-teachers-status-value {
+  font-size: 1.75rem;
+  line-height: 1;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary, #0f172a);
+}
+
+.tenant-teachers-status-warning {
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, #f59e0b 35%, #e2e8f0);
+  background: color-mix(in srgb, #f59e0b 10%, #ffffff);
+  color: #92400e;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
 .tenant-teachers-filter-shell {
   min-height: 5.375rem;
   padding: var(--space-4);

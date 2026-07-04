@@ -63,7 +63,8 @@
           "builder": "@angular/build:dev-server",
           "options": {
             "allowedHosts": [
-              "test-tenant.local.az-edumanage.test"
+              "test-tenant.local.az-edumanage.test",
+	      "aya.local.az-edumanage.test"
             ]
           },
           "configurations": {

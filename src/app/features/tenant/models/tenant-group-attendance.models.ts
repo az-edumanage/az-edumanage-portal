@@ -46,12 +46,22 @@ export interface TenantBarcodeAttendanceRecord {
   sessionDate: string;
 }
 
+export interface TenantBarcodeAttendancePaymentStatus {
+  hasUnpaidSubscriptionInvoice: boolean;
+  invoiceId: string | null;
+  invoiceRef: string | null;
+  amount: number | string | null;
+  currency: string | null;
+  dueDate: string | null;
+}
+
 export interface TenantBarcodeAttendanceScanResponse {
   result: TenantBarcodeAttendanceScanResult;
   message: string;
   student: TenantBarcodeAttendanceStudent | null;
   group: TenantBarcodeAttendanceGroup | null;
   attendance: TenantBarcodeAttendanceRecord | null;
+  paymentStatus?: TenantBarcodeAttendancePaymentStatus | null;
 }
 
 
@@ -69,4 +79,5 @@ export interface TenantManualAttendanceResponse {
   scanTime: string;
   sessionDate: string;
   message: string;
+  paymentStatus?: TenantBarcodeAttendancePaymentStatus | null;
 }

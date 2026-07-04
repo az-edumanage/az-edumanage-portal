@@ -1,0 +1,557 @@
+<div class="reports-page">
+  <header class="reports-header">
+    <div>
+      <h1>Reports</h1>
+      <p>Create, preview, and save reports for your education center.</p>
+    </div>
+    <button type="button" class="secondary-action" (click)="startCustomReport()">
+      <mat-icon>add_chart</mat-icon>
+      Create Custom Report
+    </button>
+  </header>
+
+  @if (dataError()) {
+    <section class="report-alert" role="alert" aria-live="assertive">
+      <mat-icon>error</mat-icon>
+      <span>{{ dataError() }}</span>
+    </section>
+  }
+
+  <section class="quick-reports" aria-labelledby="quickReportsTitle">
+    <div class="section-heading">
+      <div>
+        <h2 id="quickReportsTitle">Quick Reports</h2>
+        <p>Choose a module, then start from a common report.</p>
+      </div>
+    </div>
+
+    <div class="category-grid" aria-label="Report categories">
+      @for (category of categories(); track category.id) {
+        <button
+          type="button"
+          class="category-card"
+          [class.active]="activeCategoryId() === category.id"
+          [attr.aria-pressed]="activeCategoryId() === category.id"
+          (click)="selectCategory(category.id)"
+        >
+          <span class="category-icon"><mat-icon>{{ category.icon }}</mat-icon></span>
+          <span>
+            <strong>{{ category.name }}</strong>
+            <small>{{ category.description }}</small>
+          </span>
+        </button>
+      }
+    </div>
+
+    <div class="template-panel">
+      <div class="section-heading compact">
+        <div>
+          <h3>{{ activeCategory().name }} reports</h3>
+          <p>Most users can create these in a few clicks.</p>
+        </div>
+      </div>
+
+      <div class="template-grid" aria-live="polite">
+        @if (isLoading()) {
+          @for (item of [1, 2, 3]; track item) {
+            <article class="template-card template-card-loading" aria-label="Loading report template">
+              <span class="template-icon loading-box"></span>
+              <div>
+                <span class="loading-line wide-line"></span>
+                <span class="loading-line"></span>
+              </div>
+              <span class="loading-button"></span>
+            </article>
+          }
+        } @else {
+          @for (template of categoryTemplates(); track template.id) {
+          <article class="template-card">
+            <span class="template-icon"><mat-icon>{{ template.icon }}</mat-icon></span>
+            <div>
+              <h4>{{ template.name }}</h4>
+              <p>{{ template.description }}</p>
+            </div>
+            <button type="button" class="primary-action" (click)="openTemplate(template)">
+              <mat-icon>play_arrow</mat-icon>
+              Create Report
+            </button>
+          </article>
+          } @empty {
+            <div class="preview-empty compact-empty">
+              <mat-icon>description</mat-icon>
+              <strong>No templates yet</strong>
+              <span>Choose another module or create a custom report.</span>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="custom-report" aria-labelledby="customReportTitle">
+    <div class="section-heading">
+      <div>
+        <h2 id="customReportTitle">Custom Report</h2>
+        <p>Use this when the quick reports do not match what you need.</p>
+      </div>
+    </div>
+
+    <div class="custom-grid">
+      <label class="form-field wide">
+        <span>Report Name</span>
+        <input
+          type="text"
+          [ngModel]="customReport().name"
+          (ngModelChange)="updateCustomName($event)"
+          name="customReportName"
+        >
+      </label>
+
+      <label class="form-field">
+        <span>Data Source</span>
+        <select
+          [ngModel]="customReport().source"
+          (ngModelChange)="updateCustomSource($event)"
+          name="customReportSource"
+        >
+          <option value="">Choose data source</option>
+          @for (category of categories(); track category.id) {
+            <option [ngValue]="category.id">{{ category.name }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="form-field">
+        <span>Date Range</span>
+        <select
+          [ngModel]="customReport().dateRange"
+          (ngModelChange)="updateCustomDateRange($event)"
+          name="customDateRange"
+        >
+          <option value="today">Today</option>
+          <option value="this-week">This Week</option>
+          <option value="this-month">This Month</option>
+          <option value="last-month">Last Month</option>
+          <option value="custom">Custom</option>
+        </select>
+      </label>
+
+      @if (showColumns()) {
+        <div class="choice-block">
+          <span>Columns</span>
+          <div class="checkbox-list">
+            @for (column of availableColumns(); track column.id) {
+              <label class="checkbox-row">
+                <input
+                  type="checkbox"
+                  [checked]="customReport().columns.includes(column.id)"
+                  (change)="toggleCustomColumn(column.id)"
+                >
+                <span>{{ column.label }}</span>
+              </label>
+            }
+          </div>
+        </div>
+      }
+
+      @if (showFilters()) {
+        <div class="choice-block">
+          <span>Filters</span>
+          <div class="filter-builder">
+            @for (filter of customReport().filters; track $index) {
+              <div class="filter-row">
+                <select
+                  aria-label="Filter field"
+                  [ngModel]="filter.field"
+                  (ngModelChange)="updateCustomFilter($index, { field: $event })"
+                  [name]="'customFilterField' + $index"
+                >
+                  @for (column of availableColumns(); track column.id) {
+                    <option [ngValue]="column.id">{{ column.label }}</option>
+                  }
+                </select>
+                <select
+                  aria-label="Filter operator"
+                  [ngModel]="filter.operator"
+                  (ngModelChange)="updateCustomFilter($index, { operator: $event })"
+                  [name]="'customFilterOperator' + $index"
+                >
+                  @for (operator of filterOperators; track operator.value) {
+                    <option [ngValue]="operator.value">{{ operator.label }}</option>
+                  }
+                </select>
+                @if (shouldShowFilterValue(filter.operator)) {
+                  <input
+                    type="text"
+                    aria-label="Filter value"
+                    [ngModel]="filter.value"
+                    (ngModelChange)="updateCustomFilter($index, { value: $event })"
+                    [name]="'customFilterValue' + $index"
+                  >
+                }
+                @if (shouldShowSecondFilterValue(filter.operator)) {
+                  <input
+                    type="text"
+                    aria-label="Second filter value"
+                    [ngModel]="filter.valueTo"
+                    (ngModelChange)="updateCustomFilter($index, { valueTo: $event })"
+                    [name]="'customFilterValueTo' + $index"
+                  >
+                }
+                <button type="button" class="icon-button" aria-label="Remove filter" (click)="removeCustomFilter($index)">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            }
+            <button type="button" class="secondary-action compact-action" (click)="addCustomFilter()">
+              <mat-icon>add</mat-icon>
+              Add Filter
+            </button>
+          </div>
+        </div>
+      }
+
+      @if (showSorting()) {
+        <label class="form-field">
+          <span>Sorting</span>
+          <select
+            [ngModel]="customReport().sorting.field"
+            (ngModelChange)="updateCustomSorting($event)"
+            name="customSorting"
+          >
+            @for (column of availableColumns(); track column.id) {
+              <option [ngValue]="column.id">{{ column.label }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="form-field">
+          <span>Sort Direction</span>
+          <select
+            [ngModel]="customReport().sorting.direction"
+            (ngModelChange)="updateCustomSortingDirection($event)"
+            name="customSortingDirection"
+          >
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
+        </label>
+      }
+
+      @if (showColumns()) {
+        <details class="advanced-options" [open]="customAdvancedOpen()" (toggle)="customAdvancedOpen.set($any($event.target).open)">
+          <summary>
+            <span>
+              <strong>Advanced Options</strong>
+              <small>Grouping, formatting, calculations, visualization, and export settings.</small>
+            </span>
+            <mat-icon>expand_more</mat-icon>
+          </summary>
+          <div class="advanced-grid">
+            <button type="button">Grouping</button>
+            <button type="button">Conditional Formatting</button>
+            <button type="button">Calculated Fields</button>
+            <button type="button">Visualization</button>
+            <button type="button">Export Settings</button>
+          </div>
+        </details>
+      }
+
+      @if (showColumns() && customReport().columns.length === 0) {
+        <p class="inline-empty">Select at least one column to show the live preview.</p>
+      }
+    </div>
+  </section>
+
+  @if (preview()) {
+    <section class="report-preview" aria-labelledby="reportPreviewTitle" aria-live="polite">
+      <div class="preview-header">
+        <div>
+          <h2 id="reportPreviewTitle">{{ currentPreviewTitle() }}</h2>
+          <p>
+            {{ previewRows().length }} of {{ preview()?.totalItems ?? 0 }} rows,
+            {{ previewColumns().length }} columns,
+            {{ lastPreviewRequest()?.filters?.length ?? 0 }} filters,
+            {{ lastPreviewRequest()?.dateRange }}
+          </p>
+        </div>
+        <div class="preview-actions">
+          <button type="button" class="secondary-action" (click)="exportPreview()" [disabled]="isExportingPdf() || isPreviewLoading()">
+            <mat-icon>ios_share</mat-icon>
+            {{ isExportingPdf() ? 'Preparing PDF...' : 'Export PDF' }}
+          </button>
+          <button type="button" class="primary-action" (click)="saveReport()" [disabled]="isSavingReport() || isPreviewLoading()">
+            <mat-icon>save</mat-icon>
+            {{ isSavingReport() ? 'Saving...' : 'Save Report' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="summary-grid">
+        @for (metric of previewMetrics(); track metric.label) {
+          <app-report-summary-card
+            [label]="metric.label"
+            [value]="metric.value"
+            [tone]="metric.tone ?? 'default'"
+          />
+        }
+      </div>
+
+      <div class="preview-layout">
+        <article class="chart-placeholder">
+          <div>
+            <mat-icon>bar_chart</mat-icon>
+            <strong>Optional Chart</strong>
+            <span>{{ preview()?.chart?.labels?.length ? 'Chart data is ready for this report.' : 'Charts can be enabled from Advanced Options.' }}</span>
+          </div>
+        </article>
+
+        <div class="preview-table-shell">
+          <table>
+            <thead>
+              <tr>
+                @for (column of previewColumns().slice(0, 6); track column) {
+                  <th>{{ column }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @if (isPreviewLoading()) {
+                <tr>
+                  <td [attr.colspan]="previewColumns().slice(0, 6).length || 1">Loading report data...</td>
+                </tr>
+              } @else if (preview()?.empty) {
+                <tr>
+                  <td [attr.colspan]="previewColumns().slice(0, 6).length || 1">No results match this report.</td>
+                </tr>
+              } @else {
+                @for (row of previewRows(); track $index) {
+                  <tr>
+                    @for (column of previewColumns().slice(0, 6); track column) {
+                      <td>{{ valueFor(row, column) }}</td>
+                    }
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  } @else {
+    <section class="report-preview" aria-labelledby="reportPreviewTitle">
+      <div class="preview-header">
+        <div>
+          <h2 id="reportPreviewTitle">Report Preview</h2>
+          <p>Select a quick report or choose columns in Custom Report to see the preview.</p>
+        </div>
+      </div>
+      <div class="preview-empty">
+        <mat-icon>table_chart</mat-icon>
+        <strong>No preview yet</strong>
+        <span>Your report preview will appear here automatically.</span>
+      </div>
+    </section>
+  }
+
+  <section class="saved-reports" aria-labelledby="savedReportsTitle">
+    <div class="section-heading">
+      <div>
+        <h2 id="savedReportsTitle">Saved Reports</h2>
+        <p>Open reports your team already uses.</p>
+      </div>
+    </div>
+
+    <div class="saved-controls">
+      <label class="form-field">
+        <span>Search</span>
+        <input
+          type="search"
+          [ngModel]="savedSearch()"
+          (ngModelChange)="setSavedSearch($event)"
+          name="savedReportSearch"
+          placeholder="Search saved reports"
+        >
+      </label>
+      <label class="form-field">
+        <span>Category</span>
+        <select
+          [ngModel]="savedCategoryFilter()"
+          (ngModelChange)="setSavedCategoryFilter($event)"
+          name="savedReportCategory"
+        >
+          <option value="all">All Categories</option>
+          @for (category of categories(); track category.id) {
+            <option [ngValue]="category.id">{{ category.name }}</option>
+          }
+        </select>
+      </label>
+      <label class="form-field">
+        <span>Sort By</span>
+        <select
+          [ngModel]="savedSort()"
+          (ngModelChange)="setSavedSort($event)"
+          name="savedReportSort"
+        >
+          <option value="recent">Recently Modified</option>
+          <option value="alphabetical">Alphabetical</option>
+          <option value="most-used">Most Used</option>
+          <option value="favorites">Favorites</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="saved-grid">
+      @for (report of filteredSavedReports(); track report.id) {
+        <article class="saved-card">
+          <span class="template-icon"><mat-icon>{{ report.icon }}</mat-icon></span>
+          <div class="saved-card-body">
+            <h3>{{ report.name }}</h3>
+            <p>Last modified {{ report.updatedAt | date:'mediumDate' }} by {{ report.createdBy }}</p>
+          </div>
+          <div class="saved-actions">
+            <button type="button" [class.favorite]="report.favorite" (click)="toggleSavedFavorite(report.id)" aria-label="Toggle favorite">
+              <mat-icon>{{ report.favorite ? 'star' : 'star_outline' }}</mat-icon>
+            </button>
+            <button type="button" (click)="openSavedReport(report)">Open</button>
+            <button type="button" (click)="duplicateSavedReport(report.id)">Duplicate</button>
+            <button type="button" (click)="deleteSavedReport(report.id)">Delete</button>
+          </div>
+        </article>
+      } @empty {
+        <div class="preview-empty compact-empty">
+          <mat-icon>folder_open</mat-icon>
+          <strong>No saved reports found</strong>
+          <span>Saved reports that match your search will appear here.</span>
+        </div>
+      }
+    </div>
+  </section>
+
+  @if (templateDialogOpen() && selectedTemplate()) {
+    <div class="dialog-backdrop" role="presentation" (click)="closeTemplateDialog()"></div>
+    <section class="template-dialog" role="dialog" aria-modal="true" aria-labelledby="templateDialogTitle">
+      <header>
+        <span class="template-icon"><mat-icon>{{ selectedTemplate()?.icon }}</mat-icon></span>
+        <div>
+          <h2 id="templateDialogTitle">{{ selectedTemplate()?.name }}</h2>
+          <p>{{ selectedTemplate()?.description }}</p>
+        </div>
+        <button type="button" class="icon-button" aria-label="Close report options" (click)="closeTemplateDialog()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </header>
+
+      <div class="dialog-section">
+        <h3>Columns</h3>
+        <div class="checkbox-list">
+          @for (column of selectedTemplateColumns(); track column.id) {
+            <label class="checkbox-row">
+              <input
+                type="checkbox"
+                [checked]="column.selected"
+                (change)="toggleTemplateColumn(column.id)"
+              >
+              <span>{{ column.label }}</span>
+            </label>
+          }
+        </div>
+      </div>
+
+      <div class="dialog-section">
+        <h3>Filters</h3>
+        <div class="filter-builder">
+          @for (filter of templateFilters(); track $index) {
+            <div class="filter-row">
+              <select
+                aria-label="Template filter field"
+                [ngModel]="filter.field"
+                (ngModelChange)="updateTemplateFilter($index, { field: $event })"
+                [name]="'templateFilterField' + $index"
+              >
+                @for (column of selectedTemplateColumns(); track column.id) {
+                  <option [ngValue]="column.id">{{ column.label }}</option>
+                }
+              </select>
+              <select
+                aria-label="Template filter operator"
+                [ngModel]="filter.operator"
+                (ngModelChange)="updateTemplateFilter($index, { operator: $event })"
+                [name]="'templateFilterOperator' + $index"
+              >
+                @for (operator of filterOperators; track operator.value) {
+                  <option [ngValue]="operator.value">{{ operator.label }}</option>
+                }
+              </select>
+              @if (shouldShowFilterValue(filter.operator)) {
+                <input
+                  type="text"
+                  aria-label="Template filter value"
+                  [ngModel]="filter.value"
+                  (ngModelChange)="updateTemplateFilter($index, { value: $event })"
+                  [name]="'templateFilterValue' + $index"
+                >
+              }
+              @if (shouldShowSecondFilterValue(filter.operator)) {
+                <input
+                  type="text"
+                  aria-label="Template second filter value"
+                  [ngModel]="filter.valueTo"
+                  (ngModelChange)="updateTemplateFilter($index, { valueTo: $event })"
+                  [name]="'templateFilterValueTo' + $index"
+                >
+              }
+              <button type="button" class="icon-button" aria-label="Remove filter" (click)="removeTemplateFilter($index)">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          }
+          <button type="button" class="secondary-action compact-action" (click)="addTemplateFilter()">
+            <mat-icon>add</mat-icon>
+            Add Filter
+          </button>
+        </div>
+      </div>
+
+      <label class="form-field">
+        <span>Date Range</span>
+        <select
+          [ngModel]="selectedTemplate()?.defaultDateRange"
+          (ngModelChange)="updateTemplateDateRange($event)"
+          name="templateDateRange"
+        >
+          <option value="today">Today</option>
+          <option value="this-week">This Week</option>
+          <option value="this-month">This Month</option>
+          <option value="last-month">Last Month</option>
+          <option value="custom">Custom</option>
+        </select>
+      </label>
+
+      <details class="advanced-options" [open]="quickAdvancedOpen()" (toggle)="quickAdvancedOpen.set($any($event.target).open)">
+        <summary>
+          <span>
+            <strong>Advanced Options</strong>
+            <small>Only needed for grouping, formatting, charts, calculations, or export changes.</small>
+          </span>
+          <mat-icon>expand_more</mat-icon>
+        </summary>
+        <div class="advanced-grid">
+          <button type="button">Grouping</button>
+          <button type="button">Conditional Formatting</button>
+          <button type="button">Calculated Fields</button>
+          <button type="button">Visualization</button>
+          <button type="button">Export Settings</button>
+        </div>
+      </details>
+
+      <footer>
+        <button type="button" class="secondary-action" (click)="closeTemplateDialog()">Cancel</button>
+        <button type="button" class="primary-action" (click)="generateFromTemplate()">
+          <mat-icon>play_arrow</mat-icon>
+          Generate Report
+        </button>
+      </footer>
+    </section>
+  }
+</div>

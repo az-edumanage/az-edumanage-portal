@@ -10,6 +10,9 @@ export class TenantRoomDetailsStore {
   readonly schedule = signal<RoomSchedule[]>([]);
   readonly loading = signal(false);
   readonly error = signal('');
+  readonly issueSaving = signal(false);
+  readonly issueError = signal('');
+  readonly issueSaved = signal(false);
 
   readonly totalOccupiedHours = computed(() => this.schedule().reduce((acc, curr) => acc + curr.durationHours, 0));
   readonly occupiedDaysCount = computed(() => new Set(this.schedule().map((item) => item.day)).size);
@@ -57,6 +60,41 @@ export class TenantRoomDetailsStore {
       this.error.set(this.data.toUserMessage(error));
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  openIssueEditor(): void {
+    this.issueError.set('');
+    this.issueSaved.set(false);
+  }
+
+  closeIssueEditor(): void {
+    if (this.issueSaving()) {
+      return;
+    }
+    this.issueError.set('');
+    this.issueSaved.set(false);
+  }
+
+  async saveIssueNote(id: string | null, note: string): Promise<boolean> {
+    const normalized = note.trim();
+    this.issueError.set('');
+    this.issueSaved.set(false);
+    if (!normalized) {
+      this.issueError.set('Issue note is required.');
+      return false;
+    }
+
+    this.issueSaving.set(true);
+    try {
+      await this.data.saveIssueNote(id, normalized);
+      this.issueSaved.set(true);
+      return true;
+    } catch (error) {
+      this.issueError.set(this.data.toUserMessage(error));
+      return false;
+    } finally {
+      this.issueSaving.set(false);
     }
   }
 }

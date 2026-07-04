@@ -1,6 +1,14 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { TenantStudentsDataService } from '../data-access/tenant-students-data.service';
-import { Student } from '../models/tenant-students.models';
+import { Student, StudentAttendanceCard, StudentAttendanceFilter, StudentAttendanceSummary } from '../models/tenant-students.models';
+
+export type StudentDeleteStatus = 'closed' | 'confirming' | 'deleting' | 'success' | 'failed';
+
+export interface StudentDeleteState {
+  status: StudentDeleteStatus;
+  student: Student | null;
+  message: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class TenantStudentsStore {
@@ -19,7 +27,16 @@ export class TenantStudentsStore {
 
   readonly isLoading = signal(false);
   readonly errorMessage = signal<string | null>(null);
+  readonly deleteState = signal<StudentDeleteState>({ status: 'closed', student: null, message: '' });
+  readonly passwordModalStudent = signal<Student | null>(null);
+  readonly passwordSaving = signal(false);
+  readonly passwordError = signal<string | null>(null);
+  readonly passwordSuccess = signal<string | null>(null);
   readonly students = signal<Student[]>([]);
+  readonly attendanceSummary = signal<StudentAttendanceSummary | null>(null);
+  readonly attendanceSummaryLoading = signal(false);
+  readonly attendanceSummaryError = signal<string | null>(null);
+  readonly attendanceFilter = signal<StudentAttendanceFilter>('all');
 
   readonly activeFiltersCount = computed(() => {
     let count = 0;
@@ -36,8 +53,12 @@ export class TenantStudentsStore {
     const grade = this.gradeFilter();
     const status = this.statusFilter();
     const sortBy = this.sortBy();
+    const attendanceFilter = this.attendanceFilter();
+    const attendanceSummary = this.attendanceSummary();
+    const attendanceIds = this.attendanceStudentIdSet(attendanceFilter, attendanceSummary);
 
     const filtered = this.students().filter((student) => {
+      const matchesAttendance = !attendanceIds || attendanceIds.has(student.id);
       const matchesSearch =
         !query ||
         student.name.toLowerCase().includes(query) ||
@@ -45,7 +66,7 @@ export class TenantStudentsStore {
       const matchesStage = !stage || student.stageId === stage;
       const matchesGrade = !grade || student.gradeId === grade;
       const matchesStatus = !status || student.status === status;
-      return matchesSearch && matchesStage && matchesGrade && matchesStatus;
+      return matchesAttendance && matchesSearch && matchesStage && matchesGrade && matchesStatus;
     });
 
     if (sortBy === 'date-desc') {
@@ -79,6 +100,74 @@ export class TenantStudentsStore {
     return this.clampedPageIndex() * this.pageSize() + 1;
   });
   readonly pageEnd = computed(() => Math.min((this.clampedPageIndex() + 1) * this.pageSize(), this.totalFilteredStudents()));
+  readonly attendanceCards = computed<StudentAttendanceCard[]>(() => {
+    const summary = this.attendanceSummary();
+    const loading = this.attendanceSummaryLoading();
+    const unavailable = Boolean(this.attendanceSummaryError() || summary?.unavailableReason);
+    const totalStudents = this.students().length;
+    const totalAbsent = summary?.totalAbsent ?? 0;
+    const totalPresent = summary?.totalPresent ?? 0;
+    const active = this.attendanceFilter();
+    return [
+      {
+        key: 'all',
+        label: 'Total students',
+        count: totalStudents,
+        active: active === 'all',
+        loading: this.isLoading(),
+        unavailable: false,
+        disabled: false,
+      },
+      {
+        key: 'absent',
+        label: 'Total absence',
+        count: totalAbsent,
+        active: active === 'absent',
+        loading,
+        unavailable,
+        disabled: unavailable || loading,
+      },
+      {
+        key: 'present',
+        label: 'Total present',
+        count: totalPresent,
+        active: active === 'present',
+        loading,
+        unavailable,
+        disabled: unavailable || loading,
+      },
+    ];
+  });
+  readonly attendanceFilterLabel = computed(() => {
+    switch (this.attendanceFilter()) {
+      case 'absent':
+        return 'today absent students';
+      case 'present':
+        return 'today present students';
+      default:
+        return 'all students';
+    }
+  });
+  readonly emptyStateTitle = computed(() => {
+    switch (this.attendanceFilter()) {
+      case 'absent':
+        return 'No absent students found';
+      case 'present':
+        return 'No present students found';
+      default:
+        return 'No students found';
+    }
+  });
+  readonly emptyStateDescription = computed(() => {
+    switch (this.attendanceFilter()) {
+      case 'absent':
+        return "No students match today's absence scope with the current search and filters.";
+      case 'present':
+        return "No students match today's present scope with the current search and filters.";
+      default:
+        return "We couldn't find any students matching your current search and filter criteria.";
+    }
+  });
 
   loadStudents(): void {
     this.isLoading.set(true);
@@ -95,6 +184,102 @@ export class TenantStudentsStore {
         this.isLoading.set(false);
       },
     });
+  }
+
+  loadAttendanceSummary(): void {
+    this.attendanceSummaryLoading.set(true);
+    this.data.loadAttendanceSummary().subscribe({
+      next: (summary) => {
+        this.attendanceSummary.set(summary);
+        this.attendanceSummaryError.set(null);
+        this.attendanceSummaryLoading.set(false);
+        this.clampPage();
+      },
+      error: (error: Error) => {
+        this.attendanceSummary.set(null);
+        this.attendanceSummaryError.set(error.message);
+        this.attendanceSummaryLoading.set(false);
+        if (this.attendanceFilter() !== 'all') {
+          this.attendanceFilter.set('all');
+        }
+        this.clampPage();
+      },
+    });
+  }
+
+  setAttendanceFilter(value: StudentAttendanceFilter): void {
+    if (value !== 'all' && this.attendanceCards().find((card) => card.key === value)?.disabled) {
+      return;
+    }
+    this.attendanceFilter.set(value);
+    this.resetPage();
+  }
+
+  requestDelete(student: Student): void {
+    this.deleteState.set({ status: 'confirming', student, message: '' });
+  }
+
+  setDeleteDeleting(): void {
+    const current = this.deleteState();
+    this.deleteState.set({ ...current, status: 'deleting', message: 'Deleting student...' });
+  }
+
+  setDeleteSuccess(message: string): void {
+    this.deleteState.set({ status: 'success', student: null, message });
+  }
+
+  setDeleteFailed(message: string): void {
+    const current = this.deleteState();
+    this.deleteState.set({ ...current, status: 'failed', message });
+  }
+
+  closeDeleteModal(): void {
+    this.deleteState.set({ status: 'closed', student: null, message: '' });
+  }
+
+  openPasswordModal(student: Student): void {
+    this.passwordModalStudent.set(student);
+    this.passwordError.set(null);
+    this.passwordSuccess.set(null);
+  }
+
+  closePasswordModal(): void {
+    this.passwordModalStudent.set(null);
+    this.passwordError.set(null);
+    this.passwordSuccess.set(null);
+    this.passwordSaving.set(false);
+  }
+
+  setPasswordSaving(value: boolean): void {
+    this.passwordSaving.set(value);
+  }
+
+  setPasswordError(value: string | null): void {
+    this.passwordError.set(value);
+  }
+
+  setPasswordSuccess(value: string | null): void {
+    this.passwordSuccess.set(value);
+  }
+
+  removeStudent(id: string): void {
+    this.students.update((students) => students.filter((student) => student.id !== id));
+    this.attendanceSummary.update((summary) => {
+      if (!summary) {
+        return summary;
+      }
+      const absentStudentIds = summary.absentStudentIds.filter((studentId) => studentId !== id);
+      const presentStudentIds = summary.presentStudentIds.filter((studentId) => studentId !== id);
+      return {
+        ...summary,
+        totalStudents: Math.max(0, summary.totalStudents - 1),
+        absentStudentIds,
+        presentStudentIds,
+        totalAbsent: absentStudentIds.length,
+        totalPresent: presentStudentIds.length,
+      };
+    });
+    this.clampPage();
   }
 
   setPageIndex(value: number): void {
@@ -114,5 +299,18 @@ export class TenantStudentsStore {
 
   clampPage(): void {
     this.setPageIndex(this.pageIndex());
+  }
+
+  private attendanceStudentIdSet(
+    attendanceFilter: StudentAttendanceFilter,
+    summary: StudentAttendanceSummary | null
+  ): Set<string> | null {
+    if (attendanceFilter === 'absent') {
+      return new Set(summary?.absentStudentIds ?? []);
+    }
+    if (attendanceFilter === 'present') {
+      return new Set(summary?.presentStudentIds ?? []);
+    }
+    return null;
   }
 }

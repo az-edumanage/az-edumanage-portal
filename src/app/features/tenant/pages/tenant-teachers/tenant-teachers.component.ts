@@ -30,6 +30,11 @@ export class TenantTeachersComponent implements OnInit {
   readonly teachers = this.facade.teachers;
   readonly isLoading = this.facade.isLoading;
   readonly errorMessage = this.facade.errorMessage;
+  readonly statusSummary = this.facade.statusSummary;
+  readonly isStatusSummaryLoading = this.facade.isStatusSummaryLoading;
+  readonly statusSummaryError = this.facade.statusSummaryError;
+  readonly teacherStatusFilter = this.facade.teacherStatusFilter;
+  readonly hasStatusFilter = this.facade.hasStatusFilter;
   readonly subjectOptions = this.facade.subjectOptions;
   readonly activeSettingsId = this.facade.activeSettingsId;
   readonly activeChatTeacher = this.facade.activeChatTeacher;
@@ -42,6 +47,7 @@ export class TenantTeachersComponent implements OnInit {
   readonly pageSize = this.facade.pageSize;
   readonly pageStart = this.facade.pageStart;
   readonly pageEnd = this.facade.pageEnd;
+  readonly activeStatusEmptyMessage = this.facade.activeStatusEmptyMessage;
   readonly passwordModalTeacher = this.facade.passwordModalTeacher;
   readonly passwordSaving = this.facade.passwordSaving;
   readonly passwordError = this.facade.passwordError;
@@ -89,6 +95,18 @@ export class TenantTeachersComponent implements OnInit {
       status: '',
       sortBy: 'name',
     });
+  }
+
+  selectAllTeachers(): void {
+    this.facade.selectAllTeachers();
+  }
+
+  selectTeachersInGroupNow(): void {
+    this.facade.selectTeachersInGroupNow();
+  }
+
+  selectAbsentTeachers(): void {
+    this.facade.selectAbsentTeachers();
   }
 
   toggleSettings(event: Event, id: string): void {

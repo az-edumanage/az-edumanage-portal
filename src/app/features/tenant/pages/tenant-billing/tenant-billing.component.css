@@ -23,6 +23,78 @@
   font-size: 0.875rem;
 }
 
+.billing-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.summary-card {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  min-height: 5.75rem;
+  padding: 1rem;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.75rem;
+  background: white;
+  color: rgb(15 23 42);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.summary-card:hover {
+  border-color: rgb(165 180 252);
+  background: rgb(248 250 255);
+  transform: translateY(-1px);
+}
+
+.summary-card:focus-visible {
+  outline: 3px solid rgb(79 70 229 / 0.2);
+  outline-offset: 2px;
+}
+
+.summary-card-active {
+  border-color: rgb(79 70 229);
+  background: rgb(238 242 255);
+}
+
+.summary-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.75rem;
+  background: rgb(241 245 249);
+  color: rgb(79 70 229);
+}
+
+.summary-card-active .summary-icon {
+  background: rgb(79 70 229);
+  color: white;
+}
+
+.summary-card strong,
+.summary-card small {
+  display: block;
+}
+
+.summary-card strong {
+  color: rgb(15 23 42);
+  font-size: 1.5rem;
+  line-height: 1.1;
+}
+
+.summary-card small {
+  margin-top: 0.25rem;
+  color: rgb(71 85 105);
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
 .billing-toolbar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 12rem;
@@ -239,6 +311,10 @@ td span {
 }
 
 @media (max-width: 720px) {
+  .billing-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
   .billing-toolbar {
     grid-template-columns: 1fr;
   }
@@ -250,5 +326,21 @@ td span {
 
   .pager-actions {
     justify-content: flex-end;
+  }
+}
+
+@media (min-width: 721px) and (max-width: 1080px) {
+  .billing-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .summary-card {
+    transition: none;
+  }
+
+  .summary-card:hover {
+    transform: none;
   }
 }

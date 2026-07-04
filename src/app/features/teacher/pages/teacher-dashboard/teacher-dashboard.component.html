@@ -1,189 +1,234 @@
 <div class="teacher-dashboard-page">
-  <!-- Header & Quick Actions -->
   <div class="teacher-dashboard-header">
     <div>
       <h2 class="teacher-dashboard-title">Teacher Overview</h2>
-      <p class="teacher-dashboard-subtitle">Welcome back, Mr. Ahmed. You have 3 pending sessions today.</p>
+      <p class="teacher-dashboard-subtitle">{{ todayLabel() }}</p>
     </div>
 
     <div class="teacher-dashboard-actions">
-      <button class="teacher-dashboard-action teacher-dashboard-action--primary">
+      <a class="teacher-dashboard-action teacher-dashboard-action--primary" routerLink="/teacher/schedule">
+        <mat-icon class="teacher-dashboard-icon-sm">calendar_month</mat-icon>
+        Open schedule
+      </a>
+      <a class="teacher-dashboard-action teacher-dashboard-action--secondary" routerLink="/teacher/attendance">
         <mat-icon class="teacher-dashboard-icon-sm">fact_check</mat-icon>
-        Take Attendance
-      </button>
-      <button class="teacher-dashboard-action teacher-dashboard-action--secondary">
+        Take attendance
+      </a>
+      <a class="teacher-dashboard-action teacher-dashboard-action--secondary" routerLink="/teacher/exams">
         <mat-icon class="teacher-dashboard-icon-sm">post_add</mat-icon>
-        Add Exam
-      </button>
-      <button class="teacher-dashboard-action teacher-dashboard-action--secondary">
-        <mat-icon class="teacher-dashboard-icon-sm">send</mat-icon>
-        Send Message
-      </button>
+        Create exam
+      </a>
     </div>
   </div>
 
-  <!-- KPI Cards -->
+  @if (errorMessage()) {
+    <section class="teacher-dashboard-alert">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorMessage() }}</span>
+      <button type="button" (click)="loadOverview()">Retry</button>
+    </section>
+  }
+
   <div class="teacher-dashboard-kpis">
-    <div class="teacher-dashboard-kpi-card">
+    @for (card of kpiCards(); track card.label) {
+      <div class="teacher-dashboard-kpi-card">
         <div class="teacher-dashboard-kpi-head">
-          <div class="teacher-dashboard-kpi-label">Today's Sessions</div>
-          <div class="teacher-dashboard-kpi-icon teacher-dashboard-kpi-icon--indigo">
-          <mat-icon class="teacher-dashboard-icon-lg">today</mat-icon>
+          <div class="teacher-dashboard-kpi-label">{{ card.label }}</div>
+          <div class="teacher-dashboard-kpi-icon teacher-dashboard-kpi-icon--{{ card.tone }}">
+            <mat-icon class="teacher-dashboard-icon-lg">{{ card.icon }}</mat-icon>
           </div>
         </div>
-      <div class="teacher-dashboard-kpi-value-wrap">
-        <div class="teacher-dashboard-kpi-value">5</div>
-        <div class="teacher-dashboard-kpi-meta">classes</div>
-      </div>
-    </div>
-
-    <div class="teacher-dashboard-kpi-card">
-        <div class="teacher-dashboard-kpi-head">
-          <div class="teacher-dashboard-kpi-label">Weekly Sessions</div>
-          <div class="teacher-dashboard-kpi-icon teacher-dashboard-kpi-icon--blue">
-          <mat-icon class="teacher-dashboard-icon-lg">calendar_view_week</mat-icon>
-          </div>
+        <div class="teacher-dashboard-kpi-value-wrap">
+          <div class="teacher-dashboard-kpi-value">{{ loading() ? '-' : card.value }}</div>
+          <div class="teacher-dashboard-kpi-meta">{{ loading() ? 'Loading...' : card.meta }}</div>
         </div>
-      <div class="teacher-dashboard-kpi-value-wrap">
-        <div class="teacher-dashboard-kpi-value">24</div>
-        <div class="teacher-dashboard-kpi-meta">this week</div>
       </div>
-    </div>
-
-    <div class="teacher-dashboard-kpi-card">
-        <div class="teacher-dashboard-kpi-head">
-          <div class="teacher-dashboard-kpi-label">My Groups</div>
-          <div class="teacher-dashboard-kpi-icon teacher-dashboard-kpi-icon--amber">
-          <mat-icon class="teacher-dashboard-icon-lg">groups</mat-icon>
-          </div>
-        </div>
-      <div class="teacher-dashboard-kpi-value-wrap">
-        <div class="teacher-dashboard-kpi-value">6</div>
-        <div class="teacher-dashboard-kpi-meta">active</div>
-      </div>
-    </div>
-
-    <div class="teacher-dashboard-kpi-card">
-        <div class="teacher-dashboard-kpi-head">
-          <div class="teacher-dashboard-kpi-label">Avg Attendance</div>
-          <div class="teacher-dashboard-kpi-icon teacher-dashboard-kpi-icon--emerald">
-          <mat-icon class="teacher-dashboard-icon-lg">how_to_reg</mat-icon>
-          </div>
-        </div>
-      <div class="teacher-dashboard-kpi-value-wrap">
-        <div class="teacher-dashboard-kpi-value teacher-dashboard-kpi-value--highlight">88%</div>
-        <div class="teacher-dashboard-kpi-trend">+2% v last week</div>
-      </div>
-    </div>
+    }
   </div>
 
   <div class="teacher-dashboard-main-grid">
-    <!-- Today's Sessions Table -->
-    <div class="teacher-dashboard-sessions">
+    <section class="teacher-dashboard-sessions">
       <div class="teacher-dashboard-section-head">
         <h3 class="teacher-dashboard-section-title">Today's Sessions</h3>
-        <a href="#" class="teacher-dashboard-section-link">View Full Schedule</a>
+        <a routerLink="/teacher/schedule" class="teacher-dashboard-section-link">View full schedule</a>
       </div>
 
       <div class="teacher-dashboard-table-shell">
-        <table class="teacher-dashboard-table">
-          <thead class="teacher-dashboard-table-head">
-            <tr>
-              <th class="teacher-dashboard-th">Time / Room</th>
-              <th class="teacher-dashboard-th">Group</th>
-              <th class="teacher-dashboard-th">Students</th>
-              <th class="teacher-dashboard-th">Status</th>
-              <th class="teacher-dashboard-th teacher-dashboard-th--actions">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="teacher-dashboard-tbody">
-            @for (session of sessions; track session.id) {
-              <tr class="teacher-dashboard-tr group">
-                <td class="teacher-dashboard-td">
-                  <div class="teacher-dashboard-time-wrap">
-                    <span class="teacher-dashboard-time">{{ session.time }}</span>
-                    <span class="teacher-dashboard-room">{{ session.room }}</span>
-                  </div>
-                </td>
-                <td class="teacher-dashboard-td">
-                  <span class="teacher-dashboard-group">{{ session.group }}</span>
-                </td>
-                <td class="teacher-dashboard-td teacher-dashboard-students">
-                  <div class="teacher-dashboard-students-wrap">
-                    <mat-icon class="teacher-dashboard-icon-md">group</mat-icon>
-                    {{ session.students }}
-                  </div>
-                </td>
-                <td class="teacher-dashboard-td">
-                  @if (session.status === 'Completed') {
-                    <span class="teacher-dashboard-status teacher-dashboard-status--completed">
-                      <div class="teacher-dashboard-status-dot teacher-dashboard-status-dot--completed"></div> Completed
-                    </span>
-                  } @else {
-                    <span class="teacher-dashboard-status teacher-dashboard-status--upcoming">
-                      <div class="teacher-dashboard-status-dot teacher-dashboard-status-dot--upcoming"></div> Upcoming
-                    </span>
-                  }
-                </td>
-                <td class="teacher-dashboard-td teacher-dashboard-td--actions">
-                  <div class="teacher-dashboard-row-actions">
-                    <button
-                      class="teacher-dashboard-attendance-btn"
-                      [class.opacity-50]="session.status === 'Completed'"
-                      [class.pointer-events-none]="session.status === 'Completed'"
-                    >
-                      <mat-icon class="teacher-dashboard-icon-xs">checklist</mat-icon>
-                      Attendance
-                    </button>
-                    <button class="teacher-dashboard-note-btn" title="Add Notes">
-                      <mat-icon class="teacher-dashboard-icon-lg">edit_note</mat-icon>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Attention Needed List -->
-    <div class="teacher-dashboard-attention">
-      <div class="teacher-dashboard-section-head">
-        <h3 class="teacher-dashboard-section-title">Needs Attention</h3>
-      </div>
-
-      <div class="teacher-dashboard-attention-list">
-        @for (student of attentionList; track student.name) {
-          <div class="teacher-dashboard-attention-item group">
-            <div class="teacher-dashboard-attention-main">
-              <div class="teacher-dashboard-attention-avatar">
-                {{ student.name.substring(0, 2).toUpperCase() }}
-              </div>
-              <div class="teacher-dashboard-attention-meta">
-                <h4 class="teacher-dashboard-attention-name">{{ student.name }}</h4>
-                <p class="teacher-dashboard-attention-group">{{ student.group }}</p>
-                <span
-                  class="teacher-dashboard-attention-chip"
-                  [class.bg-red-50]="student.severity === 'high'"
-                  [class.text-red-700]="student.severity === 'high'"
-                  [class.dark:bg-red-500/10]="student.severity === 'high'"
-                  [class.dark:text-red-400]="student.severity === 'high'"
-                  [class.bg-amber-50]="student.severity === 'medium'"
-                  [class.text-amber-700]="student.severity === 'medium'"
-                  [class.dark:bg-amber-500/10]="student.severity === 'medium'"
-                  [class.dark:text-amber-400]="student.severity === 'medium'"
-                >
-                  {{ student.issue }}
-                </span>
-              </div>
-            </div>
-            <button class="teacher-dashboard-chat-btn">
-              <mat-icon class="teacher-dashboard-icon-lg">chat_bubble_outline</mat-icon>
-            </button>
+        @if (loading()) {
+          <div class="teacher-dashboard-state">
+            <mat-icon>progress_activity</mat-icon>
+            <span>Loading today's sessions...</span>
           </div>
+        } @else if (todaySessions().length === 0) {
+          <div class="teacher-dashboard-state">
+            <mat-icon>event_available</mat-icon>
+            <span>No sessions scheduled for today.</span>
+          </div>
+        } @else {
+          <table class="teacher-dashboard-table">
+            <thead class="teacher-dashboard-table-head">
+              <tr>
+                <th class="teacher-dashboard-th">Time / Room</th>
+                <th class="teacher-dashboard-th">Group</th>
+                <th class="teacher-dashboard-th">Students</th>
+                <th class="teacher-dashboard-th">Status</th>
+                <th class="teacher-dashboard-th teacher-dashboard-th--actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="teacher-dashboard-tbody">
+              @for (session of todaySessions(); track session.id) {
+                <tr class="teacher-dashboard-tr">
+                  <td class="teacher-dashboard-td">
+                    <a class="teacher-dashboard-time-wrap" [routerLink]="sessionRoute(session)">
+                      <span class="teacher-dashboard-time">{{ formatTimeRange(session) }}</span>
+                      <span class="teacher-dashboard-room">{{ session.room }}</span>
+                    </a>
+                  </td>
+                  <td class="teacher-dashboard-td">
+                    <a class="teacher-dashboard-group" [routerLink]="sessionRoute(session)">
+                      {{ session.groupName }}
+                      <span>{{ session.subject }}</span>
+                    </a>
+                  </td>
+                  <td class="teacher-dashboard-td teacher-dashboard-students">
+                    <div class="teacher-dashboard-students-wrap">
+                      <mat-icon class="teacher-dashboard-icon-md">group</mat-icon>
+                      {{ session.studentsCount }}
+                    </div>
+                  </td>
+                  <td class="teacher-dashboard-td">
+                    <span class="teacher-dashboard-status {{ statusClass(session) }}">
+                      <span class="teacher-dashboard-status-dot {{ statusDotClass(session) }}"></span>
+                      {{ sessionStatus(session) }}
+                    </span>
+                  </td>
+                  <td class="teacher-dashboard-td teacher-dashboard-td--actions">
+                    <div class="teacher-dashboard-row-actions">
+                      <a class="teacher-dashboard-attendance-btn" [routerLink]="attendanceRoute(session)">
+                        <mat-icon class="teacher-dashboard-icon-xs">checklist</mat-icon>
+                        Attendance
+                      </a>
+                      <a class="teacher-dashboard-note-btn" [routerLink]="sessionRoute(session)" title="Open session" aria-label="Open session">
+                        <mat-icon class="teacher-dashboard-icon-lg">chevron_right</mat-icon>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
         }
       </div>
-    </div>
+    </section>
+
+    <aside class="teacher-dashboard-side">
+      <section class="teacher-dashboard-next">
+        <div class="teacher-dashboard-section-head">
+          <h3 class="teacher-dashboard-section-title">Next Session</h3>
+        </div>
+
+        @if (nextSession(); as session) {
+          <div class="teacher-dashboard-next-card">
+            <div>
+              <span class="teacher-dashboard-next-label">{{ formatNextSessionCountdown(session) }}</span>
+              <h4>{{ session.groupName }}</h4>
+              <p>{{ session.subject }}</p>
+            </div>
+            <dl>
+              <div>
+                <dt>Time</dt>
+                <dd>{{ formatTimeRange(session) }}</dd>
+              </div>
+              <div>
+                <dt>Room</dt>
+                <dd>{{ session.room }}</dd>
+              </div>
+              <div>
+                <dt>Students</dt>
+                <dd>{{ session.studentsCount }}</dd>
+              </div>
+            </dl>
+            <div class="teacher-dashboard-next-actions">
+              <a class="teacher-dashboard-action teacher-dashboard-action--primary" [routerLink]="sessionRoute(session)">
+                Open session
+              </a>
+              <a class="teacher-dashboard-action teacher-dashboard-action--secondary" [routerLink]="attendanceRoute(session)">
+                Attendance
+              </a>
+            </div>
+          </div>
+        } @else {
+          <div class="teacher-dashboard-state teacher-dashboard-state--compact">
+            <mat-icon>event_busy</mat-icon>
+            <span>No upcoming session today.</span>
+          </div>
+        }
+      </section>
+
+      <section class="teacher-dashboard-attention">
+        <div class="teacher-dashboard-section-head">
+          <h3 class="teacher-dashboard-section-title">Needs Attention</h3>
+        </div>
+
+        <div class="teacher-dashboard-attention-list">
+          @for (item of attentionItems(); track item.title) {
+            <a class="teacher-dashboard-attention-item" [routerLink]="item.route">
+              <div class="teacher-dashboard-attention-main">
+                <div class="teacher-dashboard-attention-avatar">
+                  <mat-icon>{{ item.icon }}</mat-icon>
+                </div>
+                <div class="teacher-dashboard-attention-meta">
+                  <h4 class="teacher-dashboard-attention-name">{{ item.title }}</h4>
+                  <p class="teacher-dashboard-attention-group">{{ item.meta }}</p>
+                  <span class="teacher-dashboard-attention-chip teacher-dashboard-attention-chip--{{ item.severity }}">
+                    {{ item.severity }}
+                  </span>
+                </div>
+              </div>
+              <mat-icon class="teacher-dashboard-icon-lg">chevron_right</mat-icon>
+            </a>
+          } @empty {
+            <div class="teacher-dashboard-state teacher-dashboard-state--compact">
+              <mat-icon>task_alt</mat-icon>
+              <span>Nothing needs attention right now.</span>
+            </div>
+          }
+        </div>
+      </section>
+    </aside>
   </div>
+
+  <section class="teacher-dashboard-groups">
+    <div class="teacher-dashboard-section-head">
+      <h3 class="teacher-dashboard-section-title">My Groups</h3>
+      <a routerLink="/teacher/groups" class="teacher-dashboard-section-link">View all groups</a>
+    </div>
+
+    <div class="teacher-dashboard-group-list">
+      @for (group of visibleGroups(); track group.id) {
+        <a class="teacher-dashboard-group-card" [routerLink]="groupRoute(group)">
+          <div>
+            <h4>{{ group.name }}</h4>
+            <p>{{ group.subject || 'Subject not set' }}</p>
+          </div>
+          <dl>
+            <div>
+              <dt>Students</dt>
+              <dd>{{ group.studentsCount }}</dd>
+            </div>
+            <div>
+              <dt>Schedule</dt>
+              <dd>{{ formatGroupSchedule(group) }}</dd>
+            </div>
+          </dl>
+          <mat-icon>chevron_right</mat-icon>
+        </a>
+      } @empty {
+        <div class="teacher-dashboard-state">
+          <mat-icon>groups</mat-icon>
+          <span>No assigned groups found.</span>
+        </div>
+      }
+    </div>
+  </section>
 </div>

@@ -36,6 +36,39 @@
         </div>
       </div>
 
+      <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4" aria-label="Group schedule summary">
+        @for (card of scheduleCards(); track card.filter) {
+          <button
+            type="button"
+            (click)="selectScheduleFilter(card.filter)"
+            class="schedule-summary-card"
+            [class.schedule-summary-card--active]="scheduleFilter() === card.filter"
+            [class.schedule-summary-card--unavailable]="scheduleSummaryError() && card.filter !== 'all'"
+            [attr.aria-pressed]="scheduleFilter() === card.filter"
+          >
+            <span class="schedule-summary-card__icon">
+              <mat-icon>{{ card.icon }}</mat-icon>
+            </span>
+            <span class="schedule-summary-card__content">
+              <span class="schedule-summary-card__label">{{ card.label }}</span>
+              <span class="schedule-summary-card__value">
+                @if (scheduleSummaryLoading() && card.filter !== 'all') {
+                  <span class="schedule-summary-card__loading" aria-label="Loading schedule summary"></span>
+                } @else {
+                  {{ card.value }}
+                }
+              </span>
+            </span>
+          </button>
+        }
+      </section>
+
+      @if (scheduleSummaryError()) {
+        <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-200">
+          Schedule cards are unavailable: {{ scheduleSummaryError() }}. The group list is still available.
+        </div>
+      }
+
       <!-- Search & Filter Bar -->
       <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div class="flex flex-col md:flex-row gap-4 items-center">
@@ -134,7 +167,7 @@
               }
             </div>
 
-            @if (activeFiltersCount() > 0 || searchQuery()) {
+            @if (activeFiltersCount() > 0 || searchQuery() || hasScheduleFilter()) {
               <button 
                 (click)="clearAllFilters()"
                 class="flex items-center gap-1.5 px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl text-xs font-bold transition-all whitespace-nowrap"
@@ -221,7 +254,15 @@
                 </thead>
                 <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
                   @for (group of pagedGroups(); track group.id) {
-                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                    <tr
+                      class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
+                      role="link"
+                      tabindex="0"
+                      [attr.aria-label]="'View details for ' + group.name"
+                      (click)="openGroupDetails(group.id)"
+                      (keydown.enter)="openGroupDetails(group.id)"
+                      (keydown.space)="$event.preventDefault(); openGroupDetails(group.id)"
+                    >
                       <td class="px-6 py-4">
                         <span class="font-bold text-slate-900 dark:text-white">{{ group.name }}</span>
                       </td>
@@ -239,15 +280,15 @@
                       </td>
                       <td class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-2">
-                          <a [routerLink]="['/tenant/groups', group.id]" class="p-2 text-indigo-600 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="Manage">
+                          <a [routerLink]="['/tenant/groups', group.id]" (click)="$event.stopPropagation()" class="p-2 text-indigo-600 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="Manage">
                             <mat-icon class="text-sm block">settings</mat-icon>
                           </a>
-                          <a [routerLink]="['/tenant/groups', group.id, 'edit']" class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Edit">
+                          <a [routerLink]="['/tenant/groups', group.id, 'edit']" (click)="$event.stopPropagation()" class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Edit">
                             <mat-icon class="text-sm block">edit</mat-icon>
                           </a>
                           <button
                             type="button"
-                            (click)="requestDelete(group.id)"
+                            (click)="$event.stopPropagation(); requestDelete(group.id)"
                             class="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
                             title="Delete group"
                             aria-label="Delete group"
@@ -310,8 +351,8 @@
           <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
             <mat-icon class="text-slate-500">search_off</mat-icon>
           </div>
-          <h3 class="text-lg font-bold text-slate-900 dark:text-white">No groups found</h3>
-          <p class="text-slate-500 dark:text-slate-500 text-sm max-w-xs mx-auto mt-1">We couldn't find any academic groups matching your current search and filter criteria.</p>
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ emptyStateTitle() }}</h3>
+          <p class="text-slate-500 dark:text-slate-500 text-sm max-w-xs mx-auto mt-1">{{ emptyStateDescription() }}</p>
           <button (click)="clearAllFilters()" class="mt-6 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-all">
             Clear All Filters
           </button>

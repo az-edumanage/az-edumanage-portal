@@ -2,7 +2,11 @@ export interface GroupStudent {
   id: string;
   name: string;
   email: string;
+  phone?: string | null;
   barcodeNumber?: string | null;
+  parentName?: string | null;
+  parentPhone?: string | null;
+  notifyParent?: boolean;
   attendanceRate: number;
   lastAttendance: string;
   attendanceTime?: string | null;
@@ -24,6 +28,83 @@ export interface GroupCalendarEvent {
   startTime: string;
   endTime: string;
   room?: string | null;
+}
+
+export interface GroupSessionPostponeRoomOption {
+  id: string;
+  name: string;
+  available: boolean;
+  unavailableReason?: string | null;
+}
+
+export interface GroupSessionPostponeAvailability {
+  date: string;
+  startTime: string;
+  duration: number;
+  teacherAvailable: boolean;
+  teacherMessage?: string | null;
+  rooms: GroupSessionPostponeRoomOption[];
+}
+
+export interface GroupSessionPostponeRequest {
+  method: 'BOOK_APPOINTMENT' | 'REPLACE_SCHEDULE';
+  date?: string | null;
+  startTime?: string | null;
+  roomId?: string | null;
+  reason?: string | null;
+}
+
+export interface GroupSessionPostponeAffectedSession {
+  sessionId: string;
+  action: 'REMOVED' | 'ADDED' | 'SHIFTED' | 'APPENDED';
+  date?: string | null;
+  startTime?: string | null;
+  roomId?: string | null;
+}
+
+export interface GroupSessionPostponeResult {
+  method: 'BOOK_APPOINTMENT' | 'REPLACE_SCHEDULE';
+  originalSessionId: string;
+  newSessionId?: string | null;
+  message: string;
+  affectedSessions: GroupSessionPostponeAffectedSession[];
+}
+
+export interface GroupSessionTeacherAbsence {
+  sessionId: string;
+  originalTeacherId?: string | null;
+  originalTeacherName: string;
+  absenceRecorded: boolean;
+  replacementTeacherId?: string | null;
+  replacementTeacherName?: string | null;
+  message?: string | null;
+}
+
+export interface GroupSessionTeacherOption {
+  id: string;
+  name: string;
+}
+
+export interface GroupStudentAssessmentScore {
+  bloomId: string;
+  studentGrade?: number | null;
+  finalGrade?: number | null;
+  updatedAt?: string | null;
+}
+
+export interface GroupStudentAssessment {
+  groupId: string;
+  sessionId: string;
+  studentId: string;
+  scores: GroupStudentAssessmentScore[];
+}
+
+export interface GroupStudentAssessmentSaveRequest {
+  scores: Array<{
+    bloomId: string;
+    studentGrade?: number | null;
+    finalGrade?: number | null;
+  }>;
 }
 
 export interface GroupLesson {
@@ -194,8 +275,12 @@ export interface TenantGroupStudentResponse {
   id: string;
   name: string;
   email: string;
+  phone?: string | null;
   barcodeNumber?: string | null;
   barcode_number?: string | null;
+  parentName?: string | null;
+  parentPhone?: string | null;
+  notifyParent?: boolean | null;
   attendanceRate: number | null;
   lastAttendance: string;
   attendanceTime?: string | null;

@@ -7,6 +7,13 @@ import {
   GroupExamRow,
   GroupLesson,
   GroupLessonContent,
+  GroupSessionPostponeAvailability,
+  GroupSessionPostponeRequest,
+  GroupSessionPostponeResult,
+  GroupSessionTeacherAbsence,
+  GroupSessionTeacherOption,
+  GroupStudentAssessment,
+  GroupStudentAssessmentSaveRequest,
   GroupSessionPublication,
   GroupSessionLibraryContent,
   TenantGroupDetailsResponse,
@@ -27,21 +34,29 @@ import {
 export class TenantGroupDetailsDataService {
   private readonly http = inject(HttpClient);
   private readonly groupsUrl = `${environment.apiBaseUrl}/tenant/groups`;
+  private readonly teacherGroupsUrl = `${environment.apiBaseUrl}/teacher/groups`;
 
-  loadGroupById(id: string | null): Observable<GroupDetails> {
+  loadGroupById(
+    id: string | null,
+    options: { sessionId?: string | null; scope?: 'tenant' | 'teacher' } = {},
+  ): Observable<GroupDetails> {
     const groupId = id?.trim();
     if (!groupId) {
       return throwError(() => new Error('Group is required'));
     }
 
-    return this.http.get<TenantGroupDetailsResponse>(this.groupDetailsUrl(groupId)).pipe(
+    const sessionId = options.sessionId?.trim();
+    const httpOptions = sessionId ? { params: new HttpParams().set('sessionId', sessionId) } : {};
+
+    return this.http.get<TenantGroupDetailsResponse>(this.groupDetailsUrl(groupId, options.scope), httpOptions).pipe(
       map((response) => this.toGroupDetails(response)),
       catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load group details')),
     );
   }
 
-  groupDetailsUrl(id: string): string {
-    return `${this.groupsUrl}/${encodeURIComponent(id)}`;
+  groupDetailsUrl(id: string, scope: 'tenant' | 'teacher' = 'tenant'): string {
+    const baseUrl = scope === 'teacher' ? this.teacherGroupsUrl : this.groupsUrl;
+    return `${baseUrl}/${encodeURIComponent(id)}`;
   }
 
   removeStudentFromGroup(groupId: string | null, studentId: string): Observable<void> {
@@ -56,12 +71,12 @@ export class TenantGroupDetailsDataService {
       .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to exit group')));
   }
 
-  loadGroupExams(groupId: string | null): Observable<GroupExamRow[]> {
+  loadGroupExams(groupId: string | null, options: { scope?: 'tenant' | 'teacher' } = {}): Observable<GroupExamRow[]> {
     const selectedGroupId = groupId?.trim();
     if (!selectedGroupId) {
       return throwError(() => new Error('Group is required'));
     }
-    return this.http.get<GroupExamRow[]>(`${this.groupDetailsUrl(selectedGroupId)}/exams`).pipe(
+    return this.http.get<GroupExamRow[]>(`${this.groupDetailsUrl(selectedGroupId, options.scope)}/exams`).pipe(
       map((response) => (response ?? []).map((exam) => this.toGroupExamRow(exam))),
       catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load exams')),
     );
@@ -95,7 +110,10 @@ export class TenantGroupDetailsDataService {
       .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to delete exam')));
   }
 
-  loadGroupLessons(groupId: string | null, options: { sync?: boolean; sessionId?: string | null } = {}): Observable<GroupLesson[]> {
+  loadGroupLessons(
+    groupId: string | null,
+    options: { sync?: boolean; sessionId?: string | null; scope?: 'tenant' | 'teacher' } = {},
+  ): Observable<GroupLesson[]> {
     const selectedGroupId = groupId?.trim();
     if (!selectedGroupId) {
       return throwError(() => new Error('Group is required'));
@@ -107,7 +125,10 @@ export class TenantGroupDetailsDataService {
     if (options.sessionId?.trim()) {
       params = params.set('sessionId', options.sessionId.trim());
     }
-    return this.http.get<TenantGroupLessonResponse[]>(`${this.groupDetailsUrl(selectedGroupId)}/lessons`, { params }).pipe(
+    return this.http.get<TenantGroupLessonResponse[]>(
+      `${this.groupDetailsUrl(selectedGroupId, options.scope)}/lessons`,
+      { params },
+    ).pipe(
       map((response) => response.map((lesson) => this.toGroupLesson(lesson))),
       catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load lessons')),
     );
@@ -167,7 +188,11 @@ export class TenantGroupDetailsDataService {
       );
   }
 
-  loadGroupLessonContent(groupId: string | null, lessonId: string | null): Observable<GroupLessonContent[]> {
+  loadGroupLessonContent(
+    groupId: string | null,
+    lessonId: string | null,
+    options: { scope?: 'tenant' | 'teacher' } = {},
+  ): Observable<GroupLessonContent[]> {
     const selectedGroupId = groupId?.trim();
     const selectedLessonId = lessonId?.trim();
     if (!selectedGroupId) {
@@ -177,7 +202,7 @@ export class TenantGroupDetailsDataService {
       return throwError(() => new Error('Lesson is required'));
     }
     return this.http.get<TenantGroupLessonContentResponse[]>(
-      `${this.groupDetailsUrl(selectedGroupId)}/lessons/${encodeURIComponent(selectedLessonId)}/content`,
+      `${this.groupDetailsUrl(selectedGroupId, options.scope)}/lessons/${encodeURIComponent(selectedLessonId)}/content`,
     ).pipe(
       map((response) => response.map((content) => this.toGroupLessonContent(content))),
       catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load lesson content')),
@@ -312,12 +337,192 @@ export class TenantGroupDetailsDataService {
       );
   }
 
-  loadGroupLibraryFolders(groupId: string | null): Observable<TenantCurriculumMaterialFolder[]> {
+  loadSessionPostponeAvailability(
+    groupId: string | null,
+    sessionId: string | null,
+    date: string,
+    startTime: string,
+  ): Observable<GroupSessionPostponeAvailability> {
+    const selectedGroupId = groupId?.trim();
+    const selectedSessionId = sessionId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    if (!selectedSessionId) {
+      return throwError(() => new Error('Session is required'));
+    }
+    const selectedDate = date?.trim();
+    const selectedStartTime = startTime?.trim();
+    if (!selectedDate || !selectedStartTime) {
+      return throwError(() => new Error('Appointment date and time are required'));
+    }
+    const params = new HttpParams().set('date', selectedDate).set('startTime', selectedStartTime);
+    return this.http
+      .get<GroupSessionPostponeAvailability>(
+        `${this.groupDetailsUrl(selectedGroupId)}/sessions/${encodeURIComponent(selectedSessionId)}/postpone/availability`,
+        { params },
+      )
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load appointment availability')));
+  }
+
+  postponeGroupSession(
+    groupId: string | null,
+    sessionId: string | null,
+    payload: GroupSessionPostponeRequest,
+  ): Observable<GroupSessionPostponeResult> {
+    const selectedGroupId = groupId?.trim();
+    const selectedSessionId = sessionId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    if (!selectedSessionId) {
+      return throwError(() => new Error('Session is required'));
+    }
+    return this.http
+      .post<GroupSessionPostponeResult>(
+        `${this.groupDetailsUrl(selectedGroupId)}/sessions/${encodeURIComponent(selectedSessionId)}/postpone`,
+        payload,
+      )
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to postpone session')));
+  }
+
+  loadSessionTeacherAbsence(groupId: string | null, sessionId: string | null): Observable<GroupSessionTeacherAbsence> {
+    const selectedGroupId = groupId?.trim();
+    const selectedSessionId = sessionId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    if (!selectedSessionId) {
+      return throwError(() => new Error('Session is required'));
+    }
+    return this.http
+      .get<GroupSessionTeacherAbsence>(
+        `${this.groupDetailsUrl(selectedGroupId)}/sessions/${encodeURIComponent(selectedSessionId)}/teacher-absence`,
+      )
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load teacher absence status')));
+  }
+
+  recordSessionTeacherAbsence(
+    groupId: string | null,
+    sessionId: string | null,
+    payload: { reason?: string | null } = {},
+  ): Observable<GroupSessionTeacherAbsence> {
+    const selectedGroupId = groupId?.trim();
+    const selectedSessionId = sessionId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    if (!selectedSessionId) {
+      return throwError(() => new Error('Session is required'));
+    }
+    return this.http
+      .post<GroupSessionTeacherAbsence>(
+        `${this.groupDetailsUrl(selectedGroupId)}/sessions/${encodeURIComponent(selectedSessionId)}/teacher-absence`,
+        payload,
+      )
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to record teacher absence')));
+  }
+
+  loadAvailableReplacementTeachers(groupId: string | null, sessionId: string | null): Observable<GroupSessionTeacherOption[]> {
+    const selectedGroupId = groupId?.trim();
+    const selectedSessionId = sessionId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    if (!selectedSessionId) {
+      return throwError(() => new Error('Session is required'));
+    }
+    return this.http
+      .get<GroupSessionTeacherOption[]>(
+        `${this.groupDetailsUrl(selectedGroupId)}/sessions/${encodeURIComponent(selectedSessionId)}/teacher-absence/replacements`,
+      )
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load replacement teachers')));
+  }
+
+  replaceSessionTeacher(
+    groupId: string | null,
+    sessionId: string | null,
+    payload: { replacementTeacherId: string; reason?: string | null },
+  ): Observable<GroupSessionTeacherAbsence> {
+    const selectedGroupId = groupId?.trim();
+    const selectedSessionId = sessionId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    if (!selectedSessionId) {
+      return throwError(() => new Error('Session is required'));
+    }
+    if (!payload.replacementTeacherId?.trim()) {
+      return throwError(() => new Error('Replacement teacher is required'));
+    }
+    return this.http
+      .post<GroupSessionTeacherAbsence>(
+        `${this.groupDetailsUrl(selectedGroupId)}/sessions/${encodeURIComponent(selectedSessionId)}/teacher-absence/replacement`,
+        {
+          replacementTeacherId: payload.replacementTeacherId.trim(),
+          reason: payload.reason?.trim() || null,
+        },
+      )
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to replace session teacher')));
+  }
+
+  loadStudentAssessment(groupId: string | null, sessionId: string | null, studentId: string | null): Observable<GroupStudentAssessment> {
+    const selectedGroupId = groupId?.trim();
+    const selectedSessionId = sessionId?.trim();
+    const selectedStudentId = studentId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    if (!selectedSessionId) {
+      return throwError(() => new Error('Session is required'));
+    }
+    if (!selectedStudentId) {
+      return throwError(() => new Error('Student is required'));
+    }
+    return this.http
+      .get<GroupStudentAssessment>(
+        `${this.groupDetailsUrl(selectedGroupId)}/sessions/${encodeURIComponent(selectedSessionId)}/students/${encodeURIComponent(selectedStudentId)}/assessment`,
+      )
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load student assessment')));
+  }
+
+  saveStudentAssessment(
+    groupId: string | null,
+    sessionId: string | null,
+    studentId: string | null,
+    payload: GroupStudentAssessmentSaveRequest,
+  ): Observable<GroupStudentAssessment> {
+    const selectedGroupId = groupId?.trim();
+    const selectedSessionId = sessionId?.trim();
+    const selectedStudentId = studentId?.trim();
+    if (!selectedGroupId) {
+      return throwError(() => new Error('Group is required'));
+    }
+    if (!selectedSessionId) {
+      return throwError(() => new Error('Session is required'));
+    }
+    if (!selectedStudentId) {
+      return throwError(() => new Error('Student is required'));
+    }
+    return this.http
+      .put<GroupStudentAssessment>(
+        `${this.groupDetailsUrl(selectedGroupId)}/sessions/${encodeURIComponent(selectedSessionId)}/students/${encodeURIComponent(selectedStudentId)}/assessment`,
+        payload,
+      )
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to save student assessment')));
+  }
+
+  loadGroupLibraryFolders(
+    groupId: string | null,
+    options: { scope?: 'tenant' | 'teacher' } = {},
+  ): Observable<TenantCurriculumMaterialFolder[]> {
     const selectedGroupId = groupId?.trim();
     if (!selectedGroupId) {
       return throwError(() => new Error('Group is required'));
     }
-    return this.http.get<TenantCurriculumMaterialFolder[]>(`${this.groupDetailsUrl(selectedGroupId)}/library/folders`).pipe(
+    return this.http.get<TenantCurriculumMaterialFolder[]>(
+      `${this.groupDetailsUrl(selectedGroupId, options.scope)}/library/folders`,
+    ).pipe(
       map((response) => (response ?? []).map((folder) => this.toMaterialFolder(folder))),
       catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load library folders')),
     );
@@ -334,12 +539,18 @@ export class TenantGroupDetailsDataService {
     );
   }
 
-  loadGroupLibraryFiles(groupId: string | null, folderId: string): Observable<TenantCurriculumMaterialFile[]> {
+  loadGroupLibraryFiles(
+    groupId: string | null,
+    folderId: string,
+    options: { scope?: 'tenant' | 'teacher' } = {},
+  ): Observable<TenantCurriculumMaterialFile[]> {
     const selectedGroupId = groupId?.trim();
     if (!selectedGroupId) {
       return throwError(() => new Error('Group is required'));
     }
-    return this.http.get<TenantCurriculumMaterialFile[]>(`${this.groupDetailsUrl(selectedGroupId)}/library/folders/${encodeURIComponent(folderId)}/files`).pipe(
+    return this.http.get<TenantCurriculumMaterialFile[]>(
+      `${this.groupDetailsUrl(selectedGroupId, options.scope)}/library/folders/${encodeURIComponent(folderId)}/files`,
+    ).pipe(
       map((response) => (response ?? []).map((file) => this.toMaterialFile(file))),
       catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load library files')),
     );
@@ -358,12 +569,18 @@ export class TenantGroupDetailsDataService {
     );
   }
 
-  loadGroupLibraryNotes(groupId: string | null, folderId: string): Observable<TenantCurriculumMaterialNote[]> {
+  loadGroupLibraryNotes(
+    groupId: string | null,
+    folderId: string,
+    options: { scope?: 'tenant' | 'teacher' } = {},
+  ): Observable<TenantCurriculumMaterialNote[]> {
     const selectedGroupId = groupId?.trim();
     if (!selectedGroupId) {
       return throwError(() => new Error('Group is required'));
     }
-    return this.http.get<TenantCurriculumMaterialNote[]>(`${this.groupDetailsUrl(selectedGroupId)}/library/folders/${encodeURIComponent(folderId)}/notes`).pipe(
+    return this.http.get<TenantCurriculumMaterialNote[]>(
+      `${this.groupDetailsUrl(selectedGroupId, options.scope)}/library/folders/${encodeURIComponent(folderId)}/notes`,
+    ).pipe(
       catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load library notes')),
     );
   }
@@ -391,12 +608,18 @@ export class TenantGroupDetailsDataService {
     );
   }
 
-  loadGroupLibraryLinks(groupId: string | null, folderId: string): Observable<TenantCurriculumMaterialLink[]> {
+  loadGroupLibraryLinks(
+    groupId: string | null,
+    folderId: string,
+    options: { scope?: 'tenant' | 'teacher' } = {},
+  ): Observable<TenantCurriculumMaterialLink[]> {
     const selectedGroupId = groupId?.trim();
     if (!selectedGroupId) {
       return throwError(() => new Error('Group is required'));
     }
-    return this.http.get<TenantCurriculumMaterialLink[]>(`${this.groupDetailsUrl(selectedGroupId)}/library/folders/${encodeURIComponent(folderId)}/links`).pipe(
+    return this.http.get<TenantCurriculumMaterialLink[]>(
+      `${this.groupDetailsUrl(selectedGroupId, options.scope)}/library/folders/${encodeURIComponent(folderId)}/links`,
+    ).pipe(
       catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load library links')),
     );
   }
@@ -444,7 +667,11 @@ export class TenantGroupDetailsDataService {
         id: student.id,
         name: student.name,
         email: student.email,
+        phone: student.phone ?? null,
         barcodeNumber: student.barcodeNumber ?? student.barcode_number ?? null,
+        parentName: student.parentName ?? null,
+        parentPhone: student.parentPhone ?? null,
+        notifyParent: student.notifyParent ?? false,
         attendanceRate: student.attendanceRate ?? 0,
         lastAttendance: student.lastAttendance,
         attendanceTime: student.attendanceTime ?? null,

@@ -2,6 +2,7 @@ import { Component, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { startWith } from 'rxjs';
 import { TeacherAssignedGroup } from '../../models/teacher.models';
@@ -10,7 +11,7 @@ import { TeacherGroupsFacade } from '../../state/teacher-groups.facade';
 @Component({
   selector: 'app-teacher-groups',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatIconModule],
+  imports: [CommonModule, ReactiveFormsModule, MatIconModule, RouterModule],
   templateUrl: './teacher-groups.component.html',
   styleUrl: './teacher-groups.component.css',
 })

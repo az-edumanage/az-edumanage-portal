@@ -1,0 +1,1018 @@
+:host {
+  display: block;
+}
+
+.reports-page {
+  display: grid;
+  gap: 1.125rem;
+  padding-bottom: 2rem;
+  color: rgb(15 23 42);
+}
+
+.reports-header,
+.quick-reports,
+.template-panel,
+.custom-report,
+.report-preview,
+.saved-reports,
+.template-dialog,
+.report-alert {
+  min-width: 0;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 1rem;
+  background: white;
+}
+
+.reports-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.reports-header h1,
+.section-heading h2,
+.section-heading h3,
+.preview-header h2,
+.template-dialog h2 {
+  margin: 0;
+  color: rgb(15 23 42);
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.reports-header h1 {
+  font-size: 1.625rem;
+}
+
+.reports-header p,
+.section-heading p,
+.preview-header p,
+.template-card p,
+.saved-card p,
+.template-dialog p,
+.advanced-options small {
+  margin: 0.25rem 0 0;
+  color: rgb(71 85 105);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.quick-reports,
+.custom-report,
+.report-preview,
+.saved-reports {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.section-heading,
+.preview-header,
+.template-dialog header,
+.template-dialog footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.section-heading.compact h3 {
+  font-size: 1.125rem;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0.75rem;
+}
+
+.category-card,
+.template-card,
+.saved-card,
+.chart-placeholder,
+.report-summary-card {
+  min-width: 0;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.875rem;
+  background: rgb(255 255 255);
+}
+
+.category-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.category-card:hover,
+.category-card:focus-visible,
+.category-card.active {
+  border-color: rgb(79 70 229);
+  background: rgb(238 242 255);
+}
+
+.category-card:hover {
+  transform: translateY(-1px);
+}
+
+.category-card:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible {
+  outline: 3px solid rgb(129 140 248 / 0.4);
+  outline-offset: 2px;
+}
+
+.category-card strong,
+.template-card h4,
+.saved-card h3 {
+  display: block;
+  margin: 0;
+  color: rgb(15 23 42);
+  font-size: 0.9375rem;
+  font-weight: 800;
+}
+
+.category-card small {
+  display: block;
+  margin-top: 0.25rem;
+  color: rgb(71 85 105);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.category-icon,
+.template-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  color: rgb(79 70 229);
+  background: rgb(238 242 255);
+}
+
+.template-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgb(248 250 252);
+}
+
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 0.75rem;
+}
+
+.template-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 1rem;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.template-card:hover {
+  border-color: rgb(203 213 225);
+  background: rgb(248 250 252);
+}
+
+.template-card .primary-action {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+.custom-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.wide,
+.choice-block,
+.advanced-options,
+.custom-actions {
+  grid-column: 1 / -1;
+}
+
+.form-field,
+.choice-block,
+.dialog-section {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.form-field span,
+.choice-block > span,
+.dialog-section h3 {
+  margin: 0;
+  color: rgb(51 65 85);
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+.form-field input,
+.form-field select {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid rgb(203 213 225);
+  border-radius: 0.75rem;
+  background: white;
+  color: rgb(15 23 42);
+  padding: 0 0.875rem;
+  font: inherit;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.choice-list,
+.checkbox-list,
+.filter-builder,
+.advanced-grid,
+.preview-actions,
+.saved-actions,
+.saved-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.checkbox-list {
+  align-items: stretch;
+}
+
+.checkbox-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  border: 1px solid rgb(203 213 225);
+  border-radius: 0.75rem;
+  background: white;
+  color: rgb(51 65 85);
+  padding: 0 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.checkbox-row:hover,
+.checkbox-row:focus-within {
+  border-color: rgb(165 180 252);
+  background: rgb(248 250 252);
+}
+
+.checkbox-row:has(input:checked) {
+  border-color: rgb(129 140 248);
+  color: rgb(67 56 202);
+  background: rgb(238 242 255);
+}
+
+.checkbox-row input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: rgb(79 70 229);
+}
+
+.filter-builder {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1fr) minmax(8rem, 0.8fr) minmax(8rem, 1fr) minmax(8rem, 1fr) auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.filter-row select,
+.filter-row input {
+  min-height: 2.5rem;
+  border: 1px solid rgb(203 213 225);
+  border-radius: 0.75rem;
+  background: white;
+  color: rgb(15 23 42);
+  padding: 0 0.75rem;
+  font: inherit;
+  font-size: 0.875rem;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.form-field input:hover,
+.form-field select:hover,
+.filter-row select:hover,
+.filter-row input:hover {
+  border-color: rgb(148 163 184);
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.filter-row select:focus,
+.filter-row input:focus {
+  border-color: rgb(99 102 241);
+  box-shadow: 0 0 0 3px rgb(129 140 248 / 0.22);
+  outline: none;
+}
+
+.compact-action {
+  justify-self: start;
+  width: fit-content;
+}
+
+.inline-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: rgb(71 85 105);
+  font-size: 0.875rem;
+}
+
+.choice-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 2.25rem;
+  border: 1px solid rgb(203 213 225);
+  border-radius: 999px;
+  background: white;
+  color: rgb(51 65 85);
+  padding: 0 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.choice-chip mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+}
+
+.choice-chip.selected {
+  border-color: rgb(79 70 229);
+  color: rgb(67 56 202);
+  background: rgb(238 242 255);
+}
+
+.advanced-options {
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.875rem;
+  background: rgb(248 250 252);
+}
+
+.advanced-options summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.advanced-options summary::-webkit-details-marker {
+  display: none;
+}
+
+.advanced-options[open] summary {
+  border-bottom: 1px solid rgb(226 232 240);
+}
+
+.advanced-grid {
+  padding: 1rem;
+}
+
+.advanced-grid button,
+.saved-actions button,
+.icon-button {
+  min-height: 2.25rem;
+  border: 1px solid rgb(203 213 225);
+  border-radius: 0.625rem;
+  background: white;
+  color: rgb(51 65 85);
+  padding: 0 0.75rem;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.custom-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.primary-action,
+.secondary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  border-radius: 0.75rem;
+  padding: 0 0.875rem;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.primary-action {
+  border: 1px solid rgb(79 70 229);
+  background: rgb(79 70 229);
+  color: white;
+}
+
+.secondary-action {
+  border: 1px solid rgb(203 213 225);
+  background: white;
+  color: rgb(51 65 85);
+}
+
+.primary-action:hover:not(:disabled) {
+  border-color: rgb(67 56 202);
+  background: rgb(67 56 202);
+}
+
+.secondary-action:hover:not(:disabled),
+.advanced-grid button:hover:not(:disabled),
+.saved-actions button:hover:not(:disabled),
+.icon-button:hover:not(:disabled) {
+  border-color: rgb(165 180 252);
+  color: rgb(67 56 202);
+  background: rgb(248 250 252);
+}
+
+.primary-action:active:not(:disabled),
+.secondary-action:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.primary-action:disabled,
+.secondary-action:disabled,
+.advanced-grid button:disabled,
+.saved-actions button:disabled,
+.icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.primary-action mat-icon,
+.secondary-action mat-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  font-size: 1.125rem;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem;
+}
+
+.report-summary-card {
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem;
+}
+
+.report-summary-card span {
+  color: rgb(71 85 105);
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+.report-summary-card strong {
+  color: rgb(15 23 42);
+  font-size: 1.25rem;
+  font-weight: 850;
+}
+
+.report-summary-card.warning strong {
+  color: rgb(180 83 9);
+}
+
+.report-summary-card.success strong {
+  color: rgb(22 101 52);
+}
+
+.preview-layout {
+  display: grid;
+  grid-template-columns: minmax(12rem, 0.36fr) minmax(0, 0.64fr);
+  gap: 1rem;
+}
+
+.preview-empty {
+  display: grid;
+  min-height: 12rem;
+  place-items: center;
+  gap: 0.375rem;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.875rem;
+  background: rgb(248 250 252);
+  color: rgb(71 85 105);
+  padding: 1rem;
+  text-align: center;
+}
+
+.preview-empty strong {
+  color: rgb(15 23 42);
+  font-weight: 850;
+}
+
+.preview-empty mat-icon {
+  color: rgb(79 70 229);
+}
+
+.compact-empty {
+  min-height: 8rem;
+}
+
+.chart-placeholder {
+  display: grid;
+  min-height: 14rem;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(248 250 252);
+  text-align: center;
+}
+
+.chart-placeholder div {
+  display: grid;
+  gap: 0.375rem;
+  justify-items: center;
+  color: rgb(71 85 105);
+}
+
+.chart-placeholder mat-icon {
+  color: rgb(79 70 229);
+}
+
+.preview-table-shell {
+  overflow: auto;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.875rem;
+  background: white;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 36rem;
+  background: white;
+}
+
+th,
+td {
+  padding: 0.875rem;
+  border-bottom: 1px solid rgb(226 232 240);
+  text-align: left;
+  white-space: nowrap;
+}
+
+th {
+  color: rgb(51 65 85);
+  background: rgb(248 250 252);
+  font-size: 0.8125rem;
+  font-weight: 850;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+td {
+  color: rgb(71 85 105);
+  font-size: 0.875rem;
+}
+
+tbody tr:hover td {
+  background: rgb(248 250 252);
+}
+
+.saved-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.saved-controls {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1fr) minmax(11rem, 0.42fr) minmax(11rem, 0.42fr);
+  align-items: end;
+}
+
+.saved-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 1rem;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.saved-card:hover {
+  border-color: rgb(203 213 225);
+  background: rgb(248 250 252);
+}
+
+.saved-actions {
+  justify-content: flex-end;
+}
+
+.saved-actions .favorite {
+  border-color: rgb(250 204 21);
+  color: rgb(161 98 7);
+  background: rgb(254 249 195);
+}
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgb(15 23 42 / 0.48);
+}
+
+.template-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 50;
+  display: grid;
+  gap: 1rem;
+  width: min(42rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  padding: 1rem;
+  transform: translate(-50%, -50%);
+}
+
+.template-dialog header {
+  align-items: flex-start;
+}
+
+.template-dialog header > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.template-dialog footer {
+  justify-content: flex-end;
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  padding: 0;
+}
+
+.report-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  color: rgb(153 27 27);
+  background: rgb(254 242 242);
+}
+
+.template-card-loading {
+  pointer-events: none;
+}
+
+.loading-box,
+.loading-line,
+.loading-button {
+  display: block;
+  border-radius: 0.625rem;
+  background: linear-gradient(90deg, rgb(226 232 240), rgb(241 245 249), rgb(226 232 240));
+  background-size: 200% 100%;
+  animation: report-loading-pulse 1.2s ease-in-out infinite;
+}
+
+.loading-line {
+  width: 72%;
+  height: 0.75rem;
+  margin-top: 0.375rem;
+}
+
+.wide-line {
+  width: 92%;
+  height: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.loading-button {
+  grid-column: 1 / -1;
+  width: 8rem;
+  height: 2.5rem;
+}
+
+@keyframes report-loading-pulse {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .reports-header,
+  .preview-header,
+  .section-heading,
+  .saved-card {
+    display: grid;
+  }
+
+  .custom-grid,
+  .preview-layout,
+  .saved-controls,
+  .filter-row {
+    grid-template-columns: 1fr;
+  }
+
+  .saved-actions,
+  .preview-actions {
+    justify-content: flex-start;
+  }
+
+  .saved-actions button,
+  .preview-actions .primary-action,
+  .preview-actions .secondary-action {
+    flex: 1 1 auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .reports-header,
+  .quick-reports,
+  .custom-report,
+  .report-preview,
+  .saved-reports,
+  .template-panel,
+  .template-dialog {
+    border-radius: 0.875rem;
+    padding: 0.875rem;
+  }
+
+  .category-grid,
+  .template-grid {
+    grid-template-columns: 1fr;
+  }
+
+  th,
+  td {
+    padding: 0.75rem;
+  }
+}
+
+:host-context(.dark) .reports-page {
+  color: rgb(226 232 240);
+}
+
+:host-context(.dark) .reports-header,
+:host-context(.dark) .quick-reports,
+:host-context(.dark) .template-panel,
+:host-context(.dark) .custom-report,
+:host-context(.dark) .report-preview,
+:host-context(.dark) .saved-reports,
+:host-context(.dark) .template-dialog,
+:host-context(.dark) .category-card,
+:host-context(.dark) .template-card,
+:host-context(.dark) .saved-card,
+:host-context(.dark) .chart-placeholder,
+:host-context(.dark) .report-summary-card,
+:host-context(.dark) .advanced-options,
+:host-context(.dark) .form-field input,
+:host-context(.dark) .form-field select,
+:host-context(.dark) .choice-chip,
+:host-context(.dark) .checkbox-row,
+:host-context(.dark) .filter-row select,
+:host-context(.dark) .filter-row input,
+:host-context(.dark) .secondary-action,
+:host-context(.dark) .advanced-grid button,
+:host-context(.dark) .saved-actions button,
+:host-context(.dark) .icon-button,
+:host-context(.dark) .preview-table-shell,
+:host-context(.dark) table {
+  border-color: rgb(51 65 85);
+  background: rgb(15 23 42);
+}
+
+:host-context(.dark) .template-panel,
+:host-context(.dark) .chart-placeholder,
+:host-context(.dark) th,
+:host-context(.dark) .advanced-options,
+:host-context(.dark) .preview-empty {
+  background: rgb(2 6 23);
+}
+
+:host-context(.dark) .reports-header h1,
+:host-context(.dark) .section-heading h2,
+:host-context(.dark) .section-heading h3,
+:host-context(.dark) .preview-header h2,
+:host-context(.dark) .template-dialog h2,
+:host-context(.dark) .category-card strong,
+:host-context(.dark) .template-card h4,
+:host-context(.dark) .saved-card h3,
+:host-context(.dark) .report-summary-card strong,
+:host-context(.dark) .preview-empty strong,
+:host-context(.dark) .form-field input,
+:host-context(.dark) .form-field select,
+:host-context(.dark) .filter-row select,
+:host-context(.dark) .filter-row input,
+:host-context(.dark) .checkbox-row {
+  color: rgb(248 250 252);
+}
+
+:host-context(.dark) .reports-header p,
+:host-context(.dark) .section-heading p,
+:host-context(.dark) .preview-header p,
+:host-context(.dark) .template-card p,
+:host-context(.dark) .saved-card p,
+:host-context(.dark) .template-dialog p,
+:host-context(.dark) .category-card small,
+:host-context(.dark) .report-summary-card span,
+:host-context(.dark) .preview-empty,
+:host-context(.dark) td,
+:host-context(.dark) .advanced-options small {
+  color: rgb(148 163 184);
+}
+
+:host-context(.dark) .category-card:hover,
+:host-context(.dark) .category-card:focus-visible,
+:host-context(.dark) .category-card.active,
+:host-context(.dark) .choice-chip.selected,
+:host-context(.dark) .checkbox-row:has(input:checked),
+:host-context(.dark) .checkbox-row:hover,
+:host-context(.dark) .checkbox-row:focus-within {
+  border-color: rgb(129 140 248);
+  background: rgb(30 41 59);
+}
+
+:host-context(.dark) .template-card:hover,
+:host-context(.dark) .saved-card:hover,
+:host-context(.dark) .secondary-action:hover:not(:disabled),
+:host-context(.dark) .advanced-grid button:hover:not(:disabled),
+:host-context(.dark) .saved-actions button:hover:not(:disabled),
+:host-context(.dark) .icon-button:hover:not(:disabled),
+:host-context(.dark) tbody tr:hover td {
+  border-color: rgb(71 85 105);
+  background: rgb(30 41 59);
+}
+
+:host-context(.dark) .secondary-action,
+:host-context(.dark) .choice-chip,
+:host-context(.dark) .advanced-grid button,
+:host-context(.dark) .saved-actions button,
+:host-context(.dark) .icon-button {
+  color: rgb(226 232 240);
+}
+
+:host-context(.dark) .preview-empty,
+:host-context(.dark) th,
+:host-context(.dark) td {
+  border-color: rgb(51 65 85);
+}
+
+:host-context(.dark) .loading-box,
+:host-context(.dark) .loading-line,
+:host-context(.dark) .loading-button {
+  background: linear-gradient(90deg, rgb(30 41 59), rgb(51 65 85), rgb(30 41 59));
+  background-size: 200% 100%;
+}
+
+:host-context(.dark) .report-alert {
+  border-color: rgb(127 29 29);
+  color: rgb(254 202 202);
+  background: rgb(69 10 10);
+}
+
+@media (prefers-color-scheme: dark) {
+  .reports-page {
+    color: rgb(226 232 240);
+  }
+
+  .reports-header,
+  .quick-reports,
+  .template-panel,
+  .custom-report,
+  .report-preview,
+  .saved-reports,
+  .template-dialog,
+  .category-card,
+  .template-card,
+  .saved-card,
+  .chart-placeholder,
+  .report-summary-card,
+  .advanced-options,
+  .form-field input,
+  .form-field select,
+  .choice-chip,
+  .checkbox-row,
+  .filter-row select,
+  .filter-row input,
+  .secondary-action,
+  .advanced-grid button,
+  .saved-actions button,
+  .icon-button,
+  table {
+    border-color: rgb(51 65 85);
+    background: rgb(15 23 42);
+  }
+
+  .template-panel,
+  .chart-placeholder,
+  th,
+  .advanced-options {
+    background: rgb(2 6 23);
+  }
+
+  .reports-header h1,
+  .section-heading h2,
+  .section-heading h3,
+  .preview-header h2,
+  .template-dialog h2,
+  .category-card strong,
+  .template-card h4,
+  .saved-card h3,
+  .report-summary-card strong,
+  .form-field input,
+  .form-field select {
+    color: rgb(248 250 252);
+  }
+
+  .reports-header p,
+  .section-heading p,
+  .preview-header p,
+  .template-card p,
+  .saved-card p,
+  .template-dialog p,
+  .category-card small,
+  .report-summary-card span,
+  td,
+  .advanced-options small {
+    color: rgb(148 163 184);
+  }
+
+  .category-card:hover,
+  .category-card:focus-visible,
+  .category-card.active,
+  .choice-chip.selected {
+    border-color: rgb(129 140 248);
+    background: rgb(30 41 59);
+  }
+
+  .checkbox-row,
+  .filter-row select,
+  .filter-row input {
+    color: rgb(248 250 252);
+  }
+
+  .preview-empty {
+    border-color: rgb(51 65 85);
+    background: rgb(2 6 23);
+    color: rgb(148 163 184);
+  }
+
+  .preview-empty strong {
+    color: rgb(248 250 252);
+  }
+
+  .secondary-action,
+  .choice-chip,
+  .advanced-grid button,
+  .saved-actions button,
+  .icon-button {
+    color: rgb(226 232 240);
+  }
+
+  th,
+  td {
+    border-color: rgb(51 65 85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+}

@@ -43,6 +43,56 @@ describe('TenantStudentDetailsComponent', () => {
         teacherId: 'teacher-1',
         teacher: 'Dr. Ahmed',
       },
+      {
+        groupId: 'group-2',
+        group: 'Chemistry Lab',
+        day: 'Tuesday',
+        time: '11:00 AM (60 min)',
+        roomId: 'room-2',
+        room: 'Room 102',
+        teacherId: 'teacher-2',
+        teacher: 'Ms. Sara',
+      },
+      {
+        groupId: 'group-3',
+        group: 'Math Practice',
+        day: 'Wednesday',
+        time: '12:00 PM (60 min)',
+        roomId: 'room-3',
+        room: 'Room 103',
+        teacherId: 'teacher-3',
+        teacher: 'Mr. Omar',
+      },
+      {
+        groupId: 'group-4',
+        group: 'Arabic Reading',
+        day: 'Thursday',
+        time: '01:00 PM (60 min)',
+        roomId: 'room-4',
+        room: 'Room 104',
+        teacherId: 'teacher-4',
+        teacher: 'Ms. Hala',
+      },
+      {
+        groupId: 'group-5',
+        group: 'English Grammar',
+        day: 'Friday',
+        time: '02:00 PM (60 min)',
+        roomId: 'room-5',
+        room: 'Room 105',
+        teacherId: 'teacher-5',
+        teacher: 'Mr. John',
+      },
+      {
+        groupId: 'group-6',
+        group: 'Biology Revision',
+        day: 'Saturday',
+        time: '03:00 PM (60 min)',
+        roomId: 'room-6',
+        room: 'Room 106',
+        teacherId: 'teacher-6',
+        teacher: 'Dr. Mona',
+      },
     ],
   };
 
@@ -70,6 +120,10 @@ describe('TenantStudentDetailsComponent', () => {
 
     fixture = TestBed.createComponent(TenantStudentDetailsComponent);
     fixture.detectChanges();
+  }
+
+  function scheduleTableText(): string {
+    return (fixture.nativeElement.querySelector('.student-schedule-table') as HTMLElement).textContent ?? '';
   }
 
   afterEach(() => {
@@ -189,6 +243,52 @@ describe('TenantStudentDetailsComponent', () => {
     expect(text).toContain('10:00 AM (90 min)');
     expect(text).toContain('Room 101');
     expect(text).toContain('Dr. Ahmed');
+  });
+
+  it('paginates weekly schedule rows', async () => {
+    await createComponent(student);
+
+    expect(fixture.nativeElement.textContent).toContain('1-5 of 6');
+    expect(fixture.nativeElement.textContent).toContain('English Grammar');
+    expect(fixture.nativeElement.textContent).not.toContain('Biology Revision');
+
+    const nextButton = fixture.nativeElement.querySelector('button[aria-label="Next schedule page"]') as HTMLButtonElement;
+    nextButton.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('6-6 of 6');
+    expect(scheduleTableText()).toContain('Biology Revision');
+    expect(scheduleTableText()).not.toContain('Physics G12-A');
+  });
+
+  it('filters weekly schedule rows by search query and resets pagination', async () => {
+    await createComponent(student);
+
+    const nextButton = fixture.nativeElement.querySelector('button[aria-label="Next schedule page"]') as HTMLButtonElement;
+    nextButton.click();
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector('input[type="search"]') as HTMLInputElement;
+    input.value = 'biology';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.schedulePageIndex()).toBe(0);
+    expect(fixture.nativeElement.textContent).toContain('1-1 of 1');
+    expect(scheduleTableText()).toContain('Biology Revision');
+    expect(scheduleTableText()).not.toContain('Physics G12-A');
+  });
+
+  it('renders a searched schedule empty state when no rows match', async () => {
+    await createComponent(student);
+
+    const input = fixture.nativeElement.querySelector('input[type="search"]') as HTMLInputElement;
+    input.value = 'not-a-real-group';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('No schedule rows match your search');
+    expect(fixture.nativeElement.textContent).toContain('0-0 of 0');
   });
 
   it('renders a schedule empty state when the student has no schedule rows', async () => {

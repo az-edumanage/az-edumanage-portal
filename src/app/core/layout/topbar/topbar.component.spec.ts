@@ -6,6 +6,7 @@ import { DashboardService, WorkspaceRole } from '../../services/dashboard.servic
 import { I18nService } from '../../services/i18n.service';
 import { TenantImpersonationService } from '../../auth/tenant-impersonation.service';
 import { AuthIdentityService } from '../../auth/auth-identity.service';
+import { NotificationsService, UserNotification } from '../../services/notifications.service';
 
 describe('TopbarComponent', () => {
   let roleSignal: ReturnType<typeof signal<WorkspaceRole>>;
@@ -18,6 +19,13 @@ describe('TopbarComponent', () => {
     setRole: ReturnType<typeof vi.fn>;
   };
   let fixture: ComponentFixture<TopbarComponent>;
+  let notificationsService: {
+    notifications: ReturnType<typeof signal<UserNotification[]>>;
+    unreadCount: ReturnType<typeof signal<number>>;
+    isLoading: ReturnType<typeof signal<boolean>>;
+    refresh: ReturnType<typeof vi.fn>;
+    markRead: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     roleSignal = signal<WorkspaceRole>('owner');
@@ -28,6 +36,13 @@ describe('TopbarComponent', () => {
       toggleSidebar: vi.fn(),
       toggleTheme: vi.fn(),
       setRole: vi.fn(),
+    };
+    notificationsService = {
+      notifications: signal<UserNotification[]>([]),
+      unreadCount: signal(0),
+      isLoading: signal(false),
+      refresh: vi.fn().mockResolvedValue(undefined),
+      markRead: vi.fn().mockResolvedValue(undefined),
     };
 
     TestBed.configureTestingModule({
@@ -53,6 +68,7 @@ describe('TopbarComponent', () => {
         },
         { provide: AuthIdentityService, useValue: { primaryRole: primaryRoleSignal } },
         { provide: Router, useValue: { navigateByUrl: vi.fn().mockResolvedValue(true) } },
+        { provide: NotificationsService, useValue: notificationsService },
       ],
     });
 
@@ -90,5 +106,12 @@ describe('TopbarComponent', () => {
 
     expect(fixture.componentInstance.showWorkspaceSwitcher()).toBe(false);
     expect(fixture.nativeElement.textContent).not.toContain('topbar.role.owner');
+  });
+
+  it('shows unread notification count on the bell', () => {
+    notificationsService.unreadCount.set(3);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('3');
   });
 });

@@ -22,3 +22,18 @@ export interface Group {
   subscriptionPeriodId?: string | null;
   subscriptionPeriod?: string | null;
 }
+
+export type GroupScheduleFilter = 'all' | 'today' | 'running' | 'postponed';
+
+export interface GroupScheduleSummary {
+  totalGroups: number;
+  todayGroups: number;
+  currentRunningGroups: number;
+  postponedGroups: number;
+  todayGroupIds: string[];
+  currentRunningGroupIds: string[];
+  postponedGroupIds: string[];
+  today: string;
+  asOf: string;
+  unavailableReason?: string | null;
+}

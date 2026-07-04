@@ -62,8 +62,19 @@ describe('Route Deep Link Matrix', () => {
     expect(paths).toContain('media');
   });
 
-  it('should include student and parent overview routes', () => {
-    expect(STUDENT_ROUTES.map((r) => r.path)).toContain('overview');
+  it('should include student dashboard routes', () => {
+    const paths = STUDENT_ROUTES.map((r) => r.path);
+    expect(paths).toContain('overview');
+    expect(paths).toContain('schedule');
+    expect(paths).toContain('schedule/calendar');
+    expect(paths).toContain('my-courses');
+    expect(paths).toContain('my-groups');
+    expect(paths).toContain('exams');
+    expect(paths).toContain('home-work');
+    expect(paths).toContain('billing');
+  });
+
+  it('should include parent overview routes', () => {
     expect(PARENT_ROUTES.map((r) => r.path)).toContain('overview');
   });
 });
