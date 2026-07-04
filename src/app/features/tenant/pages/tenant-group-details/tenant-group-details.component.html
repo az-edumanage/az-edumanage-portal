@@ -54,7 +54,7 @@
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="space-y-1">
           <div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
-            <a routerLink="/tenant/groups" class="hover:text-indigo-600 transition-colors">Groups</a>
+            <a [routerLink]="groupListRoute" class="hover:text-indigo-600 transition-colors">Groups</a>
             <mat-icon class="text-[10px]">chevron_right</mat-icon>
             <span>Group Details</span>
           </div>
@@ -72,22 +72,24 @@
             }
           </p>
         </div>
+        @if (!isTeacherGroupView) {
         <div class="flex gap-2">
           <a 
-            [routerLink]="['/tenant/groups', groupId, 'edit']"
+            [routerLink]="groupChildRoute('edit')"
             class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
           >
             <mat-icon class="text-sm">edit</mat-icon>
             Edit Group
           </a>
           <a 
-            [routerLink]="['/tenant/groups', groupId, 'enroll']"
+            [routerLink]="groupChildRoute('enroll')"
             class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
           >
             <mat-icon class="text-sm">person_add</mat-icon>
             Enroll Student
           </a>
         </div>
+        }
       </div>
 
       <!-- Stats Grid -->
@@ -103,12 +105,12 @@
           </div>
         </div>
         <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Avg. Attendance</p>
+          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Total Sessions</p>
           <div class="flex items-end justify-between">
-            <h4 class="text-2xl font-bold text-slate-900 dark:text-white">{{ avgAttendanceLabel() }}</h4>
-            <div class="text-emerald-500 flex items-center text-xs font-medium">
-              <mat-icon class="text-xs">trending_up</mat-icon>
-              {{ avgAttendanceLabel() }}
+            <h4 class="text-2xl font-bold text-slate-900 dark:text-white">{{ sessionRows().length }}</h4>
+            <div class="text-slate-500 flex items-center text-xs font-medium">
+              <mat-icon class="text-xs">event</mat-icon>
+              {{ sessionCountLabel() }}
             </div>
           </div>
         </div>
@@ -199,6 +201,18 @@
           <mat-icon>assignment</mat-icon>
           <span>{{ tabLabel('exams') }}</span>
         </button>
+        @if (!isTeacherGroupView) {
+        <a
+          class="tenant-group-detail-tab"
+          [routerLink]="groupChildRoute('exam-evaluation')"
+          role="tab"
+          aria-selected="false"
+          id="tenant-group-exam-evaluation-tab"
+        >
+          <mat-icon>fact_check</mat-icon>
+          <span>Exam Evaluation</span>
+        </a>
+        }
         <button
           type="button"
           class="tenant-group-detail-tab"
@@ -391,10 +405,12 @@
                     <h3 class="font-bold text-slate-900 dark:text-white">Lessons</h3>
                     <p class="mt-1 text-xs text-slate-500 dark:text-slate-500">{{ displayableGroupLessons().length }} loaded from curriculum</p>
                   </div>
-                  <button type="button" class="tenant-group-lessons-add" (click)="openLessonPicker()" [disabled]="lessonsLoading() || lessonsSyncing()">
-                    <mat-icon>add</mat-icon>
-                    Add lesson
-                  </button>
+                  @if (!isTeacherGroupView) {
+                    <button type="button" class="tenant-group-lessons-add" (click)="openLessonPicker()" [disabled]="lessonsLoading() || lessonsSyncing()">
+                      <mat-icon>add</mat-icon>
+                      Add lesson
+                    </button>
+                  }
                 </div>
                 @if (lessonPickerOpen()) {
                   <div class="tenant-group-lesson-picker" aria-label="Curriculum lesson picker">
@@ -607,7 +623,7 @@
                       <mat-icon>arrow_back</mat-icon>
                       <span>Back to folders</span>
                     </button>
-                  } @else {
+                  } @else if (!isTeacherGroupView) {
                     <button
                       type="button"
                       class="tenant-group-library-back"
@@ -646,28 +662,30 @@
                     <strong>{{ libraryVisibleContentLabel() }}</strong>
                   </div>
 
-                  <div class="grid grid-cols-1 gap-4 px-5 pb-5 lg:grid-cols-[16rem_minmax(0,1fr)]">
-                    <aside class="rounded-xl bg-gradient-to-br from-violet-700 to-purple-700 p-4 text-white shadow-lg shadow-purple-900/10" aria-label="Quick Actions">
-                      <div class="mb-4 flex items-center justify-between gap-3">
-                        <h3 class="text-sm font-extrabold">Quick Actions</h3>
-                        <mat-icon class="text-base">apps</mat-icon>
-                      </div>
-                      <div class="grid gap-3">
-                        <button type="button" class="flex min-h-12 items-center gap-3 rounded-lg bg-white/10 px-4 text-start text-xs font-extrabold uppercase text-white transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70" (click)="openLibraryNoteModal()">
-                          <mat-icon class="text-base">edit_note</mat-icon>
-                          <span>Add note</span>
-                        </button>
-                        <button type="button" class="flex min-h-12 items-center gap-3 rounded-lg bg-white/10 px-4 text-start text-xs font-extrabold uppercase text-white transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70" (click)="openLibraryLinkModal()">
-                          <mat-icon class="text-base">add_link</mat-icon>
-                          <span>Add external link</span>
-                        </button>
-                        <label class="flex min-h-12 cursor-pointer items-center gap-3 rounded-lg bg-white/10 px-4 text-start text-xs font-extrabold uppercase text-white transition hover:bg-white/15 focus-within:outline-none focus-within:ring-2 focus-within:ring-white/70">
-                          <mat-icon class="text-base">upload_file</mat-icon>
-                          <span>{{ libraryFileUploading() ? 'Uploading...' : 'Upload file' }}</span>
-                          <input type="file" class="sr-only" [disabled]="libraryFileUploading()" (change)="uploadLibraryFile($event)" />
-                        </label>
-                      </div>
-                    </aside>
+                  <div class="grid grid-cols-1 gap-4 px-5 pb-5" [ngClass]="{ 'lg:grid-cols-[16rem_minmax(0,1fr)]': !isTeacherGroupView }">
+                    @if (!isTeacherGroupView) {
+                      <aside class="rounded-xl bg-gradient-to-br from-violet-700 to-purple-700 p-4 text-white shadow-lg shadow-purple-900/10" aria-label="Quick Actions">
+                        <div class="mb-4 flex items-center justify-between gap-3">
+                          <h3 class="text-sm font-extrabold">Quick Actions</h3>
+                          <mat-icon class="text-base">apps</mat-icon>
+                        </div>
+                        <div class="grid gap-3">
+                          <button type="button" class="flex min-h-12 items-center gap-3 rounded-lg bg-white/10 px-4 text-start text-xs font-extrabold uppercase text-white transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70" (click)="openLibraryNoteModal()">
+                            <mat-icon class="text-base">edit_note</mat-icon>
+                            <span>Add note</span>
+                          </button>
+                          <button type="button" class="flex min-h-12 items-center gap-3 rounded-lg bg-white/10 px-4 text-start text-xs font-extrabold uppercase text-white transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70" (click)="openLibraryLinkModal()">
+                            <mat-icon class="text-base">add_link</mat-icon>
+                            <span>Add external link</span>
+                          </button>
+                          <label class="flex min-h-12 cursor-pointer items-center gap-3 rounded-lg bg-white/10 px-4 text-start text-xs font-extrabold uppercase text-white transition hover:bg-white/15 focus-within:outline-none focus-within:ring-2 focus-within:ring-white/70">
+                            <mat-icon class="text-base">upload_file</mat-icon>
+                            <span>{{ libraryFileUploading() ? 'Uploading...' : 'Upload file' }}</span>
+                            <input type="file" class="sr-only" [disabled]="libraryFileUploading()" (change)="uploadLibraryFile($event)" />
+                          </label>
+                        </div>
+                      </aside>
+                    }
 
                     <div class="min-w-0">
                       <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -794,20 +812,22 @@
                           >
                             <mat-icon class="text-base">visibility</mat-icon>
                           </button>
-                          <button
-                            type="button"
-                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-indigo-50 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
-                            [attr.aria-label]="'Edit ' + libraryFolder.folder.name"
-                          >
-                            <mat-icon class="text-base">edit</mat-icon>
-                          </button>
-                          <button
-                            type="button"
-                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
-                            [attr.aria-label]="'Delete ' + libraryFolder.folder.name"
-                          >
-                            <mat-icon class="text-base">delete</mat-icon>
-                          </button>
+                          @if (!isTeacherGroupView) {
+                            <button
+                              type="button"
+                              class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-indigo-50 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                              [attr.aria-label]="'Edit ' + libraryFolder.folder.name"
+                            >
+                              <mat-icon class="text-base">edit</mat-icon>
+                            </button>
+                            <button
+                              type="button"
+                              class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                              [attr.aria-label]="'Delete ' + libraryFolder.folder.name"
+                            >
+                              <mat-icon class="text-base">delete</mat-icon>
+                            </button>
+                          }
                         </div>
                       </div>
                       <button
@@ -915,7 +935,8 @@
                         <span>Settings</span>
                         <strong>{{ examSettingsLabel(exam) }}</strong>
                       </div>
-                      <div class="tenant-group-exam-actions" aria-label="Exam row actions">
+                      @if (!isTeacherGroupView) {
+                        <div class="tenant-group-exam-actions" aria-label="Exam row actions">
                         <button
                           type="button"
                           class="tenant-group-exam-action tenant-group-exam-action--primary"
@@ -936,7 +957,8 @@
                         >
                           <mat-icon>{{ deletingGroupExamId() === exam.id ? 'sync' : 'delete' }}</mat-icon>
                         </button>
-                      </div>
+                        </div>
+                      }
                     </article>
                   }
                 </div>
@@ -1233,15 +1255,15 @@
           <div class="bg-indigo-600 rounded-xl p-6 text-white space-y-4">
             <h3 class="font-bold">Quick Actions</h3>
             <div class="grid grid-cols-2 gap-2">
-              <a [routerLink]="['/tenant/groups', groupId, 'attendance']" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+              <a [routerLink]="groupChildRoute('attendance')" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
                 <mat-icon>how_to_reg</mat-icon>
                 <span class="text-[10px] font-bold uppercase">Attendance</span>
               </a>
-              <a [routerLink]="['/tenant/groups', groupId, 'exam']" [queryParams]="{ freshCreate: true }" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+              <a [routerLink]="groupChildRoute('exam')" [queryParams]="{ freshCreate: true }" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
                 <mat-icon>assignment</mat-icon>
                 <span class="text-[10px] font-bold uppercase">Exam</span>
               </a>
-              <a [routerLink]="['/tenant/groups', groupId, 'broadcast']" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+              <a [routerLink]="groupChildRoute('broadcast')" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
                 <mat-icon>mail</mat-icon>
                 <span class="text-[10px] font-bold uppercase">Broadcast</span>
               </a>
@@ -1280,6 +1302,28 @@
                     <span class="text-sm text-slate-700 dark:text-slate-300">Auto Invoicing</span>
                   </div>
                   <span class="text-[10px] font-bold text-emerald-500 uppercase">Enabled</span>
+                </div>
+                <div class="flex items-center justify-between gap-4">
+                  <div class="flex items-center gap-3">
+                    <mat-icon class="text-slate-500 text-sm">payments</mat-icon>
+                    <span class="text-sm text-slate-700 dark:text-slate-300">Display payment status</span>
+                  </div>
+                  <button
+                    type="button"
+                    class="tenant-group-payment-status-switch"
+                    [class.tenant-group-payment-status-switch--on]="displayPaymentStatus()"
+                    role="switch"
+                    [attr.aria-checked]="displayPaymentStatus()"
+                    aria-label="Display payment status"
+                    (click)="toggleDisplayPaymentStatus()"
+                  >
+                    <span class="tenant-group-payment-status-switch__label">
+                      {{ displayPaymentStatus() ? 'On' : 'Off' }}
+                    </span>
+                    <span class="tenant-group-payment-status-switch__track" aria-hidden="true">
+                      <span class="tenant-group-payment-status-switch__thumb"></span>
+                    </span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1694,31 +1738,13 @@
                   <p class="text-xs text-slate-500">Student Profile</p>
                 </div>
               </div>
-              <button (click)="selectedStudent.set(null)" class="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors">
+              <button (click)="clearSelectedStudent()" class="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors">
                 <mat-icon>close</mat-icon>
               </button>
             </div>
 
             <!-- Panel Content -->
             <div class="flex-1 overflow-y-auto p-6 space-y-8">
-              <!-- Payment Status -->
-              <section class="space-y-3">
-                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                  <mat-icon class="text-sm">payments</mat-icon>
-                  Financial Status
-                </h4>
-                <div class="p-4 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 rounded-xl">
-                  <div class="flex justify-between items-center mb-2">
-                    <span class="text-sm text-rose-700 dark:text-rose-400 font-medium">Outstanding Dues</span>
-                    <span class="text-lg font-bold text-rose-700 dark:text-rose-400">{{ group()?.fees || 0 }} EGP</span>
-                  </div>
-                  <p class="text-[10px] text-rose-600/80">Last payment: Not available</p>
-                  <button class="w-full mt-3 py-2 bg-rose-600 text-white rounded-lg text-xs font-bold hover:bg-rose-700 transition-colors">
-                    Generate Payment Link
-                  </button>
-                </div>
-              </section>
-
               <!-- Attendance Stats -->
               <section class="space-y-3">
                 <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
@@ -1728,19 +1754,27 @@
                 <div class="grid grid-cols-2 gap-3">
                   <div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
                     <p class="text-[10px] text-slate-500 font-bold uppercase">Present</p>
-                    <p class="text-xl font-bold text-emerald-600">{{ student.attendanceRate }}%</p>
+                    <p class="text-xl font-bold text-emerald-600">{{ studentAttendanceRateLabel(student) }}</p>
                   </div>
                   <div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
                     <p class="text-[10px] text-slate-500 font-bold uppercase">Absent</p>
-                    <p class="text-xl font-bold text-rose-600">{{ absenceRateLabel() }}</p>
+                    <p class="text-xl font-bold text-rose-600">{{ studentAbsenceRateLabel(student) }}</p>
                   </div>
                 </div>
                 <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-                  <p class="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">Recent Absences</p>
+                  <p class="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">Latest Attendance</p>
                   <ul class="space-y-2">
                     <li class="flex items-center justify-between text-[10px]">
-                      <span class="text-slate-500">{{ student.lastAttendance || 'Not available' }}</span>
-                      <span class="px-2 py-0.5 bg-rose-100 text-rose-700 rounded-full font-bold">UNAVAILABLE</span>
+                      <span class="text-slate-500">{{ studentLatestAttendanceLabel(student) }}</span>
+                      <span
+                        class="px-2 py-0.5 rounded-full font-bold"
+                        [class.bg-emerald-100]="student.attendanceState === 'Present'"
+                        [class.text-emerald-700]="student.attendanceState === 'Present'"
+                        [class.bg-rose-100]="student.attendanceState !== 'Present'"
+                        [class.text-rose-700]="student.attendanceState !== 'Present'"
+                      >
+                        {{ attendanceStateLabel(student) }}
+                      </span>
                     </li>
                   </ul>
                 </div>
@@ -1755,26 +1789,37 @@
                 <div class="p-4 bg-indigo-600/10 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/20 rounded-xl space-y-3">
                   <div>
                     <p class="text-[10px] text-indigo-400 font-bold uppercase">Parent Name</p>
-                    <p class="text-sm font-bold text-slate-900 dark:text-white">Mr. Mohamed Ali</p>
+                    <p class="text-sm font-bold text-slate-900 dark:text-white">{{ student.parentName || 'Not set' }}</p>
                   </div>
                   <div class="flex items-center justify-between">
                     <div>
                       <p class="text-[10px] text-indigo-400 font-bold uppercase">Phone</p>
-                      <p class="text-sm font-medium text-slate-700 dark:text-slate-300">+20 123 456 7890</p>
+                      <p class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ student.parentPhone || 'Not set' }}</p>
                     </div>
                     <div class="flex gap-2">
-                      <button class="p-2 bg-white dark:bg-slate-800 rounded-lg text-indigo-600 shadow-sm hover:bg-indigo-600/10 transition-colors">
+                      <a
+                        class="p-2 bg-white dark:bg-slate-800 rounded-lg text-indigo-600 shadow-sm hover:bg-indigo-600/10 transition-colors"
+                        [class.pointer-events-none]="!student.parentPhone"
+                        [class.opacity-50]="!student.parentPhone"
+                        [href]="student.parentPhone ? 'tel:' + student.parentPhone : null"
+                        aria-label="Call parent"
+                      >
                         <mat-icon class="text-sm">phone</mat-icon>
-                      </button>
-                      <button class="p-2 bg-white dark:bg-slate-800 rounded-lg text-emerald-600 shadow-sm hover:bg-emerald-50 transition-colors">
+                      </a>
+                      <a
+                        class="p-2 bg-white dark:bg-slate-800 rounded-lg text-emerald-600 shadow-sm hover:bg-emerald-50 transition-colors"
+                        [class.pointer-events-none]="!student.parentPhone"
+                        [class.opacity-50]="!student.parentPhone"
+                        [href]="student.parentPhone ? 'sms:' + student.parentPhone : null"
+                        aria-label="Message parent"
+                      >
                         <mat-icon class="text-sm">chat</mat-icon>
-                      </button>
+                      </a>
                     </div>
                   </div>
-                  <button class="w-full py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2">
-                    <mat-icon class="text-sm">notifications_active</mat-icon>
-                    Send Absence Notification
-                  </button>
+                  <p class="text-[10px] text-indigo-500 font-medium">
+                    Parent notifications: {{ student.notifyParent ? 'Enabled' : 'Disabled' }}
+                  </p>
                 </div>
               </section>
 
@@ -1784,27 +1829,44 @@
                   <mat-icon class="text-sm">admin_panel_settings</mat-icon>
                   Administrative Actions
                 </h4>
+                @if (exitStudentError()) {
+                  <p class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">
+                    {{ exitStudentError() }}
+                  </p>
+                }
                 <div class="grid grid-cols-1 gap-2">
-                  <button class="flex items-center justify-between p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-colors group">
+                  <button
+                    type="button"
+                    class="flex items-center justify-between p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-colors group disabled:cursor-not-allowed disabled:opacity-60"
+                    [disabled]="exitingStudentId() === student.id"
+                    (click)="exitGroup($event, student)"
+                  >
                     <div class="flex items-center gap-3">
-                      <mat-icon class="text-slate-500 group-hover:text-rose-500">block</mat-icon>
+                      <mat-icon class="text-slate-500 group-hover:text-rose-500" [class.animate-spin]="exitingStudentId() === student.id">
+                        {{ exitingStudentId() === student.id ? 'sync' : 'logout' }}
+                      </mat-icon>
                       <div class="text-left">
-                        <p class="text-sm font-bold text-slate-700 dark:text-slate-300 group-hover:text-rose-600">Forbid Attendance</p>
-                        <p class="text-[10px] text-slate-500">Temporary block from sessions</p>
+                        <p class="text-sm font-bold text-slate-700 dark:text-slate-300 group-hover:text-rose-600">
+                          {{ exitingStudentId() === student.id ? 'Removing student' : 'Remove from group' }}
+                        </p>
+                        <p class="text-[10px] text-slate-500">Update this group enrollment in the backend</p>
                       </div>
                     </div>
                     <mat-icon class="text-slate-300">chevron_right</mat-icon>
                   </button>
-                  <button class="flex items-center justify-between p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-colors group">
+                  <a
+                    [routerLink]="['/tenant/students', student.id]"
+                    class="flex items-center justify-between p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-colors group"
+                  >
                     <div class="flex items-center gap-3">
-                      <mat-icon class="text-slate-500 group-hover:text-amber-500">pause_circle</mat-icon>
+                      <mat-icon class="text-slate-500 group-hover:text-indigo-500">person_search</mat-icon>
                       <div class="text-left">
-                        <p class="text-sm font-bold text-slate-700 dark:text-slate-300 group-hover:text-amber-600">Set Inactive</p>
-                        <p class="text-[10px] text-slate-500">Suspend student enrollment</p>
+                        <p class="text-sm font-bold text-slate-700 dark:text-slate-300 group-hover:text-indigo-600">Open student profile</p>
+                        <p class="text-[10px] text-slate-500">View the full student record</p>
                       </div>
                     </div>
                     <mat-icon class="text-slate-300">chevron_right</mat-icon>
-                  </button>
+                  </a>
                 </div>
               </section>
             </div>

@@ -2,7 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { Teacher, TeacherStatus } from '../models/tenant-teachers.models';
+import { Teacher, TeacherStatus, TeacherStatusSummary } from '../models/tenant-teachers.models';
 
 @Injectable({ providedIn: 'root' })
 export class TenantTeachersDataService {
@@ -13,6 +13,12 @@ export class TenantTeachersDataService {
     return this.http
       .get<Teacher[]>(this.teachersUrl)
       .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load teachers')));
+  }
+
+  statusSummary(): Observable<TeacherStatusSummary> {
+    return this.http
+      .get<TeacherStatusSummary>(`${this.teachersUrl}/status-summary`)
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load teacher status summary')));
   }
 
   getTeacher(id: string): Observable<Teacher> {

@@ -67,7 +67,11 @@
           <mat-icon aria-hidden="true">how_to_reg</mat-icon>
           Attendance
         </a>
-        <a routerLink="/tenant/billing" class="student-action-btn">
+        <a
+          routerLink="/tenant/billing"
+          [queryParams]="{ studentId: currentStudent.id, studentName: currentStudent.name }"
+          class="student-action-btn"
+        >
           <mat-icon aria-hidden="true">payments</mat-icon>
           Billing
         </a>
@@ -213,9 +217,21 @@
       </section>
 
       <section class="student-panel student-schedule-panel">
-        <header>
-          <mat-icon aria-hidden="true">calendar_today</mat-icon>
-          <h2>Weekly Schedule</h2>
+        <header class="student-schedule-header">
+          <div>
+            <mat-icon aria-hidden="true">calendar_today</mat-icon>
+            <h2>Weekly Schedule</h2>
+          </div>
+          <label class="student-schedule-search">
+            <span class="sr-only">Search weekly schedule</span>
+            <mat-icon aria-hidden="true">search</mat-icon>
+            <input
+              type="search"
+              [ngModel]="scheduleSearchQuery()"
+              (ngModelChange)="setScheduleSearchQuery($event)"
+              placeholder="Search schedule"
+            />
+          </label>
         </header>
         <div class="student-schedule-table-wrap">
           <table class="student-schedule-table">
@@ -229,7 +245,7 @@
               </tr>
             </thead>
             <tbody>
-              @for (row of currentStudent.scheduleRows; track (row.groupId || row.group) + row.day + row.time) {
+              @for (row of pagedScheduleRows(); track scheduleRowTrack(row)) {
                 <tr>
                   <td>
                     <strong>{{ row.group || 'Not set' }}</strong>
@@ -242,14 +258,40 @@
               } @empty {
                 <tr>
                   <td colspan="5" class="student-empty-cell">
-                    <mat-icon aria-hidden="true">event_busy</mat-icon>
-                    No schedule rows
+                    <mat-icon aria-hidden="true">{{ scheduleSearchQuery() ? 'search_off' : 'event_busy' }}</mat-icon>
+                    {{ scheduleSearchQuery() ? 'No schedule rows match your search' : 'No schedule rows' }}
                   </td>
                 </tr>
               }
             </tbody>
           </table>
         </div>
+        @if (currentStudent.scheduleRows.length > 0) {
+          <footer class="student-schedule-pagination">
+            <span>{{ schedulePageStart() }}-{{ schedulePageEnd() }} of {{ scheduleTotalItems() }}</span>
+            <label>
+              Rows
+              <select [ngModel]="schedulePageSize()" (ngModelChange)="setSchedulePageSize($event)">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+              </select>
+            </label>
+            <div class="student-schedule-pager-actions">
+              <button type="button" aria-label="Previous schedule page" (click)="previousSchedulePage()" [disabled]="schedulePageIndex() === 0">
+                <mat-icon aria-hidden="true">chevron_left</mat-icon>
+              </button>
+              <button
+                type="button"
+                aria-label="Next schedule page"
+                (click)="nextSchedulePage()"
+                [disabled]="schedulePageIndex() >= scheduleTotalPages() - 1"
+              >
+                <mat-icon aria-hidden="true">chevron_right</mat-icon>
+              </button>
+            </div>
+          </footer>
+        }
       </section>
 
       <aside class="student-side-stack">
@@ -274,7 +316,10 @@
               <mat-icon aria-hidden="true">how_to_reg</mat-icon>
               Take Attendance
             </a>
-            <a routerLink="/tenant/billing">
+            <a
+              routerLink="/tenant/billing"
+              [queryParams]="{ studentId: currentStudent.id, studentName: currentStudent.name }"
+            >
               <mat-icon aria-hidden="true">receipt_long</mat-icon>
               View Billing
             </a>

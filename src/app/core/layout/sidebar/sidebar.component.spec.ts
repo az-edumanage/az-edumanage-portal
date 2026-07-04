@@ -86,6 +86,7 @@ describe('SidebarComponent', () => {
 
     expect(routes).toContain('/tenant/overview');
     expect(routes).toContain('/tenant/students');
+    expect(routes).toContain('/tenant/parents');
     expect(routes).toContain('/tenant/settings');
     expect(routes).toContain('/tenant/web-settings');
     expect(routes).not.toContain('/owner/overview');
@@ -94,12 +95,14 @@ describe('SidebarComponent', () => {
     expect(basicEducation?.children?.map((child) => child.route)).toEqual(educationRoutes);
     expect(mainItems.findIndex((item) => item.labelKey === 'sidebar.item.universityEducation'))
       .toBe(mainItems.findIndex((item) => item.labelKey === 'sidebar.item.basicEducation') + 1);
+    expect(mainItems.findIndex((item) => item.labelKey === 'sidebar.item.parents'))
+      .toBe(mainItems.findIndex((item) => item.labelKey === 'sidebar.item.students') + 1);
     expect(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.examsEvaluation'))
       .toBe(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.examsGrades') + 1);
     expect(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.questionsBank'))
       .toBe(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.examsEvaluation') + 1);
     expect(academicItems.find((item) => item.labelKey === 'sidebar.item.examsGrades')?.route).toBe('/tenant/exams');
-    expect(academicItems.find((item) => item.labelKey === 'sidebar.item.examsEvaluation')?.route).toBe('/tenant/evaluation');
+    expect(academicItems.find((item) => item.labelKey === 'sidebar.item.examsEvaluation')?.route).toBe('/tenant/exams-evaluation');
     expect(academicItems.find((item) => item.labelKey === 'sidebar.item.questionsBank')?.route).toBe('/tenant/questions-bank');
     expect(settingsItems.find((item) => item.labelKey === 'sidebar.item.lms')?.route).toBe('/tenant/web-settings');
     expect(sections.some((section) => section.titleKey === 'sidebar.section.development')).toBe(false);
@@ -110,7 +113,7 @@ describe('SidebarComponent', () => {
     universityEducationRoutes.forEach((route) => expect(routes).not.toContain(route));
   });
 
-  it('uses /teacher/exams for the teacher exams menu item', () => {
+  it('uses grouped teacher evaluation routes under Evaluation', () => {
     currentRole.set('teacher');
 
     const fixture = TestBed.createComponent(SidebarComponent);
@@ -118,14 +121,41 @@ describe('SidebarComponent', () => {
     const examsItem = sections
       .flatMap((section) => section.items)
       .find((item) => item.labelKey === 'sidebar.item.examsGrades');
+    const evaluationItem = sections
+      .flatMap((section) => section.items)
+      .find((item) => item.labelKey === 'sidebar.item.examEvaluation');
 
     expect(examsItem?.route).toBe('/teacher/exams');
+    expect(evaluationItem?.route).toBeUndefined();
+    expect(evaluationItem?.children?.map((child) => [child.labelKey, child.route])).toEqual([
+      ['sidebar.item.examsEvaluation', '/teacher/evaluation/exams'],
+      ['sidebar.item.homeWorkEvaluation', '/teacher/evaluation/home-work'],
+      ['sidebar.item.sessionAssessment', '/teacher/evaluation/session-assessment'],
+    ]);
+  });
+
+  it('uses the student dashboard menu requested for schedule, LMS courses, groups, exams, home work, and billing', () => {
+    currentRole.set('student');
+
+    const fixture = TestBed.createComponent(SidebarComponent);
+    const items = fixture.componentInstance.menuSections()[0]?.items ?? [];
+
+    expect(items.map((item) => [item.labelKey, item.route])).toEqual([
+      ['sidebar.item.overview', '/student/overview'],
+      ['sidebar.item.schedule', '/student/schedule'],
+      ['sidebar.item.myCourses', '/student/my-courses'],
+      ['sidebar.item.myGroups', '/student/my-groups'],
+      ['sidebar.item.examsGrades', '/student/exams'],
+      ['sidebar.item.examEvaluation', '/student/exam-evaluation'],
+      ['sidebar.item.homeWork', '/student/home-work'],
+      ['sidebar.item.billing', '/student/billing'],
+    ]);
   });
 
   it.each([
     ['tenant.rooms.view', '/tenant/rooms'],
     ['tenant.basicEducation.view', '/tenant/educational-stages'],
-    ['tenant.grades.view', '/tenant/evaluation'],
+    ['tenant.grades.view', '/tenant/exams-evaluation'],
     ['tenant.universityEducation.view', '/tenant/universities'],
     ['tenant.attendance.view', '/tenant/attendance'],
     ['tenant.reports.view', '/tenant/reports'],

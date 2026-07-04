@@ -174,18 +174,20 @@
                     <a [routerLink]="['/tenant/universities', university.id]" class="tenant-universities-row-btn tenant-universities-row-btn--view" title="View Details">
                       <mat-icon class="text-sm block">visibility</mat-icon>
                     </a>
-                    <a [routerLink]="['/tenant/universities', university.id, 'edit']" class="tenant-universities-row-btn tenant-universities-row-btn--edit" title="Edit">
-                      <mat-icon class="text-sm block">edit</mat-icon>
-                    </a>
-                    <button
-                      type="button"
-                      (click)="deleteUniversity(university.id)"
-                      [disabled]="deletingId() === university.id"
-                      class="tenant-universities-row-btn tenant-universities-row-btn--delete"
-                      title="Delete"
-                    >
-                      <mat-icon class="text-sm block">{{ deletingId() === university.id ? 'hourglass_empty' : 'delete' }}</mat-icon>
-                    </button>
+                    @if (!isExamsUniversityEducationRoute()) {
+                      <a [routerLink]="['/tenant/universities', university.id, 'edit']" class="tenant-universities-row-btn tenant-universities-row-btn--edit" title="Edit">
+                        <mat-icon class="text-sm block">edit</mat-icon>
+                      </a>
+                      <button
+                        type="button"
+                        (click)="deleteUniversity(university.id)"
+                        [disabled]="deletingId() === university.id"
+                        class="tenant-universities-row-btn tenant-universities-row-btn--delete"
+                        title="Delete"
+                      >
+                        <mat-icon class="text-sm block">{{ deletingId() === university.id ? 'hourglass_empty' : 'delete' }}</mat-icon>
+                      </button>
+                    }
                   </div>
                 </td>
               </tr>

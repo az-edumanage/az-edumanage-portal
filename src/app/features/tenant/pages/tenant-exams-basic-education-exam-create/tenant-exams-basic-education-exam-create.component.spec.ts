@@ -162,6 +162,21 @@ async function createFixture(mode?: 'create', context: ExamFixtureContext = 'bas
               },
             ],
           }),
+          getSubjectCurriculumForCategory: vi.fn().mockResolvedValue({
+            id: 'curriculum-root-one',
+            label: 'Arabic curriculum',
+            icon: 'menu_book',
+            description: null,
+            children: [
+              {
+                id: 'node-lesson-one',
+                label: 'Lesson One',
+                icon: 'menu_book',
+                description: null,
+                children: [],
+              },
+            ],
+          }),
           listCurriculumQuestions: vi.fn().mockImplementation((_subjectId: string, nodeId: string) => Promise.resolve(nodeId === 'curriculum-root-one'
             ? [
                 {
@@ -221,7 +236,52 @@ async function createFixture(mode?: 'create', context: ExamFixtureContext = 'bas
                   updatedAt: '2026-01-01T00:00:00Z',
                 },
               ] : [])),
+          listCurriculumQuestionsForCategory: vi.fn().mockImplementation((_subjectId: string, nodeId: string) => Promise.resolve(nodeId === 'curriculum-root-one'
+            ? [
+                {
+                  id: 'university-question-root-one',
+                  curriculumNodeId: 'curriculum-root-one',
+                  question: 'What is thermodynamics?',
+                  type: 'MULTIPLE_CHOICE',
+                  answer: null,
+                  description: null,
+                  mediaUrl: null,
+                  mediaFileName: null,
+                  mediaOriginalName: null,
+                  mediaContentType: null,
+                  mediaSizeBytes: null,
+                  bloomId: 'bloom-understand',
+                  difficultyId: 'difficulty-medium',
+                  skillId: 'skill-reading',
+                  questionSource: 'University bank',
+                  answerExplanation: null,
+                  tags: ['university'],
+                  answers: [
+                    {
+                      id: 'university-answer-1',
+                      answer: 'Heat and energy',
+                      correct: true,
+                      description: null,
+                      createdAt: '2026-01-01T00:00:00Z',
+                      updatedAt: '2026-01-01T00:00:00Z',
+                    },
+                  ],
+                  weight: 4,
+                  createdAt: '2026-01-01T00:00:00Z',
+                  updatedAt: '2026-01-01T00:00:00Z',
+                },
+              ]
+            : [])),
           listCurriculumSkills: vi.fn().mockResolvedValue([
+            {
+              id: 'skill-reading',
+              name: 'Critical reading',
+              description: 'Identify the question concept.',
+              createdAt: '2026-01-01T00:00:00Z',
+              updatedAt: '2026-01-01T00:00:00Z',
+            },
+          ]),
+          listCurriculumSkillsForCategory: vi.fn().mockResolvedValue([
             {
               id: 'skill-reading',
               name: 'Critical reading',
@@ -376,12 +436,59 @@ async function createFixture(mode?: 'create', context: ExamFixtureContext = 'bas
               updatedAt: '2026-05-28T00:00:00Z',
             },
           ]),
+          listUniversityEducationExams: vi.fn().mockResolvedValue([
+            {
+              id: 'university-exam-term-one',
+              universityId: 'university-1',
+              collegeId: 'college-1',
+              subjectId: 'subject-1',
+              title: 'First Term Exam',
+              instructions: null,
+              status: 'DRAFT',
+              shuffleQuestions: true,
+              showResultsImmediately: false,
+              allowRetakes: false,
+              questionCount: 0,
+              createdAt: '2026-06-24T00:00:00Z',
+              updatedAt: '2026-06-24T00:00:00Z',
+            },
+            {
+              id: 'university-exam-monthly',
+              universityId: 'university-1',
+              collegeId: 'college-1',
+              subjectId: 'subject-1',
+              title: 'Monthly Assessment',
+              instructions: null,
+              status: 'PUBLISHED',
+              shuffleQuestions: true,
+              showResultsImmediately: false,
+              allowRetakes: false,
+              questionCount: 0,
+              createdAt: '2026-05-28T00:00:00Z',
+              updatedAt: '2026-05-28T00:00:00Z',
+            },
+          ]),
           createBasicEducationExam: vi.fn().mockResolvedValue({
             id: 'exam-created',
             stageId: 'stage-primary',
             gradeId: 'grade-one',
             subjectId: 'subject-arabic',
             title: 'Science Midterm',
+            instructions: null,
+            status: 'DRAFT',
+            shuffleQuestions: true,
+            showResultsImmediately: false,
+            allowRetakes: false,
+            questionCount: 1,
+            createdAt: '2026-06-26T00:00:00Z',
+            updatedAt: '2026-06-26T00:00:00Z',
+          }),
+          createUniversityEducationExam: vi.fn().mockResolvedValue({
+            id: 'university-exam-created',
+            universityId: 'university-1',
+            collegeId: 'college-1',
+            subjectId: 'subject-1',
+            title: 'Thermodynamics Midterm',
             instructions: null,
             status: 'DRAFT',
             shuffleQuestions: true,
@@ -402,6 +509,21 @@ async function createFixture(mode?: 'create', context: ExamFixtureContext = 'bas
             shuffleQuestions: false,
             showResultsImmediately: true,
             allowRetakes: true,
+            questionCount: 1,
+            createdAt: '2026-06-24T00:00:00Z',
+            updatedAt: '2026-06-26T00:00:00Z',
+          }),
+          updateUniversityEducationExam: vi.fn().mockResolvedValue({
+            id: 'university-exam-term-one',
+            universityId: 'university-1',
+            collegeId: 'college-1',
+            subjectId: 'subject-1',
+            title: 'Updated University Exam',
+            instructions: null,
+            status: 'DRAFT',
+            shuffleQuestions: true,
+            showResultsImmediately: false,
+            allowRetakes: false,
             questionCount: 1,
             createdAt: '2026-06-24T00:00:00Z',
             updatedAt: '2026-06-26T00:00:00Z',
@@ -620,12 +742,11 @@ describe('TenantExamsBasicEducationExamCreateComponent', () => {
     expect(text).toContain('Primary Stage');
     expect(text).toContain('Grade One');
     expect(text).toContain('Arabic');
-    expect(text).toContain('Grade Exams');
-    expect(text).not.toContain('Exams List');
+    expect(text).toContain('Exams List');
     expect(subjectSelect.disabled).toBe(true);
     expect(subjectSelect.value).toBe('subject-arabic');
     expect(subjectsData.listCurriculumQuestions).not.toHaveBeenCalled();
-    const gradeExamsBreadcrumb = links.find((anchor) => anchor.textContent?.trim() === 'Grade Exams');
+    const gradeExamsBreadcrumb = links.find((anchor) => anchor.textContent?.trim() === 'Exams List');
     expect(gradeExamsBreadcrumb?.pathname).toBe('/tenant/exams/basic-education/stage-primary/grades/grade-one/create');
     expect(gradeExamsBreadcrumb?.search).toBe('?subjectId=subject-arabic');
   });
@@ -1014,6 +1135,78 @@ describe('TenantExamsBasicEducationExamCreateComponent', () => {
     expect(links).toContain('/tenant/exams/university-education/university-1/colleges/college-1/create/new');
   });
 
+  it('opens the university exam add question page from Insert question with subject context', async () => {
+    const fixture = await createFixture('create', 'university');
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const addQuestionsButton = Array.from(fixture.nativeElement.querySelectorAll('button')).find((button) =>
+      (button as HTMLButtonElement).textContent?.includes('Add Questions'),
+    ) as HTMLButtonElement;
+
+    addQuestionsButton.click();
+    fixture.detectChanges();
+
+    let text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Insert question');
+    expect(text).toContain('Add from basic questions');
+    expect(text).toContain('Add from questions bank');
+    expect(text).not.toContain('Choose a subject before adding questions.');
+
+    const openQuestionsButton = Array.from(fixture.nativeElement.querySelectorAll('button')).find((button) =>
+      (button as HTMLButtonElement).textContent?.includes('Insert question'),
+    ) as HTMLButtonElement;
+    openQuestionsButton.click();
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    expect(navigateSpy).toHaveBeenCalledWith([
+      '/tenant/exams/university-education',
+      'university-1',
+      'colleges',
+      'college-1',
+      'create',
+      'new',
+      'subjects',
+      'subject-1',
+      'curriculum',
+      'curriculum-root-one',
+      'addQuestion',
+    ], { queryParams: { subjectId: 'subject-1' } });
+    text = fixture.nativeElement.textContent as string;
+    expect(text).not.toContain('Choose a subject before adding questions.');
+  });
+
+  it('opens the selectable questions drawer for university exam saved questions', async () => {
+    const fixture = await createFixture('create', 'university');
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const subjectsData = TestBed.inject(TenantSubjectsDataService) as unknown as {
+      listCurriculumQuestionsForCategory: ReturnType<typeof vi.fn>;
+      listCurriculumSkillsForCategory: ReturnType<typeof vi.fn>;
+    };
+    const addQuestionsButton = Array.from(fixture.nativeElement.querySelectorAll('button')).find((button) =>
+      (button as HTMLButtonElement).textContent?.includes('Add Questions'),
+    ) as HTMLButtonElement;
+
+    addQuestionsButton.click();
+    fixture.detectChanges();
+
+    const addFromBasicButton = Array.from(fixture.nativeElement.querySelectorAll('button')).find((button) =>
+      (button as HTMLButtonElement).textContent?.includes('Add from basic questions'),
+    ) as HTMLButtonElement;
+    addFromBasicButton.click();
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Add from basic questions');
+    expect(text).toContain('Select saved questions from this subject');
+    expect(text).toContain('What is thermodynamics?');
+    expect(subjectsData.listCurriculumQuestionsForCategory).toHaveBeenCalledWith('subject-1', 'curriculum-root-one', 'UNIVERSITY_EDUCATION');
+    expect(subjectsData.listCurriculumSkillsForCategory).toHaveBeenCalledWith('subject-1', 'curriculum-root-one', 'UNIVERSITY_EDUCATION');
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
   it('shows a draft-ready message after submitting a valid exam shell', async () => {
     sessionStorage.setItem(
       'tenant.exam-draft.questions.basic.stage-primary.grade-one.subject-arabic',
@@ -1061,6 +1254,15 @@ describe('TenantExamsBasicEducationExamCreateComponent', () => {
       ['/tenant/exams/basic-education', 'stage-primary', 'grades', 'grade-one', 'create', 'new'],
       { queryParams: { subjectId: 'subject-arabic', examId: 'exam-term-one' } },
     );
+  });
+
+  it('does not render edit or delete row actions for university education exams', async () => {
+    const fixture = await createFixture(undefined, 'university');
+
+    expect(fixture.nativeElement.textContent).toContain('First Term Exam');
+    expect(fixture.nativeElement.querySelector('button[aria-label="Edit First Term Exam"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('button[aria-label="Delete First Term Exam"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('button[aria-label="Publish First Term Exam"]')).toBeTruthy();
   });
 
   it('hydrates and updates a saved exam in edit mode', async () => {

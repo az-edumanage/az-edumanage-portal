@@ -21,15 +21,25 @@ describe('TenantBillingDataService', () => {
   });
 
   it('loads tenant invoices with query parameters', () => {
-    service.listTenantStudentInvoices({ status: 'unpaid', search: 'Ahmed', page: 1, size: 25 }).subscribe((response) => {
+    service.listTenantStudentInvoices({
+      status: 'unpaid',
+      category: 'overdue',
+      search: 'Ahmed',
+      studentId: 'student-1',
+      page: 1,
+      size: 25,
+    }).subscribe((response) => {
       expect(response.items[0].invoiceRef).toBe('TSI-1');
       expect(response.totalItems).toBe(1);
+      expect(response.summary.overdueInvoices).toBe(1);
     });
 
     const request = httpTesting.expectOne((req) => req.url.endsWith('/tenant/billing/invoices'));
     expect(request.request.method).toBe('GET');
     expect(request.request.params.get('status')).toBe('unpaid');
+    expect(request.request.params.get('category')).toBe('overdue');
     expect(request.request.params.get('search')).toBe('Ahmed');
+    expect(request.request.params.get('studentId')).toBe('student-1');
     expect(request.request.params.get('page')).toBe('1');
     expect(request.request.params.get('size')).toBe('25');
     request.flush({
@@ -37,6 +47,7 @@ describe('TenantBillingDataService', () => {
       page: 1,
       size: 25,
       totalItems: 1,
+      summary: summary(),
     });
   });
 
@@ -53,6 +64,15 @@ describe('TenantBillingDataService', () => {
 
 function invoice(overrides: Partial<ReturnType<typeof baseInvoice>> = {}) {
   return { ...baseInvoice(), ...overrides };
+}
+
+function summary() {
+  return {
+    totalInvoices: 3,
+    paidInvoices: 1,
+    unpaidInvoices: 2,
+    overdueInvoices: 1,
+  };
 }
 
 function baseInvoice() {

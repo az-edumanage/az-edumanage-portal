@@ -87,16 +87,75 @@
       size="icon" 
       (click)="toggleTheme()" 
       class="!text-slate-500 rounded-full"
+      [attr.aria-label]="theme() === 'dark' ? t('topbar.theme.switchToLight') : t('topbar.theme.switchToDark')"
       [title]="theme() === 'dark' ? t('topbar.theme.switchToLight') : t('topbar.theme.switchToDark')"
     >
       <mat-icon>{{ theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
     </app-button>
 
-    <div class="relative">
-      <app-button variant="ghost" size="icon" class="!text-slate-500 rounded-full">
+    <div class="topbar-notifications relative">
+      <app-button
+        variant="ghost"
+        size="icon"
+        class="!text-slate-500 rounded-full"
+        title="Notifications"
+        (click)="toggleNotifications($event)"
+      >
         <mat-icon>notifications</mat-icon>
       </app-button>
-      <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+      @if (unreadCount() > 0) {
+        <span class="topbar-notifications-badge">
+          {{ notificationCountLabel() }}
+        </span>
+      }
+
+      @if (notificationsOpen()) {
+        <section class="topbar-notifications-menu" (click)="$event.stopPropagation()">
+          <div class="topbar-notifications-header">
+            <div>
+              <p class="topbar-notifications-title">Notifications</p>
+              <p class="topbar-notifications-subtitle">{{ unreadCount() }} unread</p>
+            </div>
+            <button
+              type="button"
+              class="topbar-notifications-refresh"
+              title="Refresh notifications"
+              (click)="refreshNotifications()"
+              [disabled]="notificationsLoading()"
+            >
+              <mat-icon [class.topbar-notifications-spin]="notificationsLoading()">refresh</mat-icon>
+            </button>
+          </div>
+
+          <div class="topbar-notifications-list">
+            @if (notifications().length) {
+              @for (notification of notifications(); track notification.id) {
+                <button
+                  type="button"
+                  class="topbar-notifications-item"
+                  [class.topbar-notifications-item--unread]="!notification.read"
+                  (click)="openNotification(notification)"
+                >
+                  <span class="topbar-notifications-status" aria-hidden="true"></span>
+                  <span class="topbar-notifications-copy">
+                    <span class="topbar-notifications-item-title">{{ notification.title }}</span>
+                    <span class="topbar-notifications-item-body">{{ notification.body }}</span>
+                    <span class="topbar-notifications-time">{{ notification.createdAt | date: 'MMM d, h:mm a' }}</span>
+                  </span>
+                  @if (notification.linkPath) {
+                    <mat-icon class="topbar-notifications-link-icon">chevron_right</mat-icon>
+                  }
+                </button>
+              }
+            } @else {
+              <div class="topbar-notifications-empty">
+                <mat-icon>notifications_none</mat-icon>
+                <span>No notifications yet.</span>
+              </div>
+            }
+          </div>
+        </section>
+      }
     </div>
 
     <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-sm border border-indigo-200 dark:border-indigo-800">

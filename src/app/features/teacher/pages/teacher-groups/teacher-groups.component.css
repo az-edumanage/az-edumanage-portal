@@ -257,6 +257,30 @@
   padding: 1.25rem;
 }
 
+.group-card--clickable,
+.group-row {
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.group-card--clickable:hover,
+.group-card--clickable:focus-visible {
+  border-color: #c7d2fe;
+  box-shadow: 0 8px 18px rgb(79 70 229 / 0.12);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.group-row:hover,
+.group-row:focus-visible {
+  background: #f8fafc;
+  outline: none;
+}
+
+.group-row:focus-visible {
+  box-shadow: inset 3px 0 0 #6366f1;
+}
+
 .card-top {
   display: flex;
   justify-content: space-between;

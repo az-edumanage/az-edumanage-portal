@@ -59,18 +59,98 @@
     </div>
 
     <section class="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <div class="border-b border-slate-200 p-5 dark:border-slate-800">
-        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Assessment</p>
-        <h2 class="mt-1 text-lg font-black text-slate-950 dark:text-white">{{ student()?.name || 'Student' }}</h2>
-      </div>
-      <div class="grid min-h-72 place-items-center p-8 text-center">
-        <div class="max-w-md space-y-3">
-          <span class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-700">
-            <mat-icon>assignment_turned_in</mat-icon>
-          </span>
-          <h3 class="text-base font-black text-slate-950 dark:text-white">Assessment page is ready</h3>
-          <p class="text-sm font-semibold text-slate-500">This session and student now have a dedicated page for assessment work.</p>
+      <div class="flex flex-col gap-4 border-b border-slate-200 p-5 dark:border-slate-800 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Assessment</p>
+          <h2 class="mt-1 text-lg font-black text-slate-950 dark:text-white">Bloom's Taxonomy</h2>
+          <p class="mt-1 text-sm font-semibold text-slate-500">{{ student()?.name || 'Student' }} grades by cognitive level</p>
         </div>
+        <button
+          type="button"
+          class="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 text-sm font-black text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 dark:disabled:bg-slate-800"
+          [disabled]="assessmentSaving() || assessmentLoading() || bloomLevelsLoading() || !bloomLevels().length"
+          (click)="saveAssessment()"
+        >
+          <mat-icon class="text-base">{{ assessmentSaving() ? 'hourglass_top' : 'save' }}</mat-icon>
+          {{ assessmentSaving() ? 'Saving...' : 'Save' }}
+        </button>
+      </div>
+      <div class="p-5">
+        @if (assessmentError()) {
+          <div class="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm font-bold text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-200">
+            {{ assessmentError() }}
+          </div>
+        } @else if (assessmentSaveMessage()) {
+          <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm font-bold text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200">
+            {{ assessmentSaveMessage() }}
+          </div>
+        }
+        @if (bloomLevelsLoading() || assessmentLoading()) {
+          <div class="rounded-lg border border-slate-200 bg-slate-50 p-5 text-sm font-bold text-slate-500 dark:border-slate-800 dark:bg-slate-950/30">
+            Loading Bloom's Taxonomy...
+          </div>
+        } @else if (bloomLevelsError()) {
+          <div class="rounded-lg border border-rose-200 bg-rose-50 p-5 text-sm font-bold text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-200">
+            {{ bloomLevelsError() }}
+          </div>
+        } @else {
+          <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
+            <table class="min-w-full divide-y divide-slate-200 text-sm dark:divide-slate-800">
+              <thead class="bg-slate-50 text-left dark:bg-slate-950/40">
+                <tr>
+                  <th scope="col" class="w-20 px-4 py-3 text-xs font-black uppercase tracking-wider text-slate-500">Order</th>
+                  <th scope="col" class="px-4 py-3 text-xs font-black uppercase tracking-wider text-slate-500">Bloom's Taxonomy</th>
+                  <th scope="col" class="w-48 px-4 py-3 text-xs font-black uppercase tracking-wider text-slate-500">Student's grade</th>
+                  <th scope="col" class="w-48 px-4 py-3 text-xs font-black uppercase tracking-wider text-slate-500">Final grade</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
+                @for (level of bloomLevels(); track level.id) {
+                  <tr>
+                    <td class="px-4 py-3 font-mono text-xs font-black text-slate-500">{{ level.levelOrder }}</td>
+                    <td class="px-4 py-3">
+                      <div>
+                        <p class="font-black text-slate-950 dark:text-white">{{ bloomLevelLabel(level) }}</p>
+                        @if (level.descriptionEn) {
+                          <p class="mt-1 text-xs font-semibold text-slate-500">{{ level.descriptionEn }}</p>
+                        }
+                      </div>
+                    </td>
+                    <td class="px-4 py-3">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        inputmode="decimal"
+                        class="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-bold text-slate-950 outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-950"
+                        [value]="assessmentScore(level.id, 'studentGrade')"
+                        [attr.aria-label]="'Student grade for ' + level.nameEn"
+                        (input)="updateAssessmentScore(level.id, 'studentGrade', $any($event.target).value)"
+                      />
+                    </td>
+                    <td class="px-4 py-3">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        inputmode="decimal"
+                        class="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-bold text-slate-950 outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-950"
+                        [value]="assessmentScore(level.id, 'finalGrade')"
+                        [attr.aria-label]="'Final grade for ' + level.nameEn"
+                        (input)="updateAssessmentScore(level.id, 'finalGrade', $any($event.target).value)"
+                      />
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          @if (!bloomLevels().length) {
+            <div class="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-5 text-sm font-bold text-slate-500 dark:border-slate-800 dark:bg-slate-950/30">
+              No Bloom's Taxonomy levels found.
+            </div>
+          }
+        }
       </div>
     </section>
   }

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { TenantCountry, TenantCountrySettingsService } from '../../data-access/tenant-country-settings.service';
 import { TenantEquipmentFacility, TenantEquipmentFacilitySettingsService } from '../../data-access/tenant-equipment-facility-settings.service';
-import { TenantQuestionSource, TenantQuestionSourceSettingsService } from '../../data-access/tenant-question-source-settings.service';
+import { TenantQuestionSource, TenantQuestionSourceEducationCategory, TenantQuestionSourceSettingsService } from '../../data-access/tenant-question-source-settings.service';
 import { TenantQuestionType, TenantQuestionTypeSettingsService } from '../../data-access/tenant-question-type-settings.service';
 import { TenantRoomType, TenantRoomTypeSettingsService } from '../../data-access/tenant-room-type-settings.service';
 import { TenantSubscriptionPeriod, TenantSubscriptionPeriodSettingsService } from '../../data-access/tenant-subscription-period-settings.service';
@@ -41,10 +41,15 @@ export class TenantPlatformSettingsComponent implements OnInit {
   readonly questionSourceLoadError = signal<string | null>(null);
   readonly showQuestionSourceModal = signal(false);
   readonly questionSourceValue = signal('');
+  readonly questionSourceEducationCategory = signal<TenantQuestionSourceEducationCategory>('BASIC_EDUCATION');
   readonly questionSourceDescription = signal('');
   readonly questionSourceValueError = signal<string | null>(null);
   readonly questionSourceSaveError = signal<string | null>(null);
   readonly questionSourceSaving = signal(false);
+  readonly questionSourceEducationCategories: { value: TenantQuestionSourceEducationCategory; label: string }[] = [
+    { value: 'BASIC_EDUCATION', label: 'Basic Education' },
+    { value: 'UNIVERSITY_EDUCATION', label: 'University Education' },
+  ];
   readonly showCountryModal = signal(false);
   readonly newCountryName = signal('');
   readonly countryLoadError = signal<string | null>(null);
@@ -318,6 +323,10 @@ export class TenantPlatformSettingsComponent implements OnInit {
     this.subscriptionPeriodDescription.set(value);
   }
 
+  selectQuestionSourceEducationCategory(value: string): void {
+    this.questionSourceEducationCategory.set(value === 'UNIVERSITY_EDUCATION' ? 'UNIVERSITY_EDUCATION' : 'BASIC_EDUCATION');
+  }
+
   selectSubscriptionPeriodDurationType(value: 'Month' | 'Day'): void {
     this.subscriptionPeriodDurationType.set(value);
     this.subscriptionPeriodDurationError.set(null);
@@ -431,7 +440,8 @@ export class TenantPlatformSettingsComponent implements OnInit {
     this.questionSourcesLoading.set(true);
     this.questionSourceLoadError.set(null);
     try {
-      this.questionSources.set(await this.tenantQuestionSourceSettings.listQuestionSources());
+      const sources = await this.tenantQuestionSourceSettings.listQuestionSources();
+      this.questionSources.set([...sources].sort((a, b) => this.sortQuestionSources(a, b)));
       this.questionSourcesLoaded.set(true);
     } catch (error) {
       this.questionSourceLoadError.set(this.tenantQuestionSourceSettings.toUserMessage(error));
@@ -442,6 +452,7 @@ export class TenantPlatformSettingsComponent implements OnInit {
 
   openQuestionSourceModal(): void {
     this.questionSourceValue.set('');
+    this.questionSourceEducationCategory.set('BASIC_EDUCATION');
     this.questionSourceDescription.set('');
     this.questionSourceValueError.set(null);
     this.questionSourceSaveError.set(null);
@@ -454,6 +465,7 @@ export class TenantPlatformSettingsComponent implements OnInit {
     }
     this.showQuestionSourceModal.set(false);
     this.questionSourceValue.set('');
+    this.questionSourceEducationCategory.set('BASIC_EDUCATION');
     this.questionSourceDescription.set('');
     this.questionSourceValueError.set(null);
     this.questionSourceSaveError.set(null);
@@ -477,18 +489,30 @@ export class TenantPlatformSettingsComponent implements OnInit {
     try {
       const saved = await this.tenantQuestionSourceSettings.createQuestionSource({
         source,
+        educationCategory: this.questionSourceEducationCategory(),
         description: description || null,
       });
-      this.questionSources.update((sources) => [...sources, saved].sort((a, b) => a.source.localeCompare(b.source)));
+      this.questionSources.update((sources) => [...sources, saved].sort((a, b) => this.sortQuestionSources(a, b)));
       this.questionSourcesLoaded.set(true);
       this.showQuestionSourceModal.set(false);
       this.questionSourceValue.set('');
+      this.questionSourceEducationCategory.set('BASIC_EDUCATION');
       this.questionSourceDescription.set('');
     } catch (error) {
       this.questionSourceSaveError.set(this.tenantQuestionSourceSettings.toUserMessage(error));
     } finally {
       this.questionSourceSaving.set(false);
     }
+  }
+
+  questionSourceEducationCategoryLabel(category: string | null | undefined): string {
+    return this.questionSourceEducationCategories.find((item) => item.value === category)?.label ?? 'Basic Education';
+  }
+
+  private sortQuestionSources(a: TenantQuestionSource, b: TenantQuestionSource): number {
+    const categoryCompare = this.questionSourceEducationCategoryLabel(a.educationCategory)
+      .localeCompare(this.questionSourceEducationCategoryLabel(b.educationCategory));
+    return categoryCompare || a.source.localeCompare(b.source);
   }
 
   openCountryModal(): void {

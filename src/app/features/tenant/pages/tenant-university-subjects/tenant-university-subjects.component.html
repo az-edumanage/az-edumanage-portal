@@ -217,7 +217,15 @@
             </thead>
             <tbody class="tenant-university-subjects-tbody">
               @for (subject of subjects(); track subject.id) {
-                <tr class="tenant-university-subjects-tr">
+                <tr
+                  class="tenant-university-subjects-tr tenant-university-subjects-tr--clickable"
+                  role="link"
+                  tabindex="0"
+                  (click)="openDetails(subject.id)"
+                  (keydown.enter)="openDetails(subject.id)"
+                  (keydown.space)="$event.preventDefault(); openDetails(subject.id)"
+                  [attr.aria-label]="'Open details for ' + subject.name"
+                >
                   <td class="tenant-university-subjects-td">
                     <div class="tenant-university-subjects-row-name-wrap">
                       <div class="tenant-university-subjects-row-icon-wrap">
@@ -249,7 +257,7 @@
                     </div>
                   </td>
                   <td class="tenant-university-subjects-td tenant-university-subjects-td--actions">
-                    <div class="tenant-university-subjects-row-actions">
+                    <div class="tenant-university-subjects-row-actions" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
                       <a [routerLink]="['/tenant/university-subjects', subject.id]" class="tenant-university-subjects-row-btn tenant-university-subjects-row-btn--view" title="View Details">
                         <mat-icon class="text-sm block">visibility</mat-icon>
                       </a>

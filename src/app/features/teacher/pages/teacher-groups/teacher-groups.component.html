@@ -122,7 +122,7 @@
   } @else if (viewMode() === 'grid') {
     <section class="groups-grid">
       @for (group of filteredGroups(); track group.id) {
-        <article class="group-card">
+        <article class="group-card group-card--clickable" [routerLink]="['/teacher/groups', group.id]" tabindex="0">
           <div class="card-top">
             <div>
               <h3>{{ group.name }}</h3>
@@ -179,7 +179,7 @@
           </thead>
           <tbody>
             @for (group of pagedGroups(); track group.id) {
-              <tr>
+              <tr class="group-row" [routerLink]="['/teacher/groups', group.id]" tabindex="0">
                 <td>
                   <strong>{{ group.name }}</strong>
                   <span>{{ educationContext(group) }}</span>

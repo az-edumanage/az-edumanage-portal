@@ -1,4 +1,4 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, catchError, map, tap, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
@@ -19,8 +19,9 @@ export class TenantScheduleDataService {
 
   readonly sessions = signal<ScheduleSession[]>([]);
 
-  loadSessions(): Observable<ScheduleSession[]> {
-    return this.http.get<BackendScheduleSession[]>(this.scheduleUrl).pipe(
+  loadSessions(date?: string | null): Observable<ScheduleSession[]> {
+    const params = date ? new HttpParams().set('date', date) : undefined;
+    return this.http.get<BackendScheduleSession[]>(this.scheduleUrl, { params }).pipe(
       map((sessions) => sessions.map((session, index) => this.toScheduleSession(session, index))),
       tap((sessions) => this.sessions.set(sessions)),
       catchError((error: HttpErrorResponse) => this.handleError(error)),

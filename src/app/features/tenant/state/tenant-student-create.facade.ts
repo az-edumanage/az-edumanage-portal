@@ -1,10 +1,12 @@
-import { Injectable, inject } from '@angular/core';
+import { computed, Injectable, inject, signal } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { TaskService } from '../../../core/services/task.service';
 import { TenantStudentCreateDataService } from '../data-access/tenant-student-create-data.service';
+import { TenantStudentsDataService } from '../data-access/tenant-students-data.service';
 import { TenantStudentCreatePayload } from '../models/tenant-student-create.models';
+import { TenantParent } from '../models/tenant-students.models';
 import { TenantStudentCreateStore } from './tenant-student-create.store';
 
 @Injectable({ providedIn: 'root' })
@@ -14,10 +16,12 @@ export class TenantStudentCreateFacade {
   private readonly taskService = inject(TaskService);
   private readonly store = inject(TenantStudentCreateStore);
   private readonly data = inject(TenantStudentCreateDataService);
+  private readonly studentsData = inject(TenantStudentsDataService);
 
   private isSuccess = false;
   private readonly taskId = 'create-student-task';
   private selectorsBound = false;
+  private editingStudentId: string | null = null;
 
   readonly isSubmitting = this.store.isSubmitting;
   readonly isLoading = this.store.isLoading;
@@ -26,18 +30,41 @@ export class TenantStudentCreateFacade {
   readonly universities = this.store.universities;
   readonly availableGrades = this.store.availableGrades;
   readonly availableColleges = this.store.availableColleges;
-
+  readonly isEditMode = this.store.isEditMode;
+  readonly parents = signal<TenantParent[]>([]);
+  readonly parentsLoading = signal(false);
+  readonly parentSearchQuery = signal('');
+  readonly addParentModalOpen = signal(false);
+  readonly addParentSaving = signal(false);
+  readonly addParentError = signal<string | null>(null);
+  readonly addParentForm = this.fb.group({
+    fullName: ['', [Validators.required, Validators.minLength(3)]],
+    phone: [''],
+    email: ['', [Validators.email]],
+    username: ['', Validators.required],
+    password: ['', [Validators.required, Validators.minLength(8)]],
+  });
+  readonly filteredParents = computed(() => {
+    const query = this.parentSearchQuery().trim().toLowerCase();
+    const parents = this.parents();
+    if (!query) {
+      return parents;
+    }
+    return parents.filter((parent) => {
+      const name = parent.name.toLowerCase();
+      const phone = (parent.phone ?? '').toLowerCase();
+      return name.includes(query) || phone.includes(query);
+    });
+  });
   readonly studentForm = this.fb.group({
     fullName: ['', [Validators.required, Validators.minLength(3)]],
-    email: ['', [Validators.required, Validators.email]],
-    phone: ['', Validators.required],
+    email: ['', [Validators.email]],
+    phone: [''],
     username: ['', Validators.required],
     password: ['', [Validators.required, Validators.minLength(8)]],
     birthDate: ['', Validators.required],
     gender: ['Male', Validators.required],
-    parentName: [''],
-    parentPhone: [''],
-    address: [''],
+    parentAppUserId: ['', Validators.required],
     notifyParent: [true],
     educationCategory: ['BASIC_EDUCATION', Validators.required],
     stageIds: [[] as string[]],
@@ -45,14 +72,22 @@ export class TenantStudentCreateFacade {
     universityIds: [[] as string[]],
     collegeIds: [[] as string[]],
   });
+  selectedParent(): TenantParent | null {
+    const selectedId = this.studentForm.controls.parentAppUserId.value;
+    return this.parents().find((parent) => parent.appUserId === selectedId || parent.id === selectedId) ?? null;
+  }
 
-  initialize(): void {
+  initialize(studentId: string | null): void {
     this.isSuccess = false;
+    this.editingStudentId = studentId;
+    this.store.isEditMode.set(Boolean(this.editingStudentId));
     this.store.setError(null);
     this.bindDependentSelectors();
+    this.configureAccountControls();
     this.loadLookups();
+    this.loadParents();
 
-    const savedTask = this.taskService.getTask(this.taskId);
+    const savedTask = this.editingStudentId ? null : this.taskService.getTask(this.taskId);
     if (savedTask?.data) {
       this.studentForm.patchValue(savedTask.data as Partial<TenantStudentCreatePayload>, { emitEvent: false });
       this.syncSelectedSignals();
@@ -64,7 +99,7 @@ export class TenantStudentCreateFacade {
     const value = this.studentForm.getRawValue();
     const hasData = value.fullName !== '' || value.email !== '' || value.phone !== '';
 
-    if (hasData && !this.isSuccess && !this.isSubmitting()) {
+    if (!this.editingStudentId && hasData && !this.isSuccess && !this.isSubmitting()) {
       this.taskService.addTask({
         id: this.taskId,
         type: 'form',
@@ -77,6 +112,7 @@ export class TenantStudentCreateFacade {
 
   resetForm(): void {
     this.studentForm.reset(this.data.getDefaultFormValue());
+    this.parentSearchQuery.set('');
     this.store.resetFormState();
     this.syncSelectedSignals();
     this.taskService.removeTask(this.taskId);
@@ -98,8 +134,11 @@ export class TenantStudentCreateFacade {
     this.store.setError(null);
     const payload = this.studentForm.getRawValue() as TenantStudentCreatePayload;
 
-    this.data
-      .enrollStudent(payload)
+    const request = this.editingStudentId
+      ? this.data.updateStudent(this.editingStudentId, payload)
+      : this.data.enrollStudent(payload);
+
+    request
       .pipe(finalize(() => this.store.setSubmitting(false)))
       .subscribe({
         next: () => {
@@ -124,7 +163,106 @@ export class TenantStudentCreateFacade {
             lookups.universities,
             lookups.colleges,
           );
+          this.loadStudentForEdit();
         },
+        error: (error: Error) => this.store.setError(error.message),
+      });
+  }
+
+  private loadStudentForEdit(): void {
+    if (!this.editingStudentId) {
+      return;
+    }
+    this.store.setLoading(true);
+    this.data
+      .loadStudentForEdit(this.editingStudentId)
+      .pipe(finalize(() => this.store.setLoading(false)))
+      .subscribe({
+        next: (student) => {
+          this.studentForm.patchValue(student, { emitEvent: false });
+          this.syncSelectedSignals();
+          this.applyEducationValidators();
+        },
+        error: (error: Error) => this.store.setError(error.message),
+      });
+  }
+
+  private configureAccountControls(): void {
+    if (this.editingStudentId) {
+      this.studentForm.controls.username.clearValidators();
+      this.studentForm.controls.password.clearValidators();
+      this.studentForm.controls.username.disable({ emitEvent: false });
+      this.studentForm.controls.password.disable({ emitEvent: false });
+    } else {
+      this.studentForm.controls.username.enable({ emitEvent: false });
+      this.studentForm.controls.password.enable({ emitEvent: false });
+      this.studentForm.controls.username.setValidators([Validators.required]);
+      this.studentForm.controls.password.setValidators([Validators.required, Validators.minLength(8)]);
+    }
+    this.studentForm.controls.username.updateValueAndValidity({ emitEvent: false });
+    this.studentForm.controls.password.updateValueAndValidity({ emitEvent: false });
+    this.studentForm.controls.parentAppUserId.updateValueAndValidity({ emitEvent: false });
+  }
+
+  selectParent(parent: TenantParent): void {
+    const parentId = parent.appUserId ?? parent.id;
+    this.studentForm.controls.parentAppUserId.setValue(parentId);
+    this.studentForm.controls.parentAppUserId.markAsDirty();
+    this.studentForm.controls.parentAppUserId.markAsTouched();
+    this.parentSearchQuery.set('');
+  }
+
+  openAddParentModal(): void {
+    this.addParentError.set(null);
+    this.addParentForm.reset({
+      fullName: '',
+      phone: '',
+      email: '',
+      username: '',
+      password: '',
+    });
+    this.addParentModalOpen.set(true);
+  }
+
+  closeAddParentModal(): void {
+    if (this.addParentSaving()) {
+      return;
+    }
+    this.addParentModalOpen.set(false);
+    this.addParentError.set(null);
+  }
+
+  submitAddParent(): void {
+    if (this.addParentForm.invalid) {
+      this.addParentForm.markAllAsTouched();
+      return;
+    }
+
+    const value = this.addParentForm.getRawValue();
+    this.addParentSaving.set(true);
+    this.addParentError.set(null);
+    this.studentsData.createParent({
+      fullName: value.fullName ?? '',
+      phone: value.phone ?? '',
+      email: value.email ?? '',
+      username: value.username ?? '',
+      password: value.password ?? '',
+    }).pipe(finalize(() => this.addParentSaving.set(false))).subscribe({
+      next: (parent) => {
+        this.parents.update((parents) => [parent, ...parents.filter((item) => (item.appUserId ?? item.id) !== (parent.appUserId ?? parent.id))]);
+        this.selectParent(parent);
+        this.addParentModalOpen.set(false);
+      },
+      error: (error: Error) => this.addParentError.set(error.message),
+    });
+  }
+
+  private loadParents(): void {
+    this.parentsLoading.set(true);
+    this.studentsData.loadParents()
+      .pipe(finalize(() => this.parentsLoading.set(false)))
+      .subscribe({
+        next: (parents) => this.parents.set(parents),
         error: (error: Error) => this.store.setError(error.message),
       });
   }

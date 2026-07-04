@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { GroupStudent } from '../models/tenant-group-details.models';
-import { TenantGroupDetailsStore } from './tenant-group-details.store';
+import { TenantGroupDetailsScope, TenantGroupDetailsStore } from './tenant-group-details.store';
 
 @Injectable({ providedIn: 'root' })
 export class TenantGroupDetailsFacade {
@@ -18,8 +18,8 @@ export class TenantGroupDetailsFacade {
   readonly monthlyRevenueLabel = this.store.monthlyRevenueLabel;
   readonly capacityUsageLabel = this.store.capacityUsageLabel;
 
-  loadGroup(id: string | null): void {
-    this.store.loadGroup(id);
+  loadGroup(id: string | null, scope: TenantGroupDetailsScope = 'tenant'): void {
+    this.store.loadGroup(id, scope);
   }
 
   selectStudent(student: GroupStudent): void {

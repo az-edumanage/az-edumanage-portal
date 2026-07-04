@@ -1,0 +1,71 @@
+<div class="teacher-attendance-page">
+  <header class="page-header">
+    <div>
+      <h2>Student attendance</h2>
+      <p>{{ group()?.name || 'Group' }} · {{ formatSessionDate(selectedSession()) }} {{ formatTimeRange(selectedSession()) }}</p>
+    </div>
+
+    <button type="button" class="refresh-button" [routerLink]="['/teacher/attendance/groups', groupId(), 'sessions']">
+      <mat-icon>arrow_back</mat-icon>
+      Sessions
+    </button>
+  </header>
+
+  @if (errorMessage()) {
+    <section class="alert-panel">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorMessage() }}</span>
+    </section>
+  }
+
+  <section class="data-panel">
+    <header class="panel-header panel-header--summary">
+      <div>
+        <h3>Attendance records</h3>
+        <p>{{ formatSessionDate(selectedSession()) }} {{ formatTimeRange(selectedSession()) }}</p>
+      </div>
+      <div class="summary-chips">
+        <span class="summary-chip summary-chip--present">{{ presentCount() }} present</span>
+        <span class="summary-chip summary-chip--absent">{{ absentCount() }} absent</span>
+      </div>
+    </header>
+
+    @if (loading()) {
+      <div class="state-panel">
+        <mat-icon>progress_activity</mat-icon>
+        <h4>Loading attendance</h4>
+      </div>
+    } @else if (students().length === 0) {
+      <div class="state-panel">
+        <mat-icon>person_off</mat-icon>
+        <h4>No enrolled students</h4>
+      </div>
+    } @else {
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Barcode</th>
+              <th>Status</th>
+              <th>Attendance Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (student of students(); track trackByStudentId($index, student)) {
+              <tr>
+                <td>
+                  <strong>{{ student.name }}</strong>
+                  <span>{{ student.email || 'No email' }}</span>
+                </td>
+                <td>{{ student.barcodeNumber || 'Not set' }}</td>
+                <td><span class="status-chip" [class]="attendanceClass(student)">{{ attendanceLabel(student) }}</span></td>
+                <td>{{ formatAttendanceTime(student) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</div>

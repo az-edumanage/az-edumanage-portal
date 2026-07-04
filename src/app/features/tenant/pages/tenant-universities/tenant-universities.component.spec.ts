@@ -83,6 +83,17 @@ describe('TenantUniversitiesComponent', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/tenant/exams/university-education', 'university-1']);
   });
 
+  it('hides edit and delete row actions from exams university education', () => {
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'url', 'get').mockReturnValue('/tenant/exams/university-education');
+
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.tenant-universities-row-btn--view')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.tenant-universities-row-btn--edit')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.tenant-universities-row-btn--delete')).toBeNull();
+  });
+
   it('keeps row actions from triggering related-colleges navigation', () => {
     const router = TestBed.inject(Router);
     const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);

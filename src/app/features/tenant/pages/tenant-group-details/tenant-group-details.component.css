@@ -1,6 +1,83 @@
 
 :host { display: block; }
 
+.tenant-group-payment-status-switch {
+  display: inline-flex;
+  min-width: 4.25rem;
+  min-height: 1.75rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #f8fafc;
+  padding: 0.1875rem 0.25rem 0.1875rem 0.625rem;
+  color: #475569;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.tenant-group-payment-status-switch:hover {
+  border-color: #94a3b8;
+  background: #f1f5f9;
+}
+
+.tenant-group-payment-status-switch:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px rgb(79 70 229 / 0.5);
+}
+
+.tenant-group-payment-status-switch--on {
+  border-color: #86efac;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.tenant-group-payment-status-switch--on:hover {
+  border-color: #4ade80;
+  background: #dcfce7;
+}
+
+.tenant-group-payment-status-switch__label {
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.tenant-group-payment-status-switch__track {
+  position: relative;
+  display: inline-flex;
+  width: 2.125rem;
+  height: 1.125rem;
+  flex: 0 0 auto;
+  align-items: center;
+  border-radius: 999px;
+  background: #cbd5e1;
+  transition: background-color 160ms ease;
+}
+
+.tenant-group-payment-status-switch--on .tenant-group-payment-status-switch__track {
+  background: #10b981;
+}
+
+.tenant-group-payment-status-switch__thumb {
+  position: absolute;
+  left: 0.125rem;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.24);
+  transition: transform 160ms ease;
+}
+
+.tenant-group-payment-status-switch--on .tenant-group-payment-status-switch__thumb {
+  transform: translateX(1rem);
+}
+
 .tenant-group-detail-tabs {
   display: inline-flex;
   width: fit-content;
@@ -2575,6 +2652,46 @@
   .tenant-group-exams-skeleton span {
     animation: none;
   }
+
+  .tenant-group-payment-status-switch,
+  .tenant-group-payment-status-switch__track,
+  .tenant-group-payment-status-switch__thumb {
+    transition: none;
+  }
+}
+
+:host-context(.dark) .tenant-group-payment-status-switch {
+  border-color: #334155;
+  background: #0f172a;
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .tenant-group-payment-status-switch:hover {
+  border-color: #475569;
+  background: #1e293b;
+}
+
+:host-context(.dark) .tenant-group-payment-status-switch:focus-visible {
+  box-shadow: 0 0 0 2px #0f172a, 0 0 0 4px rgb(129 140 248 / 0.58);
+}
+
+:host-context(.dark) .tenant-group-payment-status-switch--on {
+  border-color: #065f46;
+  background: rgb(6 78 59 / 0.34);
+  color: #a7f3d0;
+}
+
+:host-context(.dark) .tenant-group-payment-status-switch--on:hover {
+  border-color: #059669;
+  background: rgb(6 95 70 / 0.44);
+}
+
+:host-context(.dark) .tenant-group-payment-status-switch__track {
+  background: #475569;
+}
+
+:host-context(.dark) .tenant-group-payment-status-switch--on .tenant-group-payment-status-switch__track {
+  background: #10b981;
 }
 
 :host-context(.dark) .tenant-group-detail-tabs {

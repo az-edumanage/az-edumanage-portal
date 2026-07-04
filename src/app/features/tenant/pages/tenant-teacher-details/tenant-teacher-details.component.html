@@ -1,116 +1,321 @@
-<div class="tenant-teacher-details-page">
-  <div class="tenant-teacher-details-header">
-    <div>
-      <a routerLink="/tenant/teachers" class="tenant-teacher-details-back">
-        <mat-icon class="text-sm">arrow_back</mat-icon>
-        Teachers
-      </a>
-      <h2 class="tenant-teacher-details-title">Teacher Details</h2>
-    </div>
-    @if (teacher(); as currentTeacher) {
-      <a [routerLink]="['/tenant/teachers', currentTeacher.id, 'edit']" class="tenant-teacher-details-edit">
-        <mat-icon class="text-sm">edit</mat-icon>
-        Edit
-      </a>
-    }
-  </div>
+<div class="teacher-details-page">
+  <nav class="teacher-details-breadcrumb" aria-label="Teacher breadcrumb">
+    <a routerLink="/tenant/teachers">Teachers</a>
+    <mat-icon aria-hidden="true">chevron_right</mat-icon>
+    <span>Teacher Details</span>
+  </nav>
 
   @if (errorMessage()) {
-    <div class="tenant-teacher-details-empty">
-      <h3 class="tenant-teacher-details-empty-title">{{ errorMessage() }}</h3>
-    </div>
+    <section class="teacher-details-state" aria-live="polite">
+      <div class="teacher-details-state-icon">
+        <mat-icon aria-hidden="true">error_outline</mat-icon>
+      </div>
+      <h2>{{ errorMessage() }}</h2>
+      <a routerLink="/tenant/teachers">Back to teachers</a>
+    </section>
   } @else if (isLoading()) {
-    <div class="tenant-teacher-details-empty">
-      <mat-icon class="tenant-teacher-details-spinner">sync</mat-icon>
-      <h3 class="tenant-teacher-details-empty-title">Loading teacher</h3>
-    </div>
+    <section class="teacher-details-state" aria-live="polite">
+      <div class="teacher-details-state-icon">
+        <mat-icon aria-hidden="true">sync</mat-icon>
+      </div>
+      <h2>Loading teacher</h2>
+      <p>Preparing the full teacher profile.</p>
+    </section>
   } @else if (teacher(); as currentTeacher) {
-    <section class="tenant-teacher-details-card">
-      <div class="tenant-teacher-details-profile">
-        <div class="tenant-teacher-details-avatar">{{ currentTeacher.name.charAt(0) }}</div>
-        <div>
-          <h3 class="tenant-teacher-details-name">{{ currentTeacher.name }}</h3>
-          <p class="tenant-teacher-details-email">{{ currentTeacher.email }}</p>
+    <section class="teacher-profile-hero" aria-label="Teacher profile summary">
+      <div class="teacher-profile-main">
+        <div class="teacher-avatar" aria-hidden="true">{{ teacherInitial() }}</div>
+        <div class="teacher-profile-copy">
+          <div class="teacher-name-row">
+            <h1>{{ currentTeacher.name }}</h1>
+            <span
+              class="teacher-status-pill"
+              [class.teacher-status-pill-active]="currentTeacher.status === 'Active'"
+            >
+              {{ currentTeacher.status }}
+            </span>
+          </div>
+          <p class="teacher-id">Teacher ID: #{{ currentTeacher.id.slice(0, 8) }}</p>
+          <div class="teacher-profile-facts" aria-label="Teacher academic facts">
+            <span>
+              <mat-icon aria-hidden="true">school</mat-icon>
+              {{ currentTeacher.educationCategory }}
+            </span>
+            <span>
+              <mat-icon aria-hidden="true">menu_book</mat-icon>
+              {{ currentTeacher.subject || 'Subject not set' }}
+            </span>
+            <span>
+              <mat-icon aria-hidden="true">event</mat-icon>
+              Joined: {{ currentTeacher.joinDate || 'Not set' }}
+            </span>
+          </div>
         </div>
-        <span
-          class="tenant-teacher-details-status"
-          [class.tenant-teacher-details-status--active]="currentTeacher.status === 'Active'"
-        >
-          {{ currentTeacher.status }}
-        </span>
       </div>
 
-      <div class="tenant-teacher-details-grid">
-        <div>
-          <span class="tenant-teacher-details-label">Phone</span>
-          <p class="tenant-teacher-details-value">{{ currentTeacher.phone || 'Not set' }}</p>
-        </div>
-        <div>
-          <span class="tenant-teacher-details-label">Username</span>
-          <p class="tenant-teacher-details-value">{{ currentTeacher.username }}</p>
-        </div>
-        <div>
-          <span class="tenant-teacher-details-label">Education</span>
-          <p class="tenant-teacher-details-value">{{ currentTeacher.educationCategory }}</p>
-        </div>
-        <div>
-          <span class="tenant-teacher-details-label">Subject</span>
-          <p class="tenant-teacher-details-value">{{ currentTeacher.subject }}</p>
-        </div>
-        <div>
-          <span class="tenant-teacher-details-label">Joined</span>
-          <p class="tenant-teacher-details-value">{{ currentTeacher.joinDate || 'Not set' }}</p>
-        </div>
+      <div class="teacher-hero-divider" aria-hidden="true"></div>
+
+      <div class="teacher-contact-strip" aria-label="Teacher contact">
+        <span>Contact:</span>
+        <strong>
+          <mat-icon aria-hidden="true">mail</mat-icon>
+          {{ currentTeacher.email || 'Not set' }}
+        </strong>
+        <strong>
+          <mat-icon aria-hidden="true">phone</mat-icon>
+          {{ currentTeacher.phone || 'Not set' }}
+        </strong>
+      </div>
+
+      <div class="teacher-hero-actions" aria-label="Teacher actions">
+        <a [routerLink]="['/tenant/teachers', currentTeacher.id, 'edit']" class="teacher-action-btn teacher-action-btn-primary">
+          <mat-icon aria-hidden="true">edit</mat-icon>
+          Edit Teacher
+        </a>
+        <a routerLink="/tenant/attendance" class="teacher-action-btn">
+          <mat-icon aria-hidden="true">how_to_reg</mat-icon>
+          Attendance
+        </a>
+        <a routerLink="/tenant/teachers" class="teacher-action-btn">
+          <mat-icon aria-hidden="true">arrow_back</mat-icon>
+          Teachers
+        </a>
       </div>
     </section>
 
-    <section class="tenant-teacher-details-card">
-      <div class="tenant-teacher-details-section-head">
-        <h3 class="tenant-teacher-details-section-title">Assigned Groups</h3>
-        <span class="tenant-teacher-details-count">{{ groups().length }}</span>
-      </div>
-      @if (exitGroupError()) {
-        <div class="tenant-teacher-details-alert" role="alert">{{ exitGroupError() }}</div>
-      }
+    <section class="teacher-metric-grid" aria-label="Teacher overview">
+      <article class="teacher-metric-card teacher-metric-card-green">
+        <span class="teacher-metric-icon"><mat-icon aria-hidden="true">groups</mat-icon></span>
+        <div>
+          <p>Assigned Groups</p>
+          <strong>{{ groups().length }}</strong>
+          <small>{{ primaryGroupLabel() }}</small>
+        </div>
+      </article>
 
-      <div class="tenant-teacher-details-table-scroll">
-        <table class="tenant-teacher-details-table">
-          <thead>
-            <tr>
-              <th>Group name</th>
-              <th>Students</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (group of groups(); track group.id) {
-              <tr>
-                <td>
-                  <a [routerLink]="['/tenant/groups', group.id]" class="tenant-teacher-details-group-link">
-                    {{ group.name }}
-                  </a>
-                </td>
-                <td>{{ group.studentsCount }}</td>
-                <td>
-                  <button
-                    type="button"
-                    class="tenant-teacher-details-exit-btn"
-                    [disabled]="exitingGroupId() === group.id"
-                    (click)="exitGroup(group)"
-                  >
-                    <mat-icon class="text-sm">{{ exitingGroupId() === group.id ? 'sync' : 'logout' }}</mat-icon>
-                    {{ exitingGroupId() === group.id ? 'Exiting' : 'Exit from group' }}
-                  </button>
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="3" class="tenant-teacher-details-table-empty">No assigned groups yet.</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+      <article class="teacher-metric-card">
+        <span class="teacher-metric-icon teacher-metric-icon-blue"><mat-icon aria-hidden="true">group</mat-icon></span>
+        <div>
+          <p>Students</p>
+          <strong>{{ totalAssignedStudents() }}</strong>
+          <small>Across assigned groups</small>
+        </div>
+      </article>
+
+      <article class="teacher-metric-card">
+        <span class="teacher-metric-icon teacher-metric-icon-purple"><mat-icon aria-hidden="true">workspace_premium</mat-icon></span>
+        <div>
+          <p>Education</p>
+          <strong>{{ currentTeacher.educationCategory }}</strong>
+          <small>{{ currentTeacher.subject || 'Subject not set' }}</small>
+        </div>
+      </article>
+
+      <article class="teacher-metric-card">
+        <span class="teacher-metric-icon teacher-metric-icon-amber"><mat-icon aria-hidden="true">schedule</mat-icon></span>
+        <div>
+          <p>Joined</p>
+          <strong>{{ currentTeacher.joinDate || 'Not set' }}</strong>
+          <small>{{ currentTeacher.status }}</small>
+        </div>
+      </article>
     </section>
+
+    <div class="teacher-details-grid">
+      <section class="teacher-panel">
+        <header>
+          <mat-icon aria-hidden="true">badge</mat-icon>
+          <h2>Profile Details</h2>
+        </header>
+        <dl class="teacher-info-grid">
+          <div>
+            <dt>Full Name</dt>
+            <dd>{{ currentTeacher.fullName || currentTeacher.name }}</dd>
+          </div>
+          <div>
+            <dt>Username</dt>
+            <dd>{{ currentTeacher.username || 'Not set' }}</dd>
+          </div>
+          <div>
+            <dt>Status</dt>
+            <dd><span class="teacher-status-soft">{{ currentTeacher.status }}</span></dd>
+          </div>
+          <div>
+            <dt>Education</dt>
+            <dd>{{ currentTeacher.educationCategory }}</dd>
+          </div>
+          <div>
+            <dt>Subject</dt>
+            <dd>{{ currentTeacher.subject || 'Not set' }}</dd>
+          </div>
+          <div>
+            <dt>Joined</dt>
+            <dd>{{ currentTeacher.joinDate || 'Not set' }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="teacher-panel">
+        <header>
+          <mat-icon aria-hidden="true">contact_phone</mat-icon>
+          <h2>Contact Information</h2>
+        </header>
+        <dl class="teacher-contact-list">
+          <div>
+            <dt><mat-icon aria-hidden="true">mail</mat-icon>Email</dt>
+            <dd>{{ currentTeacher.email || 'Not set' }}</dd>
+          </div>
+          <div>
+            <dt><mat-icon aria-hidden="true">phone</mat-icon>Phone</dt>
+            <dd>{{ currentTeacher.phone || 'Not set' }}</dd>
+          </div>
+          <div>
+            <dt><mat-icon aria-hidden="true">account_circle</mat-icon>Account</dt>
+            <dd>{{ currentTeacher.username || 'Not set' }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="teacher-panel teacher-permissions-panel">
+        <header>
+          <mat-icon aria-hidden="true">verified_user</mat-icon>
+          <h2>Permissions</h2>
+        </header>
+        <dl class="teacher-contact-list">
+          <div>
+            <dt>Attendance</dt>
+            <dd>{{ currentTeacher.canManageAttendance ? 'Enabled' : 'Disabled' }}</dd>
+          </div>
+          <div>
+            <dt>Exams and Grades</dt>
+            <dd>{{ currentTeacher.canManageExams ? 'Enabled' : 'Disabled' }}</dd>
+          </div>
+          <div>
+            <dt>Student Messages</dt>
+            <dd>{{ currentTeacher.canMessageStudents ? 'Enabled' : 'Disabled' }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="teacher-panel teacher-groups-panel">
+        <header class="teacher-groups-header">
+          <div>
+            <mat-icon aria-hidden="true">groups</mat-icon>
+            <h2>Assigned Groups</h2>
+            <span class="teacher-groups-count">{{ groupTotalItems() }}</span>
+          </div>
+          <label class="teacher-groups-search">
+            <span class="sr-only">Search assigned groups</span>
+            <mat-icon aria-hidden="true">search</mat-icon>
+            <input
+              type="search"
+              [ngModel]="groupSearchQuery()"
+              (ngModelChange)="setGroupSearchQuery($event)"
+              placeholder="Search groups"
+            />
+          </label>
+        </header>
+
+        @if (exitGroupError()) {
+          <div class="teacher-details-alert" role="alert">{{ exitGroupError() }}</div>
+        }
+
+        <div class="teacher-groups-table-wrap">
+          <table class="teacher-groups-table">
+            <thead>
+              <tr>
+                <th>Group</th>
+                <th>Students</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (group of pagedGroups(); track groupTrack(group)) {
+                <tr>
+                  <td>
+                    <a [routerLink]="['/tenant/groups', group.id]" class="teacher-group-link">
+                      {{ group.name || 'Not set' }}
+                    </a>
+                  </td>
+                  <td>{{ group.studentsCount }}</td>
+                  <td>
+                    <button
+                      type="button"
+                      class="teacher-exit-btn"
+                      [disabled]="exitingGroupId() === group.id"
+                      (click)="exitGroup(group)"
+                    >
+                      <mat-icon aria-hidden="true">{{ exitingGroupId() === group.id ? 'sync' : 'logout' }}</mat-icon>
+                      {{ exitingGroupId() === group.id ? 'Exiting' : 'Exit from group' }}
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="3" class="teacher-empty-cell">
+                    <mat-icon aria-hidden="true">{{ groupSearchQuery() ? 'search_off' : 'group_off' }}</mat-icon>
+                    {{ groupSearchQuery() ? 'No assigned groups match your search' : 'No assigned groups yet' }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (groups().length > 0) {
+          <footer class="teacher-groups-pagination">
+            <span>{{ groupPageStart() }}-{{ groupPageEnd() }} of {{ groupTotalItems() }}</span>
+            <label>
+              Rows
+              <select [ngModel]="groupPageSize()" (ngModelChange)="setGroupPageSize($event)">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+              </select>
+            </label>
+            <div class="teacher-groups-pager-actions">
+              <button type="button" aria-label="Previous assigned groups page" (click)="previousGroupPage()" [disabled]="groupPageIndex() === 0">
+                <mat-icon aria-hidden="true">chevron_left</mat-icon>
+              </button>
+              <button
+                type="button"
+                aria-label="Next assigned groups page"
+                (click)="nextGroupPage()"
+                [disabled]="groupPageIndex() >= groupTotalPages() - 1"
+              >
+                <mat-icon aria-hidden="true">chevron_right</mat-icon>
+              </button>
+            </div>
+          </footer>
+        }
+      </section>
+
+      <aside class="teacher-side-stack">
+        <section class="teacher-quick-actions" aria-label="Quick actions">
+          <h2>
+            <mat-icon aria-hidden="true">bolt</mat-icon>
+            Quick Actions
+          </h2>
+          <div>
+            <a [routerLink]="['/tenant/teachers', currentTeacher.id, 'edit']">
+              <mat-icon aria-hidden="true">edit</mat-icon>
+              Edit Teacher
+            </a>
+            <a routerLink="/tenant/attendance">
+              <mat-icon aria-hidden="true">how_to_reg</mat-icon>
+              Attendance
+            </a>
+            <a routerLink="/tenant/groups">
+              <mat-icon aria-hidden="true">groups</mat-icon>
+              View Groups
+            </a>
+            <a routerLink="/tenant/teachers">
+              <mat-icon aria-hidden="true">arrow_back</mat-icon>
+              Back to Teachers
+            </a>
+          </div>
+        </section>
+      </aside>
+    </div>
   }
 </div>

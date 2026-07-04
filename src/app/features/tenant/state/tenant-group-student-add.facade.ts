@@ -56,6 +56,7 @@ export class TenantGroupStudentAddFacade {
 
       this.taskService.removeTask(this.store.taskId());
     }
+    this.enrollForm.patchValue({ generateInitialInvoice: false });
 
     this.store.setLoadingCandidates(true);
     this.store.setCandidateError(null);

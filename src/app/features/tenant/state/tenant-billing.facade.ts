@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { TenantStudentInvoiceStatus } from '../models/tenant-billing.models';
+import { TenantBillingInvoiceCategory, TenantStudentInvoiceStatus } from '../models/tenant-billing.models';
 import { TenantBillingStore } from './tenant-billing.store';
 
 @Injectable({ providedIn: 'root' })
@@ -12,6 +12,8 @@ export class TenantBillingFacade {
   readonly actionMessage = this.store.actionMessage;
   readonly searchQuery = this.store.searchQuery;
   readonly statusFilter = this.store.statusFilter;
+  readonly categoryFilter = this.store.categoryFilter;
+  readonly summary = this.store.summary;
   readonly pageIndex = this.store.pageIndex;
   readonly pageSize = this.store.pageSize;
   readonly totalItems = this.store.totalItems;
@@ -29,8 +31,16 @@ export class TenantBillingFacade {
     this.store.setSearchQuery(value);
   }
 
+  setStudentFilter(studentId: string, studentName = ''): void {
+    this.store.setStudentFilter(studentId, studentName);
+  }
+
   setStatusFilter(value: TenantStudentInvoiceStatus | ''): void {
     this.store.setStatusFilter(value);
+  }
+
+  setCategoryFilter(value: TenantBillingInvoiceCategory): void {
+    this.store.setCategoryFilter(value);
   }
 
   nextPage(): void {

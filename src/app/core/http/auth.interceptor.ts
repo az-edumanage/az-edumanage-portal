@@ -51,9 +51,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(authedRequest).pipe(
     catchError((error) => {
       if (!(error instanceof HttpErrorResponse) || error.status !== 401 || req.headers.has('x-refresh-retry')) {
-        if (error instanceof HttpErrorResponse && error.status === 403) {
-          authSession.handleSessionExpired(router.url);
-        }
         return throwError(() => error);
       }
 

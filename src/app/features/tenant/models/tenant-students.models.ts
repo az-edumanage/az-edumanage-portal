@@ -26,6 +26,36 @@ export interface StudentDetails extends Student {
   scheduleRows: StudentScheduleRow[];
 }
 
+export interface TenantParentStudentLink {
+  id: string;
+  name: string;
+  grade: string;
+}
+
+export interface TenantParent {
+  id: string;
+  appUserId?: string | null;
+  name: string;
+  phone: string;
+  email?: string | null;
+  notifyParent: boolean;
+  students: TenantParentStudentLink[];
+}
+
+export interface TenantParentCreatePayload {
+  fullName: string;
+  phone: string;
+  email: string;
+  username: string;
+  password: string;
+}
+
+export interface TenantParentUpdatePayload {
+  fullName: string;
+  phone: string;
+  email: string;
+}
+
 export interface StudentScheduleSummary {
   attendanceLabel: string;
   attendanceProgress: number;
@@ -45,15 +75,39 @@ export interface StudentScheduleRow {
   teacher: string;
 }
 
+export type StudentAttendanceFilter = 'all' | 'absent' | 'present';
+
+export interface StudentAttendanceSummary {
+  totalStudents: number;
+  totalAbsent: number;
+  totalPresent: number;
+  absentStudentIds: string[];
+  presentStudentIds: string[];
+  today: string;
+  asOf: string;
+  unavailableReason?: string | null;
+}
+
+export interface StudentAttendanceCard {
+  key: StudentAttendanceFilter;
+  label: 'Total students' | 'Total absence' | 'Total present';
+  count: number;
+  active: boolean;
+  loading: boolean;
+  unavailable: boolean;
+  disabled: boolean;
+}
+
 export interface TenantStudentBackendRecord {
   id: string;
   fullName: string;
-  email: string;
+  email: string | null;
   phone?: string | null;
   barcodeNumber?: string | null;
   barcode_number?: string | null;
   gender?: string | null;
   birthDate?: string | null;
+  parentAppUserId?: string | null;
   parentName?: string | null;
   parentPhone?: string | null;
   address?: string | null;

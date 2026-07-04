@@ -8,6 +8,12 @@ export class TenantGroupsFacade {
   readonly searchQuery = this.store.searchQuery;
   readonly showFilterPanel = this.store.showFilterPanel;
   readonly viewMode = this.store.viewMode;
+  readonly scheduleSummary = this.store.scheduleSummary;
+  readonly scheduleSummaryLoading = this.store.scheduleSummaryLoading;
+  readonly scheduleSummaryError = this.store.scheduleSummaryError;
+  readonly scheduleFilter = this.store.scheduleFilter;
+  readonly activeScheduleFilterLabel = this.store.activeScheduleFilterLabel;
+  readonly hasScheduleFilter = this.store.hasScheduleFilter;
   readonly subjectFilter = this.store.subjectFilter;
   readonly teacherFilter = this.store.teacherFilter;
   readonly sortBy = this.store.sortBy;
@@ -30,6 +36,10 @@ export class TenantGroupsFacade {
     this.store.loadGroups();
   }
 
+  loadScheduleSummary(): void {
+    this.store.loadScheduleSummary();
+  }
+
   setFilters(subject: string, teacher: string, sortBy: string): void {
     this.subjectFilter.set(subject);
     this.teacherFilter.set(teacher);
@@ -43,7 +53,12 @@ export class TenantGroupsFacade {
 
   clearAllFilters(): void {
     this.searchQuery.set('');
+    this.store.selectScheduleFilter('all');
     this.clearAdvancedFilters();
+  }
+
+  selectScheduleFilter(filter: 'all' | 'today' | 'running' | 'postponed'): void {
+    this.store.selectScheduleFilter(filter);
   }
 
   setSearchQuery(value: string): void {

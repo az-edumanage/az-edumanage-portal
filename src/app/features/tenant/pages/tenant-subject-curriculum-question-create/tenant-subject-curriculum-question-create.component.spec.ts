@@ -65,6 +65,7 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
   };
   const data = {
     getSubjectCurriculum: vi.fn().mockResolvedValue(curriculumRoot),
+    getSubjectCurriculumForCategory: vi.fn().mockResolvedValue(curriculumRoot),
     listBloomLevels: vi.fn().mockResolvedValue([
       {
         id: 'bloom-remember',
@@ -137,7 +138,55 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       } as const;
       return skillsByNode[nodeId as keyof typeof skillsByNode] ?? [];
     }),
+    listCurriculumSkillsForCategory: vi.fn().mockImplementation(async (_subjectId: string, nodeId: string) => {
+      const skillsByNode = {
+        'lesson-1': [
+          {
+            id: 'skill-1',
+            name: 'Critical reading',
+            description: 'Identify arguments.',
+            createdAt: '2026-01-01T00:00:00Z',
+            updatedAt: '2026-01-01T00:00:00Z',
+          },
+        ],
+        'lesson-2': [
+          {
+            id: 'skill-2',
+            name: 'Problem solving',
+            description: null,
+            createdAt: '2026-01-01T00:00:00Z',
+            updatedAt: '2026-01-01T00:00:00Z',
+          },
+        ],
+      } as const;
+      return skillsByNode[nodeId as keyof typeof skillsByNode] ?? [];
+    }),
     listCurriculumQuestions: vi.fn().mockResolvedValue([
+      {
+        id: 'question-1',
+        question: 'What is the lesson title?',
+        type: 'MULTIPLE_CHOICE',
+        answer: null,
+        description: 'Choose all valid answers',
+        bloomId: 'bloom-understand',
+        difficultyId: 'difficulty-medium',
+        skillId: 'skill-1',
+        weight: 12,
+        answers: [
+          {
+            id: 'answer-1',
+            answer: 'Lesson 1',
+            correct: true,
+            description: 'Intro answer',
+            createdAt: '2026-01-01T00:00:00Z',
+            updatedAt: '2026-01-01T00:00:00Z',
+          },
+        ],
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      },
+    ]),
+    listCurriculumQuestionsForCategory: vi.fn().mockResolvedValue([
       {
         id: 'question-1',
         question: 'What is the lesson title?',
@@ -284,7 +333,44 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       createdAt: '2026-01-01T00:00:00Z',
       updatedAt: '2026-01-01T00:00:00Z',
     }),
+    createCurriculumQuestionForCategory: vi.fn().mockResolvedValue({
+      id: 'question-1',
+      question: 'What is the lesson title?',
+      type: 'MULTIPLE_CHOICE',
+      answer: null,
+      description: null,
+      bloomId: null,
+      difficultyId: null,
+      skillId: null,
+      weight: null,
+      answers: [],
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    }),
     updateCurriculumQuestion: vi.fn().mockResolvedValue({
+      id: 'question-1',
+      question: 'What is the lesson title?',
+      type: 'MULTIPLE_CHOICE',
+      answer: null,
+      description: null,
+      bloomId: null,
+      difficultyId: null,
+      skillId: null,
+      weight: null,
+      answers: [
+        {
+          id: 'answer-1',
+          answer: 'Lesson 1',
+          correct: true,
+          description: 'Intro answer',
+          createdAt: '2026-01-01T00:00:00Z',
+          updatedAt: '2026-01-01T00:00:00Z',
+        },
+      ],
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-02T00:00:00Z',
+    }),
+    updateCurriculumQuestionForCategory: vi.fn().mockResolvedValue({
       id: 'question-1',
       question: 'What is the lesson title?',
       type: 'MULTIPLE_CHOICE',
@@ -331,7 +417,23 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       createdAt: '2026-01-01T00:00:00Z',
       updatedAt: '2026-01-01T00:00:00Z',
     }),
+    createCurriculumQuestionAnswerForCategory: vi.fn().mockResolvedValue({
+      id: 'answer-1',
+      answer: 'Lesson 1',
+      correct: false,
+      description: 'Intro answer',
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    }),
     updateCurriculumQuestionAnswer: vi.fn().mockResolvedValue({
+      id: 'answer-1',
+      answer: 'Lesson 1',
+      correct: true,
+      description: 'Intro answer',
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-02T00:00:00Z',
+    }),
+    updateCurriculumQuestionAnswerForCategory: vi.fn().mockResolvedValue({
       id: 'answer-1',
       answer: 'Lesson 1',
       correct: true,
@@ -364,6 +466,7 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       {
         id: 'source-official',
         source: 'Official previous exam',
+        educationCategory: 'BASIC_EDUCATION',
         description: 'Imported from official exams.',
         createdAt: '2026-01-01T00:00:00Z',
         updatedAt: '2026-01-01T00:00:00Z',
@@ -371,6 +474,7 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       {
         id: 'source-teacher',
         source: 'Teacher-made',
+        educationCategory: 'BASIC_EDUCATION',
         description: null,
         createdAt: '2026-01-01T00:00:00Z',
         updatedAt: '2026-01-01T00:00:00Z',
@@ -413,7 +517,7 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
     expect(facade.loadSubject).toHaveBeenCalledWith('subject-1');
     expect(data.getSubjectCurriculum).toHaveBeenCalledWith('subject-1');
     expect(questionTypeSettings.listQuestionTypes).toHaveBeenCalled();
-    expect(questionSourceSettings.listQuestionSources).toHaveBeenCalled();
+    expect(questionSourceSettings.listQuestionSources).toHaveBeenCalledWith('BASIC_EDUCATION');
     expect(data.listBloomLevels).toHaveBeenCalled();
     expect(data.listQuestionDifficulties).toHaveBeenCalled();
     expect(text).toContain('Subject');
@@ -510,6 +614,41 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
     expect(text).toContain('Official previous exam');
     expect(text).toContain('Teacher-made');
     expect(text).toContain('Save Question');
+  });
+
+  it('loads university question-bank add-question context from university subject curriculum', async () => {
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'url', 'get').mockReturnValue(
+      '/tenant/questions-bank/university-education/colleges/college-1/subjects/subject-1/curriculum/lesson-1/addQuestion',
+    );
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    paramMap$.next(convertToParamMap({
+      collegeId: 'college-1',
+      id: 'subject-1',
+      nodeId: 'lesson-1',
+    }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    expect(facade.loadSubject).toHaveBeenLastCalledWith('subject-1', 'UNIVERSITY_EDUCATION');
+    expect(data.getSubjectCurriculumForCategory).toHaveBeenCalledWith('subject-1', 'UNIVERSITY_EDUCATION');
+    expect(data.getSubjectCurriculum).not.toHaveBeenCalledTimes(2);
+    expect(data.listCurriculumSkillsForCategory).toHaveBeenCalledWith('subject-1', 'lesson-1', 'UNIVERSITY_EDUCATION');
+    expect(questionSourceSettings.listQuestionSources).toHaveBeenLastCalledWith('UNIVERSITY_EDUCATION');
+
+    fixture.componentInstance.selectQuestionType('Multiple Choice');
+    fixture.componentInstance.selectMultipleChoiceMode('single');
+    fixture.componentInstance.setQuestionValue('University question?');
+    await fixture.componentInstance.saveQuestion();
+
+    expect(data.createCurriculumQuestionForCategory).toHaveBeenCalledWith('subject-1', 'lesson-1', 'UNIVERSITY_EDUCATION', expect.objectContaining({
+      question: 'University question?',
+      type: 'MULTIPLE_CHOICE',
+    }));
+    expect(data.createCurriculumQuestion).not.toHaveBeenCalled();
   });
 
   it('renders exam breadcrumb and cancels back to exam create with subject query', async () => {

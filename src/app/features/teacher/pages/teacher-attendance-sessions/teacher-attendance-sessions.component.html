@@ -1,0 +1,117 @@
+<div class="teacher-attendance-page">
+  <header class="page-header">
+    <div>
+      <h2>{{ group()?.name || 'Group sessions' }}</h2>
+      <p>Select a session to review student attendance status and arrival time.</p>
+    </div>
+
+    <button type="button" class="refresh-button" routerLink="/teacher/attendance">
+      <mat-icon>arrow_back</mat-icon>
+      Groups
+    </button>
+  </header>
+
+  @if (errorMessage()) {
+    <section class="alert-panel">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorMessage() }}</span>
+    </section>
+  }
+
+  <section class="data-panel">
+    <header class="panel-header">
+      <div>
+        <h3>Sessions</h3>
+        <p>{{ completedSessions().length }} completed sessions</p>
+      </div>
+      <button type="button" class="refresh-button" (click)="loadGroup()" [disabled]="loading()">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+      </button>
+    </header>
+
+    @if (!loading() && completedSessions().length > 0) {
+      <div class="panel-toolbar">
+        <label class="search-control">
+          <mat-icon>search</mat-icon>
+          <input
+            type="text"
+            [value]="searchQuery()"
+            (input)="setSearchQuery($event)"
+            placeholder="Search sessions by date, day, time or room..."
+          >
+        </label>
+      </div>
+    }
+
+    @if (loading()) {
+      <div class="state-panel">
+        <mat-icon>progress_activity</mat-icon>
+        <h4>Loading sessions</h4>
+      </div>
+    } @else if (completedSessions().length === 0) {
+      <div class="state-panel">
+        <mat-icon>event_busy</mat-icon>
+        <h4>No completed sessions</h4>
+        <p>Finished sessions will appear here after their scheduled end time.</p>
+      </div>
+    } @else if (filteredSessions().length === 0) {
+      <div class="state-panel">
+        <mat-icon>search_off</mat-icon>
+        <h4>No matching sessions</h4>
+        <p>Try another date, day, time, or room.</p>
+      </div>
+    } @else {
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Session</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Room</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (session of pagedSessions(); track trackBySessionId($index, session)) {
+              <tr
+                class="clickable-row"
+                [routerLink]="['/teacher/attendance/groups', groupId(), 'sessions', session.id]"
+                tabindex="0"
+              >
+                <td>
+                  <strong>{{ session.day }}</strong>
+                  <span>{{ formatSessionDate(session) }}</span>
+                </td>
+                <td>{{ formatSessionDate(session) }}</td>
+                <td>{{ formatTimeRange(session) }}</td>
+                <td>{{ session.room || group()?.room || 'Not set' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <footer class="table-footer">
+        <span>Showing {{ pageStart() }}-{{ pageEnd() }} of {{ filteredSessions().length }} sessions</span>
+        <div>
+          <label>
+            Rows
+            <select [value]="pageSize()" (change)="setPageSize($event)">
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </label>
+          <button type="button" (click)="previousPage()" [disabled]="pageIndex() === 0" title="Previous page">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <span>Page {{ pageIndex() + 1 }} of {{ totalPages() }}</span>
+          <button type="button" (click)="nextPage()" [disabled]="pageIndex() + 1 >= totalPages()" title="Next page">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+      </footer>
+    }
+  </section>
+</div>

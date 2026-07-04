@@ -65,6 +65,60 @@ describe('TeacherApiService', () => {
     request.flush(setup);
   });
 
+  it('maps assigned group day schedules into teacher schedule sessions', () => {
+    const groups = [{
+      id: 'group-1',
+      name: 'Grade 3 - A',
+      subject: 'Math',
+      educationCategory: 'BASIC_EDUCATION' as const,
+      stage: 'Primary',
+      grade: 'Grade 3',
+      studentsCount: 15,
+      schedule: 'Sun 17:00',
+      startAt: '17:00',
+      duration: 60,
+      room: 'Room 3',
+      status: 'Active',
+      daySchedules: {
+        Sunday: { startTime: '17:00', endTime: '18:30', room: 'Room 3', roomId: 'room-3' },
+        Tuesday: { startTime: '19:00', endTime: '20:00', room: 'Room 4', roomId: 'room-4' },
+      },
+    }];
+
+    service.schedule().subscribe((result) => {
+      expect(result).toEqual([
+        {
+          id: 'group-1:Sunday:17:00',
+          groupId: 'group-1',
+          groupName: 'Grade 3 - A',
+          subjectName: 'Math',
+          roomId: 'room-3',
+          roomName: 'Room 3',
+          day: 'Sunday',
+          startTime: '17:00',
+          duration: 90,
+          studentsCount: 15,
+        },
+        {
+          id: 'group-1:Tuesday:19:00',
+          groupId: 'group-1',
+          groupName: 'Grade 3 - A',
+          subjectName: 'Math',
+          roomId: 'room-4',
+          roomName: 'Room 4',
+          day: 'Tuesday',
+          startTime: '19:00',
+          duration: 60,
+          studentsCount: 15,
+        },
+      ]);
+    });
+
+    const request = http.expectOne(`${environment.apiBaseUrl}/teacher/groups`);
+    expect(request.request.method).toBe('GET');
+    request.flush(groups);
+  });
+
   it('maps API errors to user-facing errors', () => {
     let message = '';
     service.loadAssignedGroups().subscribe({

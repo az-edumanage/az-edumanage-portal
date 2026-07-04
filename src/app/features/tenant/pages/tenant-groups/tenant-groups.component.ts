@@ -1,26 +1,34 @@
-import { Component, DestroyRef, inject } from '@angular/core';
+import { Component, DestroyRef, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { startWith } from 'rxjs';
 import { TenantGroupsFacade } from '../../state/tenant-groups.facade';
-import { Group } from '../../models/tenant-groups.models';
+import { Group, GroupScheduleFilter } from '../../models/tenant-groups.models';
 
 @Component({
   selector: 'app-tenant-groups',
   standalone: true,
   imports: [CommonModule, RouterModule, MatIconModule, FormsModule, ReactiveFormsModule],
-  templateUrl: './tenant-groups.component.html'})
+  templateUrl: './tenant-groups.component.html',
+  styleUrl: './tenant-groups.component.css'})
 export class TenantGroupsComponent {
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
   private readonly facade = inject(TenantGroupsFacade);
+  private readonly router = inject(Router);
 
   readonly searchQuery = this.facade.searchQuery;
   readonly showFilterPanel = this.facade.showFilterPanel;
   readonly viewMode = this.facade.viewMode;
+  readonly scheduleSummary = this.facade.scheduleSummary;
+  readonly scheduleSummaryLoading = this.facade.scheduleSummaryLoading;
+  readonly scheduleSummaryError = this.facade.scheduleSummaryError;
+  readonly scheduleFilter = this.facade.scheduleFilter;
+  readonly activeScheduleFilterLabel = this.facade.activeScheduleFilterLabel;
+  readonly hasScheduleFilter = this.facade.hasScheduleFilter;
   readonly groups = this.facade.groups;
   readonly isLoading = this.facade.isLoading;
   readonly errorMessage = this.facade.errorMessage;
@@ -35,6 +43,36 @@ export class TenantGroupsComponent {
   readonly pageEnd = this.facade.pageEnd;
   readonly deleteState = this.facade.deleteState;
 
+  readonly scheduleCards = computed(() => {
+    const summary = this.scheduleSummary();
+    return [
+      {
+        filter: 'all' as const,
+        label: 'Total Groups',
+        value: this.groups().length,
+        icon: 'groups',
+      },
+      {
+        filter: 'today' as const,
+        label: "Today's Groups",
+        value: summary?.todayGroups ?? 0,
+        icon: 'today',
+      },
+      {
+        filter: 'running' as const,
+        label: 'Current Running Groups',
+        value: summary?.currentRunningGroups ?? 0,
+        icon: 'play_circle',
+      },
+      {
+        filter: 'postponed' as const,
+        label: 'Postponed Groups',
+        value: summary?.postponedGroups ?? 0,
+        icon: 'event_busy',
+      },
+    ];
+  });
+
   readonly filterForm = this.fb.group({
     subject: [''],
     teacher: [''],
@@ -43,6 +81,7 @@ export class TenantGroupsComponent {
 
   constructor() {
     this.facade.loadGroups();
+    this.facade.loadScheduleSummary();
     this.filterForm.valueChanges
       .pipe(startWith(this.filterForm.value), takeUntilDestroyed(this.destroyRef))
       .subscribe((value) => {
@@ -61,6 +100,28 @@ export class TenantGroupsComponent {
   clearAllFilters(): void {
     this.facade.clearAllFilters();
     this.clearAdvancedFilters();
+  }
+
+  selectScheduleFilter(filter: GroupScheduleFilter): void {
+    this.facade.selectScheduleFilter(filter);
+  }
+
+  openGroupDetails(groupId: string): void {
+    void this.router.navigate(['/tenant/groups', groupId]);
+  }
+
+  emptyStateTitle(): string {
+    if (!this.hasScheduleFilter()) {
+      return 'No groups found';
+    }
+    return `No ${this.activeScheduleFilterLabel().toLowerCase()} found`;
+  }
+
+  emptyStateDescription(): string {
+    if (!this.hasScheduleFilter()) {
+      return "We couldn't find any academic groups matching your current search and filter criteria.";
+    }
+    return `No groups match the ${this.activeScheduleFilterLabel().toLowerCase()} schedule filter with the current search and advanced filters.`;
   }
 
   clearAdvancedFilters(): void {

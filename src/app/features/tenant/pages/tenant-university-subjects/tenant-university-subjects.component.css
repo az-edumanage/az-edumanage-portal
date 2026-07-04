@@ -555,8 +555,18 @@ dd {
   transition: background-color 0.2s ease;
 }
 
+.tenant-university-subjects-tr--clickable {
+  cursor: pointer;
+}
+
 .tenant-university-subjects-tr:hover {
   background: var(--color-bg-muted, #f8fafc);
+}
+
+.tenant-university-subjects-tr--clickable:focus-visible {
+  outline: 2px solid var(--color-action-primary, #4f46e5);
+  outline-offset: -2px;
+  background: color-mix(in srgb, #4f46e5 8%, transparent);
 }
 
 .tenant-university-subjects-td {

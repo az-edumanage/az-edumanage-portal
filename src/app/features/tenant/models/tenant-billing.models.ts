@@ -1,4 +1,12 @@
 export type TenantStudentInvoiceStatus = 'unpaid' | 'paid';
+export type TenantBillingInvoiceCategory = 'all' | 'paid' | 'unpaid' | 'overdue';
+
+export interface TenantBillingInvoiceSummary {
+  totalInvoices: number;
+  paidInvoices: number;
+  unpaidInvoices: number;
+  overdueInvoices: number;
+}
 
 export interface TenantStudentInvoice {
   id: string;
@@ -26,11 +34,14 @@ export interface TenantStudentInvoiceListResponse {
   page: number;
   size: number;
   totalItems: number;
+  summary: TenantBillingInvoiceSummary;
 }
 
 export interface TenantStudentInvoiceQuery {
   status?: TenantStudentInvoiceStatus | '';
+  category?: TenantBillingInvoiceCategory;
   search?: string;
+  studentId?: string;
   page?: number;
   size?: number;
 }

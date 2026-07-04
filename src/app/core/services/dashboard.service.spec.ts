@@ -114,6 +114,26 @@ describe('DashboardService', () => {
     expect(service.returnUrl()).toBeNull();
   });
 
+  it('should ignore root return URL after login and open the selected workspace overview', () => {
+    service.returnUrl.set('/');
+
+    service.setRole('tenant');
+
+    expect(router.navigateByUrlCalls).toHaveLength(0);
+    expect(router.navigateCalls).toContainEqual([['/tenant/overview']]);
+    expect(service.returnUrl()).toBeNull();
+  });
+
+  it('should ignore return URLs from another workspace after login', () => {
+    service.returnUrl.set('/owner/overview');
+
+    service.setRole('tenant');
+
+    expect(router.navigateByUrlCalls).toHaveLength(0);
+    expect(router.navigateCalls).toContainEqual([['/tenant/overview']]);
+    expect(service.returnUrl()).toBeNull();
+  });
+
   it('should start unresolved when router URL is not a dashboard workspace', () => {
     expect(service.currentRole()).toBeNull();
   });

@@ -12,9 +12,9 @@
             <button type="button" (click)="selectRange('week')" [class]="overview.range() === 'week' ? 'px-3 py-1.5 text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-md shadow-sm' : 'px-3 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors'">This Week</button>
             <button type="button" (click)="selectRange('month')" [class]="overview.range() === 'month' ? 'px-3 py-1.5 text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-md shadow-sm' : 'px-3 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors'">This Month</button>
           </div>
-          <button class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-sm shadow-indigo-500/20">
+          <button type="button" (click)="exportReport()" [disabled]="isExportingReport() || !overview.data()" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all shadow-sm shadow-indigo-500/20">
             <mat-icon class="text-sm">download</mat-icon>
-            Export Report
+            {{ isExportingReport() ? 'Exporting...' : 'Export Report' }}
           </button>
         </div>
       </div>
@@ -22,61 +22,48 @@
       <!-- KPI Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         @for (card of kpiCards(); track card.key) {
-          <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
-            <div class="flex items-center justify-between mb-3">
-              <div [class]="'p-2 rounded-lg ' + card.bgClass">
-                <mat-icon [class]="card.iconClass + ' text-lg'">{{ card.icon }}</mat-icon>
+          @if (card.route) {
+            <button type="button" (click)="navigateTo(card.route)" [attr.aria-label]="'Open ' + card.label" class="text-left bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-950 cursor-pointer">
+              <div class="flex items-center justify-between mb-3">
+                <div [class]="'p-2 rounded-lg ' + card.bgClass">
+                  <mat-icon [class]="card.iconClass + ' text-lg'">{{ card.icon }}</mat-icon>
+                </div>
+                @if (card.trend !== null && card.trend !== undefined) {
+                  <span [class]="'text-[10px] font-bold px-1.5 py-0.5 rounded-full ' + (card.trend > 0 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400')">
+                    {{ card.trend > 0 ? '+' : '' }}{{ card.trend }}%
+                  </span>
+                }
               </div>
-              @if (card.trend !== null && card.trend !== undefined) {
-                <span [class]="'text-[10px] font-bold px-1.5 py-0.5 rounded-full ' + (card.trend > 0 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400')">
-                  {{ card.trend > 0 ? '+' : '' }}{{ card.trend }}%
-                </span>
-              }
+              <p class="text-xs font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider">{{ card.label }}</p>
+              <div class="flex items-baseline gap-2 mt-1">
+                <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ card.value }}</p>
+                @if (card.subtext) {
+                  <span class="text-[10px] text-slate-500">{{ card.subtext }}</span>
+                }
+              </div>
+            </button>
+          } @else {
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
+              <div class="flex items-center justify-between mb-3">
+                <div [class]="'p-2 rounded-lg ' + card.bgClass">
+                  <mat-icon [class]="card.iconClass + ' text-lg'">{{ card.icon }}</mat-icon>
+                </div>
+                @if (card.trend !== null && card.trend !== undefined) {
+                  <span [class]="'text-[10px] font-bold px-1.5 py-0.5 rounded-full ' + (card.trend > 0 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400')">
+                    {{ card.trend > 0 ? '+' : '' }}{{ card.trend }}%
+                  </span>
+                }
+              </div>
+              <p class="text-xs font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider">{{ card.label }}</p>
+              <div class="flex items-baseline gap-2 mt-1">
+                <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ card.value }}</p>
+                @if (card.subtext) {
+                  <span class="text-[10px] text-slate-500">{{ card.subtext }}</span>
+                }
+              </div>
             </div>
-            <p class="text-xs font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider">{{ card.label }}</p>
-            <div class="flex items-baseline gap-2 mt-1">
-              <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ card.value }}</p>
-              @if (card.subtext) {
-                <span class="text-[10px] text-slate-500">{{ card.subtext }}</span>
-              }
-            </div>
-          </div>
+          }
         }
-      </div>
-
-      <!-- Charts Section -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div class="flex items-center justify-between mb-6">
-            <h3 class="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-              <mat-icon class="text-indigo-600">show_chart</mat-icon>
-              Attendance Trend
-            </h3>
-            <select class="text-xs bg-slate-50 dark:bg-slate-800 border-none rounded-md px-2 py-1 outline-none">
-              <option>Last 7 Days</option>
-              <option>Last 30 Days</option>
-            </select>
-          </div>
-          <div class="h-[250px] relative">
-            <canvas #attendanceChart></canvas>
-          </div>
-        </div>
-
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div class="flex items-center justify-between mb-6">
-            <h3 class="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-              <mat-icon class="text-emerald-500">payments</mat-icon>
-              Revenue Trend
-            </h3>
-            <select class="text-xs bg-slate-50 dark:bg-slate-800 border-none rounded-md px-2 py-1 outline-none">
-              <option>This Month</option>
-              <option>Last Month</option>
-            </select>
-          </div>
-          <div class="h-[250px] relative">
-            <canvas #revenueChart></canvas>
-          </div>
-        </div>
       </div>
 
       <!-- Tables & Quick Actions -->
@@ -90,7 +77,7 @@
             </h3>
             <button class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline">View Full Schedule</button>
           </div>
-          <div class="overflow-x-auto">
+          <div class="overflow-x-auto flex-1 min-h-0">
             <table class="w-full text-left text-sm">
               <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500">
                 <tr>
@@ -102,7 +89,7 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
-                @for (session of todaySessions(); track session.id) {
+                @for (session of paginatedTodaySessions(); track session.id) {
                   <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
                     <td class="px-6 py-4 font-mono text-xs text-slate-500 dark:text-slate-500">{{ session.time }}</td>
                     <td class="px-6 py-4">
@@ -134,6 +121,50 @@
               </tbody>
             </table>
           </div>
+          @if (todaySessions().length > 0) {
+            <div class="mt-auto px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="text-xs font-medium text-slate-500 dark:text-slate-500">
+                Showing {{ todaySessionsPageStart() }}-{{ todaySessionsPageEnd() }} of {{ todaySessions().length }} sessions
+              </div>
+              <div class="flex items-center gap-3">
+                <label class="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-500">
+                  Rows
+                  <select
+                    aria-label="Today sessions rows per page"
+                    [ngModel]="todaySessionsPageSize()"
+                    (ngModelChange)="setTodaySessionsPageSize($event)"
+                    [ngModelOptions]="{ standalone: true }"
+                    class="h-8 px-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option [value]="5">5</option>
+                    <option [value]="10">10</option>
+                    <option [value]="20">20</option>
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  (click)="previousTodaySessionsPage()"
+                  [disabled]="visibleTodaySessionsPageIndex() === 0"
+                  aria-label="Previous today's sessions page"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                  title="Previous page"
+                >
+                  <mat-icon class="text-sm">chevron_left</mat-icon>
+                </button>
+                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Page {{ visibleTodaySessionsPageIndex() + 1 }} of {{ todaySessionsPageCount() }}</span>
+                <button
+                  type="button"
+                  (click)="nextTodaySessionsPage()"
+                  [disabled]="visibleTodaySessionsPageIndex() >= todaySessionsPageCount() - 1"
+                  aria-label="Next today's sessions page"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                  title="Next page"
+                >
+                  <mat-icon class="text-sm">chevron_right</mat-icon>
+                </button>
+              </div>
+            </div>
+          }
         </div>
 
         <!-- Sidebar Content: Quick Actions & Pending Payments -->
@@ -146,7 +177,7 @@
             </h3>
             <div class="grid grid-cols-2 gap-3">
               @for (action of quickActions(); track action.label) {
-                <button type="button" (click)="navigateTo(action.route)" class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 hover:border-indigo-200 dark:hover:border-indigo-800 transition-all group">
+                <button type="button" (click)="runQuickAction(action)" class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 hover:border-indigo-200 dark:hover:border-indigo-800 transition-all group">
                   <div [class]="'p-2 rounded-lg bg-white dark:bg-slate-800 shadow-sm group-hover:scale-110 transition-transform ' + action.color">
                     <mat-icon class="text-lg">{{ action.icon }}</mat-icon>
                   </div>
@@ -187,10 +218,339 @@
                 </div>
               }
             </div>
-            <button class="w-full p-3 text-xs font-bold text-slate-500 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-t border-slate-200 dark:border-slate-800">
+            <button type="button" (click)="openBilling()" class="w-full p-3 text-xs font-bold text-slate-500 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-t border-slate-200 dark:border-slate-800">
               View All Debts
             </button>
           </div>
         </div>
       </div>
+
+      <!-- Running Groups & Rooms -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
+          <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/20">
+            <h3 class="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+              <mat-icon class="text-emerald-600">play_circle</mat-icon>
+              Runing Group
+            </h3>
+            <span class="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ runningGroups().length }} Now</span>
+          </div>
+          <div class="overflow-x-auto flex-1 min-h-0">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-500">
+                <tr>
+                  <th class="px-6 py-3 font-medium">Group / Class</th>
+                  <th class="px-6 py-3 font-medium">Teacher</th>
+                  <th class="px-6 py-3 font-medium">Room</th>
+                  <th class="px-6 py-3 font-medium">Ends</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                @for (group of paginatedRunningGroups(); track group.id) {
+                  <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td class="px-6 py-4">
+                      <div class="font-medium text-slate-900 dark:text-white">{{ group.group }}</div>
+                      <div class="text-[10px] text-slate-500">{{ group.subject }} · Started {{ group.time }}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                      <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                          {{ getInitials(group.teacher) }}
+                        </div>
+                        <span class="text-slate-500 dark:text-slate-500">{{ group.teacher }}</span>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 text-slate-500 dark:text-slate-500">{{ group.room }}</td>
+                    <td class="px-6 py-4">
+                      <span class="px-2 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                        {{ group.endsAt }}
+                      </span>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="4" class="px-6 py-10 text-center text-sm font-medium text-slate-500 dark:text-slate-500">
+                      No groups are running now.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          @if (runningGroups().length > 0) {
+            <div class="mt-auto px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="text-xs font-medium text-slate-500 dark:text-slate-500">
+                Showing {{ runningGroupsPageStart() }}-{{ runningGroupsPageEnd() }} of {{ runningGroups().length }} groups
+              </div>
+              <div class="flex items-center gap-3">
+                <label class="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-500">
+                  Rows
+                  <select
+                    aria-label="Running groups rows per page"
+                    [ngModel]="runningGroupsPageSize()"
+                    (ngModelChange)="setRunningGroupsPageSize($event)"
+                    [ngModelOptions]="{ standalone: true }"
+                    class="h-8 px-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option [value]="5">5</option>
+                    <option [value]="10">10</option>
+                    <option [value]="20">20</option>
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  (click)="previousRunningGroupsPage()"
+                  [disabled]="visibleRunningGroupsPageIndex() === 0"
+                  aria-label="Previous running groups page"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                  title="Previous page"
+                >
+                  <mat-icon class="text-sm">chevron_left</mat-icon>
+                </button>
+                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Page {{ visibleRunningGroupsPageIndex() + 1 }} of {{ runningGroupsPageCount() }}</span>
+                <button
+                  type="button"
+                  (click)="nextRunningGroupsPage()"
+                  [disabled]="visibleRunningGroupsPageIndex() >= runningGroupsPageCount() - 1"
+                  aria-label="Next running groups page"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                  title="Next page"
+                >
+                  <mat-icon class="text-sm">chevron_right</mat-icon>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
+            <h3 class="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+              <mat-icon class="text-indigo-600">meeting_room</mat-icon>
+              Rooms
+            </h3>
+            <p class="mt-1 text-xs text-slate-500 dark:text-slate-500">{{ rooms().operatingWindow }}</p>
+          </div>
+          <div class="divide-y divide-slate-200 dark:divide-slate-800">
+            <div class="p-5 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center">
+                  <mat-icon class="text-rose-600 dark:text-rose-400">event_busy</mat-icon>
+                </div>
+                <span class="text-sm font-semibold text-slate-900 dark:text-white">Occupied rooms</span>
+              </div>
+              <span class="text-xl font-bold text-slate-900 dark:text-white">{{ rooms().occupiedRooms }}</span>
+            </div>
+            <div class="p-5 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+                  <mat-icon class="text-emerald-600 dark:text-emerald-400">event_available</mat-icon>
+                </div>
+                <span class="text-sm font-semibold text-slate-900 dark:text-white">Free rooms</span>
+              </div>
+              <span class="text-xl font-bold text-slate-900 dark:text-white">{{ rooms().freeRooms }}</span>
+            </div>
+            <div class="p-5 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+                  <mat-icon class="text-amber-600 dark:text-amber-400">schedule</mat-icon>
+                </div>
+                <span class="text-sm font-semibold text-slate-900 dark:text-white">Free hours today</span>
+              </div>
+              <span class="text-xl font-bold text-slate-900 dark:text-white">{{ rooms().freeHours }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+              <mat-icon class="text-indigo-600">show_chart</mat-icon>
+              Attendance Trend
+            </h3>
+            <select class="text-xs bg-slate-50 dark:bg-slate-800 border-none rounded-md px-2 py-1 outline-none">
+              <option>Last 7 Days</option>
+              <option>Last 30 Days</option>
+            </select>
+          </div>
+          <div class="h-[250px] relative">
+            <canvas #attendanceChart></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+              <mat-icon class="text-emerald-500">payments</mat-icon>
+              Revenue Trend
+            </h3>
+            <select
+              [ngModel]="revenueTrendRange()"
+              (ngModelChange)="selectRevenueTrendRange($event)"
+              [ngModelOptions]="{ standalone: true }"
+              class="text-xs bg-slate-50 dark:bg-slate-800 border-none rounded-md px-2 py-1 outline-none"
+              aria-label="Revenue trend range"
+            >
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+            </select>
+          </div>
+          <div class="h-[250px] relative">
+            <canvas #revenueChart></canvas>
+          </div>
+        </div>
+      </div>
+
+      @if (reportPreviewUrl(); as previewUrl) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="overview-report-preview-title">
+          <div class="flex h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-xl bg-white shadow-xl dark:bg-slate-950">
+            <div class="flex flex-col gap-3 border-b border-slate-200 bg-white px-5 py-4 dark:border-slate-800 dark:bg-slate-950 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 id="overview-report-preview-title" class="text-base font-semibold text-slate-900 dark:text-white">Center Overview Report</h3>
+                <p class="mt-1 text-xs text-slate-500 dark:text-slate-500">{{ reportFileName() }}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" (click)="downloadReport()" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-indigo-500/20 transition-colors hover:bg-indigo-700">
+                  <mat-icon class="text-sm">download</mat-icon>
+                  Download PDF
+                </button>
+                <button type="button" (click)="closeReportPreview()" aria-label="Close report preview" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900 dark:border-slate-800 dark:hover:bg-slate-900 dark:hover:text-white">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            </div>
+            <div class="min-h-0 flex-1 bg-slate-100 p-3 dark:bg-slate-900">
+              <iframe class="h-full w-full rounded-lg border border-slate-200 bg-white dark:border-slate-800" [src]="previewUrl" title="Center overview report preview"></iframe>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (attendanceScannerOpen()) {
+        <div class="overview-attendance-modal-backdrop" role="presentation">
+          <section
+            class="overview-attendance-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="overview-attendance-modal-title"
+          >
+            <div class="overview-attendance-modal-header">
+              <div>
+                <span>Record attendance</span>
+                <h3 id="overview-attendance-modal-title">Student Barcode Reader</h3>
+                <p>Electronic Barcode Reader</p>
+              </div>
+              <button
+                type="button"
+                aria-label="Close attendance scanner"
+                [disabled]="overviewBarcodeScanInProgress()"
+                (click)="closeAttendanceScanner()"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <div class="overview-scanner-window" aria-label="Barcode scanner standby">
+              <div class="overview-scanner-corners" aria-hidden="true"></div>
+              <div class="overview-barcode-lines" aria-hidden="true"></div>
+              <div class="overview-scanner-beam" aria-hidden="true"></div>
+              <p>Barcode Standby</p>
+              <div class="overview-scanner-status">
+                <span aria-hidden="true"></span>
+                Scanner Active
+              </div>
+            </div>
+
+            <label class="overview-barcode-input-label" for="overview-attendance-barcode-input">Read Barcode Data Input</label>
+            <div class="overview-barcode-input-row" [class.overview-barcode-input-row-loading]="overviewBarcodeScanInProgress()">
+              <mat-icon>qr_code_2</mat-icon>
+              <input
+                #overviewBarcodeInput
+                id="overview-attendance-barcode-input"
+                [value]="overviewBarcodeInputValue()"
+                [disabled]="overviewBarcodeScanInProgress()"
+                aria-label="Barcode data input"
+                aria-describedby="overview-attendance-barcode-help overview-attendance-barcode-notification"
+                autocomplete="off"
+                inputmode="numeric"
+                (input)="onOverviewBarcodeInput($any($event.target).value)"
+                (keydown.enter)="submitOverviewBarcodeScan()"
+              />
+              <button type="button" aria-label="Submit barcode" [disabled]="overviewBarcodeScanInProgress()" (click)="submitOverviewBarcodeScan()">
+                <mat-icon>{{ overviewBarcodeScanInProgress() ? 'sync' : 'chevron_right' }}</mat-icon>
+              </button>
+            </div>
+            @if (overviewBarcodeScanNotification(); as notification) {
+              <div
+                id="overview-attendance-barcode-notification"
+                class="overview-barcode-scan-notification"
+                [class.overview-barcode-scan-notification-success]="notification.state === 'success'"
+                [class.overview-barcode-scan-notification-error]="notification.state === 'error'"
+                role="status"
+                aria-live="polite"
+              >
+                <mat-icon>{{ notification.state === 'success' ? 'check_circle' : 'error' }}</mat-icon>
+                <span>{{ notification.message }}</span>
+              </div>
+            }
+            <p id="overview-attendance-barcode-help" class="overview-scanner-help">Press Enter to route barcode reads, or submit the scanned value.</p>
+          </section>
+        </div>
+      }
+
+      @if (overviewPaymentWarningDialog(); as warning) {
+        <div class="overview-payment-dialog-backdrop" role="presentation">
+          <section
+            class="overview-payment-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="overview-payment-dialog-title"
+          >
+            <button
+              type="button"
+              class="overview-payment-dialog-close"
+              aria-label="Close payment warning"
+              (click)="closeOverviewPaymentWarningDialog()"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+
+            <div class="overview-payment-dialog-icon" aria-hidden="true">
+              <mat-icon>payments</mat-icon>
+            </div>
+
+            <div class="overview-payment-dialog-copy">
+              <span>Payment status</span>
+              <h2 id="overview-payment-dialog-title">Student has an unpaid subscription invoice</h2>
+              <p>
+                {{ warning.studentName }} was scanned for {{ warning.groupName }}, but this group has payment status display enabled
+                and the subscription invoice is still unpaid.
+              </p>
+            </div>
+
+            <dl class="overview-payment-dialog-details">
+              <div>
+                <dt>Invoice</dt>
+                <dd>{{ warning.invoiceRef }}</dd>
+              </div>
+              <div>
+                <dt>Amount</dt>
+                <dd>{{ warning.amount }}</dd>
+              </div>
+              <div>
+                <dt>Due date</dt>
+                <dd>{{ warning.dueDate }}</dd>
+              </div>
+            </dl>
+
+            <div class="overview-payment-dialog-actions">
+              <button type="button" (click)="closeOverviewPaymentWarningDialog()">Continue attendance</button>
+              <button type="button" (click)="openBilling()">Open billing</button>
+            </div>
+          </section>
+        </div>
+      }
     </div>

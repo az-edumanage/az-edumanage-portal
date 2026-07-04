@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { TenantGroupsDataService } from '../data-access/tenant-groups-data.service';
-import { Group } from '../models/tenant-groups.models';
+import { Group, GroupScheduleFilter, GroupScheduleSummary } from '../models/tenant-groups.models';
 
 type GroupDeleteStatus = 'closed' | 'confirming' | 'deleting' | 'success' | 'failed';
 
@@ -19,6 +19,10 @@ export class TenantGroupsStore {
   readonly searchQuery = signal('');
   readonly showFilterPanel = signal(false);
   readonly viewMode = signal<'grid' | 'list'>('list');
+  readonly scheduleSummary = signal<GroupScheduleSummary | null>(null);
+  readonly scheduleSummaryLoading = signal(false);
+  readonly scheduleSummaryError = signal<string | null>(null);
+  readonly scheduleFilter = signal<GroupScheduleFilter>('all');
 
   readonly subjectFilter = signal('');
   readonly teacherFilter = signal('');
@@ -41,13 +45,35 @@ export class TenantGroupsStore {
     return count;
   });
 
+  readonly activeScheduleFilterLabel = computed(() => {
+    switch (this.scheduleFilter()) {
+      case 'today':
+        return "Today's Groups";
+      case 'running':
+        return 'Current Running Groups';
+      case 'postponed':
+        return 'Postponed Groups';
+      default:
+        return 'Total Groups';
+    }
+  });
+
+  readonly hasScheduleFilter = computed(() => this.scheduleFilter() !== 'all');
+
   readonly filteredGroups = computed(() => {
     const query = this.searchQuery().toLowerCase();
     const subject = this.subjectFilter();
     const teacher = this.teacherFilter();
     const sortBy = this.sortBy();
 
+    const scheduleGroupIds = this.scheduleGroupIds();
+    const scheduleFilter = this.scheduleFilter();
+
     const filtered = this.groups().filter((group) => {
+      if (scheduleFilter !== 'all' && !scheduleGroupIds.has(group.id)) {
+        return false;
+      }
+
       const matchesSearch =
         !query ||
         group.name.toLowerCase().includes(query) ||
@@ -103,6 +129,28 @@ export class TenantGroupsStore {
         this.isLoading.set(false);
       },
     });
+  }
+
+  loadScheduleSummary(): void {
+    this.scheduleSummaryLoading.set(true);
+    this.data.loadScheduleSummary().subscribe({
+      next: (summary) => {
+        this.scheduleSummary.set(summary);
+        this.scheduleSummaryError.set(summary.unavailableReason ?? null);
+        this.scheduleSummaryLoading.set(false);
+        this.clampPage();
+      },
+      error: (error: Error) => {
+        this.scheduleSummaryError.set(error.message);
+        this.scheduleSummaryLoading.set(false);
+        this.clampPage();
+      },
+    });
+  }
+
+  selectScheduleFilter(filter: GroupScheduleFilter): void {
+    this.scheduleFilter.set(filter);
+    this.resetPage();
   }
 
   requestDelete(group: Group): void {
@@ -195,5 +243,22 @@ export class TenantGroupsStore {
 
   clampPage(): void {
     this.setPageIndex(this.pageIndex());
+  }
+
+  private scheduleGroupIds(): Set<string> {
+    const summary = this.scheduleSummary();
+    if (!summary) {
+      return new Set();
+    }
+    switch (this.scheduleFilter()) {
+      case 'today':
+        return new Set(summary.todayGroupIds);
+      case 'running':
+        return new Set(summary.currentRunningGroupIds);
+      case 'postponed':
+        return new Set(summary.postponedGroupIds);
+      default:
+        return new Set();
+    }
   }
 }

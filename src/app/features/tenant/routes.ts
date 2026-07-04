@@ -4,6 +4,7 @@ import { TenantStudentsComponent } from './pages/tenant-students/tenant-students
 import { TenantStudentCreateComponent } from './pages/tenant-student-create/tenant-student-create.component';
 import { TenantStudentDetailsComponent } from './pages/tenant-student-details/tenant-student-details.component';
 import { TenantStudentBarcodePrintComponent } from './pages/tenant-student-barcode-print/tenant-student-barcode-print.component';
+import { TenantParentsComponent } from './pages/tenant-parents/tenant-parents.component';
 import { TenantTeachersComponent } from './pages/tenant-teachers/tenant-teachers.component';
 import { TenantTeacherCreateComponent } from './pages/tenant-teacher-create/tenant-teacher-create.component';
 import { TenantTeacherDetailsComponent } from './pages/tenant-teacher-details/tenant-teacher-details.component';
@@ -19,6 +20,7 @@ import { TenantGroupExamCreateComponent } from './pages/tenant-group-exam-create
 import { TenantGroupBroadcastComponent } from './pages/tenant-group-broadcast/tenant-group-broadcast.component';
 import { TenantAttendanceComponent } from './pages/tenant-attendance/tenant-attendance.component';
 import { TenantBillingComponent } from './pages/tenant-billing/tenant-billing.component';
+import { TenantReportsComponent } from './pages/tenant-reports/tenant-reports.component';
 import { TenantExamsComponent } from './pages/tenant-exams/tenant-exams.component';
 import { TenantQuestionsBankComponent } from './pages/tenant-questions-bank/tenant-questions-bank.component';
 import { TenantQuestionsBankBasicEducationComponent } from './pages/tenant-questions-bank-basic-education/tenant-questions-bank-basic-education.component';
@@ -65,6 +67,8 @@ import { TenantRoleFormComponent } from './pages/tenant-role-form/tenant-role-fo
 import { TenantScheduleComponent } from './pages/tenant-schedule/tenant-schedule.component';
 import { TenantPlatformSettingsComponent } from './pages/tenant-platform-settings/tenant-platform-settings.component';
 import { TenantAccessStateComponent } from './pages/tenant-access-state/tenant-access-state.component';
+import { StudentExamEvaluationComponent } from '../student/pages/student-exam-evaluation/student-exam-evaluation.component';
+import { StudentExamReportComponent } from '../student/pages/student-exam-report/student-exam-report.component';
 import { passwordChangeRequiredChildGuard, passwordChangeRequiredGuard } from '../../core/guards/role.guard';
 import { tenantAccessStateGuard, tenantOperationalAccessGuard } from '../../core/guards/tenant-operational-access.guard';
 import { tenantPermissionGuard } from '../../core/guards/tenant-permission.guard';
@@ -108,7 +112,9 @@ export const TENANT_ROUTES: Routes = [
       { path: 'students', component: TenantStudentsComponent, data: { requiredPermission: 'tenant.students.view' } },
       { path: 'students/create', component: TenantStudentCreateComponent, data: { requiredPermission: 'tenant.students.manage' } },
       { path: 'students/:id/barcode/print', component: TenantStudentBarcodePrintComponent },
+      { path: 'students/:id/edit', component: TenantStudentCreateComponent, data: { requiredPermission: 'tenant.students.manage' } },
       { path: 'students/:id', component: TenantStudentDetailsComponent },
+      { path: 'parents', component: TenantParentsComponent, data: { requiredPermission: 'tenant.students.view' } },
       { path: 'teachers', component: TenantTeachersComponent, data: { requiredPermission: 'tenant.teachers.view' } },
       { path: 'teachers/create', component: TenantTeacherCreateComponent, data: { requiredPermission: 'tenant.teachers.manage' } },
       { path: 'teachers/:id/edit', component: TenantTeacherCreateComponent },
@@ -118,6 +124,8 @@ export const TENANT_ROUTES: Routes = [
       { path: 'groups', component: TenantGroupsComponent, data: { requiredPermission: 'tenant.groups.view' } },
       { path: 'groups/create', component: TenantGroupCreatePageComponent, data: { requiredPermission: 'tenant.groups.manage' } },
       { path: 'groups/:id/sessions/:sessionId/students/:studentId/assessment', component: TenantGroupStudentAssessmentComponent },
+      { path: 'groups/:groupId/exam-evaluation', component: StudentExamEvaluationComponent, data: { source: 'tenantGroup' } },
+      { path: 'groups/:groupId/exam-evaluation/exams/:assignmentId/attempts/:attemptId/report', component: StudentExamReportComponent, data: { source: 'tenantGroupEvaluation' } },
       { path: 'groups/:id/sessions/:sessionId', component: TenantGroupSessionDetailsComponent },
       { path: 'groups/:id/lessons/:lessonId', component: TenantGroupLessonDetailsComponent },
       { path: 'groups/:id', component: TenantGroupDetailsComponent },
@@ -177,6 +185,8 @@ export const TENANT_ROUTES: Routes = [
       { path: 'schedule', component: TenantScheduleComponent, data: { requiredPermission: 'tenant.attendance.view' } },
       { path: 'attendance', component: TenantAttendanceComponent, data: { requiredPermission: 'tenant.attendance.view' } },
       { path: 'exams', component: TenantExamsComponent, data: { requiredPermission: 'tenant.exams.manage' } },
+      { path: 'exams-evaluation', component: StudentExamEvaluationComponent, data: { requiredPermission: 'tenant.grades.view', source: 'tenant' } },
+      { path: 'exams-evaluation/groups/:groupId/exams/:assignmentId/attempts/:attemptId/report', component: StudentExamReportComponent, data: { requiredPermission: 'tenant.grades.view', source: 'tenantEvaluation' } },
       { path: 'questions-bank', component: TenantQuestionsBankComponent, data: { requiredPermission: 'tenant.questionBank.manage' } },
       { path: 'questions-bank/basic-education', component: TenantQuestionsBankBasicEducationComponent },
       { path: 'questions-bank/basic-education/:stageId/grades/:gradeId/subjects/:id/curriculum/:nodeId/addQuestion', component: TenantSubjectCurriculumQuestionCreateComponent },
@@ -208,13 +218,15 @@ export const TENANT_ROUTES: Routes = [
       { path: 'exams/basic-education/:stageId/grades/:gradeId/create', component: TenantExamsBasicEducationExamCreateComponent },
       { path: 'exams/basic-education/:stageId/grades/:gradeId', component: TenantExamsBasicEducationSubjectsComponent },
       { path: 'exams/basic-education/:stageId', component: TenantExamsBasicEducationGradesComponent },
+      { path: 'exams/university-education/:universityId/colleges/:collegeId/create/new/subjects/:id/curriculum/addQuestion', component: TenantSubjectCurriculumQuestionCreateComponent },
+      { path: 'exams/university-education/:universityId/colleges/:collegeId/create/new/subjects/:id/curriculum/:nodeId/addQuestion', component: TenantSubjectCurriculumQuestionCreateComponent },
       { path: 'exams/university-education/:universityId/colleges/:collegeId/create/new', component: TenantExamsBasicEducationExamCreateComponent, data: { mode: 'create' } },
       { path: 'exams/university-education/:universityId/colleges/:collegeId/create', component: TenantExamsBasicEducationExamCreateComponent },
       { path: 'exams/university-education/:universityId/colleges/:collegeId', component: TenantQuestionsBankUniversitySubjectsComponent },
       { path: 'exams/university-education/:universityId', component: TenantQuestionsBankUniversityCollegeListComponent },
       { path: 'exams/university-education', component: TenantUniversitiesComponent },
       { path: 'billing', component: TenantBillingComponent, data: { requiredPermission: 'tenant.billing.view' } },
-      { path: 'reports', component: TenantDashboardComponent, data: { requiredPermission: 'tenant.reports.view' } },
+      { path: 'reports', component: TenantReportsComponent, data: { requiredPermission: 'tenant.reports.view' } },
       { path: 'settings', component: TenantPlatformSettingsComponent, data: { requiredPermission: 'tenant.settings.manage' } },
       { path: 'web-settings', component: TenantDashboardComponent, data: { requiredPermission: 'tenant.settings.manage' } },
     ],

@@ -160,6 +160,7 @@ describe('TenantPlatformSettingsComponent', () => {
         {
           id: 'question-source-1',
           source: 'Official previous exam',
+          educationCategory: 'BASIC_EDUCATION',
           description: 'Imported from a formal exam.',
           createdAt: '2026-01-01T00:00:00Z',
           updatedAt: '2026-01-01T00:00:00Z',
@@ -168,6 +169,7 @@ describe('TenantPlatformSettingsComponent', () => {
       createQuestionSource: vi.fn().mockResolvedValue({
         id: 'question-source-2',
         source: 'Teacher-made',
+        educationCategory: 'UNIVERSITY_EDUCATION',
         description: 'Written by the teacher.',
         createdAt: '2026-01-01T00:00:00Z',
         updatedAt: '2026-01-01T00:00:00Z',
@@ -375,8 +377,10 @@ describe('TenantPlatformSettingsComponent', () => {
     expect(questionSourceSettings.listQuestionSources).toHaveBeenCalled();
     expect(fixture.nativeElement.textContent).toContain('Manage source values used by curriculum questions.');
     expect(fixture.nativeElement.textContent).toContain('Source');
+    expect(fixture.nativeElement.textContent).toContain('Type');
     expect(fixture.nativeElement.textContent).toContain('Description');
     expect(fixture.nativeElement.textContent).toContain('Official previous exam');
+    expect(fixture.nativeElement.textContent).toContain('Basic Education');
     expect(fixture.nativeElement.textContent).toContain('Imported from a formal exam.');
   });
 
@@ -394,12 +398,14 @@ describe('TenantPlatformSettingsComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Add New Source');
 
     component.questionSourceValue.set(' Teacher-made ');
+    component.questionSourceEducationCategory.set('UNIVERSITY_EDUCATION');
     component.questionSourceDescription.set(' Written by the teacher. ');
     await component.saveQuestionSource();
     fixture.detectChanges();
 
     expect(questionSourceSettings.createQuestionSource).toHaveBeenCalledWith({
       source: 'Teacher-made',
+      educationCategory: 'UNIVERSITY_EDUCATION',
       description: 'Written by the teacher.',
     });
     expect(component.showQuestionSourceModal()).toBe(false);

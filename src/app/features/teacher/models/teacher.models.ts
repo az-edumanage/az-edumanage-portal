@@ -29,6 +29,19 @@ export interface TeacherAssignedGroup {
   daySchedules?: Record<string, TeacherAssignedGroupDaySchedule>;
 }
 
+export interface TeacherScheduleSession {
+  id: string;
+  groupId: string;
+  groupName: string;
+  subjectName?: string | null;
+  roomId?: string | null;
+  roomName: string;
+  day: string;
+  startTime: string;
+  duration?: number | null;
+  studentsCount?: number | null;
+}
+
 export interface TeacherExamSetup {
   id: string;
   name: string;

@@ -94,6 +94,32 @@ describe('TenantGroupDetailsDataService', () => {
     actual.unsubscribe();
   });
 
+  it('passes the selected session id when loading session-scoped group attendance', () => {
+    const actual = service
+      .loadGroupById('group-123', { sessionId: 'group-123:2026-07-05:14:00' })
+      .subscribe((group) => {
+        expect(group.id).toBe('group-123');
+      });
+
+    const request = httpTesting.expectOne(
+      `${environment.apiBaseUrl}/tenant/groups/group-123?sessionId=group-123:2026-07-05:14:00`,
+    );
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      id: 'group-123',
+      name: 'Physics G12-A',
+      subject: 'Physics',
+      schedule: 'Monday 10:00',
+      capacity: 25,
+      enrolled: 3,
+      pricePerStudent: 500,
+      status: 'Active',
+      students: [],
+    });
+
+    actual.unsubscribe();
+  });
+
   it('maps enrolled-student rows from the backend detail endpoint', () => {
     const actual = service.loadGroupById('group-123').subscribe((group) => {
       expect(group.students).toEqual([
@@ -101,7 +127,11 @@ describe('TenantGroupDetailsDataService', () => {
           id: 'student-1',
           name: 'Ahmed Ali',
           email: 'ahmed@example.com',
+          phone: '+201000000001',
           barcodeNumber: null,
+          parentName: 'Parent Ali',
+          parentPhone: '+201111111111',
+          notifyParent: true,
           attendanceRate: 0,
           lastAttendance: '',
           attendanceTime: null,
@@ -112,7 +142,11 @@ describe('TenantGroupDetailsDataService', () => {
           id: 'student-2',
           name: 'Sara Mohamed',
           email: 'sara@example.com',
+          phone: '+201000000002',
           barcodeNumber: null,
+          parentName: 'Parent Mohamed',
+          parentPhone: '+201222222222',
+          notifyParent: false,
           attendanceRate: 87,
           lastAttendance: '2026-05-31',
           attendanceTime: '2026-05-31T10:05:00+03:00',
@@ -145,7 +179,11 @@ describe('TenantGroupDetailsDataService', () => {
           id: 'student-1',
           name: 'Ahmed Ali',
           email: 'ahmed@example.com',
+          phone: '+201000000001',
           barcodeNumber: null,
+          parentName: 'Parent Ali',
+          parentPhone: '+201111111111',
+          notifyParent: true,
           attendanceRate: null,
           lastAttendance: '',
         },
@@ -153,7 +191,11 @@ describe('TenantGroupDetailsDataService', () => {
           id: 'student-2',
           name: 'Sara Mohamed',
           email: 'sara@example.com',
+          phone: '+201000000002',
           barcodeNumber: null,
+          parentName: 'Parent Mohamed',
+          parentPhone: '+201222222222',
+          notifyParent: false,
           attendanceRate: 87,
           lastAttendance: '2026-05-31',
           attendanceTime: '2026-05-31T10:05:00+03:00',

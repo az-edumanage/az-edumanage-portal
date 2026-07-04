@@ -1,0 +1,692 @@
+.tenant-parents-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.tenant-parents-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tenant-parents-eyebrow {
+  margin: 0 0 .35rem;
+  color: #526895;
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.tenant-parents-header h2 {
+  margin: 0;
+  color: #020617;
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.tenant-parents-header p {
+  margin: .25rem 0 0;
+  color: #64748b;
+  font-size: .9rem;
+}
+
+.tenant-parents-header-actions {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+.tenant-parents-refresh,
+.tenant-parents-add {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  height: 2.5rem;
+  padding: 0 1rem;
+  border: 1px solid #dbe4f0;
+  border-radius: .75rem;
+  background: #fff;
+  color: #183153;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tenant-parents-add {
+  border-color: #4f46e5;
+  background: #4f46e5;
+  color: #fff;
+}
+
+.tenant-parents-add:hover {
+  background: #4338ca;
+}
+
+.tenant-parents-refresh:disabled {
+  cursor: not-allowed;
+  opacity: .6;
+}
+
+.tenant-parents-refresh mat-icon,
+.tenant-parents-add mat-icon {
+  font-size: 1.1rem;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.tenant-parents-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.tenant-parents-stats article,
+.tenant-parents-toolbar,
+.tenant-parents-table-shell {
+  border: 1px solid #dbe4f0;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 10px 30px rgb(15 23 42 / 6%);
+}
+
+.tenant-parents-stats article {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.tenant-parents-stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: .875rem;
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.tenant-parents-stat-icon-alt {
+  background: #dff7ed;
+  color: #047857;
+}
+
+.tenant-parents-stats p {
+  margin: 0;
+  color: #526895;
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.tenant-parents-stats strong {
+  display: block;
+  margin-top: .2rem;
+  color: #020617;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.tenant-parents-toolbar {
+  padding: 1rem;
+}
+
+.tenant-parents-search {
+  position: relative;
+}
+
+.tenant-parents-search mat-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  color: #64748b;
+  transform: translateY(-50%);
+}
+
+.tenant-parents-search input {
+  width: 100%;
+  height: 3rem;
+  padding: 0 1rem 0 3rem;
+  border: 1px solid #dbe4f0;
+  border-radius: .875rem;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: .95rem;
+  outline: none;
+}
+
+.tenant-parents-search input:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgb(124 58 237 / 16%);
+}
+
+.tenant-parents-error {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: 1rem;
+  border: 1px solid #fecaca;
+  border-radius: .875rem;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.tenant-parents-table-shell {
+  overflow: hidden;
+}
+
+.tenant-parents-table-scroll {
+  overflow-x: auto;
+}
+
+.tenant-parents-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tenant-parents-table th {
+  padding: .9rem 1rem;
+  background: #f8fafc;
+  color: #526895;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.tenant-parents-actions-head,
+.tenant-parents-actions-cell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.tenant-parents-table td {
+  padding: 1rem;
+  border-top: 1px solid #e2e8f0;
+  color: #0f172a;
+  vertical-align: top;
+}
+
+.tenant-parents-person {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+.tenant-parents-person > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  background: #4c1d95;
+  color: #fff;
+  font-weight: 800;
+}
+
+.tenant-parents-person strong,
+.tenant-parents-person small {
+  display: block;
+}
+
+.tenant-parents-person small,
+.tenant-parents-muted {
+  color: #64748b;
+  font-size: .8rem;
+}
+
+.tenant-parents-table a {
+  color: #4f46e5;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.tenant-parents-students {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.tenant-parents-students a {
+  display: inline-flex;
+  flex-direction: column;
+  gap: .15rem;
+  min-width: 9rem;
+  padding: .55rem .75rem;
+  border: 1px solid #ddd6fe;
+  border-radius: .75rem;
+  background: #f5f3ff;
+}
+
+.tenant-parents-students small {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.tenant-parents-status {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .4rem .65rem;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: .78rem;
+  font-weight: 800;
+}
+
+.tenant-parents-status-on {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.tenant-parents-status mat-icon {
+  font-size: 1rem;
+  width: 1rem;
+  height: 1rem;
+}
+
+.tenant-parents-row-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  border-radius: .5rem;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: color .2s ease, background-color .2s ease;
+}
+
+.tenant-parents-row-btn mat-icon {
+  font-size: 1.1rem;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.tenant-parents-row-btn--password:hover,
+.tenant-parents-row-btn--password:focus-visible {
+  background: rgb(14 165 233 / 10%);
+  color: #0369a1;
+  outline: none;
+}
+
+.tenant-parents-row-btn--edit:hover,
+.tenant-parents-row-btn--edit:focus-visible {
+  background: rgb(79 70 229 / 10%);
+  color: #4338ca;
+  outline: none;
+}
+
+.tenant-parents-row-btn--delete:hover,
+.tenant-parents-row-btn--delete:focus-visible {
+  background: rgb(220 38 38 / 10%);
+  color: #dc2626;
+  outline: none;
+}
+
+.tenant-parents-row-btn:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
+.tenant-parents-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .9rem 1rem;
+  border-top: 1px solid #e2e8f0;
+  color: #526895;
+  font-size: .82rem;
+  font-weight: 800;
+}
+
+.tenant-parents-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+}
+
+.tenant-parents-pagination label {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.tenant-parents-pagination select,
+.tenant-parents-pagination button {
+  height: 2.25rem;
+  border: 1px solid #dbe4f0;
+  border-radius: .625rem;
+  background: #fff;
+  color: #183153;
+  font-weight: 800;
+}
+
+.tenant-parents-pagination select {
+  padding: 0 .65rem;
+}
+
+.tenant-parents-pagination button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  cursor: pointer;
+}
+
+.tenant-parents-pagination button:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+}
+
+.tenant-parents-pagination mat-icon {
+  font-size: 1.1rem;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.tenant-parents-row-btn:disabled:hover {
+  background: transparent;
+  color: #64748b;
+}
+
+.tenant-parents-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(15 23 42 / 42%);
+}
+
+.tenant-parents-password-modal {
+  width: min(100%, 28rem);
+  padding: 1.5rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 25px 50px -12px rgb(15 23 42 / 35%);
+}
+
+.tenant-parents-add-modal {
+  width: min(100%, 42rem);
+}
+
+.tenant-parents-confirm-modal {
+  width: min(100%, 30rem);
+}
+
+.tenant-parents-password-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.tenant-parents-password-head h3 {
+  margin: 0;
+  color: #020617;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.tenant-parents-password-head p {
+  margin: .25rem 0 0;
+  color: #64748b;
+  font-size: .85rem;
+  font-weight: 700;
+}
+
+.tenant-parents-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  border-radius: .625rem;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.tenant-parents-icon-btn:hover {
+  background: #f1f5f9;
+}
+
+.tenant-parents-password-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.tenant-parents-add-form > div:not(.tenant-parents-password-actions),
+.tenant-parents-form-grid > div {
+  display: grid;
+  gap: .45rem;
+}
+
+.tenant-parents-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.tenant-parents-password-form label {
+  color: #334155;
+  font-size: .85rem;
+  font-weight: 800;
+}
+
+.tenant-parents-password-form label span {
+  color: #64748b;
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+.tenant-parents-password-form input {
+  width: 100%;
+  height: 2.75rem;
+  padding: 0 .9rem;
+  border: 1px solid #dbe4f0;
+  border-radius: .75rem;
+  background: #f8fafc;
+  color: #0f172a;
+  outline: none;
+}
+
+.tenant-parents-password-form input:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgb(124 58 237 / 16%);
+}
+
+.tenant-parents-password-error,
+.tenant-parents-password-success {
+  margin: 0;
+  font-size: .78rem;
+  font-weight: 800;
+}
+
+.tenant-parents-password-error {
+  color: #dc2626;
+}
+
+.tenant-parents-password-success {
+  color: #047857;
+}
+
+.tenant-parents-password-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .75rem;
+}
+
+.tenant-parents-cancel-btn,
+.tenant-parents-save-btn,
+.tenant-parents-danger-btn {
+  min-width: 7rem;
+  height: 2.5rem;
+  padding: 0 1rem;
+  border-radius: .625rem;
+  font-size: .85rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tenant-parents-cancel-btn {
+  border: 1px solid #dbe4f0;
+  background: #fff;
+  color: #183153;
+}
+
+.tenant-parents-save-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  border: 0;
+  background: #4f46e5;
+  color: #fff;
+}
+
+.tenant-parents-danger-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  border: 0;
+  background: #dc2626;
+  color: #fff;
+}
+
+.tenant-parents-danger-btn:hover {
+  background: #b91c1c;
+}
+
+.tenant-parents-danger-btn:disabled {
+  cursor: not-allowed;
+  opacity: .65;
+}
+
+.tenant-parents-save-btn:hover {
+  background: #4338ca;
+}
+
+.tenant-parents-save-btn:disabled {
+  cursor: not-allowed;
+  opacity: .65;
+}
+
+.tenant-parents-save-btn mat-icon,
+.tenant-parents-danger-btn mat-icon {
+  font-size: 1rem;
+  width: 1rem;
+  height: 1rem;
+  animation: tenant-parents-spin 1s linear infinite;
+}
+
+.tenant-parents-confirm-body {
+  display: grid;
+  gap: .65rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid #fecaca;
+  border-radius: .875rem;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.tenant-parents-confirm-body mat-icon {
+  color: #dc2626;
+}
+
+.tenant-parents-confirm-body p,
+.tenant-parents-confirm-body small {
+  margin: 0;
+  font-weight: 800;
+}
+
+.tenant-parents-confirm-body small {
+  color: #b91c1c;
+  font-size: .78rem;
+}
+
+@keyframes tenant-parents-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tenant-parents-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+  padding: 4rem 1rem;
+  color: #64748b;
+  text-align: center;
+}
+
+.tenant-parents-empty mat-icon {
+  font-size: 2rem;
+  width: 2rem;
+  height: 2rem;
+  color: #7c3aed;
+}
+
+.tenant-parents-empty h3 {
+  margin: 0;
+  color: #0f172a;
+}
+
+.tenant-parents-empty p {
+  margin: 0;
+}
+
+@media (max-width: 700px) {
+  .tenant-parents-header,
+  .tenant-parents-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .tenant-parents-header {
+    flex-direction: column;
+  }
+
+  .tenant-parents-header-actions,
+  .tenant-parents-form-grid {
+    width: 100%;
+    grid-template-columns: 1fr;
+  }
+
+  .tenant-parents-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tenant-parents-refresh,
+  .tenant-parents-add {
+    justify-content: center;
+  }
+
+  .tenant-parents-pagination,
+  .tenant-parents-pagination-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

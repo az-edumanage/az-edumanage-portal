@@ -10,7 +10,7 @@ export class TenantSubjectDetailsStore {
   readonly loading = signal(false);
   readonly loadError = signal<string | null>(null);
 
-  async loadSubject(id: string | null): Promise<void> {
+  async loadSubject(id: string | null, educationCategory?: string | null): Promise<void> {
     this.subject.set(null);
     this.loadError.set(null);
     if (!id) {
@@ -20,7 +20,9 @@ export class TenantSubjectDetailsStore {
 
     this.loading.set(true);
     try {
-      this.subject.set(await this.data.getSubjectDetails(id));
+      this.subject.set(educationCategory
+        ? await this.data.getSubjectDetailsForCategory(id, educationCategory)
+        : await this.data.getSubjectDetails(id));
     } catch (error) {
       this.loadError.set(this.data.toUserMessage(error, 'Unable to load subject details. Please try again.'));
     } finally {

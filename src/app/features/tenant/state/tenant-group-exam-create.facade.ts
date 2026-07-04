@@ -5,8 +5,18 @@ import { catchError, finalize, forkJoin, of } from 'rxjs';
 import { TaskService } from '../../../core/services/task.service';
 import { TenantGroupDetailsDataService } from '../data-access/tenant-group-details-data.service';
 import { TenantGroupExamCreateDataService } from '../data-access/tenant-group-exam-create-data.service';
+import { GroupExamRow } from '../models/tenant-group-details.models';
 import { PublishedGroupExamOption, TenantGroupExamCreatePayload } from '../models/tenant-group-exam-create.models';
 import { TenantGroupExamCreateStore } from './tenant-group-exam-create.store';
+
+interface TenantGroupExamCreateContext {
+  scope?: 'tenant' | 'teacher';
+  returnTo?: string | null;
+  returnTab?: string | null;
+  assignmentId?: string | null;
+  examDate?: string | null;
+  examStartTime?: string | null;
+}
 
 @Injectable({ providedIn: 'root' })
 export class TenantGroupExamCreateFacade {
@@ -18,6 +28,10 @@ export class TenantGroupExamCreateFacade {
   private readonly store = inject(TenantGroupExamCreateStore);
 
   private isSuccess = false;
+  private returnTo: string | null = null;
+  private returnTab: string | null = null;
+  private assignmentId: string | null = null;
+  private scope: 'tenant' | 'teacher' = 'tenant';
 
   readonly groupId = this.store.groupId;
   readonly isSubmitting = this.store.isSubmitting;
@@ -46,11 +60,23 @@ export class TenantGroupExamCreateFacade {
     allowRetakes: [false],
   });
 
-  initialize(groupId: string | null, freshCreate = false): void {
+  initialize(groupId: string | null, freshCreate = false, context: TenantGroupExamCreateContext = {}): void {
     this.store.setGroupId(groupId);
+    this.scope = context.scope === 'teacher' ? 'teacher' : 'tenant';
+    this.returnTo = this.normalizedReturnPath(context.returnTo);
+    this.returnTab = context.returnTab === 'students' || context.returnTab === 'lessons' || context.returnTab === 'exams'
+      ? context.returnTab
+      : null;
+    this.assignmentId = context.assignmentId?.trim() || null;
     if (freshCreate) {
       this.resetForm();
       this.taskService.removeTask(this.store.taskId());
+    }
+    if (context.examDate?.trim() || context.examStartTime?.trim()) {
+      this.examForm.patchValue({
+        date: context.examDate?.trim() || this.examForm.controls.date.value,
+        startTime: this.normalizeStartTime(context.examStartTime),
+      });
     }
     this.loadGroupExamPage(freshCreate);
 
@@ -79,7 +105,7 @@ export class TenantGroupExamCreateFacade {
   onCancel(): void {
     this.isSuccess = true;
     this.taskService.removeTask(this.store.taskId());
-    this.router.navigate(['/tenant/groups', this.groupId()]);
+    this.navigateAfterSave();
   }
 
   onSubmit(): void {
@@ -99,13 +125,13 @@ export class TenantGroupExamCreateFacade {
         instructions: payload.instructions,
         showResultsImmediately: payload.showResultsImmediately,
         allowRetakes: payload.allowRetakes,
-      })
+      }, { scope: this.scope })
       .pipe(finalize(() => this.store.setSubmitting(false)))
       .subscribe((assignment) => {
         this.isSuccess = true;
         this.store.setAssignment(assignment);
         this.taskService.removeTask(this.store.taskId());
-        this.router.navigate(['/tenant/groups', this.groupId()]);
+        this.navigateAfterSave();
       });
   }
 
@@ -158,14 +184,22 @@ export class TenantGroupExamCreateFacade {
     this.store.setGroupContextLoading(true);
     this.store.setGroupContextError(null);
     forkJoin({
-      groupContext: this.groupDetailsData.loadGroupById(groupId),
-      assignment: this.data.loadGroupExamAssignment(groupId).pipe(catchError(() => of(null))),
+      groupContext: this.groupDetailsData.loadGroupById(groupId, { scope: this.scope }),
+      assignment: this.data.loadGroupExamAssignment(groupId, { scope: this.scope }).pipe(catchError(() => of(null))),
+      assignments: this.assignmentId
+        ? this.groupDetailsData.loadGroupExams(groupId, { scope: this.scope }).pipe(catchError(() => of([] as GroupExamRow[])))
+        : of([] as GroupExamRow[]),
     })
       .pipe(finalize(() => this.store.setGroupContextLoading(false)))
       .subscribe({
-        next: ({ groupContext, assignment }) => {
+        next: ({ groupContext, assignment, assignments }) => {
           this.store.setGroupContext(groupContext);
-          if (assignment && !freshCreate) {
+          const assignmentToEdit = this.assignmentId
+            ? assignments.find((row) => row.id === this.assignmentId)
+            : null;
+          if (assignmentToEdit && !freshCreate) {
+            this.patchFromAssignmentRow(assignmentToEdit);
+          } else if (assignment && !freshCreate) {
             this.store.setAssignment(assignment);
             this.examForm.patchValue({
               selectedExamId: assignment.selectedExamId,
@@ -194,7 +228,7 @@ export class TenantGroupExamCreateFacade {
     this.store.setExamOptionsLoading(true);
     this.store.setExamOptionsError(null);
     this.data
-      .loadPublishedExamOptions(groupContext.stageId, groupContext.gradeId, groupContext.subjectId)
+      .loadPublishedExamOptions(groupContext.stageId, groupContext.gradeId, groupContext.subjectId, { scope: this.scope })
       .pipe(finalize(() => this.store.setExamOptionsLoading(false)))
       .subscribe({
         next: (options) => this.store.setPublishedExamOptions(options),
@@ -212,7 +246,7 @@ export class TenantGroupExamCreateFacade {
     this.store.setPreviewLoading(true);
     this.store.setPreviewError(null);
     this.data
-      .loadExamQuestions(groupContext.stageId, groupContext.gradeId, groupContext.subjectId, exam.id)
+      .loadExamQuestions(groupContext.stageId, groupContext.gradeId, groupContext.subjectId, exam.id, { scope: this.scope })
       .pipe(finalize(() => this.store.setPreviewLoading(false)))
       .subscribe({
         next: (questions) => this.store.setPreviewQuestions(questions),
@@ -226,6 +260,56 @@ export class TenantGroupExamCreateFacade {
   private normalizeStartTime(value: string | null | undefined): string | null {
     const trimmed = value?.trim();
     return trimmed ? trimmed : null;
+  }
+
+  private patchFromAssignmentRow(assignment: GroupExamRow): void {
+    this.store.setAssignment({
+      groupId: assignment.groupId,
+      selectedExamId: assignment.examId,
+      examTitle: assignment.title,
+      sourceStatus: assignment.status,
+      date: assignment.date,
+      startTime: assignment.startTime,
+      duration: assignment.duration,
+      instructions: assignment.instructions,
+      showResultsImmediately: assignment.settings.showResultsImmediately,
+      allowRetakes: assignment.settings.allowRetakes,
+      updatedAt: assignment.updatedAt,
+    });
+    this.examForm.patchValue({
+      selectedExamId: assignment.examId,
+      title: assignment.title,
+      date: assignment.date,
+      startTime: assignment.startTime || null,
+      duration: assignment.duration,
+      instructions: assignment.instructions || '',
+      showResultsImmediately: assignment.settings.showResultsImmediately,
+      allowRetakes: assignment.settings.allowRetakes,
+    });
+  }
+
+  private navigateAfterSave(): void {
+    if (this.returnTo) {
+      this.router.navigateByUrl(this.withReturnTab(this.returnTo));
+      return;
+    }
+    this.router.navigate([this.scope === 'teacher' ? '/teacher/groups' : '/tenant/groups', this.groupId()]);
+  }
+
+  private withReturnTab(returnTo: string): string {
+    if (!this.returnTab) {
+      return returnTo;
+    }
+    const separator = returnTo.includes('?') ? '&' : '?';
+    return `${returnTo}${separator}tab=${encodeURIComponent(this.returnTab)}`;
+  }
+
+  private normalizedReturnPath(value: string | null | undefined): string | null {
+    const trimmed = value?.trim();
+    if (!trimmed || (!trimmed.startsWith('/tenant/') && !trimmed.startsWith('/teacher/'))) {
+      return null;
+    }
+    return trimmed;
   }
 
   private resetForm(): void {

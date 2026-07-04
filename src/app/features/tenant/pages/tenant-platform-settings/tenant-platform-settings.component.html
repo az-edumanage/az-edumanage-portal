@@ -366,23 +366,29 @@
               <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/50">
                 <tr>
                   <th class="px-4 py-3 font-bold">Source</th>
+                  <th class="px-4 py-3 font-bold">Type</th>
                   <th class="px-4 py-3 font-bold">Description</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
                 @if (questionSourcesLoading()) {
                   <tr>
-                    <td colspan="2" class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-500">Loading question sources...</td>
+                    <td colspan="3" class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-500">Loading question sources...</td>
                   </tr>
                 } @else {
                   @for (source of questionSources(); track source.id) {
                     <tr class="transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
                       <td class="px-4 py-4 font-semibold text-slate-900 dark:text-white">{{ source.source }}</td>
+                      <td class="px-4 py-4">
+                        <span class="inline-flex rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
+                          {{ questionSourceEducationCategoryLabel(source.educationCategory) }}
+                        </span>
+                      </td>
                       <td class="px-4 py-4 text-slate-600 dark:text-slate-400">{{ source.description || 'No description' }}</td>
                     </tr>
                   } @empty {
                     <tr>
-                      <td colspan="2" class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-500">No question sources saved yet.</td>
+                      <td colspan="3" class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-500">No question sources saved yet.</td>
                     </tr>
                   }
                 }
@@ -919,6 +925,22 @@
             @if (questionSourceValueError()) {
               <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ questionSourceValueError() }}</p>
             }
+          </div>
+
+          <div>
+            <label for="question-source-education-category" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Type</label>
+            <select
+              id="question-source-education-category"
+              [ngModel]="questionSourceEducationCategory()"
+              (ngModelChange)="selectQuestionSourceEducationCategory($event)"
+              name="questionSourceEducationCategory"
+              [disabled]="questionSourceSaving()"
+              class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+            >
+              @for (category of questionSourceEducationCategories; track category.value) {
+                <option [value]="category.value">{{ category.label }}</option>
+              }
+            </select>
           </div>
 
           <div>

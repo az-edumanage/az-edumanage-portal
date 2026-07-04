@@ -4,7 +4,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { Subscription } from 'rxjs';
 import { TenantGroupAttendanceDataService } from '../../data-access/tenant-group-attendance-data.service';
 import { TenantScheduleDataService } from '../../data-access/tenant-schedule-data.service';
-import { TenantAttendanceStudent, TenantBarcodeAttendanceScanResponse } from '../../models/tenant-group-attendance.models';
+import {
+  TenantAttendanceStudent,
+  TenantBarcodeAttendancePaymentStatus,
+  TenantBarcodeAttendanceScanResponse,
+  TenantManualAttendanceResponse,
+} from '../../models/tenant-group-attendance.models';
 import { ScheduleSession } from '../../models/tenant-schedule.models';
 
 interface AttendanceTimeSlot {
@@ -36,6 +41,14 @@ interface AttendanceClockState {
   hourSlot: string;
   timeZone: string;
   lastUpdatedAt: Date;
+}
+
+interface AttendancePaymentWarning {
+  studentName: string;
+  groupName: string;
+  invoiceRef: string;
+  amount: string;
+  dueDate: string;
 }
 
 @Component({
@@ -71,6 +84,9 @@ export class TenantAttendanceComponent implements OnInit, OnDestroy {
   barcodeInputValue = '';
   barcodeScanInProgress = false;
   barcodeScanNotification: { message: string; state: 'success' | 'error' | 'info' } | null = null;
+  paymentWarningDialog: AttendancePaymentWarning | null = null;
+  private pendingPaymentWarningScanResponse: TenantBarcodeAttendanceScanResponse | null = null;
+  private pendingPaymentWarningManualResponse: TenantManualAttendanceResponse | null = null;
 
   get selectedStudents(): TenantAttendanceStudent[] {
     return this.selectedTimeSlotGroups.flatMap((group) => group.students);
@@ -239,9 +255,13 @@ export class TenantAttendanceComponent implements OnInit, OnDestroy {
     const attendanceState = isPresent ? 'Present' : 'Absent';
     this.groupAttendanceDataService.saveManualAttendance({ groupId, studentId, attendanceState }).subscribe({
       next: (response) => {
-        this.applyManualAttendanceResponse(response.groupId, response.studentId, response.attendanceState, response.scanTime);
-        this.reloadStudentsForGroup(response.groupId);
-        this.barcodeScanNotification = { message: response.message, state: 'success' };
+        if (isPresent && this.openManualPaymentWarningIfNeeded(response)) {
+          this.pendingPaymentWarningManualResponse = response;
+          this.barcodeScanNotification = { message: response.message, state: 'info' };
+        } else {
+          this.confirmSavedManualAttendance(response);
+          this.barcodeScanNotification = { message: response.message, state: 'success' };
+        }
         this.changeDetectorRef.markForCheck();
       },
       error: (error: Error) => {
@@ -252,6 +272,31 @@ export class TenantAttendanceComponent implements OnInit, OnDestroy {
         this.changeDetectorRef.markForCheck();
       },
     });
+  }
+
+  closePaymentWarningDialog(): void {
+    this.paymentWarningDialog = null;
+    this.pendingPaymentWarningScanResponse = null;
+    this.pendingPaymentWarningManualResponse = null;
+    this.focusBarcodeInput();
+    this.changeDetectorRef.markForCheck();
+  }
+
+  continueAttendanceAfterPaymentWarning(): void {
+    const pendingScanResponse = this.pendingPaymentWarningScanResponse;
+    const pendingManualResponse = this.pendingPaymentWarningManualResponse;
+    this.paymentWarningDialog = null;
+    this.pendingPaymentWarningScanResponse = null;
+    this.pendingPaymentWarningManualResponse = null;
+
+    if (pendingScanResponse) {
+      this.confirmSavedBarcodeAttendance(pendingScanResponse);
+    } else if (pendingManualResponse) {
+      this.confirmSavedManualAttendance(pendingManualResponse);
+    }
+
+    this.focusBarcodeInput();
+    this.changeDetectorRef.markForCheck();
   }
 
   selectTimeSlot(time: string): void {
@@ -341,9 +386,13 @@ export class TenantAttendanceComponent implements OnInit, OnDestroy {
       state: response.result === 'PRESENT_RECORDED' || response.result === 'ALREADY_PRESENT' ? 'success' : 'error',
     };
 
-    if ((response.result === 'PRESENT_RECORDED' || response.result === 'ALREADY_PRESENT') && response.student && response.group && response.attendance) {
-      const updatedGroupId = this.applySavedBarcodeAttendance(response);
-      this.reloadStudentsForGroup(updatedGroupId);
+    if (this.isAcceptedBarcodeAttendance(response) && response.student && response.group && response.attendance) {
+      if (this.openBarcodePaymentWarningIfNeeded(response)) {
+        this.pendingPaymentWarningScanResponse = response;
+        this.barcodeScanNotification = { message: response.message, state: 'info' };
+      } else {
+        this.confirmSavedBarcodeAttendance(response);
+      }
       this.barcodeInputValue = '';
       if (this.barcodeInput?.nativeElement) {
         this.barcodeInput.nativeElement.value = '';
@@ -352,6 +401,101 @@ export class TenantAttendanceComponent implements OnInit, OnDestroy {
 
     this.focusBarcodeInput();
     this.changeDetectorRef.markForCheck();
+  }
+
+  private openBarcodePaymentWarningIfNeeded(response: TenantBarcodeAttendanceScanResponse): boolean {
+    const groupId = response.group?.id;
+    if (!groupId || !response.student || !response.group) {
+      this.paymentWarningDialog = null;
+      return false;
+    }
+
+    return this.openPaymentWarningIfNeeded(response.student.name, response.group.name, response.paymentStatus);
+  }
+
+  private openManualPaymentWarningIfNeeded(response: TenantManualAttendanceResponse): boolean {
+    const group = this.selectedTimeSlotGroups.find((selectedGroup) => selectedGroup.groupId === response.groupId);
+    const student = this.getStudentsForGroup(response.groupId).find((candidate) => candidate.id === response.studentId);
+
+    if (!group || !student) {
+      this.paymentWarningDialog = null;
+      return false;
+    }
+
+    return this.openPaymentWarningIfNeeded(student.name, group.groupName, response.paymentStatus);
+  }
+
+  private openPaymentWarningIfNeeded(
+    studentName: string,
+    groupName: string,
+    paymentStatus: TenantBarcodeAttendancePaymentStatus | null | undefined,
+  ): boolean {
+    if (!this.hasUnpaidInvoice(paymentStatus)) {
+      this.paymentWarningDialog = null;
+      return false;
+    }
+
+    this.paymentWarningDialog = {
+      studentName,
+      groupName,
+      invoiceRef: paymentStatus.invoiceRef?.trim() || 'Unpaid invoice',
+      amount: this.formatInvoiceAmount(paymentStatus.amount, paymentStatus.currency),
+      dueDate: this.formatInvoiceDueDate(paymentStatus.dueDate),
+    };
+    return true;
+  }
+
+  private isAcceptedBarcodeAttendance(response: TenantBarcodeAttendanceScanResponse): boolean {
+    return response.result === 'PRESENT_RECORDED' || response.result === 'ALREADY_PRESENT';
+  }
+
+  private confirmSavedBarcodeAttendance(response: TenantBarcodeAttendanceScanResponse): void {
+    const updatedGroupId = this.applySavedBarcodeAttendance(response);
+    this.reloadStudentsForGroup(updatedGroupId);
+  }
+
+  private confirmSavedManualAttendance(response: TenantManualAttendanceResponse): void {
+    this.applyManualAttendanceResponse(response.groupId, response.studentId, response.attendanceState, response.scanTime);
+    this.reloadStudentsForGroup(response.groupId);
+  }
+
+  private hasUnpaidInvoice(paymentStatus: TenantBarcodeAttendancePaymentStatus | null | undefined): paymentStatus is TenantBarcodeAttendancePaymentStatus {
+    return paymentStatus?.hasUnpaidSubscriptionInvoice === true;
+  }
+
+  private formatInvoiceAmount(amount: number | string | null | undefined, currency: string | null | undefined): string {
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount)) {
+      return currency?.trim() || 'Amount not available';
+    }
+
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: currency?.trim() || 'EGP',
+        maximumFractionDigits: 2,
+      }).format(numericAmount);
+    } catch {
+      return `${numericAmount.toFixed(2)} ${currency?.trim() || 'EGP'}`;
+    }
+  }
+
+  private formatInvoiceDueDate(dueDate: string | null | undefined): string {
+    const normalized = dueDate?.trim();
+    if (!normalized) {
+      return 'Due date not available';
+    }
+
+    const date = new Date(`${normalized}T00:00:00`);
+    if (Number.isNaN(date.getTime())) {
+      return normalized;
+    }
+
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }).format(date);
   }
 
   private applySavedBarcodeAttendance(response: TenantBarcodeAttendanceScanResponse): string {
@@ -526,7 +670,7 @@ export class TenantAttendanceComponent implements OnInit, OnDestroy {
     this.scheduleLoading = true;
     this.scheduleLoadError = null;
     this.scheduleLoadSubscription?.unsubscribe();
-    this.scheduleLoadSubscription = this.scheduleDataService.loadSessions().subscribe({
+    this.scheduleLoadSubscription = this.scheduleDataService.loadSessions(this.currentEgyptDate()).subscribe({
       next: (sessions) => {
         this.scheduleSessions = sessions;
         this.scheduleLoading = false;
@@ -559,6 +703,19 @@ export class TenantAttendanceComponent implements OnInit, OnDestroy {
       timeZone: this.egyptTimeZone,
       lastUpdatedAt: date,
     };
+  }
+
+  private currentEgyptDate(): string {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: this.egyptTimeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(this.nowFactory());
+    const year = this.getDatePart(parts, 'year');
+    const month = this.getDatePart(parts, 'month');
+    const day = this.getDatePart(parts, 'day');
+    return `${year}-${month}-${day}`;
   }
 
   private normalizeTimeSlot(time: string): Pick<AttendanceTimeSlot, 'time' | 'hourSlot' | 'sortOrder'> | null {

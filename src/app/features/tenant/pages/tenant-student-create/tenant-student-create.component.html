@@ -9,9 +9,9 @@
               Students
             </button>
             <mat-icon class="text-[10px]">chevron_right</mat-icon>
-            <span>Enroll New Student</span>
+            <span>{{ isEditMode() ? 'Edit Student' : 'Enroll New Student' }}</span>
           </div>
-          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Add New Student</h2>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ isEditMode() ? 'Edit Student' : 'Add New Student' }}</h2>
         </div>
         <div class="flex gap-3">
           <button 
@@ -33,10 +33,10 @@
           >
             @if (isSubmitting()) {
               <mat-icon class="animate-spin text-sm">sync</mat-icon>
-              Saving...
+              {{ isEditMode() ? 'Updating...' : 'Saving...' }}
             } @else {
-              <mat-icon class="text-sm">person_add</mat-icon>
-              Enroll Student
+              <mat-icon class="text-sm">{{ isEditMode() ? 'save' : 'person_add' }}</mat-icon>
+              {{ isEditMode() ? 'Update Student' : 'Enroll Student' }}
             }
           </button>
         </div>
@@ -71,7 +71,7 @@
               </div>
               
               <div>
-                <label for="email" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
+                <label for="email" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email Address <span class="text-xs font-normal text-slate-400">(optional)</span></label>
                 <input 
                   id="email"
                   type="email" 
@@ -82,7 +82,7 @@
               </div>
 
               <div>
-                <label for="phone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Phone Number</label>
+                <label for="phone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Phone Number <span class="text-xs font-normal text-slate-400">(optional)</span></label>
                 <input 
                   id="phone"
                   type="tel" 
@@ -102,7 +102,7 @@
                 >
               </div>
 
-              <div class="relative">
+              <div class="relative" (click)="$event.stopPropagation()">
                 <label id="gender-label" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Gender</label>
                 <button
                   id="gender"
@@ -151,89 +151,145 @@
               Parent / Guardian Details
             </h3>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label for="parentName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Parent Name</label>
-                <input 
-                  id="parentName"
-                  type="text" 
-                  formControlName="parentName"
-                  placeholder="Hassan Ali"
-                  class="w-full h-[46px] px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+            <div class="space-y-3">
+              <div class="relative" (click)="$event.stopPropagation()">
+                <label id="parent-selector-label" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Parent Name</label>
+                <button
+                  type="button"
+                  class="w-full min-h-[54px] px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-left outline-none transition-all flex items-center justify-between gap-3 focus:ring-2 focus:ring-indigo-500"
+                  [class.border-red-300]="studentForm.controls.parentAppUserId.touched && studentForm.controls.parentAppUserId.invalid"
+                  [attr.aria-expanded]="parentPanelOpen()"
+                  aria-labelledby="parent-selector-label"
+                  aria-haspopup="listbox"
+                  (click)="toggleParentPanel()"
                 >
-              </div>
-              
-              <div>
-                <label for="parentPhone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Parent Phone</label>
-                <input 
-                  id="parentPhone"
-                  type="tel" 
-                  formControlName="parentPhone"
-                  placeholder="+20 123 456 7890"
-                  class="w-full h-[46px] px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                >
-              </div>
+                  <span class="flex min-w-0 items-center gap-3">
+                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-300">
+                      <mat-icon class="text-base">family_restroom</mat-icon>
+                    </span>
+                    <span class="min-w-0">
+                      <span class="block truncate font-semibold text-slate-800 dark:text-slate-100">
+                        {{ selectedParent()?.name || 'Select parent or guardian' }}
+                      </span>
+                      <span class="block truncate text-xs text-slate-500 dark:text-slate-400">
+                        {{ selectedParent()?.phone || 'Search by name or phone number' }}
+                      </span>
+                    </span>
+                  </span>
+                  <mat-icon class="text-base text-slate-400 transition-transform" [class.rotate-180]="parentPanelOpen()">expand_more</mat-icon>
+                </button>
 
-              <div class="md:col-span-2">
-                <label for="address" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Residential Address</label>
-                <textarea 
-                  id="address"
-                  formControlName="address"
-                  rows="2"
-                  placeholder="123 Education St, Cairo"
-                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                ></textarea>
+                @if (studentForm.controls.parentAppUserId.touched && studentForm.controls.parentAppUserId.hasError('required')) {
+                  <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">Parent is required</p>
+                }
+
+                @if (parentPanelOpen()) {
+                  <div class="absolute left-0 right-0 top-full z-40 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-200/70 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/30" role="listbox" aria-labelledby="parent-selector-label">
+                    <div class="border-b border-slate-100 p-2 dark:border-slate-800">
+                      <div class="relative">
+                        <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">search</mat-icon>
+                        <input
+                          type="search"
+                          [ngModel]="parentSearchQuery()"
+                          (ngModelChange)="parentSearchQuery.set($event)"
+                          [ngModelOptions]="{ standalone: true }"
+                          placeholder="Search parents by name or phone"
+                          class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800"
+                        >
+                      </div>
+                    </div>
+
+                    <div class="max-h-64 overflow-auto p-2">
+                      @if (parentsLoading()) {
+                        <div class="px-3 py-4 text-sm text-slate-500">Loading parents...</div>
+                      } @else {
+                        @for (parent of filteredParents(); track parent.appUserId || parent.id) {
+                          <button
+                            type="button"
+                            class="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm transition hover:bg-indigo-50 focus:bg-indigo-50 focus:outline-none dark:hover:bg-indigo-950/30 dark:focus:bg-indigo-950/30"
+                            role="option"
+                            [attr.aria-selected]="studentForm.controls.parentAppUserId.value === (parent.appUserId || parent.id)"
+                            (click)="selectParent(parent)"
+                          >
+                            <span class="min-w-0">
+                              <span class="block truncate font-semibold text-slate-800 dark:text-slate-100">{{ parent.name }}</span>
+                              <span class="block truncate text-xs text-slate-500 dark:text-slate-400">{{ parent.phone || 'No phone number' }}</span>
+                            </span>
+                            @if (studentForm.controls.parentAppUserId.value === (parent.appUserId || parent.id)) {
+                              <mat-icon class="text-sm text-indigo-600 dark:text-indigo-300">check</mat-icon>
+                            }
+                          </button>
+                        } @empty {
+                          <div class="px-3 py-4 text-sm text-slate-500">No parents match this search.</div>
+                        }
+                      }
+                    </div>
+
+                    <div class="border-t border-slate-100 p-2 dark:border-slate-800">
+                      <button
+                        type="button"
+                        class="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-200"
+                        (click)="openAddParentModal()"
+                      >
+                        <mat-icon class="text-base">person_add</mat-icon>
+                        Add Parent
+                      </button>
+                    </div>
+                  </div>
+                }
               </div>
             </div>
           </div>
 
           <!-- Account Security -->
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-              <mat-icon class="text-sm">lock</mat-icon>
-              Account Access
-            </h3>
+          @if (!isEditMode()) {
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+              <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                <mat-icon class="text-sm">lock</mat-icon>
+                Account Access
+              </h3>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label for="username" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">User name</label>
-                <input
-                  id="username"
-                  type="text"
-                  formControlName="username"
-                  class="w-full h-[46px] px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                >
-                @if (studentForm.controls.username.touched && studentForm.controls.username.hasError('required')) {
-                  <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">User name is required</p>
-                }
-              </div>
-
-              <div>
-                <label for="password" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Initial Password</label>
-                <div class="relative">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label for="username" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">User name</label>
                   <input
-                    id="password"
-                    [type]="showPassword() ? 'text' : 'password'"
-                    formControlName="password"
-                    class="w-full h-[46px] px-3 py-2 pr-10 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    id="username"
+                    type="text"
+                    formControlName="username"
+                    class="w-full h-[46px] px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                   >
-                  <button
-                    type="button"
-                    (click)="showPassword.set(!showPassword())"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-500 transition-colors"
-                    aria-label="Toggle password visibility"
-                  >
-                    <mat-icon class="text-sm">{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
-                  </button>
+                  @if (studentForm.controls.username.touched && studentForm.controls.username.hasError('required')) {
+                    <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">User name is required</p>
+                  }
                 </div>
-                @if (studentForm.controls.password.touched && studentForm.controls.password.hasError('required')) {
-                  <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">Initial password is required</p>
-                } @else if (studentForm.controls.password.touched && studentForm.controls.password.hasError('minlength')) {
-                  <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">Initial password must be at least 8 characters</p>
-                }
+
+                <div>
+                  <label for="password" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Initial Password</label>
+                  <div class="relative">
+                    <input
+                      id="password"
+                      [type]="showPassword() ? 'text' : 'password'"
+                      formControlName="password"
+                      class="w-full h-[46px] px-3 py-2 pr-10 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    >
+                    <button
+                      type="button"
+                      (click)="showPassword.set(!showPassword())"
+                      class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-500 transition-colors"
+                      aria-label="Toggle password visibility"
+                    >
+                      <mat-icon class="text-sm">{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+                    </button>
+                  </div>
+                  @if (studentForm.controls.password.touched && studentForm.controls.password.hasError('required')) {
+                    <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">Initial password is required</p>
+                  } @else if (studentForm.controls.password.touched && studentForm.controls.password.hasError('minlength')) {
+                    <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">Initial password must be at least 8 characters</p>
+                  }
+                </div>
               </div>
             </div>
-          </div>
+          }
         </div>
 
         <!-- Sidebar Options -->
@@ -255,7 +311,7 @@
 
             @if (studentForm.controls.educationCategory.value === 'BASIC_EDUCATION') {
               <div class="space-y-4">
-                <div class="relative">
+                <div class="relative" (click)="$event.stopPropagation()">
                   <label for="stageIds" class="block text-xs font-bold text-slate-500 uppercase mb-1">Educational Stage</label>
                   <button
                     id="stageIds"
@@ -284,7 +340,7 @@
                   }
                 </div>
 
-                <div class="relative">
+                <div class="relative" (click)="$event.stopPropagation()">
                   <label for="gradeIds" class="block text-xs font-bold text-slate-500 uppercase mb-1">Grades</label>
                   <button
                     id="gradeIds"
@@ -316,7 +372,7 @@
               </div>
             } @else if (studentForm.controls.educationCategory.value === 'UNIVERSITY_EDUCATION') {
               <div class="space-y-4">
-                <div class="relative">
+                <div class="relative" (click)="$event.stopPropagation()">
                   <label for="universityIds" class="block text-xs font-bold text-slate-500 uppercase mb-1">University</label>
                   <button
                     id="universityIds"
@@ -345,7 +401,7 @@
                   }
                 </div>
 
-                <div class="relative">
+                <div class="relative" (click)="$event.stopPropagation()">
                   <label for="collegeIds" class="block text-xs font-bold text-slate-500 uppercase mb-1">Colleges</label>
                   <button
                     id="collegeIds"
@@ -392,4 +448,187 @@
         </div>
       </form>
     </div>
+
+    @if (addParentModalOpen()) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4 py-6" (click)="closeAddParentModal()">
+        <form
+          [formGroup]="addParentForm"
+          class="w-full max-w-xl rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 dark:border-slate-800 dark:bg-slate-900"
+          (click)="$event.stopPropagation()"
+          (ngSubmit)="submitAddParent()"
+        >
+          <div class="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5 dark:border-slate-800">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-300">Parent account</p>
+              <h3 class="mt-1 text-xl font-bold text-slate-900 dark:text-white">Add Parent</h3>
+            </div>
+            <button
+              type="button"
+              class="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700 dark:border-slate-700 dark:hover:bg-slate-800"
+              (click)="closeAddParentModal()"
+              aria-label="Close add parent modal"
+            >
+              <mat-icon class="text-base">close</mat-icon>
+            </button>
+          </div>
+
+          <div class="space-y-4 px-6 py-5">
+            @if (addParentError()) {
+              <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+                {{ addParentError() }}
+              </div>
+            }
+
+            <div>
+              <label for="newParentFullName" class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Full name</label>
+              <input
+                id="newParentFullName"
+                type="text"
+                formControlName="fullName"
+                class="h-[46px] w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800"
+              >
+              @if (addParentForm.controls.fullName.touched && addParentForm.controls.fullName.invalid) {
+                <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">Full name is required</p>
+              }
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label for="newParentPhone" class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Phone number</label>
+                <input
+                  id="newParentPhone"
+                  type="tel"
+                  formControlName="phone"
+                  class="h-[46px] w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800"
+                >
+              </div>
+              <div>
+                <label for="newParentEmail" class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Email <span class="text-xs font-normal text-slate-400">(optional)</span></label>
+                <input
+                  id="newParentEmail"
+                  type="email"
+                  formControlName="email"
+                  class="h-[46px] w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800"
+                >
+                @if (addParentForm.controls.email.touched && addParentForm.controls.email.hasError('email')) {
+                  <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">Email must be valid</p>
+                }
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label for="newParentUsername" class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Username</label>
+                <input
+                  id="newParentUsername"
+                  type="text"
+                  formControlName="username"
+                  class="h-[46px] w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800"
+                >
+                @if (addParentForm.controls.username.touched && addParentForm.controls.username.hasError('required')) {
+                  <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">Username is required</p>
+                }
+              </div>
+              <div>
+                <label for="newParentPassword" class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Password</label>
+                <div class="relative">
+                  <input
+                    id="newParentPassword"
+                    [type]="showNewParentPassword() ? 'text' : 'password'"
+                    formControlName="password"
+                    class="h-[46px] w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 pr-10 text-sm outline-none transition focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800"
+                  >
+                  <button
+                    type="button"
+                    (click)="showNewParentPassword.set(!showNewParentPassword())"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-700"
+                    aria-label="Toggle new parent password visibility"
+                  >
+                    <mat-icon class="text-sm">{{ showNewParentPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+                  </button>
+                </div>
+                @if (addParentForm.controls.password.touched && addParentForm.controls.password.hasError('required')) {
+                  <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">Password is required</p>
+                } @else if (addParentForm.controls.password.touched && addParentForm.controls.password.hasError('minlength')) {
+                  <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">Password must be at least 8 characters</p>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-3 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
+            <button
+              type="button"
+              class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+              (click)="closeAddParentModal()"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              [disabled]="addParentSaving()"
+              class="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              @if (addParentSaving()) {
+                <mat-icon class="animate-spin text-sm">sync</mat-icon>
+                Saving...
+              } @else {
+                <mat-icon class="text-sm">person_add</mat-icon>
+                Save parent
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+
+    @if (resetConfirmOpen()) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4 py-6" (click)="closeResetConfirm()">
+        <div
+          class="w-full max-w-md rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 dark:border-slate-800 dark:bg-slate-900"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reset-student-form-title"
+          (click)="$event.stopPropagation()"
+        >
+          <div class="flex items-start gap-4 px-6 py-5">
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-300">
+              <mat-icon>restart_alt</mat-icon>
+            </span>
+            <div class="min-w-0 flex-1">
+              <h3 id="reset-student-form-title" class="text-lg font-bold text-slate-900 dark:text-white">Reset student form?</h3>
+              <p class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                This will clear all fields in the current student form.
+              </p>
+            </div>
+            <button
+              type="button"
+              class="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700 dark:border-slate-700 dark:hover:bg-slate-800"
+              (click)="closeResetConfirm()"
+              aria-label="Close reset confirmation"
+            >
+              <mat-icon class="text-base">close</mat-icon>
+            </button>
+          </div>
+
+          <div class="flex justify-end gap-3 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
+            <button
+              type="button"
+              class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+              (click)="closeResetConfirm()"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-indigo-700"
+              (click)="confirmResetForm()"
+            >
+              <mat-icon class="text-sm">restart_alt</mat-icon>
+              Reset form
+            </button>
+          </div>
+        </div>
+      </div>
+    }
   

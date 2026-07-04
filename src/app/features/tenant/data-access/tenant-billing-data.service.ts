@@ -21,8 +21,14 @@ export class TenantBillingDataService {
     if (query.status) {
       params = params.set('status', query.status);
     }
+    if (query.category && query.category !== 'all') {
+      params = params.set('category', query.category);
+    }
     if (query.search?.trim()) {
       params = params.set('search', query.search.trim());
+    }
+    if (query.studentId?.trim()) {
+      params = params.set('studentId', query.studentId.trim());
     }
 
     return this.http

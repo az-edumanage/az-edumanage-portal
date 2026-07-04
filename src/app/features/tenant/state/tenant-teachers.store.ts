@@ -1,5 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { Teacher } from '../models/tenant-teachers.models';
+import { Teacher, TeacherStatusFilter, TeacherStatusSummary } from '../models/tenant-teachers.models';
 
 export type TeacherDeleteStatus = 'closed' | 'confirming' | 'deleting' | 'success' | 'failed';
 
@@ -8,6 +8,17 @@ export interface TeacherDeleteState {
   teacher: Teacher | null;
   message: string;
 }
+
+const EMPTY_STATUS_SUMMARY: TeacherStatusSummary = {
+  totalTeachers: 0,
+  inGroupNow: 0,
+  absenceTeachers: 0,
+  inGroupNowTeacherIds: [],
+  absenceTeacherIds: [],
+  today: '',
+  asOf: '',
+  unavailableReason: null,
+};
 
 @Injectable({ providedIn: 'root' })
 export class TenantTeachersStore {
@@ -31,6 +42,10 @@ export class TenantTeachersStore {
   readonly teachers = signal<Teacher[]>([]);
   readonly isLoading = signal(false);
   readonly errorMessage = signal<string | null>(null);
+  readonly statusSummary = signal<TeacherStatusSummary>(EMPTY_STATUS_SUMMARY);
+  readonly isStatusSummaryLoading = signal(false);
+  readonly statusSummaryError = signal<string | null>(null);
+  readonly teacherStatusFilter = signal<TeacherStatusFilter>('all');
 
   readonly activeFiltersCount = computed(() => {
     let count = 0;
@@ -39,6 +54,8 @@ export class TenantTeachersStore {
     if (this.sortBy() !== 'name') count++;
     return count;
   });
+
+  readonly hasStatusFilter = computed(() => this.teacherStatusFilter() !== 'all');
 
   readonly subjectOptions = computed(() => {
     const subjects = this.teachers()
@@ -52,9 +69,19 @@ export class TenantTeachersStore {
     const subject = this.subjectFilter();
     const status = this.statusFilter();
     const sortBy = this.sortBy();
+    const teacherStatusFilter = this.teacherStatusFilter();
+    const summary = this.statusSummary();
+    const statusIds = new Set(
+      teacherStatusFilter === 'inGroupNow'
+        ? summary.inGroupNowTeacherIds
+        : teacherStatusFilter === 'absence'
+          ? summary.absenceTeacherIds
+          : [],
+    );
 
     const filtered = this.teachers().filter((teacher) => {
       const subjectNames = teacher.subjects?.map((item) => item.name) ?? [];
+      const matchesStatusCard = teacherStatusFilter === 'all' || statusIds.has(teacher.id);
       const matchesSearch =
         !query ||
         teacher.name.toLowerCase().includes(query) ||
@@ -64,7 +91,7 @@ export class TenantTeachersStore {
       const matchesSubject = !subject || subjectNames.includes(subject) || teacher.subject === subject;
       const matchesStatus = !status || teacher.status === status;
 
-      return matchesSearch && matchesSubject && matchesStatus;
+      return matchesStatusCard && matchesSearch && matchesSubject && matchesStatus;
     });
 
     if (sortBy === 'date-desc') {
@@ -94,6 +121,16 @@ export class TenantTeachersStore {
     return this.clampedPageIndex() * this.pageSize() + 1;
   });
   readonly pageEnd = computed(() => Math.min((this.clampedPageIndex() + 1) * this.pageSize(), this.totalFilteredTeachers()));
+  readonly activeStatusEmptyMessage = computed(() => {
+    const filter = this.teacherStatusFilter();
+    if (filter === 'inGroupNow') {
+      return 'No teachers are in a running group right now.';
+    }
+    if (filter === 'absence') {
+      return 'No absent teachers match the current view.';
+    }
+    return 'We couldn\'t find any teachers matching your current search and filter criteria.';
+  });
 
   setTeachers(value: Teacher[]): void {
     this.teachers.set(value);
@@ -116,6 +153,24 @@ export class TenantTeachersStore {
 
   setError(value: string | null): void {
     this.errorMessage.set(value);
+  }
+
+  setStatusSummary(value: TeacherStatusSummary): void {
+    this.statusSummary.set(value);
+    this.clampPage();
+  }
+
+  setStatusSummaryLoading(value: boolean): void {
+    this.isStatusSummaryLoading.set(value);
+  }
+
+  setStatusSummaryError(value: string | null): void {
+    this.statusSummaryError.set(value);
+  }
+
+  setTeacherStatusFilter(value: TeacherStatusFilter): void {
+    this.teacherStatusFilter.set(value);
+    this.resetPage();
   }
 
   setPageIndex(value: number): void {

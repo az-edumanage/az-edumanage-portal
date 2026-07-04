@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -26,6 +26,25 @@ export class TenantGroupStudentAddComponent implements OnInit, OnDestroy {
   readonly hasSelectedStudents = this.facade.hasSelectedStudents;
   readonly filteredStudents = this.facade.filteredStudents;
   readonly enrollForm = this.facade.enrollForm;
+  readonly studentSearchPageIndex = signal(0);
+  readonly studentSearchPageSize = signal(5);
+  readonly studentSearchTotalPages = computed(() =>
+    Math.max(1, Math.ceil(this.filteredStudents().length / this.studentSearchPageSize())),
+  );
+  readonly studentSearchVisiblePageIndex = computed(() =>
+    Math.min(this.studentSearchPageIndex(), this.studentSearchTotalPages() - 1),
+  );
+  readonly pagedFilteredStudents = computed(() => {
+    const start = this.studentSearchVisiblePageIndex() * this.studentSearchPageSize();
+    return this.filteredStudents().slice(start, start + this.studentSearchPageSize());
+  });
+  readonly studentSearchPageStart = computed(() =>
+    this.filteredStudents().length === 0 ? 0 : this.studentSearchVisiblePageIndex() * this.studentSearchPageSize() + 1,
+  );
+  readonly studentSearchPageEnd = computed(() => {
+    const total = this.filteredStudents().length;
+    return total === 0 ? 0 : Math.min(total, this.studentSearchPageStart() + this.pagedFilteredStudents().length - 1);
+  });
 
   ngOnInit(): void {
     this.facade.initialize(this.route.snapshot.paramMap.get('id'));
@@ -37,6 +56,7 @@ export class TenantGroupStudentAddComponent implements OnInit, OnDestroy {
 
   onSearch(event: Event): void {
     const query = (event.target as HTMLInputElement).value;
+    this.studentSearchPageIndex.set(0);
     this.facade.onSearch(query);
   }
 
@@ -54,5 +74,19 @@ export class TenantGroupStudentAddComponent implements OnInit, OnDestroy {
 
   onCancel(): void {
     this.facade.onCancel();
+  }
+
+  previousStudentSearchPage(): void {
+    this.studentSearchPageIndex.update((page) => Math.max(0, page - 1));
+  }
+
+  nextStudentSearchPage(): void {
+    this.studentSearchPageIndex.update((page) => Math.min(this.studentSearchTotalPages() - 1, page + 1));
+  }
+
+  setStudentSearchPageSize(value: number | string): void {
+    const size = Number(value);
+    this.studentSearchPageSize.set(Number.isFinite(size) && size > 0 ? size : 5);
+    this.studentSearchPageIndex.set(0);
   }
 }

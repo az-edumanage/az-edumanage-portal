@@ -4,7 +4,17 @@ import { Observable, catchError, forkJoin, map, of, switchMap, throwError } from
 import { environment } from '../../../../environments/environment';
 import { EducationalStage } from '../models/tenant-educational-stages.models';
 import { Grade } from '../models/tenant-grades.models';
-import { Student, StudentDetails, StudentScheduleRow, StudentScheduleSummary, TenantStudentBackendRecord } from '../models/tenant-students.models';
+import {
+  Student,
+  StudentAttendanceSummary,
+  StudentDetails,
+  StudentScheduleRow,
+  StudentScheduleSummary,
+  TenantParent,
+  TenantParentCreatePayload,
+  TenantParentUpdatePayload,
+  TenantStudentBackendRecord,
+} from '../models/tenant-students.models';
 
 interface StudentEducationLookup {
   gradesById: Map<string, Grade>;
@@ -22,6 +32,7 @@ interface AssignedEducationLabel {
 export class TenantStudentsDataService {
   private readonly http = inject(HttpClient);
   private readonly studentsUrl = `${environment.apiBaseUrl}/tenant/students`;
+  private readonly parentsUrl = `${environment.apiBaseUrl}/tenant/parents`;
   private readonly gradesUrl = `${environment.apiBaseUrl}/tenant/platform-settings/grades`;
   private readonly stagesUrl = `${environment.apiBaseUrl}/tenant/platform-settings/stages`;
 
@@ -32,6 +43,41 @@ export class TenantStudentsDataService {
         switchMap((records) => this.toStudentsWithAssignedEducation(records ?? [])),
         catchError((error: HttpErrorResponse) => this.handleError(error)),
       );
+  }
+
+  loadParents(): Observable<TenantParent[]> {
+    return this.http
+      .get<TenantParent[]>(this.parentsUrl)
+      .pipe(
+        map((parents) => (parents ?? []).map((parent) => this.normalizeParent(parent))),
+        catchError((error: HttpErrorResponse) => this.handleError(error)),
+      );
+  }
+
+  createParent(payload: TenantParentCreatePayload): Observable<TenantParent> {
+    return this.http.post<TenantParent>(this.parentsUrl, payload).pipe(
+      map((parent) => this.normalizeParent(parent)),
+      catchError((error: HttpErrorResponse) => this.handleError(error)),
+    );
+  }
+
+  updateParent(parentUserId: string, payload: TenantParentUpdatePayload): Observable<TenantParent> {
+    return this.http.put<TenantParent>(`${this.parentsUrl}/${parentUserId}`, payload).pipe(
+      map((parent) => this.normalizeParent(parent)),
+      catchError((error: HttpErrorResponse) => this.handleError(error)),
+    );
+  }
+
+  deleteParent(parentUserId: string): Observable<void> {
+    return this.http.delete<void>(`${this.parentsUrl}/${parentUserId}`).pipe(
+      catchError((error: HttpErrorResponse) => this.handleError(error)),
+    );
+  }
+
+  loadAttendanceSummary(): Observable<StudentAttendanceSummary> {
+    return this.http
+      .get<StudentAttendanceSummary>(`${this.studentsUrl}/attendance-summary`)
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error)));
   }
 
   getStudent(id: string): Observable<StudentDetails> {
@@ -49,6 +95,34 @@ export class TenantStudentsDataService {
       }),
       catchError((error: HttpErrorResponse) => this.handleError(error)),
     );
+  }
+
+  deleteStudent(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.studentsUrl}/${id}`).pipe(
+      catchError((error: HttpErrorResponse) => this.handleError(error)),
+    );
+  }
+
+  changeStudentPassword(studentId: string, newPassword: string): Observable<void> {
+    return this.http.post<void>(`${this.studentsUrl}/${studentId}/password`, { newPassword }).pipe(
+      catchError((error: HttpErrorResponse) => this.handleError(error)),
+    );
+  }
+
+  changeParentPassword(parentUserId: string, newPassword: string): Observable<void> {
+    return this.http.post<void>(`${this.parentsUrl}/${parentUserId}/password`, { newPassword }).pipe(
+      catchError((error: HttpErrorResponse) => this.handleError(error)),
+    );
+  }
+
+  private normalizeParent(parent: TenantParent): TenantParent {
+    return {
+      ...parent,
+      appUserId: parent.appUserId ?? parent.id,
+      phone: parent.phone ?? '',
+      email: parent.email ?? '',
+      students: parent.students ?? [],
+    };
   }
 
   private toStudentsWithAssignedEducation(records: TenantStudentBackendRecord[]): Observable<Student[]> {
@@ -69,12 +143,60 @@ export class TenantStudentsDataService {
     );
   }
 
+  private toParentsWithAssignedEducation(records: TenantStudentBackendRecord[]): Observable<TenantParent[]> {
+    if (records.length === 0) {
+      return of([]);
+    }
+    if (!records.some((record) => this.needsEducationLookup(record))) {
+      return of(this.toParents(records));
+    }
+    return forkJoin({
+      grades: this.http.get<Grade[]>(this.gradesUrl),
+      stages: this.http.get<EducationalStage[]>(this.stagesUrl),
+    }).pipe(
+      map(({ grades, stages }) => this.toParents(records, this.toEducationLookup(grades ?? [], stages ?? []))),
+    );
+  }
+
+  private toParents(records: TenantStudentBackendRecord[], lookup?: StudentEducationLookup): TenantParent[] {
+    const parentsByKey = new Map<string, TenantParent>();
+    for (const record of records) {
+      const parentName = (record.parentName ?? '').trim();
+      const parentPhone = (record.parentPhone ?? '').trim();
+      if (!parentName && !parentPhone) {
+        continue;
+      }
+      const parentAppUserId = record.parentAppUserId?.trim() || null;
+      const key = parentAppUserId ?? `${parentName.toLowerCase()}|${parentPhone.toLowerCase()}`;
+      const existing = parentsByKey.get(key);
+      const student = this.toStudent(record, lookup);
+      const parent = existing ?? {
+        id: parentAppUserId ?? this.toParentId(parentName, parentPhone),
+        appUserId: parentAppUserId,
+        name: parentName || 'Unnamed parent',
+        phone: parentPhone,
+        notifyParent: false,
+        students: [],
+      };
+      parent.notifyParent = parent.notifyParent || Boolean(record.notifyParent);
+      if (!parent.students.some((linkedStudent) => linkedStudent.id === student.id)) {
+        parent.students.push({
+          id: student.id,
+          name: student.name,
+          grade: student.grade,
+        });
+      }
+      parentsByKey.set(key, parent);
+    }
+    return [...parentsByKey.values()].sort((a, b) => a.name.localeCompare(b.name));
+  }
+
   private toStudent(record: TenantStudentBackendRecord, lookup?: StudentEducationLookup): Student {
     const education = this.toAssignedEducationLabel(record, lookup);
     const student: Student = {
       id: record.id,
       name: record.fullName,
-      email: record.email,
+      email: record.email ?? '',
       grade: education.grade,
       stage: education.stage,
       status: 'Active',
@@ -87,6 +209,13 @@ export class TenantStudentsDataService {
       student.stageId = education.stageId;
     }
     return student;
+  }
+
+  private toParentId(name: string, phone: string): string {
+    return btoa(unescape(encodeURIComponent(`${name}|${phone}`)))
+      .replace(/=+$/g, '')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_');
   }
 
   private toStudentDetails(record: TenantStudentBackendRecord, lookup?: StudentEducationLookup): StudentDetails {

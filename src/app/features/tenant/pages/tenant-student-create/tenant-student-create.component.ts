@@ -1,9 +1,10 @@
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TenantStudentCreateFacade } from '../../state/tenant-student-create.facade';
+import { TenantParent } from '../../models/tenant-students.models';
 
 type StudentEducationDropdown = 'stages' | 'grades' | 'universities' | 'colleges';
 type StudentEducationControl = 'stageIds' | 'gradeIds' | 'universityIds' | 'collegeIds';
@@ -16,23 +17,35 @@ type StudentEducationControl = 'stageIds' | 'gradeIds' | 'universityIds' | 'coll
   styleUrl: './tenant-student-create.component.css'})
 export class TenantStudentCreateComponent implements OnInit, OnDestroy {
   private readonly location = inject(Location);
+  private readonly route = inject(ActivatedRoute);
   private readonly facade = inject(TenantStudentCreateFacade);
   readonly genderOptions = ['Male', 'Female'] as const;
 
   readonly isSubmitting = this.facade.isSubmitting;
   readonly isLoading = this.facade.isLoading;
   readonly errorMessage = this.facade.errorMessage;
+  readonly isEditMode = this.facade.isEditMode;
   readonly studentForm = this.facade.studentForm;
   readonly stages = this.facade.stages;
   readonly universities = this.facade.universities;
   readonly availableGrades = this.facade.availableGrades;
   readonly availableColleges = this.facade.availableColleges;
+  readonly parentsLoading = this.facade.parentsLoading;
+  readonly filteredParents = this.facade.filteredParents;
+  readonly parentSearchQuery = this.facade.parentSearchQuery;
+  readonly addParentModalOpen = this.facade.addParentModalOpen;
+  readonly addParentSaving = this.facade.addParentSaving;
+  readonly addParentError = this.facade.addParentError;
+  readonly addParentForm = this.facade.addParentForm;
   readonly openEducationDropdown = signal<StudentEducationDropdown | null>(null);
   readonly genderPanelOpen = signal(false);
+  readonly parentPanelOpen = signal(false);
   readonly showPassword = signal(false);
+  readonly showNewParentPassword = signal(false);
+  readonly resetConfirmOpen = signal(false);
 
   ngOnInit(): void {
-    this.facade.initialize();
+    this.facade.initialize(this.route.snapshot.paramMap.get('id'));
   }
 
   ngOnDestroy(): void {
@@ -40,9 +53,16 @@ export class TenantStudentCreateComponent implements OnInit, OnDestroy {
   }
 
   resetForm(): void {
-    if (confirm('Are you sure you want to clear all fields?')) {
-      this.facade.resetForm();
-    }
+    this.resetConfirmOpen.set(true);
+  }
+
+  closeResetConfirm(): void {
+    this.resetConfirmOpen.set(false);
+  }
+
+  confirmResetForm(): void {
+    this.facade.resetForm();
+    this.resetConfirmOpen.set(false);
   }
 
   goBack(): void {
@@ -54,8 +74,16 @@ export class TenantStudentCreateComponent implements OnInit, OnDestroy {
     this.facade.onSubmit();
   }
 
+  @HostListener('document:click')
+  closeDropdowns(): void {
+    this.openEducationDropdown.set(null);
+    this.genderPanelOpen.set(false);
+    this.parentPanelOpen.set(false);
+  }
+
   toggleEducationDropdown(dropdown: StudentEducationDropdown): void {
     this.openEducationDropdown.update((current) => (current === dropdown ? null : dropdown));
+    this.parentPanelOpen.set(false);
   }
 
   isEducationDropdownOpen(dropdown: StudentEducationDropdown): boolean {
@@ -64,7 +92,36 @@ export class TenantStudentCreateComponent implements OnInit, OnDestroy {
 
   toggleGenderPanel(): void {
     this.openEducationDropdown.set(null);
+    this.parentPanelOpen.set(false);
     this.genderPanelOpen.update((open) => !open);
+  }
+
+  toggleParentPanel(): void {
+    this.openEducationDropdown.set(null);
+    this.genderPanelOpen.set(false);
+    this.parentPanelOpen.update((open) => !open);
+  }
+
+  selectedParent(): TenantParent | null {
+    return this.facade.selectedParent();
+  }
+
+  selectParent(parent: TenantParent): void {
+    this.facade.selectParent(parent);
+    this.parentPanelOpen.set(false);
+  }
+
+  openAddParentModal(): void {
+    this.parentPanelOpen.set(false);
+    this.facade.openAddParentModal();
+  }
+
+  closeAddParentModal(): void {
+    this.facade.closeAddParentModal();
+  }
+
+  submitAddParent(): void {
+    this.facade.submitAddParent();
   }
 
   selectGender(gender: 'Male' | 'Female'): void {

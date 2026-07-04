@@ -4,9 +4,12 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { AuthApiService } from '../../../core/auth/auth-api.service';
 
+export type TenantQuestionSourceEducationCategory = 'BASIC_EDUCATION' | 'UNIVERSITY_EDUCATION';
+
 export interface TenantQuestionSource {
   id: string;
   source: string;
+  educationCategory?: TenantQuestionSourceEducationCategory | null;
   description: string | null;
   createdAt: string;
   updatedAt: string;
@@ -14,6 +17,7 @@ export interface TenantQuestionSource {
 
 export interface TenantQuestionSourcePayload {
   source: string;
+  educationCategory: TenantQuestionSourceEducationCategory;
   description: string | null;
 }
 
@@ -23,9 +27,12 @@ export class TenantQuestionSourceSettingsService {
   private readonly authApi = inject(AuthApiService);
   private readonly questionSourcesUrl = `${environment.apiBaseUrl}/tenant/platform-settings/question-sources`;
 
-  async listQuestionSources(): Promise<TenantQuestionSource[]> {
+  async listQuestionSources(educationCategory?: TenantQuestionSourceEducationCategory | null): Promise<TenantQuestionSource[]> {
     await this.authApi.ensureLoggedIn();
-    const response = await firstValueFrom(this.http.get<TenantQuestionSource[]>(this.questionSourcesUrl));
+    const response = await firstValueFrom(this.http.get<TenantQuestionSource[]>(
+      this.questionSourcesUrl,
+      { params: educationCategory ? { educationCategory } : undefined },
+    ));
     return response ?? [];
   }
 
@@ -50,6 +57,7 @@ export class TenantQuestionSourceSettingsService {
   private toRequest(payload: TenantQuestionSourcePayload): TenantQuestionSourcePayload {
     return {
       source: payload.source.trim(),
+      educationCategory: payload.educationCategory,
       description: payload.description?.trim() || null,
     };
   }

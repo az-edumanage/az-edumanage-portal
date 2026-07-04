@@ -2,13 +2,28 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { firstValueFrom } from 'rxjs';
+import { Subscription, firstValueFrom } from 'rxjs';
+import { jsPDF } from 'jspdf';
+import autoTable, { RowInput } from 'jspdf-autotable';
 import { TenantGroupAttendanceDataService } from '../../data-access/tenant-group-attendance-data.service';
-import { GroupDetails, GroupLesson, GroupLessonContent, GroupSessionLibraryContent, GroupSessionPublication, GroupStudent } from '../../models/tenant-group-details.models';
+import {
+  GroupDetails,
+  GroupExamRow,
+  GroupLesson,
+  GroupLessonContent,
+  GroupSessionLibraryContent,
+  GroupSessionPostponeAvailability,
+  GroupSessionPostponeResult,
+  GroupSessionTeacherAbsence,
+  GroupSessionTeacherOption,
+  GroupSessionPublication,
+  GroupStudent,
+} from '../../models/tenant-group-details.models';
 import { TenantBarcodeAttendanceScanResponse } from '../../models/tenant-group-attendance.models';
 import { TenantGroupDetailsDataService } from '../../data-access/tenant-group-details-data.service';
+import { TenantGroupDetailsScope } from '../../state/tenant-group-details.store';
 import { TenantSubjectsDataService } from '../../data-access/tenant-subjects-data.service';
 import {
   TenantCurriculumMaterialFile,
@@ -69,6 +84,13 @@ type StudentStatusFilter = 'all' | 'present' | 'absent';
 type LessonPickerStatusFilter = 'all' | 'available' | 'inserted';
 type SessionLiveStatus = 'coming' | 'running' | 'ended';
 type PreviewableLessonContent = GroupLessonContent | GroupSessionLibraryContent;
+type SessionContentTab = 'students' | 'lessons' | 'exams';
+type PendingDeleteSessionLesson =
+  | { kind: 'lesson'; item: GroupLesson }
+  | { kind: 'library'; item: GroupSessionLibraryContent };
+type JsPdfWithAutoTable = jsPDF & {
+  lastAutoTable?: { finalY?: number };
+};
 
 @Component({
   selector: 'app-tenant-group-session-details',
@@ -79,6 +101,7 @@ type PreviewableLessonContent = GroupLessonContent | GroupSessionLibraryContent;
 })
 export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly data = inject(TenantGroupDetailsDataService);
   private readonly attendanceData = inject(TenantGroupAttendanceDataService);
   private readonly subjectsData = inject(TenantSubjectsDataService);
@@ -87,20 +110,34 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
 
   @ViewChild('sessionBarcodeInput') private sessionBarcodeInput?: ElementRef<HTMLInputElement>;
 
-  readonly groupId = this.route.snapshot.paramMap.get('id');
-  readonly sessionId = this.route.snapshot.paramMap.get('sessionId');
+  groupId = this.route.snapshot.paramMap.get('id');
+  sessionId = this.route.snapshot.paramMap.get('sessionId');
+  readonly detailScope: TenantGroupDetailsScope = this.route.snapshot.data['scope'] === 'teacher' ? 'teacher' : 'tenant';
+  readonly isTeacherGroupView = this.detailScope === 'teacher';
+  readonly groupListRoute = this.isTeacherGroupView ? '/teacher/groups' : '/tenant/groups';
   readonly group = signal<GroupDetails | null>(null);
   readonly isLoading = signal(false);
   readonly error = signal<string | null>(null);
   readonly lessons = signal<GroupLesson[]>([]);
   readonly lessonsLoading = signal(false);
   readonly lessonsError = signal<string | null>(null);
+  readonly sessionExams = signal<GroupExamRow[]>([]);
+  readonly sessionExamsLoading = signal(false);
+  readonly sessionExamsError = signal<string | null>(null);
+  readonly pendingDeleteSessionExam = signal<GroupExamRow | null>(null);
+  readonly deletingSessionExamId = signal<string | null>(null);
+  readonly sessionExamActionError = signal<string | null>(null);
+  readonly pendingDeleteSessionLesson = signal<PendingDeleteSessionLesson | null>(null);
+  readonly sessionLessonActionError = signal<string | null>(null);
+  readonly activeContentTab = signal<SessionContentTab>('students');
   readonly studentSearch = signal('');
   readonly studentStatusFilter = signal<StudentStatusFilter>('all');
   readonly studentPageIndex = signal(0);
   readonly studentPageSize = signal(5);
   readonly lessonPageIndex = signal(0);
   readonly lessonPageSize = signal(5);
+  readonly examPageIndex = signal(0);
+  readonly examPageSize = signal(5);
   readonly expandedLessonIds = signal<ReadonlySet<string>>(new Set());
   readonly lessonContentByLessonId = signal<ReadonlyMap<string, GroupLessonContent[]>>(new Map());
   readonly lessonContentLoadingIds = signal<ReadonlySet<string>>(new Set());
@@ -129,6 +166,36 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
   readonly publishingSession = signal(false);
   readonly publishSessionMessage = signal<string | null>(null);
   readonly publishSessionError = signal<string | null>(null);
+  readonly generatingReport = signal(false);
+  readonly reportError = signal<string | null>(null);
+  readonly reportPreviewOpen = signal(false);
+  readonly reportPreviewObjectUrl = signal<string | null>(null);
+  readonly reportPreviewSafeObjectUrl = signal<SafeResourceUrl | null>(null);
+  readonly reportPreviewFileName = signal('session-report.pdf');
+  readonly postponeChoiceOpen = signal(false);
+  readonly postponeAppointmentOpen = signal(false);
+  readonly postponeReplaceOpen = signal(false);
+  readonly postponeAvailability = signal<GroupSessionPostponeAvailability | null>(null);
+  readonly postponeLoadingAvailability = signal(false);
+  readonly postponeSubmitting = signal(false);
+  readonly postponeError = signal<string | null>(null);
+  readonly postponeSuccess = signal<GroupSessionPostponeResult | null>(null);
+  readonly postponeAppointmentDate = signal('');
+  readonly postponeAppointmentTime = signal('');
+  readonly postponeAppointmentRoomId = signal('');
+  readonly postponeReason = signal('');
+  readonly teacherAbsenceOpen = signal(false);
+  readonly teacherAbsenceOptionsOpen = signal(false);
+  readonly teacherReplacementOpen = signal(false);
+  readonly teacherAbsence = signal<GroupSessionTeacherAbsence | null>(null);
+  readonly teacherAbsenceReason = signal('');
+  readonly teacherAbsenceSaving = signal(false);
+  readonly teacherAbsenceError = signal<string | null>(null);
+  readonly teacherAbsenceSuccess = signal<string | null>(null);
+  readonly replacementTeachers = signal<GroupSessionTeacherOption[]>([]);
+  readonly replacementTeachersLoading = signal(false);
+  readonly replacementTeacherSaving = signal(false);
+  readonly selectedReplacementTeacherId = signal('');
   readonly savingLessonNodeId = signal<string | null>(null);
   readonly removingLessonId = signal<string | null>(null);
   readonly updatingLessonCompletionId = signal<string | null>(null);
@@ -161,6 +228,13 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     const pageSize = this.lessonPageSize();
     return this.lessons().slice(pageIndex * pageSize, pageIndex * pageSize + pageSize);
   });
+  readonly assignedSessionExams = computed(() => this.sessionExams().filter((exam) => this.isExamAssignedToSession(exam, this.session())));
+  readonly examTotalPages = computed(() => Math.max(1, Math.ceil(this.assignedSessionExams().length / this.examPageSize())));
+  readonly visibleSessionExams = computed(() => {
+    const pageIndex = Math.min(this.examPageIndex(), this.examTotalPages() - 1);
+    const pageSize = this.examPageSize();
+    return this.assignedSessionExams().slice(pageIndex * pageSize, pageIndex * pageSize + pageSize);
+  });
   readonly curriculumLessonOptions = computed<CurriculumLessonOption[]>(() => {
     const root = this.lessonCurriculumRoot();
     return root ? this.flattenCurriculumLessons(root) : [];
@@ -169,18 +243,50 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     this.filterCurriculumLessonOptions(this.curriculumLessonOptions()),
   );
   readonly selectedLibraryItemCount = computed(() => this.selectedLibraryFileIds().size + this.selectedLibraryNoteIds().size);
+  readonly availablePostponeRooms = computed(() => this.postponeAvailability()?.rooms.filter((room) => room.available) ?? []);
+  readonly sessionTeacherName = computed(() => {
+    const absence = this.teacherAbsence();
+    return absence?.replacementTeacherName || this.group()?.teacher || 'Not assigned';
+  });
+  readonly originalSessionTeacherName = computed(() =>
+    this.teacherAbsence()?.originalTeacherName || this.group()?.teacher || 'Not assigned',
+  );
+  readonly canConfirmPostponeAppointment = computed(() =>
+    Boolean(
+      this.postponeAppointmentDate().trim()
+      && this.postponeAppointmentTime().trim()
+      && this.postponeAppointmentRoomId().trim()
+      && this.postponeAvailability()?.teacherAvailable
+      && this.availablePostponeRooms().some((room) => room.id === this.postponeAppointmentRoomId()),
+    ),
+  );
   private readonly groupRefreshIntervalMs = 5000;
   private clockIntervalId: ReturnType<typeof setInterval> | null = null;
   private groupRefreshIntervalId: ReturnType<typeof setInterval> | null = null;
+  private routeParamSubscription: Subscription | null = null;
+  private routeQuerySubscription: Subscription | null = null;
   private refreshingGroup = false;
 
   ngOnInit(): void {
     this.clockIntervalId = setInterval(() => this.currentTime.set(new Date()), 1000);
     this.groupRefreshIntervalId = setInterval(() => void this.refreshGroup(), this.groupRefreshIntervalMs);
-    void this.loadGroup();
-    void this.loadLessons();
-    void this.loadSessionLibraryContent();
-    void this.loadSessionPublication();
+    this.routeParamSubscription = this.route.paramMap.subscribe((params) => {
+      const nextGroupId = params.get('id');
+      const nextSessionId = params.get('sessionId');
+      if (nextGroupId === this.groupId && nextSessionId === this.sessionId && this.group()) {
+        return;
+      }
+      this.groupId = nextGroupId;
+      this.sessionId = nextSessionId;
+      this.resetSessionScopedState();
+      void this.loadSessionData();
+    });
+    this.routeQuerySubscription = this.route.queryParamMap.subscribe((params) => {
+      const tab = params.get('tab');
+      if (tab === 'students' || tab === 'lessons' || tab === 'exams') {
+        this.activeContentTab.set(tab);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -190,7 +296,10 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     if (this.groupRefreshIntervalId) {
       clearInterval(this.groupRefreshIntervalId);
     }
+    this.routeParamSubscription?.unsubscribe();
+    this.routeQuerySubscription?.unsubscribe();
     this.clearPreviewObjectUrl();
+    this.clearReportPreviewObjectUrl();
   }
 
   sessionIndex(session: SessionDetailsRow): number {
@@ -318,8 +427,10 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     }
 
     const now = this.currentTime().getTime();
-    const elapsed = Math.min(Math.max(0, now - window.start.getTime()), window.end.getTime() - window.start.getTime());
-    return this.durationClockLabel(elapsed);
+    const start = window.start.getTime();
+    const end = window.end.getTime();
+    const remaining = now < start ? start - now : Math.max(0, end - now);
+    return this.durationClockLabel(remaining);
   }
 
   sessionCapacityLabel(group: GroupDetails | null): string {
@@ -328,8 +439,14 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     }
     return `${group.enrolled} / ${group.capacity}`;
   }
-
   studentStatusLabel(student: GroupStudent): string {
+    const selectedSession = this.session();
+    if (selectedSession && this.sessionLiveStatus(selectedSession) === 'coming') {
+      return 'Absent';
+    }
+    if (selectedSession && student.attendanceState === 'Present' && !this.studentAttendanceInSessionWindow(student, selectedSession)) {
+      return 'Absent';
+    }
     return student.attendanceState === 'Present' ? 'Present' : 'Absent';
   }
 
@@ -353,7 +470,7 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
       return 'Not recorded';
     }
 
-    return this.extractAttendanceTime(student.lastAttendance) ?? 'Not recorded';
+    return this.extractAttendanceTime(student.attendanceTime ?? student.lastAttendance) ?? 'Not recorded';
   }
 
   canChangeStudentStatus(): boolean {
@@ -434,6 +551,191 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     this.lessonPageIndex.update((page) => Math.min(this.lessonTotalPages() - 1, page + 1));
   }
 
+  onExamPageSize(value: string): void {
+    const pageSize = Number(value);
+    this.examPageSize.set(Number.isFinite(pageSize) && pageSize > 0 ? pageSize : 5);
+    this.examPageIndex.set(0);
+  }
+
+  previousExamPage(): void {
+    this.examPageIndex.update((page) => Math.max(0, page - 1));
+  }
+
+  nextExamPage(): void {
+    this.examPageIndex.update((page) => Math.min(this.examTotalPages() - 1, page + 1));
+  }
+
+  setContentTab(tab: SessionContentTab): void {
+    this.activeContentTab.set(tab);
+  }
+
+  contentTabClass(tab: SessionContentTab): string {
+    return this.activeContentTab() === tab
+      ? 'tenant-group-session-tab tenant-group-session-tab--active'
+      : 'tenant-group-session-tab';
+  }
+
+  sessionExamQueryParams(session: SessionDetailsRow): Record<string, string> {
+    const params: Record<string, string> = {
+      freshCreate: 'true',
+      returnTo: `${this.groupListRoute}/${this.groupId}/sessions/${session.id}`,
+      returnTab: 'exams',
+      examDate: session.date,
+      examStartTime: session.startTime,
+    };
+    return params;
+  }
+
+  sessionExamEditQueryParams(session: SessionDetailsRow, exam: GroupExamRow): Record<string, string> {
+    return {
+      assignmentId: exam.id,
+      returnTo: `${this.groupListRoute}/${this.groupId}/sessions/${session.id}`,
+      returnTab: 'exams',
+      examDate: exam.date || session.date,
+      examStartTime: exam.startTime || session.startTime,
+    };
+  }
+
+  editSessionExam(session: SessionDetailsRow, exam: GroupExamRow, event?: Event): void {
+    event?.stopPropagation();
+    void this.router.navigate([this.groupListRoute, this.groupId, 'exam'], {
+      queryParams: this.sessionExamEditQueryParams(session, exam),
+    });
+  }
+
+  async previewSessionReport(session: SessionDetailsRow): Promise<void> {
+    const group = this.group();
+    if (!group || this.generatingReport()) {
+      return;
+    }
+
+    this.generatingReport.set(true);
+    this.reportError.set(null);
+    try {
+      const { doc, fileName } = this.buildSessionReportDocument(group, session);
+      const blob = doc.output('blob');
+      const objectUrl = URL.createObjectURL(blob);
+      this.clearReportPreviewObjectUrl();
+      this.reportPreviewObjectUrl.set(objectUrl);
+      this.reportPreviewSafeObjectUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl));
+      this.reportPreviewFileName.set(fileName);
+      this.reportPreviewOpen.set(true);
+    } catch (error) {
+      this.reportError.set(error instanceof Error ? error.message : 'Unable to generate session report');
+    } finally {
+      this.generatingReport.set(false);
+    }
+  }
+
+  closeSessionReportPreview(): void {
+    this.reportPreviewOpen.set(false);
+    this.clearReportPreviewObjectUrl();
+  }
+
+  requestDeleteSessionExam(exam: GroupExamRow, event?: Event): void {
+    event?.stopPropagation();
+    if (this.sessionExamActionInProgress()) {
+      return;
+    }
+    this.sessionExamActionError.set(null);
+    this.pendingDeleteSessionExam.set(exam);
+  }
+
+  closeDeleteSessionExamModal(): void {
+    if (this.sessionExamActionInProgress()) {
+      return;
+    }
+    this.pendingDeleteSessionExam.set(null);
+    this.sessionExamActionError.set(null);
+  }
+
+  async confirmDeleteSessionExam(): Promise<void> {
+    const exam = this.pendingDeleteSessionExam();
+    if (!exam || this.sessionExamActionInProgress()) {
+      return;
+    }
+    this.deletingSessionExamId.set(exam.id);
+    this.sessionExamActionError.set(null);
+    try {
+      await firstValueFrom(this.data.deleteGroupExam(this.groupId, exam.id));
+      this.sessionExams.update((exams) => exams.filter((row) => row.id !== exam.id));
+      this.pendingDeleteSessionExam.set(null);
+      this.normalizeExamPageIndex();
+    } catch (error) {
+      this.sessionExamActionError.set(error instanceof Error ? error.message : 'Unable to delete exam');
+    } finally {
+      this.deletingSessionExamId.set(null);
+    }
+  }
+
+  sessionExamActionInProgress(): boolean {
+    return Boolean(this.deletingSessionExamId());
+  }
+
+  normalizeExamPageIndex(): void {
+    this.examPageIndex.update((page) => Math.min(page, this.examTotalPages() - 1));
+  }
+
+  requestDeleteLessonFromSession(lesson: GroupLesson, event?: Event): void {
+    event?.stopPropagation();
+    if (this.lessonDeleteInProgress() || lesson.completed) {
+      return;
+    }
+    this.sessionLessonActionError.set(null);
+    this.pendingDeleteSessionLesson.set({ kind: 'lesson', item: lesson });
+  }
+
+  requestDeleteSessionLibraryContent(content: GroupSessionLibraryContent, event?: Event): void {
+    event?.stopPropagation();
+    if (this.lessonDeleteInProgress() || content.completed) {
+      return;
+    }
+    this.sessionLessonActionError.set(null);
+    this.pendingDeleteSessionLesson.set({ kind: 'library', item: content });
+  }
+
+  closeDeleteSessionLessonModal(): void {
+    if (this.lessonDeleteInProgress()) {
+      return;
+    }
+    this.pendingDeleteSessionLesson.set(null);
+    this.sessionLessonActionError.set(null);
+  }
+
+  async confirmDeleteSessionLesson(): Promise<void> {
+    const pending = this.pendingDeleteSessionLesson();
+    if (!pending || this.lessonDeleteInProgress()) {
+      return;
+    }
+
+    this.sessionLessonActionError.set(null);
+    try {
+      if (pending.kind === 'lesson') {
+        await this.removeLessonFromSession(pending.item);
+      } else {
+        await this.removeSessionLibraryContent(pending.item);
+      }
+      this.pendingDeleteSessionLesson.set(null);
+    } catch (error) {
+      this.sessionLessonActionError.set(error instanceof Error ? error.message : 'Unable to delete lesson');
+    }
+  }
+
+  lessonDeleteInProgress(): boolean {
+    return Boolean(this.removingLessonId());
+  }
+
+  pendingSessionLessonTitle(pending: PendingDeleteSessionLesson): string {
+    return pending.item.title;
+  }
+
+  pendingSessionLessonMeta(pending: PendingDeleteSessionLesson): string {
+    if (pending.kind === 'lesson') {
+      return pending.item.path || pending.item.curriculumNodeId;
+    }
+    return `${pending.item.folderName} · ${this.materialTypeLabel(pending.item.contentType)}`;
+  }
+
   async openLessonPicker(): Promise<void> {
     this.lessonPickerOpen.set(true);
     this.lessonPickerError.set(null);
@@ -471,7 +773,7 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
 
     this.libraryPickerLoading.set(true);
     try {
-      this.libraryFolders.set(await firstValueFrom(this.data.loadGroupLibraryFolders(this.groupId)));
+      this.libraryFolders.set(await firstValueFrom(this.data.loadGroupLibraryFolders(this.groupId, { scope: this.detailScope })));
     } catch (error) {
       this.libraryPickerError.set(error instanceof Error ? error.message : 'Unable to load library folders');
       this.libraryFolders.set([]);
@@ -624,7 +926,9 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
       await firstValueFrom(this.data.deleteGroupSessionLibraryContent(this.groupId, content.id));
       this.sessionLibraryContent.update((items) => items.filter((item) => item.id !== content.id));
     } catch (error) {
-      this.lessonsError.set(error instanceof Error ? error.message : 'Unable to remove library content');
+      const message = error instanceof Error ? error.message : 'Unable to remove library content';
+      this.lessonsError.set(message);
+      throw new Error(message);
     } finally {
       this.removingLessonId.set(null);
     }
@@ -651,10 +955,14 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     if (this.publishingSession()) {
       return;
     }
-
-    this.publishingSession.set(true);
     this.publishSessionMessage.set(null);
     this.publishSessionError.set(null);
+    if (!this.canPublishSelectedSession()) {
+      this.publishSessionError.set('Session media can be published after the session starts.');
+      return;
+    }
+
+    this.publishingSession.set(true);
     try {
       const publication = await firstValueFrom(this.data.publishGroupSession(this.groupId, this.sessionId));
       this.sessionPublication.set(publication);
@@ -664,6 +972,303 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     } finally {
       this.publishingSession.set(false);
     }
+  }
+
+  openTeacherAbsence(): void {
+    this.teacherAbsenceOpen.set(true);
+    this.teacherAbsenceOptionsOpen.set(false);
+    this.teacherReplacementOpen.set(false);
+    this.teacherAbsenceError.set(null);
+    this.teacherAbsenceSuccess.set(null);
+    this.teacherAbsenceReason.set('');
+  }
+
+  closeTeacherAbsenceModals(): void {
+    if (this.teacherAbsenceSaving() || this.replacementTeacherSaving()) {
+      return;
+    }
+    this.teacherAbsenceOpen.set(false);
+    this.teacherAbsenceOptionsOpen.set(false);
+    this.teacherReplacementOpen.set(false);
+    this.teacherAbsenceError.set(null);
+  }
+
+  onTeacherAbsenceReason(value: string): void {
+    this.teacherAbsenceReason.set(value);
+  }
+
+  onReplacementTeacher(value: string): void {
+    this.selectedReplacementTeacherId.set(value);
+  }
+
+  async saveTeacherAbsence(): Promise<void> {
+    if (this.teacherAbsenceSaving()) {
+      return;
+    }
+    this.teacherAbsenceSaving.set(true);
+    this.teacherAbsenceError.set(null);
+    this.teacherAbsenceSuccess.set(null);
+    try {
+      const result = await firstValueFrom(this.data.recordSessionTeacherAbsence(this.groupId, this.sessionId, {
+        reason: this.teacherAbsenceReason().trim() || null,
+      }));
+      this.teacherAbsence.set(result);
+      this.teacherAbsenceOpen.set(false);
+      this.teacherAbsenceOptionsOpen.set(true);
+      this.teacherAbsenceSuccess.set(result.message || 'Teacher absence recorded.');
+    } catch (error) {
+      this.teacherAbsenceError.set(error instanceof Error ? error.message : 'Unable to record teacher absence');
+    } finally {
+      this.teacherAbsenceSaving.set(false);
+    }
+  }
+
+  continueTeacherAbsenceWithPostpone(): void {
+    this.teacherAbsenceOptionsOpen.set(false);
+    this.openPostponeChoices();
+  }
+
+  async openTeacherReplacement(): Promise<void> {
+    this.teacherAbsenceOptionsOpen.set(false);
+    this.teacherReplacementOpen.set(true);
+    this.teacherAbsenceError.set(null);
+    this.selectedReplacementTeacherId.set('');
+    this.replacementTeachersLoading.set(true);
+    try {
+      const teachers = await firstValueFrom(this.data.loadAvailableReplacementTeachers(this.groupId, this.sessionId));
+      this.replacementTeachers.set(teachers);
+      this.selectedReplacementTeacherId.set(teachers[0]?.id ?? '');
+    } catch (error) {
+      this.replacementTeachers.set([]);
+      this.teacherAbsenceError.set(error instanceof Error ? error.message : 'Unable to load replacement teachers');
+    } finally {
+      this.replacementTeachersLoading.set(false);
+    }
+  }
+
+  async saveReplacementTeacher(): Promise<void> {
+    const teacherId = this.selectedReplacementTeacherId().trim();
+    if (!teacherId || this.replacementTeacherSaving()) {
+      return;
+    }
+    this.replacementTeacherSaving.set(true);
+    this.teacherAbsenceError.set(null);
+    this.teacherAbsenceSuccess.set(null);
+    try {
+      const result = await firstValueFrom(this.data.replaceSessionTeacher(this.groupId, this.sessionId, {
+        replacementTeacherId: teacherId,
+        reason: this.teacherAbsenceReason().trim() || null,
+      }));
+      this.teacherAbsence.set(result);
+      this.teacherReplacementOpen.set(false);
+      this.teacherAbsenceSuccess.set(result.message || 'Replacement teacher saved.');
+    } catch (error) {
+      this.teacherAbsenceError.set(error instanceof Error ? error.message : 'Unable to replace session teacher');
+    } finally {
+      this.replacementTeacherSaving.set(false);
+    }
+  }
+
+  openPostponeChoices(): void {
+    const selectedSession = this.session();
+    this.postponeSuccess.set(null);
+    this.postponeError.set(selectedSession?.kind === 'dated' ? null : 'Only dated sessions can be postponed.');
+    this.postponeChoiceOpen.set(true);
+  }
+
+  closePostponeModals(): void {
+    if (this.postponeSubmitting()) {
+      return;
+    }
+    this.postponeChoiceOpen.set(false);
+    this.postponeAppointmentOpen.set(false);
+    this.postponeReplaceOpen.set(false);
+    this.postponeError.set(null);
+    this.postponeLoadingAvailability.set(false);
+  }
+
+  openPostponeAppointment(): void {
+    const selectedSession = this.session();
+    if (!selectedSession) {
+      return;
+    }
+    this.postponeChoiceOpen.set(false);
+    this.postponeAppointmentOpen.set(true);
+    this.postponeReplaceOpen.set(false);
+    this.postponeError.set(null);
+    this.postponeSuccess.set(null);
+    this.postponeAppointmentDate.set(selectedSession.date || '');
+    this.postponeAppointmentTime.set(selectedSession.startTime || '');
+    this.postponeAppointmentRoomId.set('');
+    this.postponeReason.set('');
+    void this.loadPostponeAvailability();
+  }
+
+  openReplaceSchedule(): void {
+    this.postponeChoiceOpen.set(false);
+    this.postponeAppointmentOpen.set(false);
+    this.postponeReplaceOpen.set(true);
+    this.postponeError.set(null);
+    this.postponeSuccess.set(null);
+    this.postponeReason.set('');
+  }
+
+  onPostponeAppointmentDate(value: string): void {
+    this.postponeAppointmentDate.set(value);
+    this.postponeAppointmentRoomId.set('');
+    void this.loadPostponeAvailability();
+  }
+
+  onPostponeAppointmentTime(value: string): void {
+    this.postponeAppointmentTime.set(value);
+    this.postponeAppointmentRoomId.set('');
+    void this.loadPostponeAvailability();
+  }
+
+  onPostponeAppointmentRoom(value: string): void {
+    this.postponeAppointmentRoomId.set(value);
+  }
+
+  onPostponeReason(value: string): void {
+    this.postponeReason.set(value);
+  }
+
+  async loadPostponeAvailability(): Promise<void> {
+    const date = this.postponeAppointmentDate().trim();
+    const startTime = this.postponeAppointmentTime().trim();
+    if (!date || !startTime) {
+      this.postponeAvailability.set(null);
+      return;
+    }
+    this.postponeLoadingAvailability.set(true);
+    this.postponeError.set(null);
+    try {
+      const availability = await firstValueFrom(this.data.loadSessionPostponeAvailability(this.groupId, this.sessionId, date, startTime));
+      this.postponeAvailability.set(availability);
+      if (!availability.rooms.some((room) => room.id === this.postponeAppointmentRoomId() && room.available)) {
+        this.postponeAppointmentRoomId.set(availability.rooms.find((room) => room.available)?.id ?? '');
+      }
+    } catch (error) {
+      this.postponeAvailability.set(null);
+      this.postponeError.set(error instanceof Error ? error.message : 'Unable to load appointment availability');
+    } finally {
+      this.postponeLoadingAvailability.set(false);
+    }
+  }
+
+  async submitPostponeAppointment(): Promise<void> {
+    if (!this.canConfirmPostponeAppointment() || this.postponeSubmitting()) {
+      return;
+    }
+    await this.loadPostponeAvailability();
+    if (!this.canConfirmPostponeAppointment()) {
+      this.postponeError.set('Selected room is no longer available. Choose another available room.');
+      return;
+    }
+    await this.submitPostponement({
+      method: 'BOOK_APPOINTMENT',
+      date: this.postponeAppointmentDate(),
+      startTime: this.postponeAppointmentTime(),
+      roomId: this.postponeAppointmentRoomId(),
+      reason: this.postponeReason().trim() || null,
+    });
+  }
+
+  async submitReplaceSchedule(): Promise<void> {
+    if (this.postponeSubmitting()) {
+      return;
+    }
+    await this.submitPostponement({
+      method: 'REPLACE_SCHEDULE',
+      reason: this.postponeReason().trim() || null,
+    });
+  }
+
+  private async submitPostponement(payload: {
+    method: 'BOOK_APPOINTMENT' | 'REPLACE_SCHEDULE';
+    date?: string | null;
+    startTime?: string | null;
+    roomId?: string | null;
+    reason?: string | null;
+  }): Promise<void> {
+    this.postponeSubmitting.set(true);
+    this.postponeError.set(null);
+    this.postponeSuccess.set(null);
+    try {
+      const result = await firstValueFrom(this.data.postponeGroupSession(this.groupId, this.sessionId, payload));
+      this.postponeSuccess.set(result);
+      await this.refreshAfterPostponement(result);
+    } catch (error) {
+      this.postponeError.set(error instanceof Error ? error.message : 'Unable to postpone session');
+    } finally {
+      this.postponeSubmitting.set(false);
+    }
+  }
+
+  private async refreshAfterPostponement(result: GroupSessionPostponeResult): Promise<void> {
+    this.postponeChoiceOpen.set(false);
+    this.postponeAppointmentOpen.set(false);
+    this.postponeReplaceOpen.set(false);
+    if (result.newSessionId) {
+      await this.router.navigate([this.groupListRoute, this.groupId, 'sessions', result.newSessionId]);
+      return;
+    }
+    await this.loadSessionData();
+  }
+
+  private async loadSessionData(): Promise<void> {
+    await this.loadGroup();
+    await this.loadSessionTeacherAbsence();
+    await this.loadLessons();
+    await this.loadSessionExams();
+    await this.loadSessionLibraryContent();
+    await this.loadSessionPublication();
+  }
+
+  private async loadSessionTeacherAbsence(): Promise<void> {
+    if (this.isTeacherGroupView) {
+      this.teacherAbsence.set(null);
+      return;
+    }
+    try {
+      const absence = await firstValueFrom(this.data.loadSessionTeacherAbsence(this.groupId, this.sessionId));
+      this.teacherAbsence.set(absence);
+    } catch {
+      this.teacherAbsence.set(null);
+    }
+  }
+
+  private resetSessionScopedState(): void {
+    this.lessons.set([]);
+    this.sessionExams.set([]);
+    this.pendingDeleteSessionExam.set(null);
+    this.deletingSessionExamId.set(null);
+    this.sessionExamActionError.set(null);
+    this.pendingDeleteSessionLesson.set(null);
+    this.sessionLessonActionError.set(null);
+    this.sessionLibraryContent.set([]);
+    this.sessionPublication.set(null);
+    this.publishSessionMessage.set(null);
+    this.publishSessionError.set(null);
+    this.reportError.set(null);
+    this.reportPreviewOpen.set(false);
+    this.clearReportPreviewObjectUrl();
+    this.postponeChoiceOpen.set(false);
+    this.postponeAppointmentOpen.set(false);
+    this.postponeReplaceOpen.set(false);
+    this.postponeAvailability.set(null);
+    this.postponeError.set(null);
+    this.postponeSuccess.set(null);
+    this.postponeAppointmentRoomId.set('');
+    this.teacherAbsenceOpen.set(false);
+    this.teacherAbsenceOptionsOpen.set(false);
+    this.teacherReplacementOpen.set(false);
+    this.teacherAbsence.set(null);
+    this.teacherAbsenceReason.set('');
+    this.teacherAbsenceError.set(null);
+    this.teacherAbsenceSuccess.set(null);
+    this.replacementTeachers.set([]);
+    this.selectedReplacementTeacherId.set('');
   }
 
   onLessonPickerSearch(value: string): void {
@@ -728,7 +1333,9 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
       });
       this.lessonPageIndex.update((page) => Math.min(page, this.lessonTotalPages() - 1));
     } catch (error) {
-      this.lessonsError.set(error instanceof Error ? error.message : 'Unable to remove lesson');
+      const message = error instanceof Error ? error.message : 'Unable to remove lesson';
+      this.lessonsError.set(message);
+      throw new Error(message);
     } finally {
       this.removingLessonId.set(null);
     }
@@ -757,6 +1364,37 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
 
   lessonPageEnd(): number {
     return Math.min(this.lessons().length, (this.lessonPageIndex() + 1) * this.lessonPageSize());
+  }
+
+  examPageStart(): number {
+    return this.assignedSessionExams().length ? this.examPageIndex() * this.examPageSize() + 1 : 0;
+  }
+
+  examPageEnd(): number {
+    return Math.min(this.assignedSessionExams().length, (this.examPageIndex() + 1) * this.examPageSize());
+  }
+
+  examTimeLabel(exam: GroupExamRow): string {
+    return exam.startTime ? `${this.displayMeridiemTime(exam.startTime)} start` : 'Anytime';
+  }
+
+  examDurationLabel(exam: GroupExamRow): string {
+    return `${exam.duration} min`;
+  }
+
+  examQuestionCountLabel(exam: GroupExamRow): string {
+    if (exam.questionCount == null) {
+      return 'Questions not counted';
+    }
+    return exam.questionCount === 1 ? '1 question' : `${exam.questionCount} questions`;
+  }
+
+  examSettingsLabel(exam: GroupExamRow): string {
+    const settings = [
+      exam.settings.showResultsImmediately ? 'Instant results' : null,
+      exam.settings.allowRetakes ? 'Retakes' : null,
+    ].filter((value): value is string => Boolean(value));
+    return settings.length ? settings.join(', ') : 'Standard';
   }
 
   isLessonExpanded(lesson: GroupLesson): boolean {
@@ -958,7 +1596,7 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     this.isLoading.set(true);
     this.error.set(null);
     try {
-      this.group.set(await firstValueFrom(this.data.loadGroupById(this.groupId)));
+      this.group.set(await firstValueFrom(this.data.loadGroupById(this.groupId, { sessionId: this.sessionId, scope: this.detailScope })));
     } catch (error) {
       this.error.set(error instanceof Error ? error.message : 'Unable to load session details');
     } finally {
@@ -973,7 +1611,7 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
 
     this.refreshingGroup = true;
     try {
-      this.group.set(await firstValueFrom(this.data.loadGroupById(this.groupId)));
+      this.group.set(await firstValueFrom(this.data.loadGroupById(this.groupId, { sessionId: this.sessionId, scope: this.detailScope })));
       this.error.set(null);
     } catch {
       // Keep the current session visible if a background refresh fails.
@@ -986,7 +1624,7 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     this.lessonsLoading.set(true);
     this.lessonsError.set(null);
     try {
-      this.lessons.set(await firstValueFrom(this.data.loadGroupLessons(this.groupId, { sync: false, sessionId: this.sessionId })));
+      this.lessons.set(await firstValueFrom(this.data.loadGroupLessons(this.groupId, { sync: false, sessionId: this.sessionId, scope: this.detailScope })));
     } catch (error) {
       this.lessonsError.set(error instanceof Error ? error.message : 'Unable to load lessons');
     } finally {
@@ -994,7 +1632,24 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  private async loadSessionExams(): Promise<void> {
+    this.sessionExamsLoading.set(true);
+    this.sessionExamsError.set(null);
+    try {
+      this.sessionExams.set(await firstValueFrom(this.data.loadGroupExams(this.groupId, { scope: this.detailScope })));
+      this.examPageIndex.set(0);
+    } catch (error) {
+      this.sessionExamsError.set(error instanceof Error ? error.message : 'Unable to load session exams');
+    } finally {
+      this.sessionExamsLoading.set(false);
+    }
+  }
+
   private async loadSessionLibraryContent(): Promise<void> {
+    if (this.isTeacherGroupView) {
+      this.sessionLibraryContent.set([]);
+      return;
+    }
     if (!this.sessionId) {
       return;
     }
@@ -1006,15 +1661,27 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  canPublishSelectedSession(): boolean {
+    const selectedSession = this.session();
+    return !!selectedSession && this.sessionLiveStatus(selectedSession) !== 'coming';
+  }
+
   private async loadSessionPublication(): Promise<void> {
+    if (this.isTeacherGroupView) {
+      this.sessionPublication.set(null);
+      return;
+    }
     if (!this.sessionId) {
       return;
     }
 
     try {
       const publication = await firstValueFrom(this.data.loadGroupSessionPublication(this.groupId, this.sessionId));
-      this.sessionPublication.set(publication);
-      this.publishSessionMessage.set(publication.published ? `${publication.mediaCount} session media ${publication.mediaCount === 1 ? 'item' : 'items'} published for students.` : null);
+      const effectivePublication = this.canPublishSelectedSession()
+        ? publication
+        : { ...publication, published: false, mediaCount: 0, media: [] };
+      this.sessionPublication.set(effectivePublication);
+      this.publishSessionMessage.set(effectivePublication.published ? `${effectivePublication.mediaCount} session media ${effectivePublication.mediaCount === 1 ? 'item' : 'items'} published for students.` : null);
     } catch {
       this.sessionPublication.set(null);
     }
@@ -1033,8 +1700,8 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     });
     try {
       const [files, notes] = await Promise.all([
-        firstValueFrom(this.data.loadGroupLibraryFiles(this.groupId, folderId)),
-        firstValueFrom(this.data.loadGroupLibraryNotes(this.groupId, folderId)),
+        firstValueFrom(this.data.loadGroupLibraryFiles(this.groupId, folderId, { scope: this.detailScope })),
+        firstValueFrom(this.data.loadGroupLibraryNotes(this.groupId, folderId, { scope: this.detailScope })),
       ]);
       this.libraryFilesByFolderId.update((filesByFolderId) => {
         const next = new Map(filesByFolderId);
@@ -1129,7 +1796,7 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
 
     this.previewLoading.set(true);
     try {
-      const notes = await firstValueFrom(this.data.loadGroupLibraryNotes(this.groupId, content.folderId));
+      const notes = await firstValueFrom(this.data.loadGroupLibraryNotes(this.groupId, content.folderId, { scope: this.detailScope }));
       this.libraryNotesByFolderId.update((notesByFolderId) => {
         const next = new Map(notesByFolderId);
         next.set(content.folderId, notes);
@@ -1160,7 +1827,7 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     });
     try {
       const [insertedContent, materialContent] = await Promise.all([
-        firstValueFrom(this.data.loadGroupLessonContent(this.groupId, lesson.id)),
+        firstValueFrom(this.data.loadGroupLessonContent(this.groupId, lesson.id, { scope: this.detailScope })),
         this.loadLessonMaterialContent(lesson),
       ]);
       const content = this.mergeContentList(insertedContent, materialContent);
@@ -1349,7 +2016,7 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     }
 
     try {
-      const notes = await firstValueFrom(this.data.loadGroupLibraryNotes(this.groupId, content.folderId));
+      const notes = await firstValueFrom(this.data.loadGroupLibraryNotes(this.groupId, content.folderId, { scope: this.detailScope }));
       this.libraryNotesByFolderId.update((notesByFolderId) => {
         const next = new Map(notesByFolderId);
         next.set(content.folderId, notes);
@@ -1514,6 +2181,229 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     return value === 'all' || value === 'available' || value === 'inserted';
   }
 
+  private isExamAssignedToSession(exam: GroupExamRow, session: SessionDetailsRow | null): boolean {
+    if (!session || session.kind !== 'dated' || !exam.date) {
+      return false;
+    }
+
+    if (exam.date !== session.date) {
+      return false;
+    }
+
+    const examTime = this.fullCalendarTime(exam.startTime ?? '');
+    const sessionTime = this.fullCalendarTime(session.startTime);
+    return !examTime || !sessionTime || examTime === sessionTime;
+  }
+
+  private buildSessionReportDocument(group: GroupDetails, session: SessionDetailsRow): { doc: JsPdfWithAutoTable; fileName: string } {
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' }) as JsPdfWithAutoTable;
+    const students = this.sessionStudents();
+    const present = students.filter((student) => this.studentStatusLabel(student) === 'Present').length;
+    const absent = Math.max(0, students.length - present);
+    const generatedAt = new Date().toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+
+    this.drawSessionReportHeader(doc, group, session, generatedAt);
+    this.drawSessionReportSummary(doc, group, session, present, absent);
+    this.drawSessionAttendanceChart(doc, present, absent, 210, 45, 55);
+    this.drawSessionStudentTable(doc, group, session, students, 106);
+    this.drawSessionReportFooter(doc);
+    return { doc, fileName: this.sessionReportFileName(group, session) };
+  }
+
+  private drawSessionReportHeader(doc: jsPDF, group: GroupDetails, session: SessionDetailsRow, generatedAt: string): void {
+    doc.setFillColor(15, 23, 42);
+    doc.rect(0, 0, 297, 34, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.setTextColor(255, 255, 255);
+    doc.text('Session Report', 14, 16);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(203, 213, 225);
+    doc.text(`${group.name} | ${group.subject}`, 14, 25);
+    doc.text(`Generated ${generatedAt}`, 283, 16, { align: 'right' });
+    doc.text('AZ EduManage', 283, 25, { align: 'right' });
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(15, 23, 42);
+    doc.text(this.sessionDateLabel(session), 14, 45);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(71, 85, 105);
+    doc.text([
+      `Time: ${this.sessionTimeWindowLabel(session)}`,
+      `Teacher: ${this.sessionTeacherName()}`,
+      `Room: ${session.room}`,
+      `Status: ${this.sessionLiveStatusLabel(session)}`,
+    ], 14, 52);
+  }
+
+  private drawSessionReportSummary(
+    doc: jsPDF,
+    group: GroupDetails,
+    session: SessionDetailsRow,
+    present: number,
+    absent: number,
+  ): void {
+    const cards = [
+      { label: 'Students', value: String(this.sessionStudents().length) },
+      { label: 'Present', value: String(present) },
+      { label: 'Absent', value: String(absent) },
+      { label: 'Session', value: `#${this.sessionIndex(session)}` },
+      { label: 'Fee', value: this.sessionPaymentLabel(group) },
+    ];
+
+    cards.forEach((card, index) => {
+      const x = 14 + index * 37;
+      doc.setFillColor(248, 250, 252);
+      doc.setDrawColor(226, 232, 240);
+      doc.roundedRect(x, 76, 33, 19, 2, 2, 'FD');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7);
+      doc.setTextColor(100, 116, 139);
+      doc.text(card.label, x + 3, 83);
+      doc.setFontSize(12);
+      doc.setTextColor(15, 23, 42);
+      doc.text(card.value, x + 3, 91, { maxWidth: 27 });
+    });
+  }
+
+  private drawSessionAttendanceChart(doc: jsPDF, present: number, absent: number, x: number, y: number, width: number): void {
+    const total = Math.max(1, present + absent);
+    const presentWidth = (present / total) * width;
+    const absentWidth = (absent / total) * width;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(15, 23, 42);
+    doc.text('Attendance Distribution', x, y);
+    doc.setDrawColor(226, 232, 240);
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(x, y + 7, width + 12, 43, 2, 2, 'FD');
+
+    doc.setFillColor(16, 185, 129);
+    doc.roundedRect(x + 6, y + 18, Math.max(3, presentWidth), 7, 1, 1, 'F');
+    doc.setFillColor(244, 63, 94);
+    doc.roundedRect(x + 6, y + 31, Math.max(3, absentWidth), 7, 1, 1, 'F');
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(51, 65, 85);
+    doc.text(`Present ${present}`, x + 6, y + 15);
+    doc.text(`Absent ${absent}`, x + 6, y + 28);
+    doc.text(`${Math.round((present / total) * 100)}% present`, x + width + 8, y + 15, { align: 'right' });
+    doc.text(`${Math.round((absent / total) * 100)}% absent`, x + width + 8, y + 28, { align: 'right' });
+  }
+
+  private drawSessionStudentTable(
+    doc: JsPdfWithAutoTable,
+    group: GroupDetails,
+    session: SessionDetailsRow,
+    students: GroupStudent[],
+    startY: number,
+  ): void {
+    const body: RowInput[] = students.map((student, index) => [
+      String(index + 1),
+      student.name,
+      student.parentName?.trim() || 'Not set',
+      this.studentStatusLabel(student),
+      this.studentAttendanceTimeLabel(student),
+      this.sessionPaymentLabel(group),
+      this.studentAssessmentNoteLabel(student, session),
+    ]);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(15, 23, 42);
+    doc.text('Student Details', 14, startY - 7);
+
+    autoTable(doc, {
+      startY,
+      head: [['#', 'Student', 'Parent', 'Attendance', 'Arrival time', 'Payment', 'Assessment notes']],
+      body: body.length ? body : [['', 'No students enrolled', '', '', '', '', '']],
+      theme: 'grid',
+      margin: { left: 14, right: 14 },
+      styles: {
+        fontSize: 8,
+        cellPadding: 2.4,
+        textColor: [51, 65, 85],
+        lineColor: [226, 232, 240],
+        lineWidth: 0.1,
+        valign: 'middle',
+      },
+      headStyles: {
+        fillColor: [79, 70, 229],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+      },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      columnStyles: {
+        0: { cellWidth: 10, halign: 'center' },
+        1: { cellWidth: 42 },
+        2: { cellWidth: 38 },
+        3: { cellWidth: 26 },
+        4: { cellWidth: 28 },
+        5: { cellWidth: 32 },
+        6: { cellWidth: 'auto' },
+      },
+      didParseCell: (data) => {
+        if (data.section !== 'body' || data.column.index !== 3) {
+          return;
+        }
+        const value = String(data.cell.raw ?? '');
+        if (value === 'Present') {
+          data.cell.styles.textColor = [22, 101, 52];
+          data.cell.styles.fontStyle = 'bold';
+        } else if (value === 'Absent') {
+          data.cell.styles.textColor = [185, 28, 28];
+          data.cell.styles.fontStyle = 'bold';
+        }
+      },
+    });
+  }
+
+  private drawSessionReportFooter(doc: jsPDF): void {
+    const totalPages = doc.getNumberOfPages();
+    for (let page = 1; page <= totalPages; page += 1) {
+      doc.setPage(page);
+      doc.setDrawColor(226, 232, 240);
+      doc.line(14, 194, 283, 194);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text('Formal session report, attendance and administrative summary', 14, 200);
+      doc.text(`Page ${page} of ${totalPages}`, 283, 200, { align: 'right' });
+    }
+  }
+
+  private sessionReportFileName(group: GroupDetails, session: SessionDetailsRow): string {
+    const groupName = group.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'group';
+    const date = session.date && session.date !== 'Recurring' ? session.date : 'session';
+    const [hour = '00', minute = '00'] = (this.fullCalendarTime(session.startTime) ?? session.startTime).split(':');
+    const time = `${hour}${minute}`.replace(/\D/g, '') || 'time';
+    return `${groupName}-${date}-${time}-session-report.pdf`;
+  }
+
+  private sessionPaymentLabel(group: GroupDetails): string {
+    const amount = group.fees ?? group.pricePerStudent;
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return 'Not recorded';
+    }
+    return `${amount} ${group.currency || 'EGP'}`;
+  }
+
+  private studentAssessmentNoteLabel(_student: GroupStudent, _session: SessionDetailsRow): string {
+    return 'Not recorded';
+  }
+
   private normalizeBarcodeValue(value: string | null | undefined): string {
     return value?.trim().toLowerCase() ?? '';
   }
@@ -1526,6 +2416,36 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
 
     const timeMatch = trimmed.match(/(?:T|\s|^)(\d{1,2}:\d{2})(?::\d{2})?(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?$/);
     return timeMatch?.[1] ?? null;
+  }
+
+  private studentAttendanceInSessionWindow(student: GroupStudent, session: SessionDetailsRow): boolean {
+    const window = this.sessionWindow(session);
+    const recordedAt = this.attendanceDateTime(student.attendanceTime ?? student.lastAttendance, session);
+    if (!window || !recordedAt) {
+      return false;
+    }
+    return recordedAt >= window.start && recordedAt < window.end;
+  }
+
+  private attendanceDateTime(value: string | null | undefined, session: SessionDetailsRow): Date | null {
+    const trimmed = value?.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    const normalized = trimmed.includes('T') ? trimmed : trimmed.replace(' ', 'T');
+    const direct = new Date(normalized);
+    if (!Number.isNaN(direct.getTime())) {
+      return direct;
+    }
+
+    const time = this.extractAttendanceTime(trimmed);
+    const date = session.date && session.date !== 'Scheduled' && session.date !== 'Recurring' ? session.date : null;
+    if (!time || !date) {
+      return null;
+    }
+    const withSessionDate = new Date(`${date}T${this.fullCalendarTime(time) ?? time}`);
+    return Number.isNaN(withSessionDate.getTime()) ? null : withSessionDate;
   }
 
   private focusBarcodeInput(): void {
@@ -1779,5 +2699,14 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     }
     this.previewObjectUrl.set(null);
     this.previewSafeObjectUrl.set(null);
+  }
+
+  private clearReportPreviewObjectUrl(): void {
+    const objectUrl = this.reportPreviewObjectUrl();
+    if (objectUrl) {
+      URL.revokeObjectURL(objectUrl);
+    }
+    this.reportPreviewObjectUrl.set(null);
+    this.reportPreviewSafeObjectUrl.set(null);
   }
 }

@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { AuthApiService } from '../../../core/auth/auth-api.service';
 import { BackendScheduleSession } from '../models/tenant-schedule.models';
-import { BackendRoomDetails, RoomDetails, RoomSchedule } from '../models/tenant-room-details.models';
+import { BackendRoomDetails, RoomDetails, RoomIssueNote, RoomSchedule } from '../models/tenant-room-details.models';
 
 @Injectable({ providedIn: 'root' })
 export class TenantRoomDetailsDataService {
@@ -27,6 +27,12 @@ export class TenantRoomDetailsDataService {
     return (sessions ?? [])
       .filter((session) => session.roomId === roomId)
       .map((session) => this.toRoomSchedule(session));
+  }
+
+  async saveIssueNote(id: string | null, note: string): Promise<RoomIssueNote> {
+    const roomId = this.requireRoomId(id);
+    await this.authApi.ensureLoggedIn();
+    return firstValueFrom(this.http.post<RoomIssueNote>(`${this.roomsUrl}/${roomId}/issues`, { note }));
   }
 
   toUserMessage(error: unknown): string {

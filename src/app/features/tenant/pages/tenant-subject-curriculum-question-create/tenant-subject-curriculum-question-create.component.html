@@ -3,9 +3,9 @@
     <div class="space-y-1">
       <div class="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
         @if (isExamQuestionRoute()) {
-          <a routerLink="/tenant/exams" class="hover:text-indigo-600 transition-colors">Exams</a>
+          <a [routerLink]="examsRoot()" class="hover:text-indigo-600 transition-colors">Exams</a>
           <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
-          <a routerLink="/tenant/exams/basic-education" class="hover:text-indigo-600 transition-colors">Basic Education</a>
+          <a [routerLink]="basicEducationExamsRoot()" class="hover:text-indigo-600 transition-colors">Basic Education</a>
           <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
           <a [routerLink]="examCreateLink()" [queryParams]="examCreateQueryParams()" class="hover:text-indigo-600 transition-colors">{{ subject()?.gradeName || 'Create Exam' }}</a>
           <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>

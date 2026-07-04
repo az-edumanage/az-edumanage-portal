@@ -1,4 +1,5 @@
 export type TenantOverviewRange = 'today' | 'week' | 'month';
+export type TenantRevenueTrendRange = 'week' | 'month';
 
 export interface TenantOverviewView {
   generatedAt: string;
@@ -7,6 +8,8 @@ export interface TenantOverviewView {
   attendanceTrend: OverviewChartSeries;
   revenueTrend: OverviewChartSeries;
   todaySessions: TodaySession[];
+  runningGroups: RunningGroup[];
+  rooms: RoomOccupancy;
   pendingPayments: PendingPayment[];
   pendingPaymentCount: number;
   sectionErrors: OverviewSectionError[];
@@ -44,6 +47,24 @@ export interface TodaySession {
   status: 'Completed' | 'In Progress' | 'Scheduled' | string;
 }
 
+export interface RunningGroup {
+  id: string;
+  group: string;
+  subject: string;
+  teacher: string;
+  room: string;
+  time: string;
+  endsAt: string;
+}
+
+export interface RoomOccupancy {
+  occupiedRooms: number;
+  freeRooms: number;
+  freeHours: string;
+  freeHoursValue: number;
+  operatingWindow: string;
+}
+
 export interface PendingPayment {
   invoiceId: string;
   student: string;
@@ -54,13 +75,14 @@ export interface PendingPayment {
 }
 
 export interface OverviewSectionError {
-  section: 'kpis' | 'attendanceTrend' | 'revenueTrend' | 'todaySessions' | 'pendingPayments' | string;
+  section: 'kpis' | 'attendanceTrend' | 'revenueTrend' | 'todaySessions' | 'runningGroups' | 'rooms' | 'pendingPayments' | string;
   message: string;
 }
 
 export interface TenantOverviewState {
   status: 'idle' | 'loading' | 'loaded' | 'unavailable';
   range: TenantOverviewRange;
+  revenueTrendRange: TenantRevenueTrendRange;
   data: TenantOverviewView | null;
   error: string | null;
 }

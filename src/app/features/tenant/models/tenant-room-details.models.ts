@@ -31,3 +31,12 @@ export interface BackendRoomDetails {
   equipment?: string[];
   notes?: string | null;
 }
+
+export interface RoomIssueNote {
+  id: string;
+  roomId: string;
+  note: string;
+  reportedBy?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
