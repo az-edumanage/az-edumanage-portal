@@ -106,6 +106,17 @@ export class SidebarComponent {
     return roleLabels[role] ?? role.replaceAll('_', ' ').toLowerCase().replace(/\b\w/g, (m) => m.toUpperCase());
   });
 
+  profileRoute = computed(() => {
+    switch (this.currentRole()) {
+      case 'tenant':
+        return '/tenant/profile';
+      case 'teacher':
+        return '/teacher/profile';
+      default:
+        return null;
+    }
+  });
+
   isRtl = computed(() => this.language() === 'ar');
 
   t(text: string): string {
@@ -125,6 +136,10 @@ export class SidebarComponent {
 
   toggleUserPanel(): void {
     this.isUserPanelOpen.update((open) => !open);
+  }
+
+  closeUserPanel(): void {
+    this.isUserPanelOpen.set(false);
   }
 
   menuSections = computed<MenuSection[]>(() => {
@@ -200,11 +215,21 @@ export class SidebarComponent {
             titleKey: 'sidebar.section.main',
             items: [
               { labelKey: 'sidebar.item.overview', icon: 'dashboard', route: '/tenant/overview' },
+            ]
+          },
+          {
+            titleKey: 'sidebar.section.users',
+            items: [
               { labelKey: 'sidebar.item.students', icon: 'school', route: '/tenant/students', permission: 'tenant.students.view' },
-              { labelKey: 'sidebar.item.parents', icon: 'supervisor_account', route: '/tenant/parents', permission: 'tenant.students.view' },
-              { labelKey: 'sidebar.item.teachers', icon: 'person_outline', route: '/tenant/teachers', permission: 'tenant.teachers.view' },
+              { labelKey: 'sidebar.item.parents', icon: 'family_restroom', route: '/tenant/parents', permission: 'tenant.students.view' },
+              { labelKey: 'sidebar.item.teachers', icon: 'person', route: '/tenant/teachers', permission: 'tenant.teachers.view' },
+              { labelKey: 'sidebar.item.users', icon: 'manage_accounts', route: '/tenant/users', permission: 'tenant.users.view' },
+            ]
+          },
+          {
+            titleKey: 'sidebar.section.academic',
+            items: [
               { labelKey: 'sidebar.item.groupsClasses', icon: 'groups', route: '/tenant/groups', permission: 'tenant.groups.view' },
-              { labelKey: 'sidebar.item.rooms', icon: 'rooms', route: '/tenant/rooms', permission: 'tenant.rooms.view' },
               {
                 labelKey: 'sidebar.item.basicEducation',
                 icon: 'account_tree',
@@ -226,36 +251,45 @@ export class SidebarComponent {
             ]
           },
           {
-            titleKey: 'sidebar.section.academic',
+            titleKey: 'sidebar.section.attendance',
             items: [
               { labelKey: 'sidebar.item.schedule', icon: 'calendar_today', route: '/tenant/schedule', permission: 'tenant.attendance.view' },
               { labelKey: 'sidebar.item.attendance', icon: 'fact_check', route: '/tenant/attendance', permission: 'tenant.attendance.view' },
+            ]
+          },
+          {
+            titleKey: 'sidebar.section.examsEvaluation',
+            items: [
               { labelKey: 'sidebar.item.examsGrades', icon: 'assignment', route: '/tenant/exams', permission: 'tenant.exams.manage' },
-              { labelKey: 'sidebar.item.examsEvaluation', icon: 'grades', route: '/tenant/exams-evaluation', permission: 'tenant.grades.view' },
               { labelKey: 'sidebar.item.questionsBank', icon: 'quiz', route: '/tenant/questions-bank', permission: 'tenant.questionBank.manage' },
+              {
+                labelKey: 'sidebar.item.examEvaluation',
+                icon: 'grades',
+                permission: 'tenant.grades.view',
+                children: [
+                  { labelKey: 'sidebar.item.examEvaluationList', icon: '', route: '/tenant/exam-evaluation', permission: 'tenant.grades.view' },
+                  { labelKey: 'sidebar.item.homeWorkEvaluation', icon: '', route: '/tenant/evaluation/home-work', permission: 'tenant.grades.view' },
+                  { labelKey: 'sidebar.item.assessmentEvaluation', icon: '', route: '/tenant/evaluation/assessment', permission: 'tenant.grades.view' },
+                ],
+              },
             ]
           },
           {
             titleKey: 'sidebar.section.financeAdmin',
             items: [
               { labelKey: 'sidebar.item.billing', icon: 'receipt_long', route: '/tenant/billing', permission: 'tenant.billing.view' },
-              { labelKey: 'sidebar.item.reports', icon: 'bar_chart', route: '/tenant/reports', permission: 'tenant.reports.view' },
             ]
           },
           {
             titleKey: 'sidebar.section.settings',
             items: [
+              { labelKey: 'sidebar.item.reports', icon: 'bar_chart', route: '/tenant/reports', permission: 'tenant.reports.view' },
+              { labelKey: 'sidebar.item.lms', icon: 'public', route: '/tenant/lms-settings', permission: 'tenant.settings.manage' },
               { labelKey: 'sidebar.item.platformSettings', icon: 'settings', route: '/tenant/settings', permission: 'tenant.settings.manage' },
-              { labelKey: 'sidebar.item.lms', icon: 'public', route: '/tenant/web-settings', permission: 'tenant.settings.manage' },
+              { labelKey: 'sidebar.item.rolesPermissions', icon: 'admin_panel_settings', route: '/tenant/users/roles-permissions', permission: 'tenant.roles.view' },
+              { labelKey: 'sidebar.item.rooms', icon: 'rooms', route: '/tenant/rooms', permission: 'tenant.rooms.view' },
             ]
-          },
-            {
-                titleKey: 'sidebar.section.users',
-                items: [
-                    { labelKey: 'sidebar.item.users', icon: 'person', route: '/tenant/users', permission: 'tenant.users.view' },
-                    { labelKey: 'sidebar.item.rolesPermissions', icon: 'admin_panel_settings', route: '/tenant/users/roles-permissions', permission: 'tenant.roles.view' },
-                ]
-            }
+          }
         ]);
       case 'teacher':
         return [
@@ -291,8 +325,15 @@ export class SidebarComponent {
               { labelKey: 'sidebar.item.myCourses', icon: 'school', route: '/student/my-courses' },
               { labelKey: 'sidebar.item.myGroups', icon: 'groups', route: '/student/my-groups' },
               { labelKey: 'sidebar.item.examsGrades', icon: 'assignment', route: '/student/exams' },
-              { labelKey: 'sidebar.item.examEvaluation', icon: 'fact_check', route: '/student/exam-evaluation' },
               { labelKey: 'sidebar.item.homeWork', icon: 'assignment_turned_in', route: '/student/home-work' },
+              {
+                labelKey: 'sidebar.item.examEvaluation',
+                icon: 'fact_check',
+                children: [
+                  { labelKey: 'sidebar.item.examsEvaluation', icon: '', route: '/student/evaluation/exams' },
+                  { labelKey: 'sidebar.item.homeWorkEvaluation', icon: '', route: '/student/evaluation/home-work' },
+                ],
+              },
               { labelKey: 'sidebar.item.billing', icon: 'receipt_long', route: '/student/billing' },
             ],
           },

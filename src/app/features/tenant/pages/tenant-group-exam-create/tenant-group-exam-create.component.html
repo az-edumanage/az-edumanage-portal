@@ -85,8 +85,8 @@
               id="examTitle"
               type="text"
               formControlName="title"
-              readonly
-              placeholder="Select a published exam"
+              [readonly]="!isQuestionBasedHomeWork"
+              [placeholder]="isQuestionBasedHomeWork ? 'Enter home work title' : 'Select a published exam'"
               class="group-exam-input"
             />
           </div>
@@ -151,109 +151,170 @@
         </div>
       </div>
 
-      <div class="exam-panel">
-        <div class="exam-panel-header">
-          <span class="exam-panel-icon">
-            <mat-icon>quiz</mat-icon>
-          </span>
-          <h3>{{ sourcePanelTitle }}</h3>
-          @if (examOptionsError()) {
-            <button
-              type="button"
-              (click)="onRetryExamOptions()"
-              class="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1"
-            >
-              <mat-icon class="text-xs">refresh</mat-icon>
-              Retry
-            </button>
-          }
-        </div>
-
-        @if (!isExamOptionsLoading() && !examOptionsError()) {
-          <div class="exam-search">
-            <mat-icon>search</mat-icon>
-            <input
-              type="search"
-              [value]="examSearchQuery()"
-              (input)="onSearchExams($event)"
-              placeholder="Search exams"
-              aria-label="Search exams"
-            />
-          </div>
-        }
-
-        @if (isExamOptionsLoading()) {
-          <div class="question-state">
-            <mat-icon class="animate-spin text-3xl text-slate-300"
-              >sync</mat-icon
-            >
-            <p>Loading published exams...</p>
-          </div>
-        } @else if (examOptionsError()) {
-          <div class="question-state error">
-            <mat-icon class="text-3xl">error_outline</mat-icon>
-            <p>{{ examOptionsError() }}</p>
-            <button
-              type="button"
-              (click)="onRetryExamOptions()"
-              class="retry-button"
-            >
-              Retry
-            </button>
-          </div>
-        } @else if (publishedExamOptions().length === 0) {
-          <div class="question-state">
-            <mat-icon class="text-3xl text-slate-300">assignment_late</mat-icon>
-            @if (examSearchQuery()) {
-              <p>No exams match your search.</p>
-            } @else {
+      @if (isQuestionBasedHomeWork) {
+        <div class="questions-panel">
+          <div class="questions-panel-header">
+            <div>
+              <h3>
+                <mat-icon>quiz</mat-icon>
+                Questions
+              </h3>
               <p>
-                No published exams are available for this group subject and
-                grade.
+                {{ examQuestionRows().length }} questions linked to this home work
               </p>
-            }
+            </div>
+            <button
+              type="button"
+              class="add-questions-button"
+              [attr.aria-expanded]="questionOptionsOpen()"
+              aria-controls="session-question-options-modal"
+              (click)="toggleQuestionOptions()"
+            >
+              <mat-icon>add</mat-icon>
+              Add Questions
+            </button>
           </div>
-        } @else {
-          <div class="exam-options" role="listbox" aria-label="Published exams">
-            @for (exam of publishedExamOptions(); track exam.id) {
-              <div
-                class="exam-option"
-                [class.selected]="
-                  examForm.controls.selectedExamId.value === exam.id
-                "
-              >
-                <input
-                  [id]="'published-exam-' + exam.id"
-                  type="radio"
-                  formControlName="selectedExamId"
-                  [value]="exam.id"
-                  (change)="onSelectExam(exam.id)"
-                />
-                <label
-                  class="exam-option-main"
-                  [for]="'published-exam-' + exam.id"
-                >
-                  <span class="exam-title">{{ exam.title }}</span>
-                  <span class="exam-meta"
-                    >{{ exam.questionCount }} questions •
-                    {{ exam.updatedAt || exam.createdAt || "No date" }}</span
-                  >
-                </label>
-                <span class="exam-status">{{ exam.status }}</span>
+
+          @if (examQuestionRows().length === 0) {
+          <div class="question-state">
+            <mat-icon class="text-4xl text-slate-300">post_add</mat-icon>
+            <p>No questions are linked to this home work.</p>
+          </div>
+          } @else {
+          <div class="home-work-question-list">
+            @for (question of examQuestionRows(); track question.id) {
+              <article class="home-work-question-row">
+                <div class="home-work-question-icon">
+                  <mat-icon>quiz</mat-icon>
+                </div>
+                <div class="min-w-0">
+                  <p class="home-work-question-title">{{ question.question }}</p>
+                  <p class="home-work-question-meta">
+                    {{ questionTypeLabel(question.type) }} •
+                    {{ question.curriculumItem }} •
+                    {{ question.answerCount }} answers
+                  </p>
+                </div>
                 <button
                   type="button"
-                  class="exam-preview-button"
-                  (click)="onPreviewExam(exam.id)"
-                  [attr.aria-label]="'Preview questions for ' + exam.title"
-                  title="Preview questions"
+                  class="home-work-question-delete"
+                  [disabled]="questionContextLoading()"
+                  (click)="removeHomeWorkQuestion(question)"
+                  [attr.aria-label]="'Delete question ' + question.question"
+                  title="Delete question"
                 >
-                  <mat-icon>visibility</mat-icon>
+                  <mat-icon>delete</mat-icon>
                 </button>
-              </div>
+              </article>
             }
           </div>
-        }
-      </div>
+          }
+        </div>
+      } @else {
+        <div class="exam-panel">
+          <div class="exam-panel-header">
+            <span class="exam-panel-icon">
+              <mat-icon>quiz</mat-icon>
+            </span>
+            <h3>{{ sourcePanelTitle }}</h3>
+            @if (examOptionsError()) {
+              <button
+                type="button"
+                (click)="onRetryExamOptions()"
+                class="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1"
+              >
+                <mat-icon class="text-xs">refresh</mat-icon>
+                Retry
+              </button>
+            }
+          </div>
+
+          @if (!isExamOptionsLoading() && !examOptionsError()) {
+            <div class="exam-search">
+              <mat-icon>search</mat-icon>
+              <input
+                type="search"
+                [value]="examSearchQuery()"
+                (input)="onSearchExams($event)"
+                placeholder="Search exams"
+                aria-label="Search exams"
+              />
+            </div>
+          }
+
+          @if (isExamOptionsLoading()) {
+            <div class="question-state">
+              <mat-icon class="animate-spin text-3xl text-slate-300"
+                >sync</mat-icon
+              >
+              <p>Loading published exams...</p>
+            </div>
+          } @else if (examOptionsError()) {
+            <div class="question-state error">
+              <mat-icon class="text-3xl">error_outline</mat-icon>
+              <p>{{ examOptionsError() }}</p>
+              <button
+                type="button"
+                (click)="onRetryExamOptions()"
+                class="retry-button"
+              >
+                Retry
+              </button>
+            </div>
+          } @else if (publishedExamOptions().length === 0) {
+            <div class="question-state">
+              <mat-icon class="text-3xl text-slate-300">assignment_late</mat-icon>
+              @if (examSearchQuery()) {
+                <p>No exams match your search.</p>
+              } @else {
+                <p>
+                  No published exams are available for this group subject and
+                  grade.
+                </p>
+              }
+            </div>
+          } @else {
+            <div class="exam-options" role="listbox" aria-label="Published exams">
+              @for (exam of publishedExamOptions(); track exam.id) {
+                <div
+                  class="exam-option"
+                  [class.selected]="
+                    examForm.controls.selectedExamId.value === exam.id
+                  "
+                >
+                  <input
+                    [id]="'published-exam-' + exam.id"
+                    type="radio"
+                    formControlName="selectedExamId"
+                    [value]="exam.id"
+                    (change)="onSelectExam(exam.id)"
+                  />
+                  <label
+                    class="exam-option-main"
+                    [for]="'published-exam-' + exam.id"
+                  >
+                    <span class="exam-title">{{ exam.title }}</span>
+                    <span class="exam-meta"
+                      >{{ exam.questionCount }} questions •
+                      {{ exam.updatedAt || exam.createdAt || "No date" }}</span
+                    >
+                  </label>
+                  <span class="exam-status">{{ exam.status }}</span>
+                  <button
+                    type="button"
+                    class="exam-preview-button"
+                    (click)="onPreviewExam(exam.id)"
+                    [attr.aria-label]="'Preview questions for ' + exam.title"
+                    title="Preview questions"
+                  >
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
     </div>
 
     <!-- Sidebar Options -->
@@ -268,6 +329,7 @@
         </div>
 
         <div class="settings-list">
+          @if (!isQuestionBasedHomeWork) {
           <label class="setting-option">
             <input type="checkbox" formControlName="showResultsImmediately" />
             <span>
@@ -277,6 +339,7 @@
               >
             </span>
           </label>
+          }
           <label class="setting-option">
             <input type="checkbox" formControlName="allowRetakes" />
             <span>
@@ -292,6 +355,252 @@
     </div>
   </form>
 </div>
+
+@if (isQuestionBasedHomeWork && questionOptionsOpen()) {
+  <div
+    class="question-options-backdrop"
+    role="presentation"
+    (click)="closeQuestionOptions()"
+  >
+    <section
+      id="session-question-options-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="session-question-options-title"
+      class="question-options-modal"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="question-options-header">
+        <div>
+          <h3 id="session-question-options-title">
+            <span>
+              <mat-icon>post_add</mat-icon>
+            </span>
+            Add questions
+          </h3>
+          <p>Choose how questions should be attached to this home work.</p>
+        </div>
+        <button
+          type="button"
+          class="question-options-close"
+          aria-label="Close add questions"
+          (click)="closeQuestionOptions()"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="question-options-body">
+        <div class="question-options-grid">
+          @for (option of sessionQuestionOptions; track option.label) {
+            <button
+              type="button"
+              class="question-option-card"
+              (click)="onSelectQuestionOption(option.kind)"
+            >
+              <span class="question-option-icon">
+                <mat-icon>{{ option.icon }}</mat-icon>
+              </span>
+              <span>
+                <span class="question-option-title">{{ option.label }}</span>
+                <span class="question-option-description">
+                  {{ option.description }}
+                </span>
+              </span>
+            </button>
+          }
+
+          <label class="question-option-card upload-option">
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,image/*"
+              (change)="onQuestionFileSelected($event)"
+            />
+            <span class="question-option-icon">
+              <mat-icon>upload_file</mat-icon>
+            </span>
+            <span>
+              <span class="question-option-title">Upload file</span>
+              <span class="question-option-description">
+                {{ uploadFileName() || "Attach a question file." }}
+              </span>
+            </span>
+          </label>
+        </div>
+
+        @if (questionContextLoading()) {
+          <div class="question-context-message">Loading question setup...</div>
+        }
+        @if (questionContextError()) {
+          <div class="question-context-message error">
+            {{ questionContextError() }}
+          </div>
+        }
+      </div>
+    </section>
+  </div>
+}
+
+@if (isQuestionBasedHomeWork && basicQuestionsDrawerOpen()) {
+  <div
+    class="basic-questions-backdrop"
+    role="presentation"
+    (click)="closeBasicQuestionsDrawer()"
+  >
+    <aside
+      id="basic-questions-drawer"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="basic-questions-drawer-title"
+      class="basic-questions-drawer"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="basic-questions-drawer-header">
+        <div>
+          <div class="basic-questions-drawer-badges">
+            <span>
+              <mat-icon>playlist_add_check</mat-icon>
+              {{ basicQuestionSelection().length }} selected
+            </span>
+            <span>
+              <mat-icon>menu_book</mat-icon>
+              {{ groupContext()?.subject || "Subject" }}
+            </span>
+          </div>
+          <h3 id="basic-questions-drawer-title">Add from basic questions</h3>
+          <p>Select saved questions from this subject, then attach them to the home work draft.</p>
+        </div>
+        <button
+          type="button"
+          class="basic-questions-close"
+          aria-label="Close questions drawer"
+          (click)="closeBasicQuestionsDrawer()"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </header>
+
+      <div class="basic-questions-toolbar">
+        <label class="basic-questions-search">
+          <span class="sr-only">Search questions</span>
+          <mat-icon>search</mat-icon>
+          <input
+            type="search"
+            placeholder="Search questions, curriculum, tags..."
+            [value]="basicQuestionSearchTerm()"
+            (input)="updateBasicQuestionSearch($event)"
+          />
+        </label>
+        <label class="basic-questions-filter">
+          <mat-icon>filter_list</mat-icon>
+          <span>Filter</span>
+          <select
+            aria-label="Filter questions by type"
+            [value]="basicQuestionTypeFilter()"
+            (change)="updateBasicQuestionTypeFilter($event)"
+          >
+            <option value="All">All types</option>
+            @for (type of basicQuestionTypes(); track type) {
+              <option [value]="type">{{ questionTypeLabel(type) }}</option>
+            }
+          </select>
+        </label>
+      </div>
+
+      <div class="basic-questions-content">
+        @if (basicQuestionsLoading()) {
+          <div class="question-state">
+            <mat-icon class="animate-spin text-3xl text-slate-300">sync</mat-icon>
+            <p>Loading basic questions...</p>
+          </div>
+        } @else if (basicQuestionsError()) {
+          <div class="question-state error">
+            <mat-icon class="text-3xl">error_outline</mat-icon>
+            <p>{{ basicQuestionsError() }}</p>
+          </div>
+        } @else if (filteredBasicQuestionRows().length === 0) {
+          <div class="question-state">
+            <mat-icon class="text-4xl text-slate-300">manage_search</mat-icon>
+            <p>No basic questions match the filters.</p>
+          </div>
+        } @else {
+          <div class="basic-questions-table-wrap">
+            <table class="basic-questions-table">
+              <thead>
+                <tr>
+                  <th><span class="sr-only">Select</span></th>
+                  <th>Question</th>
+                  <th>Type</th>
+                  <th>Curriculum</th>
+                  <th>Answers</th>
+                  <th>Weight</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (question of filteredBasicQuestionRows(); track question.id) {
+                  <tr
+                    [class.selected]="isBasicQuestionSelected(question.id)"
+                    (click)="toggleBasicQuestionSelection(question.id)"
+                  >
+                    <td>
+                      <input
+                        type="checkbox"
+                        [checked]="isBasicQuestionSelected(question.id)"
+                        [attr.aria-label]="'Select ' + question.question"
+                        (click)="toggleBasicQuestionSelection(question.id); $event.stopPropagation()"
+                      />
+                    </td>
+                    <td>
+                      <span class="basic-question-title">{{ question.question }}</span>
+                      @if (question.tags.length > 0) {
+                        <span class="basic-question-tags">
+                          @for (tag of question.tags; track tag) {
+                            <span>{{ tag }}</span>
+                          }
+                        </span>
+                      }
+                    </td>
+                    <td>
+                      <span class="basic-question-type">{{ questionTypeLabel(question.type) }}</span>
+                    </td>
+                    <td>{{ question.curriculumItem }}</td>
+                    <td>{{ question.answerCount }}</td>
+                    <td>{{ question.weight ?? "-" }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+
+      <footer class="basic-questions-footer">
+        <p>
+          {{ basicQuestionSelection().length }} selected from
+          {{ basicQuestionRows().length }} questions.
+        </p>
+        <div>
+          <button
+            type="button"
+            class="basic-questions-secondary"
+            (click)="closeBasicQuestionsDrawer()"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="basic-questions-primary"
+            [disabled]="basicQuestionSelection().length === 0 || basicQuestionsLoading()"
+            (click)="addSelectedBasicQuestions()"
+          >
+            <mat-icon>playlist_add_check</mat-icon>
+            {{ basicQuestionsLoading() ? "Saving selected" : "Add selected" }}
+          </button>
+        </div>
+      </footer>
+    </aside>
+  </div>
+}
 
 @if (isPreviewOpen()) {
   <div class="preview-backdrop" (click)="onClosePreview()"></div>

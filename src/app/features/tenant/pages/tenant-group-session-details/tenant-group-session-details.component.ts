@@ -91,6 +91,7 @@ type PendingDeleteSessionLesson =
 type JsPdfWithAutoTable = jsPDF & {
   lastAutoTable?: { finalY?: number };
 };
+type PendingSessionHomeWorkRow = GroupExamRow;
 
 @Component({
   selector: 'app-tenant-group-session-details',
@@ -228,7 +229,10 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     const pageSize = this.lessonPageSize();
     return this.lessons().slice(pageIndex * pageSize, pageIndex * pageSize + pageSize);
   });
-  readonly assignedSessionExams = computed(() => this.sessionExams().filter((exam) => this.isExamAssignedToSession(exam, this.session())));
+  readonly assignedSessionExams = computed(() =>
+    this.withPendingSessionHomeWork(this.sessionExams())
+      .filter((exam) => this.isExamAssignedToSession(exam, this.session())),
+  );
   readonly examTotalPages = computed(() => Math.max(1, Math.ceil(this.assignedSessionExams().length / this.examPageSize())));
   readonly visibleSessionExams = computed(() => {
     const pageIndex = Math.min(this.examPageIndex(), this.examTotalPages() - 1);
@@ -285,6 +289,8 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
       const tab = params.get('tab');
       if (tab === 'students' || tab === 'lessons' || tab === 'exams') {
         this.activeContentTab.set(tab);
+      } else if (tab === 'homeWork') {
+        this.activeContentTab.set('exams');
       }
     });
   }
@@ -579,21 +585,32 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     const params: Record<string, string> = {
       freshCreate: 'true',
       returnTo: `${this.groupListRoute}/${this.groupId}/sessions/${session.id}`,
-      returnTab: 'exams',
+      returnTab: 'homeWork',
       examDate: session.date,
-      examStartTime: session.startTime,
     };
     return params;
   }
 
   sessionExamEditQueryParams(session: SessionDetailsRow, exam: GroupExamRow): Record<string, string> {
-    return {
-      assignmentId: exam.id,
+    const params: Record<string, string> = {
+      selectedExamId: exam.examId,
       returnTo: `${this.groupListRoute}/${this.groupId}/sessions/${session.id}`,
-      returnTab: 'exams',
+      returnTab: 'homeWork',
       examDate: exam.date || session.date,
-      examStartTime: exam.startTime || session.startTime,
+      examDuration: String(exam.duration),
+      showResultsImmediately: String(exam.settings.showResultsImmediately),
+      allowRetakes: String(exam.settings.allowRetakes),
     };
+    if (exam.startTime) {
+      params['examStartTime'] = exam.startTime;
+    }
+    if (!this.isPendingSessionExam(exam)) {
+      params['assignmentId'] = exam.id;
+    }
+    if (exam.instructions?.trim()) {
+      params['instructions'] = exam.instructions.trim();
+    }
+    return params;
   }
 
   editSessionExam(session: SessionDetailsRow, exam: GroupExamRow, event?: Event): void {
@@ -1636,7 +1653,8 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     this.sessionExamsLoading.set(true);
     this.sessionExamsError.set(null);
     try {
-      this.sessionExams.set(await firstValueFrom(this.data.loadGroupExams(this.groupId, { scope: this.detailScope })));
+      const exams = await firstValueFrom(this.data.loadGroupExams(this.groupId, { scope: this.detailScope }));
+      this.sessionExams.set(this.mergePendingSessionHomeWork(exams));
       this.examPageIndex.set(0);
     } catch (error) {
       this.sessionExamsError.set(error instanceof Error ? error.message : 'Unable to load session exams');
@@ -2195,6 +2213,87 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     return !examTime || !sessionTime || examTime === sessionTime;
   }
 
+  private mergePendingSessionHomeWork(exams: GroupExamRow[]): GroupExamRow[] {
+    return this.withPendingSessionHomeWork(exams);
+  }
+
+  private withPendingSessionHomeWork(exams: GroupExamRow[]): GroupExamRow[] {
+    const pending = this.readPendingSessionHomeWork();
+    if (!pending) {
+      return exams;
+    }
+
+    const hasSavedRow = exams.some((exam) => this.sameSessionHomeWorkAssignment(exam, pending));
+    if (hasSavedRow) {
+      this.clearPendingSessionHomeWork();
+      return exams;
+    }
+
+    return [...exams, pending];
+  }
+
+  private readPendingSessionHomeWork(): PendingSessionHomeWorkRow | null {
+    if (!this.groupId || !this.sessionId) {
+      return null;
+    }
+
+    const exactPending = this.parsePendingSessionHomeWork(sessionStorage.getItem(this.pendingSessionHomeWorkStorageKey()));
+    if (exactPending) {
+      return exactPending;
+    }
+
+    const prefix = `tenant.session-homework.pending.${this.groupId}.`;
+    const sessionDate = this.session()?.date;
+    for (let index = 0; index < sessionStorage.length; index += 1) {
+      const key = sessionStorage.key(index);
+      if (!key?.startsWith(prefix)) {
+        continue;
+      }
+      const pending = this.parsePendingSessionHomeWork(sessionStorage.getItem(key));
+      if (pending && (!sessionDate || pending.date === sessionDate)) {
+        return pending;
+      }
+    }
+    return null;
+  }
+
+  private clearPendingSessionHomeWork(): void {
+    if (!this.groupId || !this.sessionId) {
+      return;
+    }
+    sessionStorage.removeItem(this.pendingSessionHomeWorkStorageKey());
+  }
+
+  private sameSessionHomeWorkAssignment(left: GroupExamRow, right: GroupExamRow): boolean {
+    return left.examId === right.examId
+      && left.date === right.date
+      && this.fullCalendarTime(left.startTime ?? '') === this.fullCalendarTime(right.startTime ?? '');
+  }
+
+  private parsePendingSessionHomeWork(raw: string | null): PendingSessionHomeWorkRow | null {
+    if (!raw) {
+      return null;
+    }
+    try {
+      const parsed = JSON.parse(raw) as PendingSessionHomeWorkRow;
+      return parsed?.groupId === this.groupId && parsed?.examId && parsed?.date ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private isPendingSessionExam(exam: GroupExamRow): boolean {
+    return exam.id.startsWith('pending-');
+  }
+
+  private pendingSessionHomeWorkStorageKey(): string {
+    return `tenant.session-homework.pending.${this.groupId}.${this.toStorageKeyPart(this.sessionId ?? '')}`;
+  }
+
+  private toStorageKeyPart(value: string): string {
+    return value.replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '');
+  }
+
   private buildSessionReportDocument(group: GroupDetails, session: SessionDetailsRow): { doc: JsPdfWithAutoTable; fileName: string } {
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' }) as JsPdfWithAutoTable;
     const students = this.sessionStudents();
@@ -2606,7 +2705,11 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
   }
 
   private fullCalendarTime(time: string): string | null {
-    const [hourPart, minutePart = '0'] = time.trim().split(':');
+    const trimmed = time.trim();
+    if (!trimmed) {
+      return null;
+    }
+    const [hourPart, minutePart = '0'] = trimmed.split(':');
     const hour = Number(hourPart);
     const minute = Number(minutePart);
     if (!Number.isInteger(hour) || !Number.isInteger(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {

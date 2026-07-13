@@ -201,18 +201,6 @@
           <mat-icon>assignment</mat-icon>
           <span>{{ tabLabel('exams') }}</span>
         </button>
-        @if (!isTeacherGroupView) {
-        <a
-          class="tenant-group-detail-tab"
-          [routerLink]="groupChildRoute('exam-evaluation')"
-          role="tab"
-          aria-selected="false"
-          id="tenant-group-exam-evaluation-tab"
-        >
-          <mat-icon>fact_check</mat-icon>
-          <span>Exam Evaluation</span>
-        </a>
-        }
         <button
           type="button"
           class="tenant-group-detail-tab"

@@ -174,24 +174,27 @@ export class StudentExamReportComponent implements OnInit {
   readonly isEvaluationRoute = computed(() => this.route.snapshot.data['source'] === 'evaluation');
   readonly isTeacherEvaluationRoute = computed(() => this.route.snapshot.data['source'] === 'teacherEvaluation');
   readonly isTenantEvaluationRoute = computed(() => this.route.snapshot.data['source'] === 'tenantEvaluation');
-  readonly isTenantGroupEvaluationRoute = computed(() => this.route.snapshot.data['source'] === 'tenantGroupEvaluation');
+  readonly isTenantEvaluationGroupReportRoute = computed(() => this.route.snapshot.data['source'] === 'tenantEvaluationGroupReport');
+  readonly isTenantHomeWorkEvaluationReportRoute = computed(() => this.route.snapshot.data['source'] === 'tenantHomeWorkEvaluationReport');
   readonly isParentEvaluationRoute = computed(() => this.route.snapshot.data['source'] === 'parentEvaluation');
   readonly backRoute = computed(() => {
     if (this.isTeacherEvaluationRoute()) return '/teacher/evaluation/exams';
-    if (this.isTenantEvaluationRoute()) return '/tenant/exams-evaluation';
-    if (this.isTenantGroupEvaluationRoute()) return ['/tenant/groups', this.route.snapshot.paramMap.get('groupId'), 'exam-evaluation'];
+    if (this.isTenantEvaluationRoute()) return '/tenant/exam-evaluation';
+    if (this.isTenantEvaluationGroupReportRoute()) return ['/tenant/exam-evaluation', 'groups', this.route.snapshot.paramMap.get('groupId')];
+    if (this.isTenantHomeWorkEvaluationReportRoute()) return '/tenant/evaluation/home-work';
     if (this.isParentEvaluationRoute()) return '/parent/exam-evaluation';
-    return this.isEvaluationRoute() ? '/student/exam-evaluation' : '/student/exams';
+    return this.isEvaluationRoute() ? '/student/evaluation/exams' : '/student/exams';
   });
   readonly backLabel = computed(() => {
     if (this.isTeacherEvaluationRoute()) return 'Exams Evaluation';
     if (this.isTenantEvaluationRoute()) return 'Exams Evaluation';
-    if (this.isTenantGroupEvaluationRoute()) return 'Group Exam Evaluation';
+    if (this.isTenantEvaluationGroupReportRoute()) return 'Group Exam Evaluation';
+    if (this.isTenantHomeWorkEvaluationReportRoute()) return 'Home Work Evaluation';
     if (this.isParentEvaluationRoute()) return 'Exam Evaluation';
     return this.isEvaluationRoute() ? 'Exam Evaluation' : 'Exams';
   });
   readonly subtitle = computed(() => {
-    if (this.isTeacherEvaluationRoute() || this.isTenantEvaluationRoute() || this.isTenantGroupEvaluationRoute() || this.isParentEvaluationRoute()) {
+    if (this.isTeacherEvaluationRoute() || this.isTenantEvaluationRoute() || this.isTenantEvaluationGroupReportRoute() || this.isTenantHomeWorkEvaluationReportRoute() || this.isParentEvaluationRoute()) {
       return 'Saved evaluation report for this completed student attempt.';
     }
     return this.isEvaluationRoute() ? 'Saved report from Exam Evaluation.' : 'Submitted answers, scoring, and feedback for this attempt.';
@@ -242,7 +245,7 @@ export class StudentExamReportComponent implements OnInit {
     if (this.isTeacherEvaluationRoute()) {
       return this.data.teacherExamAttemptReport(groupId, assignmentId, attemptId);
     }
-    if (this.isTenantEvaluationRoute() || this.isTenantGroupEvaluationRoute()) {
+    if (this.isTenantEvaluationRoute() || this.isTenantEvaluationGroupReportRoute() || this.isTenantHomeWorkEvaluationReportRoute()) {
       return this.data.tenantExamAttemptReport(groupId, assignmentId, attemptId);
     }
     if (this.isParentEvaluationRoute()) {

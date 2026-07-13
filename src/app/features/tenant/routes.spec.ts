@@ -1,6 +1,9 @@
 import { TENANT_ROUTES } from './routes';
 import { TenantAttendanceComponent } from './pages/tenant-attendance/tenant-attendance.component';
 import { TenantExamsComponent } from './pages/tenant-exams/tenant-exams.component';
+import { TenantExamsEvaluationComponent } from './pages/tenant-exams-evaluation/tenant-exams-evaluation.component';
+import { TenantHomeWorkEvaluationComponent } from './pages/tenant-home-work-evaluation/tenant-home-work-evaluation.component';
+import { TenantAssessmentEvaluationComponent } from './pages/tenant-assessment-evaluation/tenant-assessment-evaluation.component';
 import { TenantQuestionsBankComponent } from './pages/tenant-questions-bank/tenant-questions-bank.component';
 import { TenantQuestionsBankBasicEducationComponent } from './pages/tenant-questions-bank-basic-education/tenant-questions-bank-basic-education.component';
 import { TenantQuestionsBankBasicEducationGradesComponent } from './pages/tenant-questions-bank-basic-education-grades/tenant-questions-bank-basic-education-grades.component';
@@ -17,6 +20,7 @@ import { TenantSubjectCurriculumComponent } from './pages/tenant-subject-curricu
 import { TenantSubjectCurriculumDetailsComponent } from './pages/tenant-subject-curriculum-details/tenant-subject-curriculum-details.component';
 import { TenantUniversitiesComponent } from './pages/tenant-universities/tenant-universities.component';
 import { TenantPlatformSettingsComponent } from './pages/tenant-platform-settings/tenant-platform-settings.component';
+import { TenantLmsSettingsComponent } from './pages/tenant-lms-settings/tenant-lms-settings.component';
 import { TenantStudentBarcodePrintComponent } from './pages/tenant-student-barcode-print/tenant-student-barcode-print.component';
 import { TenantSubjectsComponent } from './pages/tenant-subjects/tenant-subjects.component';
 
@@ -53,7 +57,10 @@ describe('TENANT_ROUTES', () => {
     expect(childPaths).toContain('university-subjects/:id/edit');
     expect(childPaths).toContain('university-subjects/:id');
     expect(childPaths).toContain('groups/create');
+    expect(childPaths).toContain('groups/:groupId/exam/basic-education/:stageId/grades/:gradeId/subjects/:id/curriculum/addQuestion');
+    expect(childPaths).toContain('groups/:groupId/exam/basic-education/:stageId/grades/:gradeId/subjects/:id/curriculum/:nodeId/addQuestion');
     expect(childPaths).toContain('settings');
+    expect(childPaths).toContain('lms-settings');
     expect(childPaths).toContain('web-settings');
     expect(childPaths).toContain('questions-bank');
     expect(childPaths).toContain('questions-bank/basic-education');
@@ -80,6 +87,15 @@ describe('TENANT_ROUTES', () => {
     const settingsRoute = tenantShell?.children?.find((child) => child.path === 'settings');
 
     expect(settingsRoute?.component).toBe(TenantPlatformSettingsComponent);
+  });
+
+  it('routes tenant LMS settings to the LMS website settings page and redirects the old web settings route', () => {
+    const tenantShell = TENANT_ROUTES.find((route) => route.path === '');
+    const lmsSettingsRoute = tenantShell?.children?.find((child) => child.path === 'lms-settings');
+    const oldWebSettingsRoute = tenantShell?.children?.find((child) => child.path === 'web-settings');
+
+    expect(lmsSettingsRoute?.component).toBe(TenantLmsSettingsComponent);
+    expect(oldWebSettingsRoute?.redirectTo).toBe('lms-settings');
   });
 
   it('routes tenant attendance to the dedicated attendance page', () => {
@@ -142,6 +158,8 @@ describe('TENANT_ROUTES', () => {
     const basicEducationExamSubjectCurriculumDetailsRoute = tenantShell?.children?.find((child) => child.path === 'exams/basic-education/:stageId/grades/:gradeId/create/new/subjects/:id/curriculum/:nodeId');
     const basicEducationExamSubjectAddQuestionRoute = tenantShell?.children?.find((child) => child.path === 'exams/basic-education/:stageId/grades/:gradeId/create/new/subjects/:id/curriculum/addQuestion');
     const basicEducationExamSubjectEditQuestionRoute = tenantShell?.children?.find((child) => child.path === 'exams/basic-education/:stageId/grades/:gradeId/create/new/subjects/:id/curriculum/editQuestion/:questionId');
+    const groupHomeWorkSubjectAddQuestionRoute = tenantShell?.children?.find((child) => child.path === 'groups/:groupId/exam/basic-education/:stageId/grades/:gradeId/subjects/:id/curriculum/addQuestion');
+    const groupHomeWorkSubjectNodeAddQuestionRoute = tenantShell?.children?.find((child) => child.path === 'groups/:groupId/exam/basic-education/:stageId/grades/:gradeId/subjects/:id/curriculum/:nodeId/addQuestion');
     const universityEducationRoute = tenantShell?.children?.find((child) => child.path === 'exams/university-education');
     const universityEducationCollegesRoute = tenantShell?.children?.find((child) => child.path === 'exams/university-education/:universityId');
     const universityEducationSubjectsRoute = tenantShell?.children?.find((child) => child.path === 'exams/university-education/:universityId/colleges/:collegeId');
@@ -161,6 +179,8 @@ describe('TENANT_ROUTES', () => {
     expect(basicEducationExamSubjectCurriculumDetailsRoute?.component).toBe(TenantSubjectCurriculumDetailsComponent);
     expect(basicEducationExamSubjectAddQuestionRoute?.component).toBe(TenantSubjectCurriculumQuestionCreateComponent);
     expect(basicEducationExamSubjectEditQuestionRoute?.component).toBe(TenantSubjectCurriculumQuestionCreateComponent);
+    expect(groupHomeWorkSubjectAddQuestionRoute?.component).toBe(TenantSubjectCurriculumQuestionCreateComponent);
+    expect(groupHomeWorkSubjectNodeAddQuestionRoute?.component).toBe(TenantSubjectCurriculumQuestionCreateComponent);
     expect(universityEducationRoute?.component).toBe(TenantUniversitiesComponent);
     expect(universityEducationCollegesRoute?.component).toBe(TenantQuestionsBankUniversityCollegeListComponent);
     expect(universityEducationSubjectsRoute?.component).toBe(TenantQuestionsBankUniversitySubjectsComponent);
@@ -169,6 +189,36 @@ describe('TENANT_ROUTES', () => {
     expect(universityEducationExamCreateRoute?.data).toEqual({ mode: 'create' });
     expect(universityEducationExamSubjectAddQuestionRoute?.component).toBe(TenantSubjectCurriculumQuestionCreateComponent);
     expect(universityEducationExamSubjectNodeAddQuestionRoute?.component).toBe(TenantSubjectCurriculumQuestionCreateComponent);
+  });
+
+  it('routes tenant evaluation to the group index and nested group evaluation page', () => {
+    const tenantShell = TENANT_ROUTES.find((route) => route.path === '');
+    const evaluationRoute = tenantShell?.children?.find((child) => child.path === 'exam-evaluation');
+    const routeLessEvaluationRoute = tenantShell?.children?.find((child) => child.path === 'evaluation');
+    const homeWorkEvaluationRoute = tenantShell?.children?.find((child) => child.path === 'evaluation/home-work');
+    const assessmentEvaluationRoute = tenantShell?.children?.find((child) => child.path === 'evaluation/assessment');
+    const homeWorkEvaluationReportRoute = tenantShell?.children?.find((child) => child.path === 'evaluation/home-work/groups/:groupId/exams/:assignmentId/attempts/:attemptId/report');
+    const legacyEvaluationRoute = tenantShell?.children?.find((child) => child.path === 'exams-evaluation');
+    const groupEvaluationRoute = tenantShell?.children?.find((child) => child.path === 'exam-evaluation/groups/:groupId');
+    const legacyGroupEvaluationRoute = tenantShell?.children?.find((child) => child.path === 'groups/:groupId/exam-evaluation');
+
+    expect(evaluationRoute?.component).toBe(TenantExamsEvaluationComponent);
+    expect(evaluationRoute?.data?.['requiredPermission']).toBe('tenant.grades.view');
+    expect(routeLessEvaluationRoute?.redirectTo).toBe('exam-evaluation');
+    expect(homeWorkEvaluationRoute?.component).toBe(TenantHomeWorkEvaluationComponent);
+    expect(homeWorkEvaluationRoute?.data?.['requiredPermission']).toBe('tenant.grades.view');
+    expect(assessmentEvaluationRoute?.component).toBe(TenantAssessmentEvaluationComponent);
+    expect(assessmentEvaluationRoute?.data?.['requiredPermission']).toBe('tenant.grades.view');
+    expect(homeWorkEvaluationReportRoute?.data).toEqual({
+      requiredPermission: 'tenant.grades.view',
+      source: 'tenantHomeWorkEvaluationReport',
+    });
+    expect(legacyEvaluationRoute?.redirectTo).toBe('exam-evaluation');
+    expect(legacyGroupEvaluationRoute).toBeUndefined();
+    expect(groupEvaluationRoute?.data).toEqual({
+      requiredPermission: 'tenant.grades.view',
+      source: 'tenantEvaluationGroup',
+    });
   });
 
   it('routes student barcode print to the dedicated print page', () => {
@@ -198,7 +248,7 @@ describe('TENANT_ROUTES', () => {
     ['attendance', 'tenant.attendance.view'],
     ['reports', 'tenant.reports.view'],
     ['settings', 'tenant.settings.manage'],
-    ['web-settings', 'tenant.settings.manage'],
+    ['lms-settings', 'tenant.settings.manage'],
   ])('guards %s with %s', (path, requiredPermission) => {
     expect(childRoute(path)?.data?.['requiredPermission']).toBe(requiredPermission);
   });

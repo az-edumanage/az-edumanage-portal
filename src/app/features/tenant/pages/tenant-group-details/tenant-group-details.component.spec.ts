@@ -328,7 +328,7 @@ describe('TenantGroupDetailsComponent', () => {
     const sessionsPanel = fixture.nativeElement.querySelector('#tenant-group-sessions-panel') as HTMLElement;
 
     expect(tabButtons).toEqual(['Sessions', 'Enrolled Students', 'Lessons', 'Library', 'Exams', 'Overview']);
-    expect(tabButtons.indexOf('Exams')).toBe(tabButtons.indexOf('Overview') - 1);
+    expect(tabButtons.indexOf('Exams')).toBeLessThan(tabButtons.indexOf('Overview'));
     expect(tabs.compareDocumentPosition(sessionsPanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(fixture.componentInstance.activeTab()).toBe('sessions');
   });
@@ -352,6 +352,23 @@ describe('TenantGroupDetailsComponent', () => {
           allowRetakes: false,
         },
       },
+      {
+        id: 'home-work-assignment-1',
+        groupId: 'group-123',
+        examId: 'home-work-exam-1',
+        title: 'Science Home Work - 2026-07-06',
+        status: 'PUBLISHED',
+        date: '2026-07-06',
+        startTime: null,
+        duration: 60,
+        questionCount: 1,
+        instructions: null,
+        updatedAt: null,
+        settings: {
+          showResultsImmediately: false,
+          allowRetakes: false,
+        },
+      },
     ]));
 
     fixture.componentInstance.selectTab('exams');
@@ -359,12 +376,15 @@ describe('TenantGroupDetailsComponent', () => {
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent as string;
-    expect(groupDetailsData.loadGroupExams).toHaveBeenCalledWith('group-123');
+    expect(groupDetailsData.loadGroupExams).toHaveBeenCalledWith('group-123', { scope: 'tenant' });
     expect(fixture.nativeElement.querySelector('#tenant-group-exams-panel')).toBeTruthy();
     expect(text).toContain('Physics Midterm');
     expect(text).toContain('2026-07-01 at 09:30');
     expect(text).toContain('60 min');
     expect(text).toContain('24 questions');
+    expect(text).toContain('1 published exam');
+    expect(text).not.toContain('Science Home Work - 2026-07-06');
+    expect(text).not.toContain('2026-07-06 anytime');
     expect(text).not.toContain('Shuffle');
     expect(fixture.nativeElement.querySelector('button[title="Edit exam"]')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('button[title="Delete exam"]')).toBeTruthy();
@@ -396,7 +416,7 @@ describe('TenantGroupDetailsComponent', () => {
         title: 'Chemistry Final',
         status: 'PUBLISHED',
         date: '2026-07-02',
-        startTime: null,
+        startTime: '10:30',
         duration: 45,
         questionCount: 12,
         instructions: null,
@@ -470,7 +490,7 @@ describe('TenantGroupDetailsComponent', () => {
         title: index === 5 ? 'Chemistry Final' : `Physics Exam ${index + 1}`,
         status: 'PUBLISHED',
         date: `2026-07-${String(index + 1).padStart(2, '0')}`,
-        startTime: null,
+        startTime: `${String(9 + index).padStart(2, '0')}:00`,
         duration: 60,
         questionCount: index + 1,
         instructions: null,
@@ -523,7 +543,7 @@ describe('TenantGroupDetailsComponent', () => {
         title: 'Physics Midterm',
         status: 'PUBLISHED',
         date: '2026-07-01',
-        startTime: null,
+        startTime: '09:30',
         duration: 60,
         questionCount: 24,
         instructions: null,
@@ -591,7 +611,7 @@ describe('TenantGroupDetailsComponent', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     fixture.detectChanges();
 
-    expect(groupDetailsData.loadGroupLibraryFolders).toHaveBeenCalledWith('group-123');
+    expect(groupDetailsData.loadGroupLibraryFolders).toHaveBeenCalledWith('group-123', { scope: 'tenant' });
     expect(fixture.nativeElement.textContent).toContain('Saved folder');
   });
 
@@ -689,9 +709,9 @@ describe('TenantGroupDetailsComponent', () => {
       name: 'Created material',
       description: 'Shared files',
     });
-    expect(groupDetailsData.loadGroupLibraryFiles).toHaveBeenCalledWith('group-123', 'created-folder');
-    expect(groupDetailsData.loadGroupLibraryNotes).toHaveBeenCalledWith('group-123', 'created-folder');
-    expect(groupDetailsData.loadGroupLibraryLinks).toHaveBeenCalledWith('group-123', 'created-folder');
+    expect(groupDetailsData.loadGroupLibraryFiles).toHaveBeenCalledWith('group-123', 'created-folder', { scope: 'tenant' });
+    expect(groupDetailsData.loadGroupLibraryNotes).toHaveBeenCalledWith('group-123', 'created-folder', { scope: 'tenant' });
+    expect(groupDetailsData.loadGroupLibraryLinks).toHaveBeenCalledWith('group-123', 'created-folder', { scope: 'tenant' });
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Created material');
     expect(text).toContain('Add note');
@@ -901,7 +921,7 @@ describe('TenantGroupDetailsComponent', () => {
 
     const rows = Array.from(fixture.nativeElement.querySelectorAll('.tenant-group-session-row')) as HTMLElement[];
 
-    expect(groupDetailsData.loadGroupLessons).toHaveBeenCalledWith('group-123', { sync: false, sessionId: 'schedule-Monday' });
+    expect(groupDetailsData.loadGroupLessons).toHaveBeenCalledWith('group-123', { scope: 'tenant', sync: false, sessionId: 'schedule-Monday' });
     expect(rows[0].textContent).toContain('Assigned lessons');
     expect(rows[0].textContent).toContain('Motion intro');
     expect(rows[0].textContent).toContain('Forces practice');
@@ -1111,7 +1131,7 @@ describe('TenantGroupDetailsComponent', () => {
 
     const text = fixture.nativeElement.textContent as string;
     expect(fixture.componentInstance.activeTab()).toBe('lessons');
-    expect(groupDetailsData.loadGroupLessons).toHaveBeenCalledWith('group-123');
+    expect(groupDetailsData.loadGroupLessons).toHaveBeenCalledWith('group-123', { scope: 'tenant' });
     expect(subjectsData.getSubjectCurriculumForCategory).toHaveBeenCalledWith('subject-1', 'BASIC_EDUCATION');
     expect(groupDetailsData.addGroupLesson).toHaveBeenCalledWith('group-123', 'lesson-1');
     expect(text).toContain('Lessons');
@@ -1139,7 +1159,7 @@ describe('TenantGroupDetailsComponent', () => {
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent as string;
-    expect(groupDetailsData.loadGroupLessons).toHaveBeenCalledWith('group-123');
+    expect(groupDetailsData.loadGroupLessons).toHaveBeenCalledWith('group-123', { scope: 'tenant' });
     expect(groupDetailsData.addGroupLesson).not.toHaveBeenCalled();
     expect(text).toContain('1 loaded from curriculum');
     expect(text).toContain('Lesson one');
@@ -1158,7 +1178,7 @@ describe('TenantGroupDetailsComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.componentInstance.activeTab()).toBe('lessons');
-    expect(groupDetailsData.loadGroupLessons).toHaveBeenCalledWith('group-123');
+    expect(groupDetailsData.loadGroupLessons).toHaveBeenCalledWith('group-123', { scope: 'tenant' });
     expect(subjectsData.getSubjectCurriculumForCategory).not.toHaveBeenCalled();
     expect(fixture.nativeElement.textContent).toContain('No lessons added yet.');
 
@@ -1238,7 +1258,7 @@ describe('TenantGroupDetailsComponent', () => {
     fixture.detectChanges();
 
     expect(navigateSpy).not.toHaveBeenCalled();
-    expect(groupDetailsData.loadGroupLessons).toHaveBeenCalledWith('group-123', { sync: false, sessionId: 'schedule-Monday' });
+    expect(groupDetailsData.loadGroupLessons).toHaveBeenCalledWith('group-123', { scope: 'tenant', sync: false, sessionId: 'schedule-Monday' });
     expect(fixture.nativeElement.textContent).toContain('Physics G12-A sessions');
     expect(fixture.nativeElement.textContent).toContain('Already assigned lesson');
 
@@ -1310,12 +1330,12 @@ describe('TenantGroupDetailsComponent', () => {
     fixture.detectChanges();
 
     expect(navigateSpy).not.toHaveBeenCalled();
-    expect(groupDetailsData.loadGroupLessonContent).toHaveBeenCalledWith('group-123', 'group-lesson-1');
-    expect(groupDetailsData.loadGroupLibraryFolders).toHaveBeenCalledWith('group-123');
-    expect(groupDetailsData.loadGroupLibraryFiles).toHaveBeenCalledWith('group-123', 'folder-1');
-    expect(groupDetailsData.loadGroupLibraryFiles).toHaveBeenCalledWith('group-123', 'folder-2');
-    expect(groupDetailsData.loadGroupLibraryNotes).toHaveBeenCalledWith('group-123', 'folder-1');
-    expect(groupDetailsData.loadGroupLibraryLinks).toHaveBeenCalledWith('group-123', 'folder-1');
+    expect(groupDetailsData.loadGroupLessonContent).toHaveBeenCalledWith('group-123', 'group-lesson-1', { scope: 'tenant' });
+    expect(groupDetailsData.loadGroupLibraryFolders).toHaveBeenCalledWith('group-123', { scope: 'tenant' });
+    expect(groupDetailsData.loadGroupLibraryFiles).toHaveBeenCalledWith('group-123', 'folder-1', { scope: 'tenant' });
+    expect(groupDetailsData.loadGroupLibraryFiles).toHaveBeenCalledWith('group-123', 'folder-2', { scope: 'tenant' });
+    expect(groupDetailsData.loadGroupLibraryNotes).toHaveBeenCalledWith('group-123', 'folder-1', { scope: 'tenant' });
+    expect(groupDetailsData.loadGroupLibraryLinks).toHaveBeenCalledWith('group-123', 'folder-1', { scope: 'tenant' });
     expect(subjectsData.listCurriculumMaterialFolders).not.toHaveBeenCalled();
     expect(fixture.nativeElement.textContent).toContain('Insert content');
     expect(fixture.nativeElement.textContent).toContain('intro.pdf');
@@ -1509,7 +1529,7 @@ describe('TenantGroupDetailsComponent', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(groupDetailsData.loadGroupLessons).toHaveBeenCalledWith('group-123');
+    expect(groupDetailsData.loadGroupLessons).toHaveBeenCalledWith('group-123', { scope: 'tenant' });
     expect(subjectsData.getSubjectCurriculumForCategory).toHaveBeenCalledWith('subject-1', 'BASIC_EDUCATION');
     expect(groupDetailsData.addGroupLesson).toHaveBeenCalledWith('group-123', 'lesson-1');
     expect(fixture.nativeElement.textContent).toContain('Select from curriculum');

@@ -332,6 +332,9 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   readonly filteredGroupExams = computed(() => {
     const query = this.examSearchTerm().trim().toLowerCase();
     return this.groupExams().filter((exam) => {
+      if (!this.isScheduledGroupExam(exam)) {
+        return false;
+      }
       if (!query) {
         return true;
       }
@@ -933,7 +936,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   }
 
   examCountLabel(): string {
-    const total = this.groupExams().length;
+    const total = this.groupExams().filter((exam) => this.isScheduledGroupExam(exam)).length;
     const visible = this.filteredGroupExams().length;
     if (!total) {
       return 'No published exams';
@@ -945,7 +948,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   }
 
   examTimeLabel(exam: GroupExamRow): string {
-    return exam.startTime ? `${exam.date} at ${exam.startTime}` : `${exam.date} anytime`;
+    return `${exam.date} at ${exam.startTime}`;
   }
 
   examDurationLabel(exam: GroupExamRow): string {
@@ -2205,6 +2208,10 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     this.groupExamsLoadedGroupId.set(null);
     this.examSearchTerm.set('');
     this.examPageIndex.set(0);
+  }
+
+  private isScheduledGroupExam(exam: GroupExamRow): boolean {
+    return Boolean(exam.startTime?.trim());
   }
 
   private normalizeExamPageIndex(): void {

@@ -81,9 +81,21 @@ export class StudentDashboardDataService {
     );
   }
 
+  tenantHomeWorkEvaluations(): Observable<StudentExamEvaluation[]> {
+    return this.http.get<StudentExamEvaluation[]>(`${this.tenantGroupsUrl}/home-work-evaluations`).pipe(
+      catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load home work evaluations')),
+    );
+  }
+
   tenantGroupExamEvaluations(groupId: string): Observable<StudentExamEvaluation[]> {
     return this.http.get<StudentExamEvaluation[]>(`${this.tenantGroupsUrl}/${groupId}/exam-evaluations`).pipe(
       catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load exam evaluations')),
+    );
+  }
+
+  tenantGroupHomeWorkEvaluations(groupId: string): Observable<StudentExamEvaluation[]> {
+    return this.http.get<StudentExamEvaluation[]>(`${this.tenantGroupsUrl}/${groupId}/home-work-evaluations`).pipe(
+      catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load home work evaluations')),
     );
   }
 

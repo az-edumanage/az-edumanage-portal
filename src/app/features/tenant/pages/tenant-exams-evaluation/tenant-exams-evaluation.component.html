@@ -1,0 +1,147 @@
+<section class="tenant-exams-evaluation">
+  <header class="tenant-exams-evaluation__header">
+    <div>
+      <nav class="tenant-exams-evaluation__breadcrumb" aria-label="Breadcrumb">
+        <a routerLink="/tenant/overview">Overview</a>
+        <mat-icon>chevron_right</mat-icon>
+        <span>Evaluation</span>
+      </nav>
+      <h2>Exam Evaluation</h2>
+      <p>Open a group to review completed exam attempts and student reports for that group.</p>
+    </div>
+    <button type="button" class="tenant-exams-evaluation__refresh" (click)="load()" [disabled]="loading()">
+      <mat-icon>refresh</mat-icon>
+      Refresh
+    </button>
+  </header>
+
+  <div class="tenant-exams-evaluation__stats" aria-label="Exams evaluation summary">
+    <article>
+      <span>Groups with reports</span>
+      <strong>{{ summary().groupsWithReports }}</strong>
+    </article>
+    <article>
+      <span>Completed reports</span>
+      <strong>{{ summary().completedReports }}</strong>
+    </article>
+    <article>
+      <span>Students reviewed</span>
+      <strong>{{ summary().studentsReviewed }}</strong>
+    </article>
+  </div>
+
+  @if (loading()) {
+    <div class="tenant-exams-evaluation__state">
+      <mat-icon>progress_activity</mat-icon>
+      Loading groups and exam reports...
+    </div>
+  } @else if (error()) {
+    <div class="tenant-exams-evaluation__state tenant-exams-evaluation__state--error">
+      <mat-icon>error</mat-icon>
+      <span>{{ error() }}</span>
+      <button type="button" (click)="load()">Retry</button>
+    </div>
+  } @else {
+    <div class="tenant-exams-evaluation__table-card">
+      <div class="tenant-exams-evaluation__toolbar">
+        <label class="tenant-exams-evaluation__search">
+          <mat-icon>search</mat-icon>
+          <input
+            type="search"
+            placeholder="Search groups by name, subject, teacher or latest exam..."
+            [value]="searchTerm()"
+            (input)="setSearchTerm($any($event.target).value)"
+          />
+        </label>
+      </div>
+
+      <div class="tenant-exams-evaluation__table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Group</th>
+              <th>Teacher</th>
+              <th>Reports</th>
+              <th>Students</th>
+              <th>Exams</th>
+              <th>Average score</th>
+              <th>Latest completed</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of pagedRows(); track row.group.id) {
+              <tr
+                role="link"
+                tabindex="0"
+                [attr.aria-label]="'Open exams evaluation for ' + row.group.name"
+                (click)="openGroup(row)"
+                (keydown.enter)="openGroup(row)"
+                (keydown.space)="$event.preventDefault(); openGroup(row)"
+              >
+                <td>
+                  <strong>{{ row.group.name }}</strong>
+                  <span>{{ row.group.subject || 'No subject' }}</span>
+                </td>
+                <td>
+                  {{ row.group.teacher || '-' }}
+                  <span>{{ row.group.schedule || 'No schedule' }}</span>
+                </td>
+                <td>
+                  <strong>{{ row.evaluationsCount }}</strong>
+                  <span>completed</span>
+                </td>
+                <td>{{ row.studentsCount || '-' }}</td>
+                <td>{{ row.examsCount || '-' }}</td>
+                <td>
+                  <span class="tenant-exams-evaluation__score" [class.tenant-exams-evaluation__score--empty]="row.averageScore === null">
+                    {{ percent(row.averageScore) }}
+                  </span>
+                </td>
+                <td>
+                  {{ latestCompleted(row.latestCompletedAt) }}
+                  @if (row.latestTitle) {
+                    <span>{{ row.latestTitle }}</span>
+                  }
+                </td>
+                <td>
+                  <a class="tenant-exams-evaluation__open" [routerLink]="groupRoute(row)" (click)="$event.stopPropagation()">
+                    <mat-icon>visibility</mat-icon>
+                    View
+                  </a>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="8" class="tenant-exams-evaluation__empty">
+                  {{ searchTerm() ? 'No groups with exams match your search.' : 'No groups have exam evaluations yet.' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (filteredRows().length > 0) {
+        <div class="tenant-exams-evaluation__pagination">
+          <span>Showing {{ rangeStart() }}-{{ rangeEnd() }} of {{ filteredRows().length }} groups</span>
+          <label>
+            Rows
+            <select [value]="pageSize()" (change)="setPageSize($any($event.target).value)">
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+            </select>
+          </label>
+          <button type="button" (click)="previousPage()" [disabled]="page() === 1" aria-label="Previous page">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <strong>Page {{ page() }} of {{ totalPages() }}</strong>
+          <button type="button" (click)="nextPage()" [disabled]="page() === totalPages()" aria-label="Next page">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+  }
+</section>

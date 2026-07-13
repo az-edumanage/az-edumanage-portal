@@ -454,7 +454,15 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     }
     return subject && nodeId ? [this.subjectsRootLink(), subject.id, 'curriculum', nodeId] : this.curriculumLink();
   });
+  readonly groupDetailsLink = computed(() => {
+    const groupId = this.route.snapshot?.paramMap?.get('groupId');
+    return groupId ? ['/tenant/groups', groupId] : ['/tenant/groups'];
+  });
   readonly examCreateLink = computed(() => {
+    if (this.isGroupHomeWorkQuestionRoute()) {
+      const groupId = this.route.snapshot?.paramMap?.get('groupId');
+      return groupId ? ['/tenant/groups', groupId, 'exam'] : ['/tenant/groups'];
+    }
     if (this.isUniversityExamQuestionRoute()) {
       const universityId = this.route.snapshot?.paramMap?.get('universityId');
       const collegeId = this.route.snapshot?.paramMap?.get('collegeId');
@@ -472,6 +480,13 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     const subjectId = this.subject()?.id ?? null;
     if (!subjectId) {
       return null;
+    }
+    if (this.isGroupHomeWorkQuestionRoute()) {
+      return {
+        ...this.route.snapshot.queryParams,
+        subjectId,
+        examId: this.route.snapshot?.queryParamMap?.get('examId') ?? undefined,
+      };
     }
     const examId = this.route.snapshot?.queryParamMap?.get('examId') ?? null;
     return examId ? { subjectId, examId } : { subjectId };
@@ -736,7 +751,18 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   }
 
   private isBasicEducationExamQuestionRoute(): boolean {
-    return this.router.url.startsWith('/tenant/exams/basic-education') || this.router.url.startsWith('/teacher/exams/basic-education');
+    return (
+      this.router.url.startsWith('/tenant/exams/basic-education') ||
+      this.router.url.startsWith('/teacher/exams/basic-education') ||
+      this.isGroupHomeWorkQuestionRoute()
+    );
+  }
+
+  isGroupHomeWorkQuestionRoute(): boolean {
+    return (
+      this.router.url.startsWith('/tenant/groups/') &&
+      this.router.url.includes('/exam/basic-education/')
+    );
   }
 
   private isUniversityExamQuestionRoute(): boolean {
@@ -1695,7 +1721,9 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     if (!subject || !stageId || !gradeId || !questionId) {
       return;
     }
-    const key = this.examQuestionDraftStorageKey(stageId, gradeId, subject.id);
+    const key = this.isGroupHomeWorkQuestionRoute()
+      ? this.groupHomeWorkExamQuestionDraftStorageKey(stageId, gradeId, subject.id)
+      : this.examQuestionDraftStorageKey(stageId, gradeId, subject.id);
     const current = this.readStoredExamQuestionIds(key);
     if (!current.includes(questionId)) {
       sessionStorage.setItem(key, JSON.stringify([...current, questionId]));
@@ -1714,12 +1742,23 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
       return;
     }
 
-    const key = this.examQuestionDraftStorageKey(stageId, gradeId, subject.id);
-    const mergedIds = this.readStoredExamQuestionIds(key);
+    const isGroupHomeWorkQuestion = this.isGroupHomeWorkQuestionRoute();
+    const key = isGroupHomeWorkQuestion
+      ? this.groupHomeWorkExamQuestionDraftStorageKey(stageId, gradeId, subject.id, examId)
+      : this.examQuestionDraftStorageKey(stageId, gradeId, subject.id);
+    const linkedQuestions = isGroupHomeWorkQuestion
+      ? []
+      : await this.data.listBasicEducationExamLinkedQuestions(stageId, gradeId, subject.id, examId);
+    const mergedIds = linkedQuestions.map((question) => question.id);
+    for (const storedId of this.readStoredExamQuestionIds(key)) {
+      if (!mergedIds.includes(storedId)) {
+        mergedIds.push(storedId);
+      }
+    }
     if (!mergedIds.includes(questionId)) {
       mergedIds.push(questionId);
-      sessionStorage.setItem(key, JSON.stringify(mergedIds));
     }
+    sessionStorage.setItem(key, JSON.stringify(mergedIds));
 
     const exams = await this.data.listBasicEducationExams(stageId, gradeId, subject.id);
     const exam = exams.find((item) => item.id === examId);
@@ -1749,6 +1788,27 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
 
   private examQuestionDraftStorageKey(stageId: string, gradeId: string, subjectId: string): string {
     return `tenant.exam-draft.questions.basic.${stageId}.${gradeId}.${subjectId}`;
+  }
+
+  private groupHomeWorkExamQuestionDraftStorageKey(
+    stageId: string,
+    gradeId: string,
+    subjectId: string,
+    examId = this.route.snapshot?.queryParamMap?.get('examId') ?? null,
+  ): string {
+    const groupId = this.route.snapshot?.paramMap?.get('groupId') ?? 'group';
+    const sessionKey =
+      this.route.snapshot?.queryParamMap?.get('returnTo') ||
+      [
+        this.route.snapshot?.queryParamMap?.get('examDate'),
+        this.route.snapshot?.queryParamMap?.get('examStartTime'),
+      ].filter(Boolean).join(':') ||
+      'session';
+    return `${this.examQuestionDraftStorageKey(stageId, gradeId, subjectId)}.group.${groupId}.exam.${examId || 'draft'}.session.${this.toStorageKeyPart(sessionKey)}`;
+  }
+
+  private toStorageKeyPart(value: string): string {
+    return value.replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '');
   }
 
   private async saveQuestionToBackend(): Promise<TenantCurriculumQuestion> {
