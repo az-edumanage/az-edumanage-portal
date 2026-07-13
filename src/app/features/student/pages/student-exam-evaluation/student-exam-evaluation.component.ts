@@ -139,12 +139,13 @@ export class StudentExamEvaluationComponent implements OnInit {
   readonly pageSize = signal(10);
   readonly source = computed(() => this.route.snapshot.data['source'] as string | undefined);
   readonly groupId = computed(() => this.route.snapshot.paramMap.get('groupId'));
-  readonly showsStudentColumn = computed(() => this.source() === 'teacher' || this.source() === 'tenant' || this.source() === 'tenantGroup' || this.source() === 'parent');
-  readonly title = computed(() => this.source() === 'tenant' || this.source() === 'teacher' ? 'Exams Evaluation' : 'Exam Evaluation');
+  readonly showsStudentColumn = computed(() => this.source() === 'teacher' || this.source() === 'tenant' || this.source() === 'tenantEvaluationGroup' || this.source() === 'parent');
+  readonly title = computed(() => this.source() === 'tenant' || this.source() === 'teacher' || this.source() === 'student' ? 'Exams Evaluation' : this.source() === 'tenantEvaluationGroup' ? 'Group Exam Evaluation' : 'Exam Evaluation');
   readonly subtitle = computed(() => {
     if (this.source() === 'teacher') return 'Completed student exam reports from your assigned groups.';
     if (this.source() === 'tenant') return 'Completed exam reports across all groups.';
-    if (this.source() === 'tenantGroup') return 'Completed exam reports for this group.';
+    if (this.source() === 'student') return 'Saved exam reports from completed attempts.';
+    if (this.source() === 'tenantEvaluationGroup') return 'Completed exam reports for the selected group.';
     if (this.source() === 'parent') return 'Completed exam reports for your linked students.';
     return 'Saved exam reports from completed attempts.';
   });
@@ -253,15 +254,15 @@ export class StudentExamEvaluationComponent implements OnInit {
       return ['/teacher/evaluation/exams', 'groups', evaluation.groupId, 'exams', evaluation.assignmentId, 'attempts', evaluation.attemptId, 'report'];
     }
     if (this.source() === 'tenant') {
-      return ['/tenant/exams-evaluation', 'groups', evaluation.groupId, 'exams', evaluation.assignmentId, 'attempts', evaluation.attemptId, 'report'];
+      return ['/tenant/exam-evaluation', 'groups', evaluation.groupId, 'exams', evaluation.assignmentId, 'attempts', evaluation.attemptId, 'report'];
     }
-    if (this.source() === 'tenantGroup') {
-      return ['/tenant/groups', evaluation.groupId, 'exam-evaluation', 'exams', evaluation.assignmentId, 'attempts', evaluation.attemptId, 'report'];
+    if (this.source() === 'tenantEvaluationGroup') {
+      return ['/tenant/exam-evaluation', 'groups', evaluation.groupId, 'exams', evaluation.assignmentId, 'attempts', evaluation.attemptId, 'report'];
     }
     if (this.source() === 'parent') {
       return ['/parent/exam-evaluation', 'groups', evaluation.groupId, 'exams', evaluation.assignmentId, 'attempts', evaluation.attemptId, 'report'];
     }
-    return ['/student/exam-evaluation', evaluation.groupId, evaluation.assignmentId, 'attempts', evaluation.attemptId, 'report'];
+    return ['/student/evaluation/exams', evaluation.groupId, evaluation.assignmentId, 'attempts', evaluation.attemptId, 'report'];
   }
 
   private formatNumber(value: number): string {
@@ -290,7 +291,7 @@ export class StudentExamEvaluationComponent implements OnInit {
     if (this.source() === 'tenant') {
       return this.data.tenantExamEvaluations();
     }
-    if (this.source() === 'tenantGroup') {
+    if (this.source() === 'tenantEvaluationGroup') {
       const groupId = this.groupId();
       if (!groupId) {
         throw new Error('Group is required');

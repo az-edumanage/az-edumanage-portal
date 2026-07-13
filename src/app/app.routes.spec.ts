@@ -70,6 +70,9 @@ describe('Route Deep Link Matrix', () => {
     expect(paths).toContain('my-courses');
     expect(paths).toContain('my-groups');
     expect(paths).toContain('exams');
+    expect(paths).toContain('evaluation/exams');
+    expect(paths).toContain('evaluation/home-work');
+    expect(paths).toContain('exam-evaluation');
     expect(paths).toContain('home-work');
     expect(paths).toContain('billing');
   });

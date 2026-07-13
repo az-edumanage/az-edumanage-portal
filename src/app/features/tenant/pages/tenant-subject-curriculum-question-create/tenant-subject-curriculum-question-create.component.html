@@ -2,7 +2,15 @@
   <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div class="space-y-1">
       <div class="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
-        @if (isExamQuestionRoute()) {
+        @if (isGroupHomeWorkQuestionRoute()) {
+          <a routerLink="/tenant/groups" class="hover:text-indigo-600 transition-colors">Groups</a>
+          <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+          <a [routerLink]="groupDetailsLink()" class="hover:text-indigo-600 transition-colors">Group Details</a>
+          <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+          <a [routerLink]="examCreateLink()" [queryParams]="examCreateQueryParams()" class="hover:text-indigo-600 transition-colors">Session Home Work</a>
+          <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
+          <span>{{ subject()?.name || label('subject') }}</span>
+        } @else if (isExamQuestionRoute()) {
           <a [routerLink]="examsRoot()" class="hover:text-indigo-600 transition-colors">Exams</a>
           <mat-icon class="text-[10px]">{{ breadcrumbSeparatorIcon() }}</mat-icon>
           <a [routerLink]="basicEducationExamsRoot()" class="hover:text-indigo-600 transition-colors">Basic Education</a>

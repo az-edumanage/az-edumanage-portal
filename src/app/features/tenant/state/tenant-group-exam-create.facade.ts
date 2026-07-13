@@ -14,8 +14,13 @@ interface TenantGroupExamCreateContext {
   returnTo?: string | null;
   returnTab?: string | null;
   assignmentId?: string | null;
+  selectedExamId?: string | null;
   examDate?: string | null;
   examStartTime?: string | null;
+  examDuration?: string | null;
+  instructions?: string | null;
+  showResultsImmediately?: string | null;
+  allowRetakes?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -31,7 +36,9 @@ export class TenantGroupExamCreateFacade {
   private returnTo: string | null = null;
   private returnTab: string | null = null;
   private assignmentId: string | null = null;
+  private selectedExamId: string | null = null;
   private scope: 'tenant' | 'teacher' = 'tenant';
+  private persistDraftTask = true;
 
   readonly groupId = this.store.groupId;
   readonly isSubmitting = this.store.isSubmitting;
@@ -64,10 +71,20 @@ export class TenantGroupExamCreateFacade {
     this.store.setGroupId(groupId);
     this.scope = context.scope === 'teacher' ? 'teacher' : 'tenant';
     this.returnTo = this.normalizedReturnPath(context.returnTo);
-    this.returnTab = context.returnTab === 'students' || context.returnTab === 'lessons' || context.returnTab === 'exams'
-      ? context.returnTab
-      : null;
+    const isSessionHomeWork = this.isSessionHomeWorkContext(context);
+    this.returnTab = isSessionHomeWork
+      ? 'homeWork'
+      : context.returnTab === 'students' || context.returnTab === 'lessons' || context.returnTab === 'exams'
+        ? context.returnTab
+        : null;
     this.assignmentId = context.assignmentId?.trim() || null;
+    this.selectedExamId = context.selectedExamId?.trim() || null;
+    this.persistDraftTask = !this.isSessionHomeWorkContext(context);
+    if (this.isSessionHomeWorkContext(context) || this.selectedExamId) {
+      this.examForm.controls.title.enable({ emitEvent: false });
+    } else {
+      this.examForm.controls.title.disable({ emitEvent: false });
+    }
     if (freshCreate) {
       this.resetForm();
       this.taskService.removeTask(this.store.taskId());
@@ -78,6 +95,7 @@ export class TenantGroupExamCreateFacade {
         startTime: this.normalizeStartTime(context.examStartTime),
       });
     }
+    this.patchEditableSessionHomeWorkContext(context);
     this.loadGroupExamPage(freshCreate);
 
     const savedTask = this.taskService.getTask(this.store.taskId());
@@ -88,6 +106,11 @@ export class TenantGroupExamCreateFacade {
   }
 
   onDestroy(currentRoute: string): void {
+    if (!this.persistDraftTask) {
+      this.taskService.removeTask(this.store.taskId());
+      return;
+    }
+
     const value = this.examForm.getRawValue();
     const hasData = value.title !== '' || value.instructions !== '';
 
@@ -131,6 +154,7 @@ export class TenantGroupExamCreateFacade {
         this.isSuccess = true;
         this.store.setAssignment(assignment);
         this.taskService.removeTask(this.store.taskId());
+        this.rememberPendingSessionHomeWorkAssignment(assignment);
         this.navigateAfterSave();
       });
   }
@@ -231,7 +255,15 @@ export class TenantGroupExamCreateFacade {
       .loadPublishedExamOptions(groupContext.stageId, groupContext.gradeId, groupContext.subjectId, { scope: this.scope })
       .pipe(finalize(() => this.store.setExamOptionsLoading(false)))
       .subscribe({
-        next: (options) => this.store.setPublishedExamOptions(options),
+        next: (options) => {
+          this.store.setPublishedExamOptions(options);
+          const selectedExam = this.selectedExamId
+            ? options.find((option) => option.id === this.selectedExamId)
+            : null;
+          if (selectedExam) {
+            this.selectPublishedExam(selectedExam);
+          }
+        },
         error: (error: Error) => {
           this.store.setPublishedExamOptions([]);
           this.store.setExamOptionsError(error.message || 'Unable to load published exams');
@@ -260,6 +292,29 @@ export class TenantGroupExamCreateFacade {
   private normalizeStartTime(value: string | null | undefined): string | null {
     const trimmed = value?.trim();
     return trimmed ? trimmed : null;
+  }
+
+  private patchEditableSessionHomeWorkContext(context: TenantGroupExamCreateContext): void {
+    const patch: Partial<TenantGroupExamCreatePayload> = {};
+    const duration = Number(context.examDuration);
+    if (Number.isFinite(duration) && duration > 0) {
+      patch.duration = duration;
+    }
+    if (context.instructions !== undefined && context.instructions !== null) {
+      patch.instructions = context.instructions;
+    }
+    if (context.showResultsImmediately === 'true' || context.showResultsImmediately === 'false') {
+      patch.showResultsImmediately = context.showResultsImmediately === 'true';
+    }
+    if (context.allowRetakes === 'true' || context.allowRetakes === 'false') {
+      patch.allowRetakes = context.allowRetakes === 'true';
+    }
+    if (this.selectedExamId) {
+      patch.selectedExamId = this.selectedExamId;
+    }
+    if (Object.keys(patch).length) {
+      this.examForm.patchValue(patch);
+    }
   }
 
   private patchFromAssignmentRow(assignment: GroupExamRow): void {
@@ -304,12 +359,68 @@ export class TenantGroupExamCreateFacade {
     return `${returnTo}${separator}tab=${encodeURIComponent(this.returnTab)}`;
   }
 
+  private rememberPendingSessionHomeWorkAssignment(assignment: {
+    groupId: string;
+    selectedExamId: string | null;
+    examTitle: string;
+    sourceStatus?: string | null;
+    date: string;
+    startTime?: string | null;
+    duration: number;
+    instructions?: string | null;
+    showResultsImmediately: boolean;
+    allowRetakes: boolean;
+    updatedAt?: string | null;
+  }): void {
+    const sessionId = this.returnTo?.match(/\/sessions\/([^/?#]+)/)?.[1];
+    if (!sessionId || !assignment.selectedExamId) {
+      return;
+    }
+
+    sessionStorage.setItem(
+      this.pendingSessionHomeWorkStorageKey(assignment.groupId, decodeURIComponent(sessionId)),
+      JSON.stringify({
+        id: `pending-${assignment.selectedExamId}-${assignment.date}-${assignment.startTime || 'anytime'}`,
+        groupId: assignment.groupId,
+        examId: assignment.selectedExamId,
+        title: assignment.examTitle,
+        status: assignment.sourceStatus || 'PUBLISHED',
+        date: assignment.date,
+        startTime: assignment.startTime ?? null,
+        duration: assignment.duration,
+        questionCount: null,
+        instructions: assignment.instructions ?? null,
+        updatedAt: assignment.updatedAt ?? null,
+        settings: {
+          showResultsImmediately: assignment.showResultsImmediately,
+          allowRetakes: assignment.allowRetakes,
+        },
+      }),
+    );
+  }
+
+  private pendingSessionHomeWorkStorageKey(groupId: string, sessionId: string): string {
+    return `tenant.session-homework.pending.${groupId}.${this.toStorageKeyPart(sessionId)}`;
+  }
+
+  private toStorageKeyPart(value: string): string {
+    return value.replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '');
+  }
+
   private normalizedReturnPath(value: string | null | undefined): string | null {
     const trimmed = value?.trim();
     if (!trimmed || (!trimmed.startsWith('/tenant/') && !trimmed.startsWith('/teacher/'))) {
       return null;
     }
     return trimmed;
+  }
+
+  private isSessionHomeWorkContext(context: TenantGroupExamCreateContext): boolean {
+    return (
+      Boolean(context.returnTo?.includes('/sessions/')) ||
+      Boolean(context.examDate?.trim()) ||
+      Boolean(context.examStartTime?.trim())
+    );
   }
 
   private resetForm(): void {

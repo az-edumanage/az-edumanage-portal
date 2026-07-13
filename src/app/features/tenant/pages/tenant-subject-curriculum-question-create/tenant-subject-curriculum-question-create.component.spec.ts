@@ -493,7 +493,7 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
         { provide: TenantSubjectsDataService, useValue: data },
         { provide: TenantQuestionTypeSettingsService, useValue: questionTypeSettings },
         { provide: TenantQuestionSourceSettingsService, useValue: questionSourceSettings },
-        { provide: ActivatedRoute, useValue: { paramMap: paramMap$.asObservable(), snapshot: { queryParamMap: convertToParamMap({}) } } },
+        { provide: ActivatedRoute, useValue: { paramMap: paramMap$.asObservable(), snapshot: { paramMap: convertToParamMap({}), queryParams: {}, queryParamMap: convertToParamMap({}) } } },
       ],
     }).compileComponents();
 
@@ -690,6 +690,46 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
     );
   });
 
+  it('renders session home work breadcrumb for group-scoped add question routes', async () => {
+    const router = TestBed.inject(Router);
+    const route = TestBed.inject(ActivatedRoute);
+    vi.spyOn(router, 'url', 'get').mockReturnValue(
+      '/tenant/groups/group-1/exam/basic-education/stage-1/grades/grade-1/subjects/subject-1/curriculum/addQuestion?subjectId=subject-1&examId=exam-1',
+    );
+    Object.defineProperty(route.snapshot, 'paramMap', { value: convertToParamMap({ groupId: 'group-1' }), configurable: true });
+    Object.defineProperty(route.snapshot, 'queryParams', {
+      value: {
+        freshCreate: 'true',
+        returnTo: '/tenant/groups/group-1/sessions/group-1:2026-07-05:14:00',
+        returnTab: 'exams',
+        subjectId: 'subject-1',
+        examId: 'exam-1',
+      },
+      configurable: true,
+    });
+    Object.defineProperty(route.snapshot, 'queryParamMap', {
+      value: convertToParamMap({ subjectId: 'subject-1', examId: 'exam-1' }),
+      configurable: true,
+    });
+
+    paramMap$.next(convertToParamMap({
+      groupId: 'group-1',
+      stageId: 'stage-1',
+      gradeId: 'grade-1',
+      id: 'subject-1',
+    }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Groups');
+    expect(text).toContain('Session Home Work');
+    expect(text).toContain('Arabic');
+    expect(text).not.toContain('Exams');
+    expect(text).not.toContain('Basic Education');
+  });
+
   it('shows the subject curriculum scope on exam question edit routes without a curriculum item', async () => {
     const router = TestBed.inject(Router);
     vi.spyOn(router, 'url', 'get').mockReturnValue(
@@ -871,10 +911,86 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
     expect(data.updateBasicEducationExam).toHaveBeenCalledWith('stage-1', 'grade-1', 'subject-1', 'exam-1', expect.objectContaining({
       title: 'Saved Exam',
       instructions: 'Keep instructions',
-      questionIds: ['question-root-one', 'bank-question-1'],
+      questionIds: ['exam-question-1', 'question-root-one', 'bank-question-1'],
     }));
-    expect(sessionStorage.getItem('tenant.exam-draft.questions.basic.stage-1.grade-1.subject-1')).toBe(JSON.stringify(['question-root-one', 'bank-question-1']));
+    expect(sessionStorage.getItem('tenant.exam-draft.questions.basic.stage-1.grade-1.subject-1')).toBe(JSON.stringify(['exam-question-1', 'question-root-one', 'bank-question-1']));
     expect(router.navigate).toHaveBeenCalledWith(['/tenant/exams/basic-education', 'stage-1', 'grades', 'grade-1', 'create', 'new'], { queryParams: { subjectId: 'subject-1', examId: 'exam-1' } });
+  });
+
+  it('returns group homework inserted questions to the same draft exam questions section', async () => {
+    const router = TestBed.inject(Router);
+    const route = TestBed.inject(ActivatedRoute);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    vi.spyOn(router, 'url', 'get').mockReturnValue(
+      '/tenant/groups/group-1/exam/basic-education/stage-1/grades/grade-1/subjects/subject-1/curriculum/addQuestion?freshCreate=true&returnTo=%2Ftenant%2Fgroups%2Fgroup-1%2Fsessions%2Fsession-1&returnTab=exams&examDate=2026-07-09&examStartTime=14:00&subjectId=subject-1&examId=exam-1',
+    );
+    Object.defineProperty(route.snapshot, 'paramMap', {
+      value: convertToParamMap({
+        groupId: 'group-1',
+        stageId: 'stage-1',
+        gradeId: 'grade-1',
+        id: 'subject-1',
+      }),
+      configurable: true,
+    });
+    Object.defineProperty(route.snapshot, 'queryParams', {
+      value: {
+        freshCreate: 'true',
+        returnTo: '/tenant/groups/group-1/sessions/session-1',
+        returnTab: 'exams',
+        examDate: '2026-07-09',
+        examStartTime: '14:00',
+        subjectId: 'subject-1',
+        examId: 'exam-1',
+      },
+      configurable: true,
+    });
+    Object.defineProperty(route.snapshot, 'queryParamMap', {
+      value: convertToParamMap({
+        freshCreate: 'true',
+        returnTo: '/tenant/groups/group-1/sessions/session-1',
+        returnTab: 'exams',
+        examDate: '2026-07-09',
+        examStartTime: '14:00',
+        subjectId: 'subject-1',
+        examId: 'exam-1',
+      }),
+      configurable: true,
+    });
+    paramMap$.next(convertToParamMap({
+      groupId: 'group-1',
+      stageId: 'stage-1',
+      gradeId: 'grade-1',
+      id: 'subject-1',
+    }));
+    await fixture.whenStable();
+
+    const component = fixture.componentInstance;
+    component.questionForm.patchValue({ question: 'Homework inserted question?' });
+    component.selectQuestionType('True / False');
+    await component.saveQuestion();
+
+    expect(data.createBasicEducationExamQuestion).toHaveBeenCalledWith('stage-1', 'grade-1', 'subject-1', expect.objectContaining({
+      question: 'Homework inserted question?',
+      type: 'TRUE_FALSE',
+      curriculumNodeId: null,
+    }));
+    expect(data.listBasicEducationExamLinkedQuestions).not.toHaveBeenCalled();
+    expect(data.updateBasicEducationExam).toHaveBeenCalledWith('stage-1', 'grade-1', 'subject-1', 'exam-1', expect.objectContaining({
+      questionIds: ['bank-question-1'],
+    }));
+    expect(sessionStorage.getItem('tenant.exam-draft.questions.basic.stage-1.grade-1.subject-1.group.group-1.exam.exam-1.session.tenant_groups_group-1_sessions_session-1')).toBe(JSON.stringify(['bank-question-1']));
+    expect(navigateSpy).toHaveBeenCalledWith(['/tenant/groups', 'group-1', 'exam'], {
+      queryParams: {
+        freshCreate: 'true',
+        returnTo: '/tenant/groups/group-1/sessions/session-1',
+        returnTab: 'exams',
+        examDate: '2026-07-09',
+        examStartTime: '14:00',
+        subjectId: 'subject-1',
+        examId: 'exam-1',
+      },
+    });
   });
 
   it('saves basic question-bank questions to the separated question-bank store', async () => {

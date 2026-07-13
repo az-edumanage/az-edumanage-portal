@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,6 +14,11 @@ import {
   StudentPublishedSessionDetails,
   StudentPublishedSessionFile,
 } from '../../models/student-dashboard.models';
+
+type PresentationPreviewer = {
+  preview(file: ArrayBuffer): Promise<unknown>;
+  destroy(): void;
+};
 
 @Component({
   selector: 'app-student-groups',
@@ -154,6 +159,25 @@ import {
                   <video class="preview-media" [src]="previewObjectUrl()" controls playsinline preload="metadata"></video>
                 } @else if ((isPdfFile(file) || file.contentType === 'LINK') && safeFileUrl()) {
                   <iframe class="preview-frame" [src]="safeFileUrl()" [title]="file.title || 'File preview'"></iframe>
+                } @else if (isPresentationFile(file)) {
+                  <div class="presentation-preview">
+                    @if (previewPresentationLoading()) {
+                      <div class="preview-empty presentation-loading" aria-live="polite">
+                        <mat-icon>sync</mat-icon>
+                        <strong>Loading preview...</strong>
+                        <span>The presentation is being prepared for display.</span>
+                      </div>
+                    }
+                    @if (previewPresentationError()) {
+                      <div class="preview-empty error-preview">
+                        <mat-icon>slideshow</mat-icon>
+                        <strong>Preview unavailable</strong>
+                        <span>{{ previewPresentationError() }}</span>
+                      </div>
+                    } @else {
+                      <div #presentationPreviewHost class="presentation-preview-host" [class.is-loading]="previewPresentationLoading()"></div>
+                    }
+                  </div>
                 } @else {
                   <div class="preview-empty">
                     <mat-icon>open_in_new</mat-icon>
@@ -506,6 +530,50 @@ import {
       object-fit: contain;
     }
 
+    .presentation-preview {
+      position: relative;
+      width: 100%;
+      height: min(72vh, 720px);
+      align-self: stretch;
+      overflow: auto;
+      background: #f1f5f9;
+    }
+
+    .presentation-preview-host {
+      min-height: 100%;
+      padding: 16px;
+    }
+
+    .presentation-preview-host.is-loading {
+      opacity: 0;
+    }
+
+    .presentation-loading {
+      position: absolute;
+      z-index: 1;
+      inset: 0;
+      background: #f8fafc;
+    }
+
+    .presentation-preview-host ::ng-deep .pptx-preview-wrapper {
+      max-width: 100%;
+      height: auto !important;
+      margin-inline: auto;
+      overflow: visible !important;
+    }
+
+    .presentation-preview-host ::ng-deep .pptx-wrapper {
+      max-width: 100%;
+      margin-inline: auto;
+    }
+
+    .presentation-preview-host ::ng-deep .pptx-preview-slide-wrapper,
+    .presentation-preview-host ::ng-deep section,
+    .presentation-preview-host ::ng-deep .slide {
+      max-width: 100%;
+      box-shadow: 0 12px 30px rgb(15 23 42 / 0.14);
+    }
+
     .preview-empty {
       display: grid;
       justify-items: center;
@@ -609,8 +677,13 @@ import {
 
     :host-context(.dark) .preview-frame,
     :host-context(.dark) .preview-media,
-    :host-context(.dark) .note-preview {
+    :host-context(.dark) .note-preview,
+    :host-context(.dark) .presentation-preview {
       background: #020617;
+    }
+
+    :host-context(.dark) .presentation-loading {
+      background: #111827;
     }
 
     :host-context(.dark) .error-preview,
@@ -641,6 +714,10 @@ export class StudentGroupsComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly sanitizer = inject(DomSanitizer);
   private previewObjectUrlValue: string | null = null;
+  private presentationPreviewer: PresentationPreviewer | null = null;
+
+  @ViewChild('presentationPreviewHost')
+  private presentationPreviewHost?: ElementRef<HTMLElement>;
 
   readonly groups = signal<StudentGroup[]>([]);
   readonly sessions = signal<StudentPublishedSession[]>([]);
@@ -657,6 +734,8 @@ export class StudentGroupsComponent implements OnInit {
   readonly previewObjectUrl = signal<string | null>(null);
   readonly previewLoading = signal(false);
   readonly previewError = signal<string | null>(null);
+  readonly previewPresentationLoading = signal(false);
+  readonly previewPresentationError = signal<string | null>(null);
 
   readonly filteredGroups = computed(() => {
     const query = this.searchTerm().trim().toLowerCase();
@@ -670,7 +749,10 @@ export class StudentGroupsComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.destroyRef.onDestroy(() => this.revokePreviewObjectUrl());
+    this.destroyRef.onDestroy(() => {
+      this.revokePreviewObjectUrl();
+      this.destroyPresentationPreviewer();
+    });
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       this.groupId.set(params.get('groupId'));
       this.sessionId.set(params.get('sessionId'));
@@ -761,17 +843,25 @@ export class StudentGroupsComponent implements OnInit {
     if (file.contentType === 'NOTE') return 'article';
     if (this.isImageFile(file)) return 'image';
     if (this.isVideoFile(file)) return 'movie';
+    if (this.isPresentationFile(file)) return 'slideshow';
     return 'description';
   }
 
   async openFile(file: StudentPublishedSessionFile): Promise<void> {
     const url = this.fileUrl(file);
     this.revokePreviewObjectUrl();
+    this.destroyPresentationPreviewer();
     this.selectedFile.set(file);
     this.previewError.set(null);
     this.previewLoading.set(false);
+    this.previewPresentationError.set(null);
+    this.previewPresentationLoading.set(false);
     this.safeFileUrl.set(url && file.contentType === 'LINK' ? this.sanitizer.bypassSecurityTrustResourceUrl(this.previewLinkUrl(url)) : null);
     if (!url || file.contentType === 'NOTE' || file.contentType === 'LINK') {
+      return;
+    }
+    if (this.isPresentationFile(file)) {
+      void this.preparePresentationPreview(file, url);
       return;
     }
     if (!this.isImageFile(file) && !this.isVideoFile(file) && !this.isPdfFile(file)) {
@@ -797,6 +887,9 @@ export class StudentGroupsComponent implements OnInit {
     this.safeFileUrl.set(null);
     this.previewLoading.set(false);
     this.previewError.set(null);
+    this.previewPresentationLoading.set(false);
+    this.previewPresentationError.set(null);
+    this.destroyPresentationPreviewer();
   }
 
   isImageFile(file: StudentPublishedSessionFile): boolean {
@@ -809,6 +902,12 @@ export class StudentGroupsComponent implements OnInit {
 
   isPdfFile(file: StudentPublishedSessionFile): boolean {
     return this.fileMime(file) === 'application/pdf' || (file.title || '').toLowerCase().endsWith('.pdf');
+  }
+
+  isPresentationFile(file: StudentPublishedSessionFile): boolean {
+    const mime = this.fileMime(file);
+    const title = (file.title || '').toLowerCase();
+    return mime.includes('presentation') || mime.includes('powerpoint') || title.endsWith('.pptx') || title.endsWith('.ppt');
   }
 
   fileUrl(file: StudentPublishedSessionFile): string | null {
@@ -915,5 +1014,44 @@ export class StudentGroupsComponent implements OnInit {
       this.previewObjectUrlValue = null;
     }
     this.previewObjectUrl.set(null);
+  }
+
+  private async preparePresentationPreview(file: StudentPublishedSessionFile, url: string): Promise<void> {
+    this.previewPresentationLoading.set(true);
+    this.previewPresentationError.set(null);
+    try {
+      await new Promise((resolve) => setTimeout(resolve));
+      const host = this.presentationPreviewHost?.nativeElement;
+      if (!host || this.selectedFile()?.contentId !== file.contentId) {
+        return;
+      }
+
+      host.replaceChildren();
+      const [module, arrayBuffer] = await Promise.all([
+        import('pptx-preview'),
+        firstValueFrom(this.http.get(url, { responseType: 'arraybuffer' })),
+      ]);
+      if (this.selectedFile()?.contentId !== file.contentId) {
+        return;
+      }
+
+      this.destroyPresentationPreviewer();
+      this.presentationPreviewer = module.init(host, { width: 960, height: 540, mode: 'list' });
+      await this.presentationPreviewer.preview(arrayBuffer);
+    } catch {
+      this.previewPresentationError.set('Unable to preview this presentation inline.');
+    } finally {
+      if (this.selectedFile()?.contentId === file.contentId) {
+        this.previewPresentationLoading.set(false);
+      }
+    }
+  }
+
+  private destroyPresentationPreviewer(): void {
+    if (this.presentationPreviewer) {
+      this.presentationPreviewer.destroy();
+      this.presentationPreviewer = null;
+    }
+    this.presentationPreviewHost?.nativeElement.replaceChildren();
   }
 }

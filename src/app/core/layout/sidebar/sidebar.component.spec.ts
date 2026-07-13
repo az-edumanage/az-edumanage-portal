@@ -75,42 +75,90 @@ describe('SidebarComponent', () => {
   it('returns only tenant menu sections for tenant workspace', () => {
     const fixture = TestBed.createComponent(SidebarComponent);
     const sections = fixture.componentInstance.menuSections();
-    const routes = sections.flatMap((section) => section.items.map((item) => item.route).filter(Boolean));
+    const routes = allRoutes(sections);
+    const topLevelRoutes = sections.flatMap((section) => section.items.map((item) => item.route).filter(Boolean));
     const basicEducation = sections
       .flatMap((section) => section.items)
       .find((item) => item.labelKey === 'sidebar.item.basicEducation');
     const mainItems = sections.find((section) => section.titleKey === 'sidebar.section.main')?.items ?? [];
+    const usersItems = sections.find((section) => section.titleKey === 'sidebar.section.users')?.items ?? [];
     const academicItems = sections.find((section) => section.titleKey === 'sidebar.section.academic')?.items ?? [];
+    const attendanceItems = sections.find((section) => section.titleKey === 'sidebar.section.attendance')?.items ?? [];
+    const examsEvaluationItems = sections.find((section) => section.titleKey === 'sidebar.section.examsEvaluation')?.items ?? [];
+    const financeItems = sections.find((section) => section.titleKey === 'sidebar.section.financeAdmin')?.items ?? [];
     const settingsItems = sections.find((section) => section.titleKey === 'sidebar.section.settings')?.items ?? [];
-    const universityEducation = mainItems.find((item) => item.labelKey === 'sidebar.item.universityEducation');
+    const universityEducation = academicItems.find((item) => item.labelKey === 'sidebar.item.universityEducation');
 
     expect(routes).toContain('/tenant/overview');
     expect(routes).toContain('/tenant/students');
     expect(routes).toContain('/tenant/parents');
     expect(routes).toContain('/tenant/settings');
-    expect(routes).toContain('/tenant/web-settings');
+    expect(routes).toContain('/tenant/lms-settings');
     expect(routes).not.toContain('/owner/overview');
+    expect(sections.findIndex((section) => section.titleKey === 'sidebar.section.users'))
+      .toBe(sections.findIndex((section) => section.titleKey === 'sidebar.section.main') + 1);
+    expect(sections.findIndex((section) => section.titleKey === 'sidebar.section.academic'))
+      .toBe(sections.findIndex((section) => section.titleKey === 'sidebar.section.users') + 1);
+    expect(sections.findIndex((section) => section.titleKey === 'sidebar.section.attendance'))
+      .toBe(sections.findIndex((section) => section.titleKey === 'sidebar.section.academic') + 1);
+    expect(sections.findIndex((section) => section.titleKey === 'sidebar.section.examsEvaluation'))
+      .toBe(sections.findIndex((section) => section.titleKey === 'sidebar.section.attendance') + 1);
 
     expect(basicEducation?.route).toBeUndefined();
     expect(basicEducation?.children?.map((child) => child.route)).toEqual(educationRoutes);
-    expect(mainItems.findIndex((item) => item.labelKey === 'sidebar.item.universityEducation'))
-      .toBe(mainItems.findIndex((item) => item.labelKey === 'sidebar.item.basicEducation') + 1);
-    expect(mainItems.findIndex((item) => item.labelKey === 'sidebar.item.parents'))
-      .toBe(mainItems.findIndex((item) => item.labelKey === 'sidebar.item.students') + 1);
-    expect(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.examsEvaluation'))
-      .toBe(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.examsGrades') + 1);
-    expect(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.questionsBank'))
-      .toBe(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.examsEvaluation') + 1);
-    expect(academicItems.find((item) => item.labelKey === 'sidebar.item.examsGrades')?.route).toBe('/tenant/exams');
-    expect(academicItems.find((item) => item.labelKey === 'sidebar.item.examsEvaluation')?.route).toBe('/tenant/exams-evaluation');
-    expect(academicItems.find((item) => item.labelKey === 'sidebar.item.questionsBank')?.route).toBe('/tenant/questions-bank');
-    expect(settingsItems.find((item) => item.labelKey === 'sidebar.item.lms')?.route).toBe('/tenant/web-settings');
+    expect(mainItems.map((item) => item.labelKey)).not.toContain('sidebar.item.users');
+    expect(mainItems.map((item) => item.labelKey)).not.toContain('sidebar.item.rooms');
+    expect(mainItems.map((item) => item.labelKey)).not.toContain('sidebar.item.groupsClasses');
+    expect(mainItems.map((item) => item.labelKey)).not.toContain('sidebar.item.basicEducation');
+    expect(mainItems.map((item) => item.labelKey)).not.toContain('sidebar.item.universityEducation');
+    expect(usersItems.map((item) => [item.labelKey, item.route])).toEqual([
+      ['sidebar.item.students', '/tenant/students'],
+      ['sidebar.item.parents', '/tenant/parents'],
+      ['sidebar.item.teachers', '/tenant/teachers'],
+      ['sidebar.item.users', '/tenant/users'],
+    ]);
+    expect(academicItems.slice(0, 3).map((item) => [item.labelKey, item.route])).toEqual([
+      ['sidebar.item.groupsClasses', '/tenant/groups'],
+      ['sidebar.item.basicEducation', undefined],
+      ['sidebar.item.universityEducation', undefined],
+    ]);
+    expect(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.universityEducation'))
+      .toBe(academicItems.findIndex((item) => item.labelKey === 'sidebar.item.basicEducation') + 1);
+    expect(academicItems.map((item) => item.labelKey)).not.toContain('sidebar.item.schedule');
+    expect(academicItems.map((item) => item.labelKey)).not.toContain('sidebar.item.attendance');
+    expect(academicItems.map((item) => item.labelKey)).not.toContain('sidebar.item.examsGrades');
+    expect(academicItems.map((item) => item.labelKey)).not.toContain('sidebar.item.questionsBank');
+    expect(academicItems.map((item) => item.labelKey)).not.toContain('sidebar.item.examEvaluation');
+    expect(attendanceItems.map((item) => [item.labelKey, item.route])).toEqual([
+      ['sidebar.item.schedule', '/tenant/schedule'],
+      ['sidebar.item.attendance', '/tenant/attendance'],
+    ]);
+    expect(examsEvaluationItems.map((item) => [item.labelKey, item.route])).toEqual([
+      ['sidebar.item.examsGrades', '/tenant/exams'],
+      ['sidebar.item.questionsBank', '/tenant/questions-bank'],
+      ['sidebar.item.examEvaluation', undefined],
+    ]);
+    expect(examsEvaluationItems.find((item) => item.labelKey === 'sidebar.item.examEvaluation')?.children?.map((child) => [child.labelKey, child.route])).toEqual([
+      ['sidebar.item.examEvaluationList', '/tenant/exam-evaluation'],
+      ['sidebar.item.homeWorkEvaluation', '/tenant/evaluation/home-work'],
+      ['sidebar.item.assessmentEvaluation', '/tenant/evaluation/assessment'],
+    ]);
+    expect(financeItems.map((item) => [item.labelKey, item.route])).toEqual([
+      ['sidebar.item.billing', '/tenant/billing'],
+    ]);
+    expect(settingsItems.map((item) => [item.labelKey, item.route])).toEqual([
+      ['sidebar.item.reports', '/tenant/reports'],
+      ['sidebar.item.lms', '/tenant/lms-settings'],
+      ['sidebar.item.platformSettings', '/tenant/settings'],
+      ['sidebar.item.rolesPermissions', '/tenant/users/roles-permissions'],
+      ['sidebar.item.rooms', '/tenant/rooms'],
+    ]);
     expect(sections.some((section) => section.titleKey === 'sidebar.section.development')).toBe(false);
     expect(routes).not.toContain('/design-system');
     expect(universityEducation?.route).toBeUndefined();
     expect(universityEducation?.children?.map((child) => child.route)).toEqual(universityEducationRoutes);
-    educationRoutes.filter((route) => route !== '/tenant/grades').forEach((route) => expect(routes).not.toContain(route));
-    universityEducationRoutes.forEach((route) => expect(routes).not.toContain(route));
+    educationRoutes.filter((route) => route !== '/tenant/grades').forEach((route) => expect(topLevelRoutes).not.toContain(route));
+    universityEducationRoutes.forEach((route) => expect(topLevelRoutes).not.toContain(route));
   });
 
   it('uses grouped teacher evaluation routes under Evaluation', () => {
@@ -134,11 +182,12 @@ describe('SidebarComponent', () => {
     ]);
   });
 
-  it('uses the student dashboard menu requested for schedule, LMS courses, groups, exams, home work, and billing', () => {
+  it('uses grouped student evaluation routes under Evaluation', () => {
     currentRole.set('student');
 
     const fixture = TestBed.createComponent(SidebarComponent);
     const items = fixture.componentInstance.menuSections()[0]?.items ?? [];
+    const evaluationItem = items.find((item) => item.labelKey === 'sidebar.item.examEvaluation');
 
     expect(items.map((item) => [item.labelKey, item.route])).toEqual([
       ['sidebar.item.overview', '/student/overview'],
@@ -146,16 +195,20 @@ describe('SidebarComponent', () => {
       ['sidebar.item.myCourses', '/student/my-courses'],
       ['sidebar.item.myGroups', '/student/my-groups'],
       ['sidebar.item.examsGrades', '/student/exams'],
-      ['sidebar.item.examEvaluation', '/student/exam-evaluation'],
       ['sidebar.item.homeWork', '/student/home-work'],
+      ['sidebar.item.examEvaluation', undefined],
       ['sidebar.item.billing', '/student/billing'],
+    ]);
+    expect(evaluationItem?.children?.map((child) => [child.labelKey, child.route])).toEqual([
+      ['sidebar.item.examsEvaluation', '/student/evaluation/exams'],
+      ['sidebar.item.homeWorkEvaluation', '/student/evaluation/home-work'],
     ]);
   });
 
   it.each([
     ['tenant.rooms.view', '/tenant/rooms'],
     ['tenant.basicEducation.view', '/tenant/educational-stages'],
-    ['tenant.grades.view', '/tenant/exams-evaluation'],
+    ['tenant.grades.view', '/tenant/exam-evaluation'],
     ['tenant.universityEducation.view', '/tenant/universities'],
     ['tenant.attendance.view', '/tenant/attendance'],
     ['tenant.reports.view', '/tenant/reports'],
@@ -301,6 +354,22 @@ describe('SidebarComponent', () => {
     await fixture.componentInstance.logout();
 
     expect(router.navigate).toHaveBeenCalledWith(['/tenant/login']);
+  });
+
+  it('shows a tenant Profile action in the footer account panel above Logout', () => {
+    const fixture = TestBed.createComponent(SidebarComponent);
+    fixture.componentInstance.toggleUserPanel();
+    fixture.detectChanges();
+
+    const panelLinks = fixture.debugElement.queryAll(By.css('a'));
+    const profileLink = panelLinks.find((link) => (link.nativeElement as HTMLElement).textContent?.includes('sidebar.item.profile'));
+    const logoutButton = fixture.debugElement
+      .queryAll(By.css('button'))
+      .find((button) => (button.nativeElement as HTMLElement).textContent?.includes('Logout'));
+
+    expect(profileLink).toBeDefined();
+    expect(profileLink?.attributes['href']).toBe('/tenant/profile');
+    expect(logoutButton).toBeDefined();
   });
 });
 

@@ -99,6 +99,29 @@ export interface GroupStudentAssessment {
   scores: GroupStudentAssessmentScore[];
 }
 
+export interface GroupAssessmentEvaluationScore {
+  bloomId: string;
+  bloomName: string;
+  studentGrade?: number | null;
+  finalGrade?: number | null;
+  updatedAt?: string | null;
+}
+
+export interface GroupAssessmentEvaluation {
+  groupId: string;
+  groupName: string;
+  subjectName?: string | null;
+  sessionId: string;
+  sessionDate?: string | null;
+  sessionStartTime?: string | null;
+  studentId: string;
+  studentName: string;
+  studentGrade?: number | null;
+  finalGrade?: number | null;
+  updatedAt?: string | null;
+  scores: GroupAssessmentEvaluationScore[];
+}
+
 export interface GroupStudentAssessmentSaveRequest {
   scores: Array<{
     bloomId: string;

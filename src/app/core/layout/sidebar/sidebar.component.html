@@ -179,6 +179,16 @@
 
           @if (isUserPanelOpen() && !collapsed()) {
             <div class="absolute bottom-full mb-2 w-full rounded-lg border border-slate-700 bg-slate-900 p-2 shadow-xl">
+              @if (profileRoute()) {
+                <a
+                  [routerLink]="profileRoute()"
+                  (click)="closeUserPanel()"
+                  class="mb-1 inline-flex w-full items-center justify-center gap-2 rounded-md border border-transparent px-3 py-2 text-xs font-semibold text-slate-300 transition-colors hover:border-slate-700 hover:bg-slate-800 hover:text-white"
+                >
+                  <mat-icon class="text-sm">person</mat-icon>
+                  {{ t('sidebar.item.profile') }}
+                </a>
+              }
               <button
                 type="button"
                 (click)="logout()"

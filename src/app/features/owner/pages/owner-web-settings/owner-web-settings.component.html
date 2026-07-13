@@ -110,34 +110,265 @@
 
       <div class="owner-web-card p-5 space-y-4" formGroupName="hero" [class.owner-web-hidden]="activeSection() !== 'hero'">
         <h3 class="owner-web-section-title">Hero</h3>
+        <div class="owner-web-language-grid">
+          <section class="owner-web-language-panel" dir="ltr">
+            <div class="owner-web-language-head">
+              <span>English</span>
+              <span>LTR</span>
+            </div>
+            <label class="owner-web-field">
+              <span>Badge</span>
+              <div class="owner-web-rich-field">
+                <quill-editor formControlName="badgeText" class="owner-web-quill-sm" [modules]="heroEditorModules" (onEditorCreated)="registerHeroEditor('badgeText', $event)" (onSelectionChanged)="rememberHeroSelection('badgeText', $event)"></quill-editor>
+                <input type="number" min="8" max="96" step="1" class="owner-web-input owner-web-px-input" placeholder="px" (change)="applyHeroRichFontSize('badgeText', $event)" />
+                <input type="color" class="owner-web-color-input" title="Selected text color" [value]="heroRichColor('badgeText')" (input)="applyHeroRichColor('badgeText', $event)" />
+              </div>
+            </label>
+            <label class="owner-web-field">
+              <span>Title *</span>
+              <div class="owner-web-rich-field">
+                <quill-editor formControlName="titleText" class="owner-web-quill-sm" [modules]="heroEditorModules" (onEditorCreated)="registerHeroEditor('titleText', $event)" (onSelectionChanged)="rememberHeroSelection('titleText', $event)"></quill-editor>
+                <input type="number" min="8" max="96" step="1" class="owner-web-input owner-web-px-input" placeholder="px" (change)="applyHeroRichFontSize('titleText', $event)" />
+                <input type="color" class="owner-web-color-input" title="Selected text color" [value]="heroRichColor('titleText')" (input)="applyHeroRichColor('titleText', $event)" />
+              </div>
+            </label>
+            <label class="owner-web-field">
+              <span>Description</span>
+              <div class="owner-web-rich-field owner-web-rich-field-tall">
+                <quill-editor formControlName="descriptionText" class="owner-web-quill-md" [modules]="heroEditorModules" (onEditorCreated)="registerHeroEditor('descriptionText', $event)" (onSelectionChanged)="rememberHeroSelection('descriptionText', $event)"></quill-editor>
+                <input type="number" min="8" max="96" step="1" class="owner-web-input owner-web-px-input" placeholder="px" (change)="applyHeroRichFontSize('descriptionText', $event)" />
+                <input type="color" class="owner-web-color-input" title="Selected text color" [value]="heroRichColor('descriptionText')" (input)="applyHeroRichColor('descriptionText', $event)" />
+              </div>
+            </label>
+            <label class="owner-web-field">
+              <span>Primary CTA Label</span>
+              <div class="owner-web-rich-field">
+                <quill-editor formControlName="primaryCtaLabel" class="owner-web-quill-sm" [modules]="heroEditorModules" (onEditorCreated)="registerHeroEditor('primaryCtaLabel', $event)" (onSelectionChanged)="rememberHeroSelection('primaryCtaLabel', $event)"></quill-editor>
+                <input type="number" min="8" max="96" step="1" class="owner-web-input owner-web-px-input" placeholder="px" (change)="applyHeroRichFontSize('primaryCtaLabel', $event)" />
+                <input type="color" class="owner-web-color-input" title="Selected text color" [value]="heroRichColor('primaryCtaLabel')" (input)="applyHeroRichColor('primaryCtaLabel', $event)" />
+              </div>
+            </label>
+            <label class="owner-web-field">
+              <span>Secondary CTA Label</span>
+              <div class="owner-web-rich-field">
+                <quill-editor formControlName="secondaryCtaLabel" class="owner-web-quill-sm" [modules]="heroEditorModules" (onEditorCreated)="registerHeroEditor('secondaryCtaLabel', $event)" (onSelectionChanged)="rememberHeroSelection('secondaryCtaLabel', $event)"></quill-editor>
+                <input type="number" min="8" max="96" step="1" class="owner-web-input owner-web-px-input" placeholder="px" (change)="applyHeroRichFontSize('secondaryCtaLabel', $event)" />
+                <input type="color" class="owner-web-color-input" title="Selected text color" [value]="heroRichColor('secondaryCtaLabel')" (input)="applyHeroRichColor('secondaryCtaLabel', $event)" />
+              </div>
+            </label>
+          </section>
+
+          <section class="owner-web-language-panel" dir="rtl">
+            <div class="owner-web-language-head">
+              <span>العربية</span>
+              <span>RTL</span>
+            </div>
+            <label class="owner-web-field">
+              <span>الشارة</span>
+              <div class="owner-web-rich-field">
+                <quill-editor formControlName="badgeTextAr" class="owner-web-quill-sm" [modules]="heroEditorModules" (onEditorCreated)="registerHeroEditor('badgeTextAr', $event)" (onSelectionChanged)="rememberHeroSelection('badgeTextAr', $event)"></quill-editor>
+                <input type="number" min="8" max="96" step="1" class="owner-web-input owner-web-px-input" placeholder="px" (change)="applyHeroRichFontSize('badgeTextAr', $event)" />
+                <input type="color" class="owner-web-color-input" title="Selected text color" [value]="heroRichColor('badgeTextAr')" (input)="applyHeroRichColor('badgeTextAr', $event)" />
+              </div>
+            </label>
+            <label class="owner-web-field">
+              <span>العنوان</span>
+              <div class="owner-web-rich-field">
+                <quill-editor formControlName="titleTextAr" class="owner-web-quill-sm" [modules]="heroEditorModules" (onEditorCreated)="registerHeroEditor('titleTextAr', $event)" (onSelectionChanged)="rememberHeroSelection('titleTextAr', $event)"></quill-editor>
+                <input type="number" min="8" max="96" step="1" class="owner-web-input owner-web-px-input" placeholder="px" (change)="applyHeroRichFontSize('titleTextAr', $event)" />
+                <input type="color" class="owner-web-color-input" title="Selected text color" [value]="heroRichColor('titleTextAr')" (input)="applyHeroRichColor('titleTextAr', $event)" />
+              </div>
+            </label>
+            <label class="owner-web-field">
+              <span>الوصف</span>
+              <div class="owner-web-rich-field owner-web-rich-field-tall">
+                <quill-editor formControlName="descriptionTextAr" class="owner-web-quill-md" [modules]="heroEditorModules" (onEditorCreated)="registerHeroEditor('descriptionTextAr', $event)" (onSelectionChanged)="rememberHeroSelection('descriptionTextAr', $event)"></quill-editor>
+                <input type="number" min="8" max="96" step="1" class="owner-web-input owner-web-px-input" placeholder="px" (change)="applyHeroRichFontSize('descriptionTextAr', $event)" />
+                <input type="color" class="owner-web-color-input" title="Selected text color" [value]="heroRichColor('descriptionTextAr')" (input)="applyHeroRichColor('descriptionTextAr', $event)" />
+              </div>
+            </label>
+            <label class="owner-web-field">
+              <span>زر الدعوة الأساسي</span>
+              <div class="owner-web-rich-field">
+                <quill-editor formControlName="primaryCtaLabelAr" class="owner-web-quill-sm" [modules]="heroEditorModules" (onEditorCreated)="registerHeroEditor('primaryCtaLabelAr', $event)" (onSelectionChanged)="rememberHeroSelection('primaryCtaLabelAr', $event)"></quill-editor>
+                <input type="number" min="8" max="96" step="1" class="owner-web-input owner-web-px-input" placeholder="px" (change)="applyHeroRichFontSize('primaryCtaLabelAr', $event)" />
+                <input type="color" class="owner-web-color-input" title="Selected text color" [value]="heroRichColor('primaryCtaLabelAr')" (input)="applyHeroRichColor('primaryCtaLabelAr', $event)" />
+              </div>
+            </label>
+            <label class="owner-web-field">
+              <span>زر الدعوة الثانوي</span>
+              <div class="owner-web-rich-field">
+                <quill-editor formControlName="secondaryCtaLabelAr" class="owner-web-quill-sm" [modules]="heroEditorModules" (onEditorCreated)="registerHeroEditor('secondaryCtaLabelAr', $event)" (onSelectionChanged)="rememberHeroSelection('secondaryCtaLabelAr', $event)"></quill-editor>
+                <input type="number" min="8" max="96" step="1" class="owner-web-input owner-web-px-input" placeholder="px" (change)="applyHeroRichFontSize('secondaryCtaLabelAr', $event)" />
+                <input type="color" class="owner-web-color-input" title="Selected text color" [value]="heroRichColor('secondaryCtaLabelAr')" (input)="applyHeroRichColor('secondaryCtaLabelAr', $event)" />
+              </div>
+            </label>
+          </section>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <label class="owner-web-field"><span>Badge</span><input formControlName="badgeText" class="owner-web-input" /></label>
-          <label class="owner-web-field"><span>Title *</span><input formControlName="titleText" class="owner-web-input" /></label>
-          <label class="owner-web-field md:col-span-2"><span>Description</span><textarea formControlName="descriptionText" class="owner-web-textarea"></textarea></label>
           <label class="owner-web-field md:col-span-2">
             <span>Hero Background Image URL</span>
             <input formControlName="backgroundImageUrl" class="owner-web-input" placeholder="https://... or data:image/..." />
           </label>
-          <label class="owner-web-field md:col-span-2">
+          <section class="owner-web-field md:col-span-2">
             <span>Upload Hero Background (local file)</span>
-            <input type="file" accept="image/*" class="owner-web-input" (change)="onHeroBackgroundFileSelected($event)" />
-          </label>
-          <label class="owner-web-field"><span>Primary CTA Label</span><input formControlName="primaryCtaLabel" class="owner-web-input" /></label>
+            <div class="owner-web-hero-media-grid">
+              <label
+                class="owner-web-upload-dropzone owner-web-hero-upload-dropzone cursor-pointer"
+                [class.owner-web-upload-dropzone-active]="heroBackgroundDragActive()"
+                (dragover)="onHeroBackgroundDragOver($event)"
+                (dragleave)="onHeroBackgroundDragLeave($event)"
+                (drop)="onHeroBackgroundDrop($event)">
+                <input type="file" accept="image/*" class="hidden" (change)="onHeroBackgroundFileSelected($event)" />
+                <span class="owner-web-upload-dropzone-icon-wrap">
+                  <mat-icon class="owner-web-upload-dropzone-icon">image</mat-icon>
+                </span>
+                <p class="owner-web-upload-dropzone-title">
+                  <span class="owner-web-upload-dropzone-link">Browse image</span>
+                  <span class="text-slate-500"> or drag and drop</span>
+                </p>
+                <p class="owner-web-upload-dropzone-hint">PNG, JPG, WebP, or GIF up to 10MB</p>
+              </label>
+
+              <div class="owner-web-hero-preview-card">
+                @if (heroBackgroundPreviewUrl()) {
+                  <button type="button" class="owner-web-hero-preview-button" (click)="openHeroBackgroundPreview()" aria-label="Open hero background preview">
+                    <img [src]="heroBackgroundPreviewUrl()" alt="Hero background preview" class="owner-web-hero-preview-img" />
+                    <span class="owner-web-hero-preview-open">
+                      <mat-icon>open_in_full</mat-icon>
+                      View full image
+                    </span>
+                  </button>
+                  <div class="owner-web-hero-preview-actions">
+                    <div>
+                      <p class="owner-web-hero-preview-title">Current hero background</p>
+                      <p class="owner-web-hero-preview-url">{{ form.get(['hero', 'backgroundImageUrl'])?.value }}</p>
+                    </div>
+                    <button type="button" class="owner-web-mini-btn owner-web-mini-btn-danger" (click)="deleteHeroBackgroundImage()">
+                      <mat-icon>delete</mat-icon>
+                      Delete
+                    </button>
+                  </div>
+                } @else {
+                  <div class="owner-web-hero-preview-empty">
+                    <mat-icon>image_not_supported</mat-icon>
+                    <span>No hero background selected</span>
+                  </div>
+                }
+              </div>
+            </div>
+            @if (heroBackgroundUploading()) {
+              <p class="text-xs text-slate-500">Uploading... {{ heroBackgroundUploadProgress() }}%</p>
+            }
+            <div class="w-full h-2 bg-slate-100 rounded overflow-hidden border border-slate-200">
+              <div class="h-full bg-indigo-600 transition-all duration-200" [style.width.%]="heroBackgroundUploadProgress()"></div>
+            </div>
+          </section>
           <label class="owner-web-field"><span>Primary CTA Link</span><input formControlName="primaryCtaLink" class="owner-web-input" /></label>
-          <label class="owner-web-field"><span>Secondary CTA Label</span><input formControlName="secondaryCtaLabel" class="owner-web-input" /></label>
           <label class="owner-web-field"><span>Secondary CTA Link</span><input formControlName="secondaryCtaLink" class="owner-web-input" /></label>
         </div>
+
+        <section class="owner-web-stat-panel">
+          <div>
+            <h4 class="owner-web-subsection-title">Hero Stats</h4>
+            <p class="owner-web-subsection-copy">These values appear in the stat bar under the hero buttons.</p>
+          </div>
+          <div class="owner-web-stat-language-grid">
+            <div class="owner-web-stat-language" dir="ltr">
+              <div class="owner-web-language-head">
+                <span>English Stats</span>
+                <span>LTR</span>
+              </div>
+              <div class="owner-web-stat-grid">
+                <label class="owner-web-field">
+                  <span>First Field Value</span>
+                  <input formControlName="statOneValue" class="owner-web-input" placeholder="+25" />
+                </label>
+                <label class="owner-web-field">
+                  <span>First Field Label</span>
+                  <input formControlName="statOneLabel" class="owner-web-input" placeholder="Years Experience" />
+                </label>
+                <label class="owner-web-field">
+                  <span>Second Field Value</span>
+                  <input formControlName="statTwoValue" class="owner-web-input" placeholder="+50" />
+                </label>
+                <label class="owner-web-field">
+                  <span>Second Field Label</span>
+                  <input formControlName="statTwoLabel" class="owner-web-input" placeholder="Global Partners" />
+                </label>
+                <label class="owner-web-field">
+                  <span>Third Field Value</span>
+                  <input formControlName="statThreeValue" class="owner-web-input" placeholder="+100" />
+                </label>
+                <label class="owner-web-field">
+                  <span>Third Field Label</span>
+                  <input formControlName="statThreeLabel" class="owner-web-input" placeholder="Key Clients" />
+                </label>
+                <label class="owner-web-field">
+                  <span>Fourth Field Value</span>
+                  <input formControlName="statFourValue" class="owner-web-input" placeholder="6" />
+                </label>
+                <label class="owner-web-field">
+                  <span>Fourth Field Label</span>
+                  <input formControlName="statFourLabel" class="owner-web-input" placeholder="Continents Served" />
+                </label>
+              </div>
+            </div>
+            <div class="owner-web-stat-language" dir="rtl">
+              <div class="owner-web-language-head">
+                <span>إحصائيات العربية</span>
+                <span>RTL</span>
+              </div>
+              <div class="owner-web-stat-grid">
+                <label class="owner-web-field">
+                  <span>قيمة الحقل الأول</span>
+                  <input formControlName="statOneValueAr" class="owner-web-input" placeholder="+25" />
+                </label>
+                <label class="owner-web-field">
+                  <span>تسمية الحقل الأول</span>
+                  <input formControlName="statOneLabelAr" class="owner-web-input" placeholder="سنوات خبرة" />
+                </label>
+                <label class="owner-web-field">
+                  <span>قيمة الحقل الثاني</span>
+                  <input formControlName="statTwoValueAr" class="owner-web-input" placeholder="+50" />
+                </label>
+                <label class="owner-web-field">
+                  <span>تسمية الحقل الثاني</span>
+                  <input formControlName="statTwoLabelAr" class="owner-web-input" placeholder="شركاء عالميون" />
+                </label>
+                <label class="owner-web-field">
+                  <span>قيمة الحقل الثالث</span>
+                  <input formControlName="statThreeValueAr" class="owner-web-input" placeholder="+100" />
+                </label>
+                <label class="owner-web-field">
+                  <span>تسمية الحقل الثالث</span>
+                  <input formControlName="statThreeLabelAr" class="owner-web-input" placeholder="عملاء رئيسيون" />
+                </label>
+                <label class="owner-web-field">
+                  <span>قيمة الحقل الرابع</span>
+                  <input formControlName="statFourValueAr" class="owner-web-input" placeholder="6" />
+                </label>
+                <label class="owner-web-field">
+                  <span>تسمية الحقل الرابع</span>
+                  <input formControlName="statFourLabelAr" class="owner-web-input" placeholder="قارات مخدومة" />
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
 
       <div class="owner-web-card p-5 space-y-4" [class.owner-web-hidden]="activeSection() !== 'pages'">
         <h3 class="owner-web-section-title">Pages</h3>
         <div formArrayName="pages" class="space-y-3">
           @for (row of pages.controls; track $index) {
-            <div [formGroupName]="$index" class="owner-web-grid-row">
-              <input formControlName="pageKey" class="owner-web-input" placeholder="Page key" />
-              <input formControlName="title" class="owner-web-input" placeholder="Title" />
-              <input formControlName="routePath" class="owner-web-input" placeholder="Path" />
-              <label class="owner-web-check"><input type="checkbox" formControlName="visible" /> Visible</label>
+            <div [formGroupName]="$index" class="owner-web-page-grid-row">
+              <input formControlName="pageKey" class="owner-web-input" placeholder="Page key" (input)="onPageFieldInput($index, 'pageKey', $event)" />
+              <input formControlName="title" class="owner-web-input" placeholder="English title" (input)="onPageFieldInput($index, 'title', $event)" />
+              <input formControlName="titleAr" class="owner-web-input" dir="rtl" placeholder="العنوان العربي" (input)="onPageFieldInput($index, 'titleAr', $event)" />
+              <input formControlName="routePath" class="owner-web-input" placeholder="Path" (input)="onPageFieldInput($index, 'routePath', $event)" />
+              <label class="owner-web-check"><input type="checkbox" formControlName="visible" (change)="onPageFieldInput($index, 'visible', $event)" /> Visible</label>
             </div>
           }
         </div>
@@ -167,346 +398,44 @@
           </div>
           <button type="button" (click)="addFeature()" class="owner-web-btn owner-web-btn-primary">Add Feature</button>
         </div>
-        <div formArrayName="features" class="space-y-3">
-          @for (row of features.controls; track $index) {
-            <div [formGroupName]="$index" class="owner-web-feature-accordion">
-              <button type="button" class="owner-web-feature-accordion-head" (click)="toggleFeatureAccordion($index)">
-                <div class="owner-web-feature-accordion-head-left">
-                  <span class="owner-web-feature-chip">Feature {{ $index + 1 }}</span>
-                  <span class="owner-web-feature-divider">•</span>
-                  <span class="owner-web-feature-title">{{ featureAccordionTitle($index) }}</span>
-                </div>
-                <mat-icon class="owner-web-feature-accordion-arrow" [class.owner-web-feature-accordion-arrow-open]="isFeatureAccordionOpen($index)">expand_more</mat-icon>
-              </button>
-
-              @if (isFeatureAccordionOpen($index)) {
-              <div class="owner-web-feature-accordion-body owner-web-feature-accordion-body-open">
-                <section class="owner-web-feature-panel">
-                  <h4 class="owner-web-feature-panel-title">General Information</h4>
-                  <p class="owner-web-feature-panel-subtitle">Core identifying details for this feature module.</p>
-                  <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
-                    <div class="md:col-span-5">
-                      <label class="owner-web-field"><span>Domain / Icon Type</span></label>
-                      <div class="owner-web-icon-picker">
-                        <mat-icon>{{ featureIconControlAt($index).value || 'help' }}</mat-icon>
-                        <input [formControl]="featureIconControlAt($index)" class="owner-web-input" list="owner-integration-icon-options" placeholder="domain" />
-                      </div>
-                    </div>
-                    <div class="md:col-span-4">
-                      <label class="owner-web-field"><span>Feature Title</span></label>
-                      <input formControlName="titleText" class="owner-web-input" placeholder="Feature title" data-feature-title="true" [attr.data-feature-index]="$index" />
-                    </div>
-                    <!-- <div class="md:col-span-3">
-                      <label class="owner-web-field"><span>Order ID</span></label>
-                      <input type="number" min="1" step="1" formControlName="displayOrder" class="owner-web-input" placeholder="Order ID" />
-                    </div> -->
-
-                    <div>
-                      <label class="owner-web-field"><span>Title Font Size (px)</span></label>
-                      <input type="number" min="1" max="96" step="1" formControlName="titleFontSize" class="owner-web-input" />
-                    </div>
-                    <div class="md:col-span-9">
-                      <label class="owner-web-field"><span>Feature Summary</span></label>
-                      <textarea formControlName="descriptionText" class="owner-web-textarea" placeholder="Feature summary"></textarea>
-                    </div>
-                    <div>
-                      <label class="owner-web-field"><span>Description Font Size (px)</span></label>
-                      <input type="number" min="1" max="96" step="1" formControlName="descriptionFontSize" class="owner-web-input" />
-                    </div>
-                    
-                  </div>
-                </section>
-
-                <section class="owner-web-feature-panel">
-                  <h4 class="owner-web-feature-panel-title">Navigation & Metadata</h4>
-                  <p class="owner-web-feature-panel-subtitle">Configure how this feature appears in menus and links.</p>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                      <label class="owner-web-field"><span>CTA Label / HTML Snippet</span></label>
-                      <input formControlName="ctaLabel" class="owner-web-input" placeholder="CTA Label" />
-                    </div>
-                    <!-- <div>
-                      <label class="owner-web-field"><span>URL Slug / Path</span></label>
-                      <input formControlName="ctaLink" class="owner-web-input" placeholder="/features" />
-                    </div> -->
-                    <!-- <div>
-                      <label class="owner-web-field"><span>Title Font Size (px)</span></label>
-                      <input type="number" min="1" max="96" step="1" formControlName="titleFontSize" class="owner-web-input" />
-                    </div> -->
-                    
-                    <!-- <div>
-                      <label class="owner-web-field"><span>Description Font Size (px)</span></label>
-                      <input type="number" min="1" max="96" step="1" formControlName="descriptionFontSize" class="owner-web-input" />
-                    </div> -->
-                    <div>
-                      <label class="owner-web-field"><span>Learn More Font Size (px)</span></label>
-                      <input type="number" min="1" max="96" step="1" formControlName="ctaFontSize" class="owner-web-input" />
-                    </div>
-                    <div>
-                      <label class="owner-web-field"><span>Visible</span></label>
-                      <label class="owner-web-check"><input type="checkbox" formControlName="visible" /> Show on website</label>
-                    </div>
-                  </div>
-                </section>
-
-                <section class="owner-web-feature-panel">
-                  <h4 class="owner-web-feature-panel-title">Media Assets</h4>
-                  <p class="owner-web-feature-panel-subtitle">Primary visual representing this feature across the site.</p>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
-                    <div class="space-y-2">
-                      <label class="owner-web-field"><span>Feature Image URL</span></label>
-                      <input formControlName="imageUrl" class="owner-web-input" placeholder="https://... or /api/..." />
-                      <label
-                        class="owner-web-upload-dropzone cursor-pointer"
-                        [class.owner-web-upload-dropzone-active]="featureImageDragActive($index)"
-                        (dragover)="onFeatureImageDragOver($event, $index)"
-                        (dragleave)="onFeatureImageDragLeave($event, $index)"
-                        (drop)="onFeatureImageDrop($event, $index)">
-                        <input type="file" accept="image/*" class="hidden" (change)="onFeatureImageFileSelected($event, $index)" />
-                        <span class="owner-web-upload-dropzone-icon-wrap">
-                          <mat-icon class="owner-web-upload-dropzone-icon">image</mat-icon>
-                        </span>
-                        <p class="owner-web-upload-dropzone-title">
-                          <span class="owner-web-upload-dropzone-link">Upload a file</span>
-                          <span class="text-slate-500"> or drag and drop</span>
-                        </p>
-                        <p class="owner-web-upload-dropzone-hint">PNG, JPG, GIF up to 10MB</p>
-                      </label>
-                      @if (featureImageUploading($index)) {
-                        <p class="text-xs text-slate-500">Uploading... {{ featureImageUploadProgress($index) }}%</p>
-                      }
-                      <div class="w-full h-2 bg-slate-100 rounded overflow-hidden border border-slate-200">
-                        <div class="h-full bg-indigo-600 transition-all duration-200" [style.width.%]="featureImageUploadProgress($index)"></div>
-                      </div>
-                    </div>
-                    @if (row.get('imageUrl')?.value) {
-                      <div class="rounded-lg border border-slate-200 bg-slate-50 p-2">
-                        <img [src]="featurePreviewUrl($index)" alt="Feature preview" class="w-full h-44 object-cover rounded" />
-                      </div>
-                    }
-                  </div>
-
-                  <div class="grid grid-cols-1 gap-3 mt-3">
-                    <input formControlName="detailTitle" class="owner-web-input" placeholder="Detail page title" />
-                    <textarea formControlName="detailSummary" class="owner-web-textarea" placeholder="Detail page summary"></textarea>
-                    <quill-editor
-                      formControlName="detailContent"
-                      class="h-[200px]"
-                      [modules]="{
-                        toolbar: [
-                          ['bold', 'italic', 'underline', 'strike'],
-                          [{ size: ['small', false, 'large', 'huge'] }],
-                          [{ color: [] }, { background: [] }],
-                          [{ list: 'ordered' }, { list: 'bullet' }],
-                          [{ align: [] }],
-                          ['blockquote', 'link'],
-                          ['clean']
-                        ]
-                      }">
-                    </quill-editor>
-                    <!-- <input formControlName="detailImageUrl" class="owner-web-input" placeholder="Detail page hero image URL (optional)" /> -->
-                  </div>
-                </section>
+        <div formGroupName="marketing" class="owner-web-feature-panel space-y-3">
+          <h4 class="owner-web-feature-panel-title">Feature View Video</h4>
+          <p class="owner-web-feature-panel-subtitle">Controls the video section heading, copy, and carousel on the public Features area.</p>
+          <div class="owner-web-feature-language-grid">
+            <section class="owner-web-feature-language-panel">
+              <div class="owner-web-language-panel-header">
+                <span>English</span>
+                <span class="owner-web-language-pill">LTR</span>
               </div>
-              }
-              <div class="flex justify-end"><button type="button" (click)="removeFeature($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button></div>
-            </div>
-          }
-        </div>
-      </div>
-
-      <div class="owner-web-card p-5 space-y-4" [class.owner-web-hidden]="activeSection() !== 'testimonials'">
-        <h3 class="owner-web-section-title">Testimonials</h3>
-        <div formArrayName="testimonials" class="space-y-3">
-          @for (row of testimonials.controls; track $index) {
-            <div [formGroupName]="$index" class="owner-web-feature-block">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <input formControlName="authorName" class="owner-web-input" placeholder="Author" />
-                <input formControlName="authorRole" class="owner-web-input" placeholder="Role" />
-                <textarea formControlName="quoteText" class="owner-web-textarea md:col-span-2" placeholder="Quote"></textarea>
-                <input formControlName="avatarUrl" class="owner-web-input md:col-span-2" placeholder="Avatar URL" />
-              </div>
-            </div>
-          }
-        </div>
-      </div>
-
-      <div class="owner-web-card p-5 space-y-4" [class.owner-web-hidden]="activeSection() !== 'pricing'">
-        <h3 class="owner-web-section-title">Pricing Plans</h3>
-        <div formArrayName="pricingPlans" class="space-y-3">
-          @for (plan of pricingPlans.controls; track $index; let planIndex = $index) {
-            <div [formGroupName]="planIndex" class="owner-web-plan-block">
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <input formControlName="planKey" class="owner-web-input" placeholder="Plan key" />
-                <input formControlName="nameText" class="owner-web-input" placeholder="Name" />
-                <input formControlName="priceText" class="owner-web-input" placeholder="Price" />
-              </div>
-              <div class="space-y-2 mt-3" formArrayName="features">
-                @for (feature of pricingFeaturesAt(planIndex).controls; track $index; let featureIndex = $index) {
-                  <div [formGroupName]="featureIndex" class="owner-web-grid-row">
-                    <input formControlName="featureText" class="owner-web-input" placeholder="Feature text" />
-                    <label class="owner-web-check"><input type="checkbox" formControlName="included" /> Included</label>
-                    <button type="button" (click)="removePricingFeature(planIndex, featureIndex)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button>
-                  </div>
-                }
-              </div>
-              <button type="button" (click)="addPricingFeature(planIndex)" class="owner-web-mini-btn mt-2">Add Plan Feature</button>
-            </div>
-          }
-        </div>
-      </div>
-
-      <div class="owner-web-card p-5 space-y-4" [class.owner-web-hidden]="activeSection() !== 'ctas'">
-        <h3 class="owner-web-section-title">CTA Blocks</h3>
-        <div formArrayName="ctas" class="space-y-3">
-          @for (row of ctas.controls; track $index) {
-            <div [formGroupName]="$index" class="owner-web-grid-row">
-              <input formControlName="ctaKey" class="owner-web-input" placeholder="CTA key" />
-              <input formControlName="titleText" class="owner-web-input" placeholder="Title" />
-              <input formControlName="buttonLabel" class="owner-web-input" placeholder="Button label" />
-              <input formControlName="buttonLink" class="owner-web-input" placeholder="Button link" />
-            </div>
-          }
-        </div>
-      </div>
-
-      <div class="owner-web-card p-5 space-y-4" [class.owner-web-hidden]="activeSection() !== 'footer'">
-        <h3 class="owner-web-section-title">Footer Links</h3>
-        <div formArrayName="footerLinks" class="space-y-3">
-          @for (row of footerLinks.controls; track $index) {
-            <div [formGroupName]="$index" class="owner-web-grid-row">
-              <input formControlName="sectionTitle" class="owner-web-input" placeholder="Section" />
-              <input formControlName="label" class="owner-web-input" placeholder="Label" />
-              <input formControlName="routePath" class="owner-web-input" placeholder="Path" />
-              <label class="owner-web-check"><input type="checkbox" formControlName="visible" /> Visible</label>
-            </div>
-          }
-        </div>
-      </div>
-
-      <div class="owner-web-card p-5 space-y-4" formGroupName="marketing" [class.owner-web-hidden]="activeSection() !== 'marketing'">
-        <h3 class="owner-web-section-title">Marketing Content</h3>
-
-        <div formGroupName="promo" class="space-y-3">
-          <h4 class="owner-web-section-title">Promo Banner</h4>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <input formControlName="icon" class="owner-web-input" placeholder="Icon (campaign)" />
-            <input formControlName="ctaLabel" class="owner-web-input" placeholder="CTA label" />
-            <div class="md:col-span-2 owner-web-rich-wrap">
-              <div class="owner-web-rich-toolbar">
-                <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommand('bold')"><b>B</b></button>
-                <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommand('italic')"><i>I</i></button>
-                <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommand('underline')"><u>U</u></button>
-                <select class="owner-web-input owner-web-font-size" (change)="onPromoFontSizePick($event)">
-                  <option value="">Font size</option>
-                  <option value="12px">XS</option>
-                  <option value="14px">S</option>
-                  <option value="16px">M</option>
-                  <option value="18px">L</option>
-                  <option value="22px">XL</option>
-                  <option value="28px">2XL</option>
-                  <option value="34px">3XL</option>
-                </select>
-                <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoBlockquote()">Quote</button>
-                <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoParagraph()">Paragraph</button>
-                <label class="owner-web-color-label">
-                  <span>Color</span>
-                  <input type="color" (mousedown)="$event.preventDefault()" (input)="onPromoColorPick($event)" />
+              <div class="grid grid-cols-1 gap-3">
+                <label class="owner-web-field">
+                  <span>Section Title</span>
+                  <input formControlName="docsSectionTitle" class="owner-web-input" placeholder="Our Feature" />
                 </label>
-                <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommand('removeFormat')">Clear</button>
+                <label class="owner-web-field">
+                  <span>Section Description</span>
+                  <textarea formControlName="docsSectionDescription" class="owner-web-textarea" placeholder="Watch a quick walkthrough that displays feature details and platform workflow in action."></textarea>
+                </label>
               </div>
-              <div
-                id="promo-rich-editor"
-                class="owner-web-rich-editor"
-                contenteditable="true"
-                [innerHTML]="promoEditorHtml()"
-                (mouseup)="capturePromoSelection()"
-                (keyup)="capturePromoSelection()"
-                (input)="onPromoEditorInput($event)">
+            </section>
+
+            <section class="owner-web-feature-language-panel" dir="rtl">
+              <div class="owner-web-language-panel-header">
+                <span>العربية</span>
+                <span class="owner-web-language-pill">RTL</span>
               </div>
-              <textarea formControlName="text" class="owner-web-hidden-textarea" aria-hidden="true"></textarea>
-            </div>
-          </div>
-        </div>
-
-        <div class="space-y-3">
-          <div class="flex items-center justify-between">
-            <h4 class="owner-web-section-title">How It Works Steps</h4>
-            <button type="button" (click)="addMarketingStep()" class="owner-web-mini-btn">Add Step</button>
-          </div>
-          <div formArrayName="steps" class="space-y-2">
-            @for (row of marketingSteps.controls; track $index) {
-              <div [formGroupName]="$index" class="owner-web-feature-block">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <input formControlName="step" class="owner-web-input" placeholder="Step no (01)" />
-                  <input formControlName="title" class="owner-web-input" placeholder="Title" />
-                  <input formControlName="description" class="owner-web-input" placeholder="Description" />
-                </div>
-                <div class="flex justify-end mt-2">
-                  <button type="button" (click)="removeMarketingStep($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button>
-                </div>
+              <div class="grid grid-cols-1 gap-3">
+                <label class="owner-web-field">
+                  <span>عنوان القسم</span>
+                  <input formControlName="docsSectionTitleAr" class="owner-web-input" dir="rtl" placeholder="ميزات المنصة" />
+                </label>
+                <label class="owner-web-field">
+                  <span>وصف القسم</span>
+                  <textarea formControlName="docsSectionDescriptionAr" class="owner-web-textarea" dir="rtl" placeholder="شاهد عرضا سريعا يوضح تفاصيل الميزات وطريقة عمل المنصة."></textarea>
+                </label>
               </div>
-            }
+            </section>
           </div>
-        </div>
-
-        <div formGroupName="integrations" class="space-y-3">
-          <h4 class="owner-web-section-title">Integrations</h4>
-          <div class="grid grid-cols-1 gap-3">
-            <input formControlName="title" class="owner-web-input" placeholder="Section title" />
-            <textarea formControlName="description" class="owner-web-textarea" placeholder="Section description"></textarea>
-          </div>
-          <div class="space-y-2">
-            <div class="flex items-center justify-between">
-              <h5 class="owner-web-section-title">Integration Items</h5>
-              <button type="button" (click)="addMarketingIntegrationItem()" class="owner-web-mini-btn">Add Item</button>
-            </div>
-            <div formArrayName="items" class="space-y-2">
-              @for (row of marketingIntegrationItems.controls; track $index) {
-                <div [formGroupName]="$index" class="owner-web-grid-row">
-                  <input formControlName="value" class="owner-web-input" placeholder="Item" />
-                  <div class="owner-web-icon-picker">
-                    <mat-icon>{{ marketingIntegrationItemIconControlAt($index).value || 'help' }}</mat-icon>
-                    <input
-                      [formControl]="marketingIntegrationItemIconControlAt($index)"
-                      class="owner-web-input"
-                      list="owner-integration-icon-options"
-                      placeholder="Search icon name (mail, hub, security...)"
-                    />
-                  </div>
-                  <button type="button" (click)="removeMarketingIntegrationItem($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button>
-                </div>
-              }
-            </div>
-          </div>
-          <div class="space-y-2">
-            <div class="flex items-center justify-between">
-              <h5 class="owner-web-section-title">Bullet Points</h5>
-              <button type="button" (click)="addMarketingIntegrationBullet()" class="owner-web-mini-btn">Add Bullet</button>
-            </div>
-            <div formArrayName="bullets" class="space-y-2">
-              @for (row of marketingIntegrationBullets.controls; track $index) {
-                <div [formGroupName]="$index" class="owner-web-grid-row">
-                  <input formControlName="value" class="owner-web-input" placeholder="Bullet" />
-                  <button type="button" (click)="removeMarketingIntegrationBullet($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button>
-                </div>
-              }
-            </div>
-          </div>
-        </div>
-
-        <div formGroupName="contact" class="space-y-3">
-          <h4 class="owner-web-section-title">Contact Section</h4>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <input formControlName="title" class="owner-web-input md:col-span-2" placeholder="Contact title" />
-            <textarea formControlName="description" class="owner-web-textarea md:col-span-2" placeholder="Contact description"></textarea>
-            <input formControlName="hqLabel" class="owner-web-input" placeholder="HQ label" />
-            <input formControlName="hqValue" class="owner-web-input" placeholder="HQ value" />
-          </div>
-        </div>
-
-        <div class="space-y-3">
-          <h4 class="owner-web-section-title">Feature View Video</h4>
           <div class="flex items-center justify-between">
             <p class="text-xs text-slate-500">Add multiple videos. Website will display slider controls.</p>
             <button type="button" (click)="addMarketingDocsVideo()" class="owner-web-mini-btn">Add Video Row</button>
@@ -560,6 +489,820 @@
                 </div>
               </div>
             }
+          </div>
+
+          <h4 class="owner-web-feature-panel-title">Feature Cards Section</h4>
+          <p class="owner-web-feature-panel-subtitle">Controls the heading and copy above the public feature cards.</p>
+          <div class="owner-web-feature-language-grid">
+            <section class="owner-web-feature-language-panel">
+              <div class="owner-web-language-panel-header">
+                <span>English</span>
+                <span class="owner-web-language-pill">LTR</span>
+              </div>
+              <div class="grid grid-cols-1 gap-3">
+                <label class="owner-web-field">
+                  <span>Section Title</span>
+                  <input formControlName="featuresSectionTitle" class="owner-web-input" placeholder="Precision Management Tools" />
+                </label>
+                <label class="owner-web-field">
+                  <span>Section Description</span>
+                  <textarea formControlName="featuresSectionDescription" class="owner-web-textarea" placeholder="Engineered for institutions that value clarity and performance."></textarea>
+                </label>
+              </div>
+            </section>
+
+            <section class="owner-web-feature-language-panel" dir="rtl">
+              <div class="owner-web-language-panel-header">
+                <span>العربية</span>
+                <span class="owner-web-language-pill">RTL</span>
+              </div>
+              <div class="grid grid-cols-1 gap-3">
+                <label class="owner-web-field">
+                  <span>عنوان القسم</span>
+                  <input formControlName="featuresSectionTitleAr" class="owner-web-input" dir="rtl" placeholder="أدوات إدارة دقيقة" />
+                </label>
+                <label class="owner-web-field">
+                  <span>وصف القسم</span>
+                  <textarea formControlName="featuresSectionDescriptionAr" class="owner-web-textarea" dir="rtl" placeholder="مصممة للمؤسسات التي تقدر الوضوح والأداء."></textarea>
+                </label>
+              </div>
+            </section>
+          </div>
+        </div>
+        <div formArrayName="features" class="space-y-3">
+          @for (row of features.controls; track $index) {
+            <div [formGroupName]="$index" class="owner-web-feature-accordion">
+              <button type="button" class="owner-web-feature-accordion-head" (click)="toggleFeatureAccordion($index)">
+                <div class="owner-web-feature-accordion-head-left">
+                  <span class="owner-web-feature-chip">Feature {{ $index + 1 }}</span>
+                  <span class="owner-web-feature-divider">•</span>
+                  <span class="owner-web-feature-title">{{ featureAccordionTitle($index) }}</span>
+                </div>
+                <mat-icon class="owner-web-feature-accordion-arrow" [class.owner-web-feature-accordion-arrow-open]="isFeatureAccordionOpen($index)">expand_more</mat-icon>
+              </button>
+
+              @if (isFeatureAccordionOpen($index)) {
+              <div class="owner-web-feature-accordion-body owner-web-feature-accordion-body-open">
+                <section class="owner-web-feature-panel">
+                  <h4 class="owner-web-feature-panel-title">General Information</h4>
+                  <p class="owner-web-feature-panel-subtitle">Core identifying details for this feature module.</p>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                    <div>
+                      <div class="owner-web-field"><span>Domain / Icon Type</span></div>
+                      <div class="owner-web-icon-picker">
+                        <mat-icon>{{ featureIconControlAt($index).value || 'help' }}</mat-icon>
+                        <input [formControl]="featureIconControlAt($index)" class="owner-web-input" list="owner-integration-icon-options" placeholder="domain" />
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <label class="owner-web-field">
+                        <span>Title Font Size (px)</span>
+                        <input type="number" min="1" max="96" step="1" formControlName="titleFontSize" class="owner-web-input" />
+                      </label>
+                      <label class="owner-web-field">
+                        <span>Description Font Size (px)</span>
+                        <input type="number" min="1" max="96" step="1" formControlName="descriptionFontSize" class="owner-web-input" />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="owner-web-feature-language-grid">
+                    <section class="owner-web-feature-language-panel" dir="ltr">
+                      <div class="owner-web-language-head">
+                        <span>English</span>
+                        <span>LTR</span>
+                      </div>
+                      <label class="owner-web-field">
+                        <span>Feature Title</span>
+                        <input formControlName="titleText" class="owner-web-input" placeholder="Feature title" data-feature-title="true" [attr.data-feature-index]="$index" />
+                      </label>
+                      <label class="owner-web-field">
+                        <span>Feature Summary</span>
+                        <textarea formControlName="descriptionText" class="owner-web-textarea" placeholder="Feature summary"></textarea>
+                      </label>
+                      <label class="owner-web-field">
+                        <span>CTA Label / HTML Snippet</span>
+                        <input formControlName="ctaLabel" class="owner-web-input" placeholder="CTA Label" />
+                      </label>
+                    </section>
+
+                    <section class="owner-web-feature-language-panel" dir="rtl">
+                      <div class="owner-web-language-head">
+                        <span>العربية</span>
+                        <span>RTL</span>
+                      </div>
+                      <label class="owner-web-field">
+                        <span>عنوان الميزة</span>
+                        <input formControlName="titleTextAr" class="owner-web-input" placeholder="عنوان الميزة" />
+                      </label>
+                      <label class="owner-web-field">
+                        <span>ملخص الميزة</span>
+                        <textarea formControlName="descriptionTextAr" class="owner-web-textarea" placeholder="ملخص الميزة"></textarea>
+                      </label>
+                      <label class="owner-web-field">
+                        <span>نص زر المزيد</span>
+                        <input formControlName="ctaLabelAr" class="owner-web-input" placeholder="اعرف المزيد" />
+                      </label>
+                    </section>
+                  </div>
+                </section>
+
+                <section class="owner-web-feature-panel">
+                  <h4 class="owner-web-feature-panel-title">Navigation & Metadata</h4>
+                  <p class="owner-web-feature-panel-subtitle">Configure how this feature appears in menus and links.</p>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- <div>
+                      <label class="owner-web-field"><span>URL Slug / Path</span></label>
+                      <input formControlName="ctaLink" class="owner-web-input" placeholder="/features" />
+                    </div> -->
+                    <!-- <div>
+                      <label class="owner-web-field"><span>Title Font Size (px)</span></label>
+                      <input type="number" min="1" max="96" step="1" formControlName="titleFontSize" class="owner-web-input" />
+                    </div> -->
+                    
+                    <!-- <div>
+                      <label class="owner-web-field"><span>Description Font Size (px)</span></label>
+                      <input type="number" min="1" max="96" step="1" formControlName="descriptionFontSize" class="owner-web-input" />
+                    </div> -->
+                    <label class="owner-web-field">
+                      <span>Learn More Font Size (px)</span>
+                      <input type="number" min="1" max="96" step="1" formControlName="ctaFontSize" class="owner-web-input" />
+                    </label>
+                    <div>
+                      <div class="owner-web-field"><span>Visible</span></div>
+                      <label class="owner-web-check"><input type="checkbox" formControlName="visible" /> Show on website</label>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="owner-web-feature-panel">
+                  <h4 class="owner-web-feature-panel-title">Media Assets</h4>
+                  <p class="owner-web-feature-panel-subtitle">Primary visual representing this feature across the site.</p>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
+                    <div class="space-y-2">
+                      <div class="owner-web-field"><span>Feature Image URL</span></div>
+                      <input formControlName="imageUrl" class="owner-web-input" placeholder="https://... or /api/..." />
+                      <label
+                        class="owner-web-upload-dropzone cursor-pointer"
+                        [class.owner-web-upload-dropzone-active]="featureImageDragActive($index)"
+                        (dragover)="onFeatureImageDragOver($event, $index)"
+                        (dragleave)="onFeatureImageDragLeave($event, $index)"
+                        (drop)="onFeatureImageDrop($event, $index)">
+                        <input type="file" accept="image/*" class="hidden" (change)="onFeatureImageFileSelected($event, $index)" />
+                        <span class="owner-web-upload-dropzone-icon-wrap">
+                          <mat-icon class="owner-web-upload-dropzone-icon">image</mat-icon>
+                        </span>
+                        <p class="owner-web-upload-dropzone-title">
+                          <span class="owner-web-upload-dropzone-link">Upload a file</span>
+                          <span class="text-slate-500"> or drag and drop</span>
+                        </p>
+                        <p class="owner-web-upload-dropzone-hint">PNG, JPG, GIF up to 10MB</p>
+                      </label>
+                      @if (featureImageUploading($index)) {
+                        <p class="text-xs text-slate-500">Uploading... {{ featureImageUploadProgress($index) }}%</p>
+                      }
+                      <div class="w-full h-2 bg-slate-100 rounded overflow-hidden border border-slate-200">
+                        <div class="h-full bg-indigo-600 transition-all duration-200" [style.width.%]="featureImageUploadProgress($index)"></div>
+                      </div>
+                    </div>
+                    @if (row.get('imageUrl')?.value) {
+                      <div class="rounded-lg border border-slate-200 bg-slate-50 p-2">
+                        <img [src]="featurePreviewUrl($index)" alt="Feature preview" class="w-full h-44 object-cover rounded" />
+                      </div>
+                    }
+                  </div>
+
+                  <div class="owner-web-feature-language-grid mt-3">
+                    <section class="owner-web-feature-language-panel" dir="ltr">
+                      <div class="owner-web-language-head">
+                        <span>English Details</span>
+                        <span>LTR</span>
+                      </div>
+                      <input formControlName="detailTitle" class="owner-web-input" placeholder="Detail page title" />
+                      <textarea formControlName="detailSummary" class="owner-web-textarea" placeholder="Detail page summary"></textarea>
+                      <quill-editor
+                        formControlName="detailContent"
+                        class="h-[200px]"
+                        [modules]="{
+                          toolbar: [
+                            ['bold', 'italic', 'underline', 'strike'],
+                            [{ size: ['small', false, 'large', 'huge'] }],
+                            [{ color: [] }, { background: [] }],
+                            [{ list: 'ordered' }, { list: 'bullet' }],
+                            [{ align: [] }],
+                            ['blockquote', 'link'],
+                            ['clean']
+                          ]
+                        }">
+                      </quill-editor>
+                    </section>
+                    <section class="owner-web-feature-language-panel" dir="rtl">
+                      <div class="owner-web-language-head">
+                        <span>تفاصيل العربية</span>
+                        <span>RTL</span>
+                      </div>
+                      <input formControlName="detailTitleAr" class="owner-web-input" placeholder="عنوان صفحة التفاصيل" />
+                      <textarea formControlName="detailSummaryAr" class="owner-web-textarea" placeholder="ملخص صفحة التفاصيل"></textarea>
+                      <quill-editor
+                        formControlName="detailContentAr"
+                        class="h-[200px]"
+                        [modules]="{
+                          toolbar: [
+                            ['bold', 'italic', 'underline', 'strike'],
+                            [{ size: ['small', false, 'large', 'huge'] }],
+                            [{ color: [] }, { background: [] }],
+                            [{ list: 'ordered' }, { list: 'bullet' }],
+                            [{ align: [] }],
+                            ['blockquote', 'link'],
+                            ['clean']
+                          ]
+                        }">
+                      </quill-editor>
+                    </section>
+                    <!-- <input formControlName="detailImageUrl" class="owner-web-input" placeholder="Detail page hero image URL (optional)" /> -->
+                  </div>
+                </section>
+              </div>
+              }
+              <div class="flex justify-end"><button type="button" (click)="removeFeature($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button></div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="owner-web-card p-5 space-y-4" [class.owner-web-hidden]="activeSection() !== 'testimonials'">
+        <h3 class="owner-web-section-title">Testimonials</h3>
+        <section formGroupName="marketing" class="owner-web-feature-block space-y-4">
+          <div>
+            <h4 class="owner-web-section-title">Trusted Section Copy</h4>
+            <p class="owner-web-help-text">Controls the trusted-by block below the pricing comparison.</p>
+          </div>
+          <div class="owner-web-language-grid">
+            <section class="owner-web-language-panel" dir="ltr">
+              <div class="owner-web-language-head">
+                <span>English</span>
+                <span>LTR</span>
+              </div>
+              <label class="owner-web-field">
+                <span>Heading</span>
+                <input formControlName="trustedHeading" class="owner-web-input" placeholder="Trusted by Leading Education Teams" />
+              </label>
+              <label class="owner-web-field">
+                <span>Description</span>
+                <textarea formControlName="trustedDescription" class="owner-web-textarea" placeholder="Institutions choose EduManage for operational control, LMS consistency, and measurable growth."></textarea>
+              </label>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label class="owner-web-field">
+                  <span>First Stat Value</span>
+                  <input formControlName="trustedStatOneValue" class="owner-web-input" placeholder="+250" />
+                </label>
+                <label class="owner-web-field">
+                  <span>First Stat Label</span>
+                  <input formControlName="trustedStatOneLabel" class="owner-web-input" placeholder="Active institutions" />
+                </label>
+                <label class="owner-web-field">
+                  <span>Second Stat Value</span>
+                  <input formControlName="trustedStatTwoValue" class="owner-web-input" placeholder="+120K" />
+                </label>
+                <label class="owner-web-field">
+                  <span>Second Stat Label</span>
+                  <input formControlName="trustedStatTwoLabel" class="owner-web-input" placeholder="Learners supported" />
+                </label>
+                <label class="owner-web-field">
+                  <span>Third Stat Value</span>
+                  <input formControlName="trustedStatThreeValue" class="owner-web-input" placeholder="&lt; 7 days" />
+                </label>
+                <label class="owner-web-field">
+                  <span>Third Stat Label</span>
+                  <input formControlName="trustedStatThreeLabel" class="owner-web-input" placeholder="Average onboarding" />
+                </label>
+              </div>
+            </section>
+            <section class="owner-web-language-panel" dir="rtl">
+              <div class="owner-web-language-head">
+                <span>العربية</span>
+                <span>RTL</span>
+              </div>
+              <label class="owner-web-field">
+                <span>العنوان</span>
+                <input formControlName="trustedHeadingAr" class="owner-web-input text-right" placeholder="موثوق به من فرق تعليمية رائدة" />
+              </label>
+              <label class="owner-web-field">
+                <span>الوصف</span>
+                <textarea formControlName="trustedDescriptionAr" class="owner-web-textarea text-right" placeholder="تختار المؤسسات EduManage للتحكم التشغيلي واتساق نظام التعلم والنمو القابل للقياس."></textarea>
+              </label>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label class="owner-web-field">
+                  <span>قيمة الإحصائية الأولى</span>
+                  <input formControlName="trustedStatOneValueAr" class="owner-web-input text-right" placeholder="+250" />
+                </label>
+                <label class="owner-web-field">
+                  <span>تسمية الإحصائية الأولى</span>
+                  <input formControlName="trustedStatOneLabelAr" class="owner-web-input text-right" placeholder="مؤسسات نشطة" />
+                </label>
+                <label class="owner-web-field">
+                  <span>قيمة الإحصائية الثانية</span>
+                  <input formControlName="trustedStatTwoValueAr" class="owner-web-input text-right" placeholder="+120 ألف" />
+                </label>
+                <label class="owner-web-field">
+                  <span>تسمية الإحصائية الثانية</span>
+                  <input formControlName="trustedStatTwoLabelAr" class="owner-web-input text-right" placeholder="متعلمين مدعومين" />
+                </label>
+                <label class="owner-web-field">
+                  <span>قيمة الإحصائية الثالثة</span>
+                  <input formControlName="trustedStatThreeValueAr" class="owner-web-input text-right" placeholder="أقل من 7 أيام" />
+                </label>
+                <label class="owner-web-field">
+                  <span>تسمية الإحصائية الثالثة</span>
+                  <input formControlName="trustedStatThreeLabelAr" class="owner-web-input text-right" placeholder="متوسط التفعيل" />
+                </label>
+              </div>
+            </section>
+          </div>
+        </section>
+        <div formArrayName="testimonials" class="space-y-3">
+          @for (row of testimonials.controls; track $index) {
+            <div [formGroupName]="$index" class="owner-web-feature-block">
+              <div class="owner-web-language-grid">
+                <section class="owner-web-language-panel" dir="ltr">
+                  <div class="owner-web-language-head">
+                    <span>English Testimonial {{ $index + 1 }}</span>
+                    <span>LTR</span>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <input formControlName="authorName" class="owner-web-input" placeholder="Author" />
+                    <input formControlName="authorRole" class="owner-web-input" placeholder="Role" />
+                    <textarea formControlName="quoteText" class="owner-web-textarea md:col-span-2" placeholder="Quote"></textarea>
+                  </div>
+                </section>
+                <section class="owner-web-language-panel" dir="rtl">
+                  <div class="owner-web-language-head">
+                    <span>الشهادة {{ $index + 1 }}</span>
+                    <span>RTL</span>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <input formControlName="authorNameAr" class="owner-web-input text-right" placeholder="اسم الكاتب" />
+                    <input formControlName="authorRoleAr" class="owner-web-input text-right" placeholder="الدور" />
+                    <textarea formControlName="quoteTextAr" class="owner-web-textarea text-right md:col-span-2" placeholder="نص الشهادة"></textarea>
+                  </div>
+                </section>
+              </div>
+              <input formControlName="avatarUrl" class="owner-web-input mt-3" placeholder="Avatar URL" />
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="owner-web-card p-5 space-y-4" [class.owner-web-hidden]="activeSection() !== 'pricing'">
+        <h3 class="owner-web-section-title">Pricing Plans</h3>
+        <section formGroupName="marketing" class="owner-web-feature-block space-y-4">
+          <div>
+            <h4 class="owner-web-section-title">Pricing Section Copy</h4>
+            <p class="owner-web-help-text">Controls the title and subtitle above the public pricing cards.</p>
+          </div>
+          <div class="owner-web-language-grid">
+            <section class="owner-web-language-panel" dir="ltr">
+              <div class="owner-web-language-head">
+                <span>English</span>
+                <span>LTR</span>
+              </div>
+              <label class="owner-web-field">
+                <span>Section Title</span>
+                <input formControlName="pricingSectionTitle" class="owner-web-input" placeholder="Institutional Tiers" />
+              </label>
+              <label class="owner-web-field">
+                <span>Section Description</span>
+                <textarea formControlName="pricingSectionDescription" class="owner-web-textarea" placeholder="Scale your management as you grow your community."></textarea>
+              </label>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label class="owner-web-field">
+                  <span>Teacher Button</span>
+                  <input formControlName="pricingAudienceTeacherLabel" class="owner-web-input" placeholder="Teacher" />
+                </label>
+                <label class="owner-web-field">
+                  <span>Center Button</span>
+                  <input formControlName="pricingAudienceCenterLabel" class="owner-web-input" placeholder="Center" />
+                </label>
+                <label class="owner-web-field">
+                  <span>Annual Button</span>
+                  <input formControlName="pricingBillingAnnualLabel" class="owner-web-input" placeholder="Annual" />
+                </label>
+                <label class="owner-web-field">
+                  <span>Monthly Button</span>
+                  <input formControlName="pricingBillingMonthlyLabel" class="owner-web-input" placeholder="Monthly" />
+                </label>
+              </div>
+            </section>
+            <section class="owner-web-language-panel" dir="rtl">
+              <div class="owner-web-language-head">
+                <span>العربية</span>
+                <span>RTL</span>
+              </div>
+              <label class="owner-web-field">
+                <span>عنوان القسم</span>
+                <input formControlName="pricingSectionTitleAr" class="owner-web-input text-right" placeholder="باقات المؤسسات" />
+              </label>
+              <label class="owner-web-field">
+                <span>وصف القسم</span>
+                <textarea formControlName="pricingSectionDescriptionAr" class="owner-web-textarea text-right" placeholder="وسّع إدارة مركزك مع نمو مجتمعك."></textarea>
+              </label>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label class="owner-web-field">
+                  <span>زر المعلم</span>
+                  <input formControlName="pricingAudienceTeacherLabelAr" class="owner-web-input text-right" placeholder="المعلم" />
+                </label>
+                <label class="owner-web-field">
+                  <span>زر المركز</span>
+                  <input formControlName="pricingAudienceCenterLabelAr" class="owner-web-input text-right" placeholder="المركز" />
+                </label>
+                <label class="owner-web-field">
+                  <span>زر السنوي</span>
+                  <input formControlName="pricingBillingAnnualLabelAr" class="owner-web-input text-right" placeholder="سنوي" />
+                </label>
+                <label class="owner-web-field">
+                  <span>زر الشهري</span>
+                  <input formControlName="pricingBillingMonthlyLabelAr" class="owner-web-input text-right" placeholder="شهري" />
+                </label>
+              </div>
+            </section>
+          </div>
+        </section>
+        <div formArrayName="pricingPlans" class="space-y-3">
+          @for (plan of pricingPlans.controls; track $index; let planIndex = $index) {
+            <div [formGroupName]="planIndex" class="owner-web-plan-block">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <input formControlName="planKey" class="owner-web-input" placeholder="Plan key" />
+                <input formControlName="nameText" class="owner-web-input" placeholder="Name" />
+                <input formControlName="priceText" class="owner-web-input" placeholder="Price" />
+              </div>
+              <div class="space-y-2 mt-3" formArrayName="features">
+                @for (feature of pricingFeaturesAt(planIndex).controls; track $index; let featureIndex = $index) {
+                  <div [formGroupName]="featureIndex" class="owner-web-grid-row">
+                    <input formControlName="featureText" class="owner-web-input" placeholder="Feature text" />
+                    <label class="owner-web-check"><input type="checkbox" formControlName="included" /> Included</label>
+                    <button type="button" (click)="removePricingFeature(planIndex, featureIndex)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button>
+                  </div>
+                }
+              </div>
+              <button type="button" (click)="addPricingFeature(planIndex)" class="owner-web-mini-btn mt-2">Add Plan Feature</button>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="owner-web-card p-5 space-y-4" [class.owner-web-hidden]="activeSection() !== 'ctas'">
+        <h3 class="owner-web-section-title">CTA Blocks</h3>
+        <div formArrayName="ctas" class="space-y-3">
+          @for (row of ctas.controls; track $index) {
+            <div [formGroupName]="$index" class="owner-web-locale-box space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto_auto] gap-3">
+                <label class="owner-web-field">
+                  <span>CTA Key</span>
+                  <input formControlName="ctaKey" class="owner-web-input" placeholder="custom_plan" />
+                </label>
+                <label class="owner-web-field">
+                  <span>Button Link</span>
+                  <input formControlName="buttonLink" class="owner-web-input" placeholder="/customizer" />
+                </label>
+                <label class="owner-web-field">
+                  <span>Order</span>
+                  <input type="number" formControlName="displayOrder" class="owner-web-input" />
+                </label>
+                <label class="owner-web-check self-end"><input type="checkbox" formControlName="visible" /> Visible</label>
+              </div>
+
+              <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <div class="owner-web-locale-box">
+                  <div class="owner-web-locale-heading">
+                    <span>English</span>
+                    <span class="owner-web-dir-pill">LTR</span>
+                  </div>
+                  <div class="space-y-3">
+                    <label class="owner-web-field">
+                      <span>Title</span>
+                      <input formControlName="titleText" class="owner-web-input" dir="ltr" placeholder="Need a bespoke solution?" />
+                    </label>
+                    <label class="owner-web-field">
+                      <span>Description</span>
+                      <textarea formControlName="descriptionText" class="owner-web-input min-h-[88px]" dir="ltr" placeholder="Build your own plan by selecting only the modules you need."></textarea>
+                    </label>
+                    <label class="owner-web-field">
+                      <span>Button Label</span>
+                      <input formControlName="buttonLabel" class="owner-web-input" dir="ltr" placeholder="Build Your Plan" />
+                    </label>
+                  </div>
+                </div>
+
+                <div class="owner-web-locale-box" dir="rtl">
+                  <div class="owner-web-locale-heading">
+                    <span>العربية</span>
+                    <span class="owner-web-dir-pill">RTL</span>
+                  </div>
+                  <div class="space-y-3">
+                    <label class="owner-web-field">
+                      <span>العنوان</span>
+                      <input formControlName="titleTextAr" class="owner-web-input text-right" dir="rtl" placeholder="هل تحتاج إلى حل مخصص؟" />
+                    </label>
+                    <label class="owner-web-field">
+                      <span>الوصف</span>
+                      <textarea formControlName="descriptionTextAr" class="owner-web-input min-h-[88px] text-right" dir="rtl" placeholder="ابن باقتك الخاصة باختيار الوحدات التي تحتاجها فقط."></textarea>
+                    </label>
+                    <label class="owner-web-field">
+                      <span>تسمية الزر</span>
+                      <input formControlName="buttonLabelAr" class="owner-web-input text-right" dir="rtl" placeholder="ابن باقتك" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="owner-web-card p-5 space-y-4" [class.owner-web-hidden]="activeSection() !== 'footer'">
+        <h3 class="owner-web-section-title">Footer Links</h3>
+        <div formArrayName="footerLinks" class="space-y-3">
+          @for (row of footerLinks.controls; track $index) {
+            <div [formGroupName]="$index" class="owner-web-subcard space-y-3">
+              <div class="owner-web-grid-row">
+                <input formControlName="sectionTitle" class="owner-web-input" placeholder="Section" />
+                <input formControlName="label" class="owner-web-input" placeholder="Label" />
+                <input formControlName="routePath" class="owner-web-input" placeholder="Path" />
+                <label class="owner-web-check"><input type="checkbox" formControlName="visible" /> Visible</label>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3" dir="rtl">
+                <label class="owner-web-field text-right">
+                  <span>عنوان القسم بالعربية</span>
+                  <input formControlName="sectionTitleAr" class="owner-web-input text-right" dir="rtl" placeholder="المنتج" />
+                </label>
+                <label class="owner-web-field text-right">
+                  <span>نص الرابط بالعربية</span>
+                  <input formControlName="labelAr" class="owner-web-input text-right" dir="rtl" placeholder="نظام التعلم" />
+                </label>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="owner-web-card p-5 space-y-4" formGroupName="marketing" [class.owner-web-hidden]="activeSection() !== 'marketing'">
+        <h3 class="owner-web-section-title">Marketing Content</h3>
+
+        <div formGroupName="promo" class="space-y-3">
+          <h4 class="owner-web-section-title">Promo Banner</h4>
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            <div class="owner-web-locale-box">
+              <div class="owner-web-locale-heading">
+                <strong>English</strong>
+                <span class="owner-web-dir-pill">LTR</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input formControlName="icon" class="owner-web-input" placeholder="Icon (campaign)" />
+                <input formControlName="ctaLabel" class="owner-web-input" placeholder="CTA label" />
+                <div class="md:col-span-2 owner-web-rich-wrap">
+                  <div class="owner-web-rich-toolbar">
+                    <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommand('bold')"><b>B</b></button>
+                    <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommand('italic')"><i>I</i></button>
+                    <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommand('underline')"><u>U</u></button>
+                    <select class="owner-web-input owner-web-font-size" (change)="onPromoFontSizePick($event)">
+                      <option value="">Font size</option>
+                      <option value="12px">XS</option>
+                      <option value="14px">S</option>
+                      <option value="16px">M</option>
+                      <option value="18px">L</option>
+                      <option value="22px">XL</option>
+                      <option value="28px">2XL</option>
+                      <option value="34px">3XL</option>
+                    </select>
+                    <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoBlockquote()">Quote</button>
+                    <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoParagraph()">Paragraph</button>
+                    <label class="owner-web-color-label">
+                      <span>Color</span>
+                      <input type="color" (mousedown)="$event.preventDefault()" (input)="onPromoColorPick($event)" />
+                    </label>
+                    <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommand('removeFormat')">Clear</button>
+                  </div>
+                  <div
+                    id="promo-rich-editor"
+                    class="owner-web-rich-editor"
+                    contenteditable="true"
+                    dir="ltr"
+                    [innerHTML]="promoEditorHtml()"
+                    (mouseup)="capturePromoSelection()"
+                    (keyup)="capturePromoSelection()"
+                    (input)="onPromoEditorInput($event)">
+                  </div>
+                  <textarea formControlName="text" class="owner-web-hidden-textarea" aria-hidden="true"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="owner-web-locale-box text-right" dir="rtl">
+              <div class="owner-web-locale-heading">
+                <strong>العربية</strong>
+                <span class="owner-web-dir-pill">RTL</span>
+              </div>
+              <div class="grid grid-cols-1 gap-3">
+                <input formControlName="ctaLabelAr" class="owner-web-input text-right" placeholder="تسمية الزر" dir="rtl" />
+                <div class="owner-web-rich-wrap">
+                  <div class="owner-web-rich-toolbar">
+                    <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommandAr('bold')"><b>B</b></button>
+                    <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommandAr('italic')"><i>I</i></button>
+                    <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommandAr('underline')"><u>U</u></button>
+                    <select class="owner-web-input owner-web-font-size" (change)="onPromoFontSizePickAr($event)">
+                      <option value="">حجم الخط</option>
+                      <option value="12px">XS</option>
+                      <option value="14px">S</option>
+                      <option value="16px">M</option>
+                      <option value="18px">L</option>
+                      <option value="22px">XL</option>
+                      <option value="28px">2XL</option>
+                      <option value="34px">3XL</option>
+                    </select>
+                    <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommandAr('formatBlock', 'blockquote')">Quote</button>
+                    <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommandAr('formatBlock', 'p')">Paragraph</button>
+                    <label class="owner-web-color-label">
+                      <span>Color</span>
+                      <input type="color" (mousedown)="$event.preventDefault()" (input)="onPromoColorPickAr($event)" />
+                    </label>
+                    <button type="button" class="owner-web-mini-btn" (mousedown)="$event.preventDefault()" (click)="applyPromoCommandAr('removeFormat')">Clear</button>
+                  </div>
+                  <div
+                    id="promo-rich-editor-ar"
+                    class="owner-web-rich-editor text-right"
+                    contenteditable="true"
+                    dir="rtl"
+                    [innerHTML]="promoEditorHtmlAr()"
+                    (mouseup)="capturePromoSelectionAr()"
+                    (keyup)="capturePromoSelectionAr()"
+                    (input)="onPromoEditorInputAr($event)">
+                  </div>
+                  <textarea formControlName="textAr" class="owner-web-hidden-textarea" aria-hidden="true"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="owner-web-section-title">How It Works Steps</h4>
+            <button type="button" (click)="addMarketingStep()" class="owner-web-mini-btn">Add Step</button>
+          </div>
+          <div formArrayName="steps" class="space-y-2">
+            @for (row of marketingSteps.controls; track $index) {
+              <div [formGroupName]="$index" class="owner-web-feature-block">
+                <div class="grid grid-cols-1 lg:grid-cols-[140px_1fr_1fr] gap-3">
+                  <input formControlName="step" class="owner-web-input" placeholder="Step no (01)" />
+                  <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                      <span class="owner-web-lang-title">English</span>
+                      <span class="owner-web-direction-pill">LTR</span>
+                    </div>
+                    <input formControlName="title" class="owner-web-input" placeholder="Title" />
+                    <input formControlName="description" class="owner-web-input" placeholder="Description" />
+                  </div>
+                  <div class="space-y-2 text-right" dir="rtl">
+                    <div class="flex items-center justify-between">
+                      <span class="owner-web-direction-pill">RTL</span>
+                      <span class="owner-web-lang-title">العربية</span>
+                    </div>
+                    <input formControlName="titleAr" class="owner-web-input text-right" placeholder="العنوان" />
+                    <input formControlName="descriptionAr" class="owner-web-input text-right" placeholder="الوصف" />
+                  </div>
+                </div>
+                <div class="flex justify-end mt-2">
+                  <button type="button" (click)="removeMarketingStep($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div formGroupName="integrations" class="space-y-3">
+          <h4 class="owner-web-section-title">Integrations</h4>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="owner-web-locale-box">
+              <div class="owner-web-locale-heading">
+                <span>English</span>
+                <span class="owner-web-dir-pill">LTR</span>
+              </div>
+              <div class="grid grid-cols-1 gap-3">
+                <input formControlName="title" class="owner-web-input" placeholder="Section title" />
+                <textarea formControlName="description" class="owner-web-textarea" placeholder="Section description"></textarea>
+              </div>
+            </div>
+            <div class="owner-web-locale-box" dir="rtl">
+              <div class="owner-web-locale-heading">
+                <span>العربية</span>
+                <span class="owner-web-dir-pill">RTL</span>
+              </div>
+              <div class="grid grid-cols-1 gap-3">
+                <input formControlName="titleAr" class="owner-web-input text-right" placeholder="عنوان القسم" />
+                <textarea formControlName="descriptionAr" class="owner-web-textarea text-right" placeholder="وصف القسم"></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <h5 class="owner-web-section-title">Integration Items</h5>
+              <button type="button" (click)="addMarketingIntegrationItem()" class="owner-web-mini-btn">Add Item</button>
+            </div>
+            <div formArrayName="items" class="space-y-2">
+              @for (row of marketingIntegrationItems.controls; track $index) {
+                <div [formGroupName]="$index" class="owner-web-grid-row owner-web-grid-row-wide">
+                  <input formControlName="value" class="owner-web-input" placeholder="English item" />
+                  <input [formControl]="marketingIntegrationItemArControlAt($index)" class="owner-web-input text-right" dir="rtl" placeholder="العنصر بالعربية" />
+                  <div class="owner-web-icon-picker">
+                    <mat-icon>{{ marketingIntegrationItemIconControlAt($index).value || 'help' }}</mat-icon>
+                    <input
+                      [formControl]="marketingIntegrationItemIconControlAt($index)"
+                      class="owner-web-input"
+                      list="owner-integration-icon-options"
+                      placeholder="Search icon name (mail, hub, security...)"
+                    />
+                  </div>
+                  <button type="button" (click)="removeMarketingIntegrationItem($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button>
+                </div>
+              }
+            </div>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <h5 class="owner-web-section-title">Bullet Points</h5>
+              <button type="button" (click)="addMarketingIntegrationBullet()" class="owner-web-mini-btn">Add Bullet</button>
+            </div>
+            <div formArrayName="bullets" class="space-y-2">
+              @for (row of marketingIntegrationBullets.controls; track $index) {
+                <div [formGroupName]="$index" class="owner-web-grid-row owner-web-grid-row-wide">
+                  <input formControlName="value" class="owner-web-input" placeholder="English bullet" />
+                  <input [formControl]="marketingIntegrationBulletArControlAt($index)" class="owner-web-input text-right" dir="rtl" placeholder="النقطة بالعربية" />
+                  <button type="button" (click)="removeMarketingIntegrationBullet($index)" class="owner-web-mini-btn owner-web-mini-btn-danger">Remove</button>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div formGroupName="contact" class="space-y-3">
+          <h4 class="owner-web-section-title">Contact Section</h4>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="owner-web-locale-box">
+              <div class="owner-web-locale-heading">
+                <span>English</span>
+                <span class="owner-web-dir-pill">LTR</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input formControlName="title" class="owner-web-input md:col-span-2" placeholder="Contact title" />
+                <textarea formControlName="description" class="owner-web-textarea md:col-span-2" placeholder="Contact description"></textarea>
+                <input formControlName="hqLabel" class="owner-web-input" placeholder="HQ label" />
+                <input formControlName="hqValue" class="owner-web-input" placeholder="HQ value" />
+              </div>
+            </div>
+            <div class="owner-web-locale-box" dir="rtl">
+              <div class="owner-web-locale-heading">
+                <span>العربية</span>
+                <span class="owner-web-dir-pill">RTL</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input formControlName="titleAr" class="owner-web-input text-right md:col-span-2" placeholder="عنوان التواصل" />
+                <textarea formControlName="descriptionAr" class="owner-web-textarea text-right md:col-span-2" placeholder="وصف التواصل"></textarea>
+                <input formControlName="hqLabelAr" class="owner-web-input text-right" placeholder="تسمية المقر" />
+                <input formControlName="hqValueAr" class="owner-web-input text-right" placeholder="قيمة المقر" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="owner-web-card p-5 space-y-4" [class.owner-web-hidden]="activeSection() !== 'pixel'">
+        <div>
+          <h3 class="owner-web-section-title">Meta Pixel</h3>
+          <p class="owner-web-help-text">
+            Add the Facebook Pixel ID used by the public website after publish. Use digits only.
+          </p>
+        </div>
+
+        <div formGroupName="marketing" class="space-y-4">
+          <label class="owner-web-field">
+            <span>Facebook Pixel ID</span>
+            <input
+              formControlName="facebookPixelId"
+              class="owner-web-input"
+              inputmode="numeric"
+              autocomplete="off"
+              placeholder="2231145617703009" />
+          </label>
+          @if (form.get(['marketing', 'facebookPixelId'])?.invalid && form.get(['marketing', 'facebookPixelId'])?.touched) {
+            <p class="owner-web-error-text">Facebook Pixel ID must contain digits only.</p>
+          }
+          <div class="owner-web-pixel-preview">
+            <div class="owner-web-pixel-preview-head">
+              <mat-icon>data_object</mat-icon>
+              <span>Published snippet</span>
+            </div>
+            <code>fbq('init', '{{ form.get(['marketing', 'facebookPixelId'])?.value || '2231145617703009' }}'); fbq('track', 'PageView');</code>
           </div>
         </div>
       </div>
@@ -639,6 +1382,33 @@
         </div>
       </div>
     </form>
+  }
+
+  @if (heroBackgroundPreviewOpen() && heroBackgroundPreviewUrl()) {
+    <div
+      class="owner-web-modal-backdrop"
+      role="button"
+      tabindex="0"
+      aria-label="Close hero background preview"
+      (click)="closeHeroBackgroundPreview()"
+      (keydown.enter)="closeHeroBackgroundPreview()">
+      <div
+        class="owner-web-modal-card owner-web-image-modal-card"
+        tabindex="-1"
+        (click)="$event.stopPropagation()"
+        (keydown.enter)="$event.stopPropagation()">
+        <div class="owner-web-modal-head">
+          <mat-icon>image</mat-icon>
+          <h4>Hero background preview</h4>
+          <button type="button" class="owner-web-image-modal-close" (click)="closeHeroBackgroundPreview()" aria-label="Close image preview">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="owner-web-image-modal-body">
+          <img [src]="heroBackgroundPreviewUrl()" alt="Full hero background preview" class="owner-web-image-modal-img" />
+        </div>
+      </div>
+    </div>
   }
 
   @if (saveStatus(); as status) {

@@ -1,0 +1,143 @@
+<section class="tenant-exams-evaluation">
+  <header class="tenant-exams-evaluation__header">
+    <div>
+      <nav class="tenant-exams-evaluation__breadcrumb" aria-label="Breadcrumb">
+        <a routerLink="/tenant/overview">Overview</a>
+        <mat-icon>chevron_right</mat-icon>
+        <span>Evaluation</span>
+        <mat-icon>chevron_right</mat-icon>
+        <span>Home Work Evaluation</span>
+      </nav>
+      <h2>Home Work Evaluation</h2>
+      <p>Review completed home work attempts, scores, and reports across all groups.</p>
+    </div>
+    <button type="button" class="tenant-exams-evaluation__refresh" (click)="load()" [disabled]="loading()">
+      <mat-icon>refresh</mat-icon>
+      Refresh
+    </button>
+  </header>
+
+  <div class="tenant-exams-evaluation__stats" aria-label="Home work evaluation summary">
+    <article>
+      <span>Completed reports</span>
+      <strong>{{ summary().completedReports }}</strong>
+    </article>
+    <article>
+      <span>Students reviewed</span>
+      <strong>{{ summary().studentsReviewed }}</strong>
+    </article>
+    <article>
+      <span>Groups reviewed</span>
+      <strong>{{ summary().groupsReviewed }}</strong>
+    </article>
+  </div>
+
+  @if (loading()) {
+    <div class="tenant-exams-evaluation__state">
+      <mat-icon>progress_activity</mat-icon>
+      Loading home work reports...
+    </div>
+  } @else if (error()) {
+    <div class="tenant-exams-evaluation__state tenant-exams-evaluation__state--error">
+      <mat-icon>error</mat-icon>
+      <span>{{ error() }}</span>
+      <button type="button" (click)="load()">Retry</button>
+    </div>
+  } @else {
+    <div class="tenant-exams-evaluation__table-card">
+      <div class="tenant-exams-evaluation__toolbar">
+        <label class="tenant-exams-evaluation__search">
+          <mat-icon>search</mat-icon>
+          <input
+            type="search"
+            placeholder="Search home work by student, group, subject or score..."
+            [value]="searchTerm()"
+            (input)="setSearchTerm($any($event.target).value)"
+          />
+        </label>
+      </div>
+
+      <div class="tenant-exams-evaluation__table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Home Work</th>
+              <th>Group</th>
+              <th>Date</th>
+              <th>Completed</th>
+              <th>Score</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of pagedRows(); track row.attemptId) {
+              <tr>
+                <td>
+                  <strong>{{ row.studentName || '-' }}</strong>
+                  <span>{{ row.studentId || '' }}</span>
+                </td>
+                <td>
+                  <strong>{{ row.title }}</strong>
+                  <span>{{ row.duration || 0 }} min</span>
+                </td>
+                <td>
+                  {{ row.groupName }}
+                  <span>{{ row.subjectName || '-' }}</span>
+                </td>
+                <td>
+                  {{ date(row.date) }}
+                  <span>{{ time(row.startTime) }}</span>
+                </td>
+                <td>
+                  {{ instant(row.completedAt) }}
+                  <span>Started {{ instant(row.startedAt) }}</span>
+                </td>
+                <td>
+                  <span class="tenant-exams-evaluation__score" [class.tenant-exams-evaluation__score--empty]="!(row.maxScore || 0)">
+                    {{ score(row) }} · {{ scorePercent(row) }}%
+                  </span>
+                </td>
+                <td>{{ statusLabel(row.status) }}</td>
+                <td>
+                  <a class="tenant-exams-evaluation__open" [routerLink]="reportRoute(row)">
+                    <mat-icon>visibility</mat-icon>
+                    View
+                  </a>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="8" class="tenant-exams-evaluation__empty">
+                  {{ searchTerm() ? 'No home work reports match your search.' : 'No completed home work reports yet.' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (filteredRows().length > 0) {
+        <div class="tenant-exams-evaluation__pagination">
+          <span>Showing {{ rangeStart() }}-{{ rangeEnd() }} of {{ filteredRows().length }} reports</span>
+          <label>
+            Rows
+            <select [value]="pageSize()" (change)="setPageSize($any($event.target).value)">
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+            </select>
+          </label>
+          <button type="button" (click)="previousPage()" [disabled]="page() === 1" aria-label="Previous page">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <strong>Page {{ page() }} of {{ totalPages() }}</strong>
+          <button type="button" (click)="nextPage()" [disabled]="page() === totalPages()" aria-label="Next page">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+  }
+</section>

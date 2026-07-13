@@ -31,19 +31,41 @@ export interface SiteConfig {
 
 export interface HomeHero {
   badgeText: string | null;
+  badgeTextAr?: string | null;
   titleText: string;
+  titleTextAr?: string | null;
   descriptionText: string | null;
+  descriptionTextAr?: string | null;
   backgroundImageUrl: string | null;
   primaryCtaLabel: string | null;
+  primaryCtaLabelAr?: string | null;
   primaryCtaLink: string | null;
   secondaryCtaLabel: string | null;
+  secondaryCtaLabelAr?: string | null;
   secondaryCtaLink: string | null;
+  statOneValue?: string | null;
+  statOneValueAr?: string | null;
+  statOneLabel?: string | null;
+  statOneLabelAr?: string | null;
+  statTwoValue?: string | null;
+  statTwoValueAr?: string | null;
+  statTwoLabel?: string | null;
+  statTwoLabelAr?: string | null;
+  statThreeValue?: string | null;
+  statThreeValueAr?: string | null;
+  statThreeLabel?: string | null;
+  statThreeLabelAr?: string | null;
+  statFourValue?: string | null;
+  statFourValueAr?: string | null;
+  statFourLabel?: string | null;
+  statFourLabelAr?: string | null;
   visible: boolean;
 }
 
 export interface PageConfig {
   pageKey: string;
   title: string;
+  titleAr?: string | null;
   routePath: string;
   visible: boolean;
   displayOrder: number;
@@ -60,16 +82,22 @@ export interface NavLink {
 export interface FeatureItem {
   iconKey: string;
   titleText: string;
+  titleTextAr?: string | null;
   titleFontSize?: number | null;
   descriptionText: string | null;
+  descriptionTextAr?: string | null;
   descriptionFontSize?: number | null;
   ctaLabel: string | null;
+  ctaLabelAr?: string | null;
   ctaFontSize?: number | null;
   ctaLink: string | null;
   imageUrl?: string | null;
   detailTitle?: string | null;
+  detailTitleAr?: string | null;
   detailSummary?: string | null;
+  detailSummaryAr?: string | null;
   detailContent?: string | null;
+  detailContentAr?: string | null;
   detailImageUrl?: string | null;
   visible: boolean;
   displayOrder: number;
@@ -77,8 +105,11 @@ export interface FeatureItem {
 
 export interface TestimonialItem {
   quoteText: string;
+  quoteTextAr?: string | null;
   authorName: string;
+  authorNameAr?: string | null;
   authorRole: string | null;
+  authorRoleAr?: string | null;
   avatarUrl: string | null;
   visible: boolean;
   displayOrder: number;
@@ -105,8 +136,11 @@ export interface PricingPlan {
 export interface CtaBlock {
   ctaKey: string;
   titleText: string;
+  titleTextAr?: string | null;
   descriptionText: string | null;
+  descriptionTextAr?: string | null;
   buttonLabel: string | null;
+  buttonLabelAr?: string | null;
   buttonLink: string | null;
   visible: boolean;
   displayOrder: number;
@@ -114,7 +148,9 @@ export interface CtaBlock {
 
 export interface FooterLink {
   sectionTitle: string;
+  sectionTitleAr?: string | null;
   label: string;
+  labelAr?: string | null;
   routePath: string;
   visible: boolean;
   displayOrder: number;
@@ -123,30 +159,44 @@ export interface FooterLink {
 export interface MarketingPromoConfig {
   icon: string;
   text: string;
+  textAr?: string | null;
   highlight: string;
+  highlightAr?: string | null;
   suffixText: string;
+  suffixTextAr?: string | null;
   ctaLabel: string;
+  ctaLabelAr?: string | null;
 }
 
 export interface MarketingStepConfig {
   step: string;
   title: string;
+  titleAr?: string | null;
   description: string;
+  descriptionAr?: string | null;
 }
 
 export interface MarketingIntegrationsConfig {
   title: string;
+  titleAr?: string | null;
   description: string;
+  descriptionAr?: string | null;
   items: string[];
+  itemsAr?: string[] | null;
   itemIcons: string[];
   bullets: string[];
+  bulletsAr?: string[] | null;
 }
 
 export interface MarketingContactConfig {
   title: string;
+  titleAr?: string | null;
   description: string;
+  descriptionAr?: string | null;
   hqLabel: string;
+  hqLabelAr?: string | null;
   hqValue: string;
+  hqValueAr?: string | null;
 }
 
 export interface MarketingConfig {
@@ -154,8 +204,45 @@ export interface MarketingConfig {
   steps: MarketingStepConfig[];
   integrations: MarketingIntegrationsConfig;
   contact: MarketingContactConfig;
+  featuresSectionTitle?: string | null;
+  featuresSectionTitleAr?: string | null;
+  featuresSectionDescription?: string | null;
+  featuresSectionDescriptionAr?: string | null;
+  pricingSectionTitle?: string | null;
+  pricingSectionTitleAr?: string | null;
+  pricingSectionDescription?: string | null;
+  pricingSectionDescriptionAr?: string | null;
+  pricingAudienceTeacherLabel?: string | null;
+  pricingAudienceTeacherLabelAr?: string | null;
+  pricingAudienceCenterLabel?: string | null;
+  pricingAudienceCenterLabelAr?: string | null;
+  pricingBillingAnnualLabel?: string | null;
+  pricingBillingAnnualLabelAr?: string | null;
+  pricingBillingMonthlyLabel?: string | null;
+  pricingBillingMonthlyLabelAr?: string | null;
+  trustedHeading?: string | null;
+  trustedHeadingAr?: string | null;
+  trustedDescription?: string | null;
+  trustedDescriptionAr?: string | null;
+  trustedStatOneValue?: string | null;
+  trustedStatOneValueAr?: string | null;
+  trustedStatOneLabel?: string | null;
+  trustedStatOneLabelAr?: string | null;
+  trustedStatTwoValue?: string | null;
+  trustedStatTwoValueAr?: string | null;
+  trustedStatTwoLabel?: string | null;
+  trustedStatTwoLabelAr?: string | null;
+  trustedStatThreeValue?: string | null;
+  trustedStatThreeValueAr?: string | null;
+  trustedStatThreeLabel?: string | null;
+  trustedStatThreeLabelAr?: string | null;
   docsVideoUrl?: string | null;
+  docsSectionTitle?: string | null;
+  docsSectionTitleAr?: string | null;
+  docsSectionDescription?: string | null;
+  docsSectionDescriptionAr?: string | null;
   docsVideos?: { title?: string | null; url: string }[];
+  facebookPixelId?: string | null;
 }
 
 export interface OnboardingConfig {

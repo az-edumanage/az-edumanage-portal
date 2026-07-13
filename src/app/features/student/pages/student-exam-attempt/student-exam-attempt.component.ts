@@ -304,7 +304,7 @@ export class StudentExamAttemptComponent implements OnInit, OnDestroy {
       );
       this.stopTimer();
       await this.router.navigate([
-        '/student/exam-evaluation',
+        '/student/evaluation/exams',
         exam.groupId,
         exam.assignmentId,
         'attempts',

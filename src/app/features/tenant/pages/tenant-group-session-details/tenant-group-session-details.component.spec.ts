@@ -123,6 +123,7 @@ describe('TenantGroupSessionDetailsComponent', () => {
   });
 
   beforeEach(async () => {
+    sessionStorage.clear();
     createObjectUrlSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:preview-pdf');
     revokeObjectUrlSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
     data.loadGroupById.mockReset();
@@ -547,6 +548,7 @@ describe('TenantGroupSessionDetailsComponent', () => {
     fixture = TestBed.createComponent(TenantGroupSessionDetailsComponent);
     fixture.detectChanges();
     await fixture.whenStable();
+    await (fixture.componentInstance as unknown as { loadSessionData: () => Promise<void> }).loadSessionData();
     fixture.detectChanges();
   });
 
@@ -614,9 +616,9 @@ describe('TenantGroupSessionDetailsComponent', () => {
       .find((anchor) => (anchor as HTMLAnchorElement).textContent?.includes('Home Work')) as HTMLAnchorElement;
     expect(quickExamLink.getAttribute('href')).toContain('/tenant/groups/group-123/exam');
     expect(quickExamLink.getAttribute('href')).toContain('freshCreate=true');
-    expect(quickExamLink.getAttribute('href')).toContain('returnTab=exams');
+    expect(quickExamLink.getAttribute('href')).toContain('returnTab=homeWork');
     expect(quickExamLink.getAttribute('href')).toContain('examDate=2026-06-06');
-    expect(quickExamLink.getAttribute('href')).toContain('examStartTime=10:00');
+    expect(quickExamLink.getAttribute('href')).not.toContain('examStartTime=');
 
     const tabButtons = Array.from(fixture.nativeElement.querySelectorAll('.tenant-group-session-tab')) as HTMLButtonElement[];
     const examsTab = tabButtons.find((button) => button.textContent?.includes('Home Work')) as HTMLButtonElement;
@@ -643,10 +645,15 @@ describe('TenantGroupSessionDetailsComponent', () => {
     expect(navigate).toHaveBeenCalledWith(['/tenant/groups', 'group-123', 'exam'], {
       queryParams: {
         assignmentId: 'assignment-1',
+        selectedExamId: 'exam-1',
         returnTo: '/tenant/groups/group-123/sessions/event-1',
-        returnTab: 'exams',
+        returnTab: 'homeWork',
         examDate: '2026-06-06',
         examStartTime: '10:00',
+        examDuration: '45',
+        instructions: 'Solve individually.',
+        showResultsImmediately: 'true',
+        allowRetakes: 'false',
       },
     });
 
@@ -750,6 +757,58 @@ describe('TenantGroupSessionDetailsComponent', () => {
     expect(noteDrawerText).toContain('Newton note content');
   });
 
+  it('shows saved anytime home work in the session home work tab', async () => {
+    fixture.componentInstance.sessionExams.set([
+      {
+        id: 'assignment-3',
+        groupId: 'group-123',
+        examId: 'exam-3',
+        title: 'Science Home Work - 2026-06-06',
+        status: 'PUBLISHED',
+        date: '2026-06-06',
+        startTime: null,
+        duration: 60,
+        questionCount: 1,
+        instructions: 'Answer before class.',
+        updatedAt: '2026-06-06T08:00:00Z',
+        settings: {
+          showResultsImmediately: false,
+          allowRetakes: false,
+        },
+      },
+    ]);
+    fixture.detectChanges();
+
+    const examsTab = Array.from(fixture.nativeElement.querySelectorAll('.tenant-group-session-tab') as NodeListOf<HTMLButtonElement>)
+      .find((button) => button.textContent?.includes('Home Work')) as HTMLButtonElement;
+    examsTab.click();
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('1 assigned home work linked to this session');
+    expect(text).toContain('Science Home Work - 2026-06-06');
+    expect(text).toContain('1 question');
+
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const editButton = fixture.nativeElement.querySelector('[aria-label="Edit Science Home Work - 2026-06-06 assignment"]') as HTMLButtonElement;
+    editButton.click();
+
+    expect(navigate).toHaveBeenCalledWith(['/tenant/groups', 'group-123', 'exam'], {
+      queryParams: expect.objectContaining({
+        assignmentId: 'assignment-3',
+        selectedExamId: 'exam-3',
+        returnTo: '/tenant/groups/group-123/sessions/event-1',
+        returnTab: 'homeWork',
+        examDate: '2026-06-06',
+        examDuration: '60',
+        instructions: 'Answer before class.',
+        showResultsImmediately: 'false',
+        allowRetakes: 'false',
+      }),
+    });
+    expect(navigate.mock.calls[0][1]?.queryParams).not.toHaveProperty('examStartTime');
+  });
+
   it('opens the session report as a PDF preview with a download link', async () => {
     const reportButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
       .find((button) => (button as HTMLButtonElement).textContent?.includes('Report')) as HTMLButtonElement;
@@ -790,8 +849,16 @@ describe('TenantGroupSessionDetailsComponent', () => {
     expect(fixture.componentInstance.sessionPublication()?.published).toBe(true);
     expect(fixture.nativeElement.textContent).toContain('4 session media items published for students.');
   });
-  it('hides tenant-only quick actions for the teacher group session view', () => {
-    (fixture.componentInstance as unknown as { isTeacherGroupView: boolean }).isTeacherGroupView = true;
+  it('hides tenant-only quick actions for the teacher group session view', async () => {
+    fixture.destroy();
+    const route = TestBed.inject(ActivatedRoute);
+    Object.defineProperty(route.snapshot, 'data', {
+      value: { scope: 'teacher' },
+      configurable: true,
+    });
+    fixture = TestBed.createComponent(TenantGroupSessionDetailsComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     const quickActions = fixture.nativeElement.querySelector('.tenant-group-session-quick-actions') as HTMLElement;

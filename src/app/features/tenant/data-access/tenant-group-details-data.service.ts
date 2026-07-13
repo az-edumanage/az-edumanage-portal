@@ -12,6 +12,7 @@ import {
   GroupSessionPostponeResult,
   GroupSessionTeacherAbsence,
   GroupSessionTeacherOption,
+  GroupAssessmentEvaluation,
   GroupStudentAssessment,
   GroupStudentAssessmentSaveRequest,
   GroupSessionPublication,
@@ -484,6 +485,12 @@ export class TenantGroupDetailsDataService {
         `${this.groupDetailsUrl(selectedGroupId)}/sessions/${encodeURIComponent(selectedSessionId)}/students/${encodeURIComponent(selectedStudentId)}/assessment`,
       )
       .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load student assessment')));
+  }
+
+  loadAssessmentEvaluations(): Observable<GroupAssessmentEvaluation[]> {
+    return this.http
+      .get<GroupAssessmentEvaluation[]>(`${environment.apiBaseUrl}/tenant/groups/assessment-evaluations`)
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load assessment evaluations')));
   }
 
   saveStudentAssessment(

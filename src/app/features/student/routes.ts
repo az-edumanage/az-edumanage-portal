@@ -6,6 +6,7 @@ import { StudentMyCoursesComponent } from './pages/student-my-courses/student-my
 import { StudentGroupsComponent } from './pages/student-groups/student-groups.component';
 import { StudentExamsComponent } from './pages/student-exams/student-exams.component';
 import { StudentExamEvaluationComponent } from './pages/student-exam-evaluation/student-exam-evaluation.component';
+import { StudentHomeWorkEvaluationComponent } from './pages/student-home-work-evaluation/student-home-work-evaluation.component';
 import { StudentExamAttemptComponent } from './pages/student-exam-attempt/student-exam-attempt.component';
 import { StudentExamReportComponent } from './pages/student-exam-report/student-exam-report.component';
 import { StudentBillingComponent } from './pages/student-billing/student-billing.component';
@@ -20,8 +21,11 @@ export const STUDENT_ROUTES: Routes = [
   { path: 'my-groups/:groupId/sessions', component: StudentGroupsComponent },
   { path: 'my-groups', component: StudentGroupsComponent },
   { path: 'exams', component: StudentExamsComponent, data: { mode: 'exams' } },
-  { path: 'exam-evaluation', component: StudentExamEvaluationComponent },
-  { path: 'exam-evaluation/:groupId/:assignmentId/attempts/:attemptId/report', component: StudentExamReportComponent, data: { source: 'evaluation' } },
+  { path: 'evaluation/exams', component: StudentExamEvaluationComponent, data: { source: 'student' } },
+  { path: 'evaluation/exams/:groupId/:assignmentId/attempts/:attemptId/report', component: StudentExamReportComponent, data: { source: 'evaluation' } },
+  { path: 'evaluation/home-work', component: StudentHomeWorkEvaluationComponent },
+  { path: 'exam-evaluation', redirectTo: 'evaluation/exams', pathMatch: 'full' },
+  { path: 'exam-evaluation/:groupId/:assignmentId/attempts/:attemptId/report', redirectTo: 'evaluation/exams/:groupId/:assignmentId/attempts/:attemptId/report', pathMatch: 'full' },
   { path: 'exams/:groupId/:assignmentId/attempts/:attemptId/report', component: StudentExamReportComponent },
   { path: 'exams/:groupId/:assignmentId/attempts/:attemptId', component: StudentExamAttemptComponent },
   { path: 'home-work', component: StudentExamsComponent, data: { mode: 'homeWork' } },

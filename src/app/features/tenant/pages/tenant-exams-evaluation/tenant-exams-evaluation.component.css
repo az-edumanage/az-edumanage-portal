@@ -1,0 +1,382 @@
+:host {
+  display: block;
+}
+
+.tenant-exams-evaluation {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.tenant-exams-evaluation__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tenant-exams-evaluation__breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.tenant-exams-evaluation__breadcrumb a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.tenant-exams-evaluation__breadcrumb a:hover,
+.tenant-exams-evaluation__breadcrumb a:focus-visible {
+  color: #4f46e5;
+  outline: none;
+}
+
+.tenant-exams-evaluation__breadcrumb mat-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  font-size: 0.75rem;
+  line-height: 0.75rem;
+}
+
+.tenant-exams-evaluation__header h2 {
+  margin: 0;
+  color: #020617;
+  font-size: 1.75rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.tenant-exams-evaluation__header p {
+  max-width: 44rem;
+  margin: 0.35rem 0 0;
+  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.tenant-exams-evaluation__refresh,
+.tenant-exams-evaluation__open,
+.tenant-exams-evaluation__state button {
+  min-height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 0.625rem;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, opacity 160ms ease;
+}
+
+.tenant-exams-evaluation__refresh,
+.tenant-exams-evaluation__state button {
+  padding: 0 0.875rem;
+}
+
+.tenant-exams-evaluation__refresh:hover:not(:disabled),
+.tenant-exams-evaluation__refresh:focus-visible:not(:disabled),
+.tenant-exams-evaluation__state button:hover,
+.tenant-exams-evaluation__state button:focus-visible {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  color: #4f46e5;
+  outline: none;
+}
+
+.tenant-exams-evaluation__refresh:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.tenant-exams-evaluation__refresh mat-icon,
+.tenant-exams-evaluation__open mat-icon,
+.tenant-exams-evaluation__state mat-icon,
+.tenant-exams-evaluation__search mat-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  font-size: 1.125rem;
+}
+
+.tenant-exams-evaluation__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.tenant-exams-evaluation__stats article,
+.tenant-exams-evaluation__table-card,
+.tenant-exams-evaluation__state {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.05);
+}
+
+.tenant-exams-evaluation__stats article {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+}
+
+.tenant-exams-evaluation__stats span {
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.tenant-exams-evaluation__stats strong {
+  color: #020617;
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+.tenant-exams-evaluation__state {
+  min-height: 4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.tenant-exams-evaluation__state--error {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.tenant-exams-evaluation__state--error button {
+  margin-left: auto;
+}
+
+.tenant-exams-evaluation__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tenant-exams-evaluation__search {
+  width: min(100%, 30rem);
+  min-height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 0.625rem;
+  background: #ffffff;
+  color: #64748b;
+}
+
+.tenant-exams-evaluation__search:focus-within {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgb(79 70 229 / 0.12);
+}
+
+.tenant-exams-evaluation__search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.tenant-exams-evaluation__search input::placeholder {
+  color: #64748b;
+}
+
+.tenant-exams-evaluation__table-wrap {
+  overflow-x: auto;
+}
+
+.tenant-exams-evaluation table {
+  width: 100%;
+  min-width: 58rem;
+  border-collapse: collapse;
+}
+
+.tenant-exams-evaluation th,
+.tenant-exams-evaluation td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.tenant-exams-evaluation th {
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.tenant-exams-evaluation tbody tr {
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.tenant-exams-evaluation tbody tr:hover {
+  background: #f8fafc;
+}
+
+.tenant-exams-evaluation tbody tr:focus-visible {
+  outline: 3px solid rgb(79 70 229 / 0.35);
+  outline-offset: -3px;
+}
+
+.tenant-exams-evaluation td {
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.tenant-exams-evaluation td span {
+  display: block;
+  margin-top: 0.125rem;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tenant-exams-evaluation__score {
+  display: inline-flex;
+  width: max-content;
+  min-height: 1.5rem;
+  align-items: center;
+  padding: 0 0.625rem;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.tenant-exams-evaluation__score--empty {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.tenant-exams-evaluation__open {
+  min-height: 2.125rem;
+  padding: 0 0.75rem;
+  border-color: #4f46e5;
+  background: #4f46e5;
+  color: #ffffff;
+}
+
+.tenant-exams-evaluation__open:hover,
+.tenant-exams-evaluation__open:focus-visible {
+  border-color: #4338ca;
+  background: #4338ca;
+  color: #ffffff;
+  outline: none;
+}
+
+.tenant-exams-evaluation__empty {
+  height: 5rem;
+  color: #64748b;
+  text-align: center;
+}
+
+.tenant-exams-evaluation__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+.tenant-exams-evaluation__pagination label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #0f172a;
+}
+
+.tenant-exams-evaluation__pagination select {
+  min-height: 2.125rem;
+  padding: 0 1.875rem 0 0.625rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.tenant-exams-evaluation__pagination button {
+  width: 2.125rem;
+  height: 2.125rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dbe4f0;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #475569;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, opacity 160ms ease;
+}
+
+.tenant-exams-evaluation__pagination button:hover:not(:disabled),
+.tenant-exams-evaluation__pagination button:focus-visible:not(:disabled) {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  color: #4f46e5;
+  outline: none;
+}
+
+.tenant-exams-evaluation__pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.tenant-exams-evaluation__pagination mat-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  font-size: 1.125rem;
+}
+
+.tenant-exams-evaluation__pagination strong {
+  color: #0f172a;
+}
+
+@media (max-width: 768px) {
+  .tenant-exams-evaluation__header,
+  .tenant-exams-evaluation__pagination {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tenant-exams-evaluation__stats {
+    grid-template-columns: 1fr;
+  }
+
+  .tenant-exams-evaluation__toolbar {
+    justify-content: stretch;
+  }
+
+  .tenant-exams-evaluation__search {
+    width: 100%;
+  }
+}
