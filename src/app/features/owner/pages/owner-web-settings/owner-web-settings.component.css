@@ -216,6 +216,14 @@
   background: #fff;
 }
 
+.owner-web-select {
+  cursor: pointer;
+}
+
+.owner-web-detail-icon-field {
+  gap: 0.25rem;
+}
+
 .owner-web-rich-field {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 4.5rem 2.6rem;

@@ -32,6 +32,8 @@ type WebSettingsSection =
   | 'ctas'
   | 'footer'
   | 'marketing'
+  | 'about'
+  | 'terms'
   | 'pixel'
   | 'onboarding'
   | 'trial';
@@ -46,6 +48,82 @@ const INTEGRATION_ICON_OPTIONS: readonly string[] = [
   'description', 'assignment', 'fact_check', 'event', 'notifications', 'chat', 'forum', 'phone',
   'link', 'webhook', 'integration_instructions', 'translate', 'language', 'travel_explore',
 ];
+const FEATURE_DETAIL_ICON_OPTIONS: readonly string[] = Array.from(new Set([
+  ...INTEGRATION_ICON_OPTIONS,
+  'abc',
+  'add_business',
+  'admin_panel_settings',
+  'apps',
+  'approval',
+  'article',
+  'assignment_turned_in',
+  'auto_graph',
+  'badge',
+  'book',
+  'bookmark',
+  'build',
+  'business_center',
+  'campaign',
+  'category',
+  'celebration',
+  'checklist',
+  'checklist_rtl',
+  'class',
+  'co_present',
+  'collections_bookmark',
+  'contact_support',
+  'dashboard',
+  'developer_board',
+  'devices',
+  'diversity_3',
+  'edit_calendar',
+  'emoji_events',
+  'engineering',
+  'event_available',
+  'event_note',
+  'extension',
+  'fact_check',
+  'filter_alt',
+  'flag',
+  'folder',
+  'grade',
+  'history_edu',
+  'inventory_2',
+  'key',
+  'leaderboard',
+  'library_books',
+  'lightbulb',
+  'manage_accounts',
+  'map',
+  'menu_book',
+  'mobile_friendly',
+  'model_training',
+  'notifications_active',
+  'paid',
+  'palette',
+  'pending_actions',
+  'person_add',
+  'person_pin',
+  'psychology',
+  'qr_code_2',
+  'query_stats',
+  'record_voice_over',
+  'rocket_launch',
+  'rule',
+  'schedule',
+  'science',
+  'send',
+  'smart_display',
+  'sms',
+  'stacked_line_chart',
+  'star',
+  'task_alt',
+  'timer',
+  'tips_and_updates',
+  'verified',
+  'view_timeline',
+  'workspace_premium',
+])).sort();
 const HERO_RICH_TEXT_CONTROLS = [
   'badgeText',
   'titleText',
@@ -125,6 +203,133 @@ const DEFAULT_MARKETING_STEPS = [
     descriptionAr: 'فعّل إمكانات الإدارة الأكاديمية الآلية بالكامل.',
   },
 ];
+const DEFAULT_ABOUT_CONTENT = {
+  missionBadge: 'Our Mission',
+  missionBadgeAr: 'رسالتنا',
+  heroTitle: 'Architecting the Future of Academic Excellence.',
+  heroTitleAr: 'نبني مستقبل التميز الأكاديمي.',
+  heroDescription:
+    'We believe that education should be defined by student growth, not administrative friction. Our goal is to empower institutions with the tools they need to thrive in a digital-first world.',
+  heroDescriptionAr:
+    'نؤمن أن التعليم يجب أن يقاس بنمو الطلاب، لا بعبء الإدارة. هدفنا أن نمنح المؤسسات الأدوات التي تحتاجها للعمل بثقة في عالم رقمي.',
+  storyTitle: 'Born from Necessity',
+  storyTitleAr: 'بدأت من حاجة حقيقية',
+  storyLead:
+    'Founded in 2022, AZ-Edumanage started as a small project at a leading technical university. We saw firsthand how fragmented systems were slowing down academic progress.',
+  storyLeadAr:
+    'تأسست AZ-Edumanage عام 2022 كمشروع صغير داخل جامعة تقنية رائدة. رأينا عن قرب كيف تؤدي الأنظمة المتفرقة إلى إبطاء العمل الأكاديمي.',
+  storyBody:
+    'Today, we serve over 450 institutions worldwide, helping them transition from legacy spreadsheets to automated intelligence.',
+  storyBodyAr:
+    'اليوم نخدم أكثر من 450 مؤسسة حول العالم، ونساعدها على الانتقال من الجداول التقليدية إلى إدارة ذكية ومؤتمتة.',
+  imageUrl: 'https://images.unsplash.com/photo-1522071823947-091222fe236d?q=80&w=1000&auto=format&fit=crop',
+  imageAlt: 'AZ-Edumanage team',
+  imageAltAr: 'فريق AZ-Edumanage',
+  valuesTitle: 'Our Core Values',
+  valuesTitleAr: 'قيمنا الأساسية',
+  partnersTitle: 'Our Partners',
+  partnersTitleAr: 'شركاؤنا',
+  partnersDescription: 'We collaborate with technology, payment, and implementation partners to help institutions launch faster.',
+  partnersDescriptionAr: 'نتعاون مع شركاء التقنية والمدفوعات والتنفيذ لمساعدة المؤسسات على الانطلاق بسرعة أكبر.',
+};
+const DEFAULT_ABOUT_PARTNERS = [
+  {
+    name: 'Technology Partners',
+    nameAr: 'شركاء التقنية',
+    description: 'Cloud, integration, and learning technology providers.',
+    descriptionAr: 'مزودو السحابة والتكامل وتقنيات التعلم.',
+    logoUrl: '',
+    websiteUrl: '',
+    visible: true,
+    displayOrder: 1,
+  },
+  {
+    name: 'Payment Partners',
+    nameAr: 'شركاء المدفوعات',
+    description: 'Secure billing and subscription enablement partners.',
+    descriptionAr: 'شركاء تمكين الفوترة والاشتراكات الآمنة.',
+    logoUrl: '',
+    websiteUrl: '',
+    visible: true,
+    displayOrder: 2,
+  },
+  {
+    name: 'Implementation Partners',
+    nameAr: 'شركاء التنفيذ',
+    description: 'Local rollout and training support for education teams.',
+    descriptionAr: 'دعم محلي للإطلاق والتدريب لفرق التعليم.',
+    logoUrl: '',
+    websiteUrl: '',
+    visible: true,
+    displayOrder: 3,
+  },
+];
+const DEFAULT_TERMS_CONTENT = {
+  title: 'Terms & Conditions',
+  titleAr: 'الشروط والأحكام',
+  lastUpdated: 'Last updated: May 2, 2026',
+  lastUpdatedAr: 'آخر تحديث: 2 مايو 2026',
+  contactText: 'If you have any questions about these Terms, please contact us at',
+  contactTextAr: 'إذا كانت لديك أي أسئلة حول هذه الشروط، تواصل معنا عبر',
+  contactEmail: 'legal@az-edumanage.com',
+};
+const DEFAULT_TERMS_SECTIONS = [
+  {
+    icon: 'gavel',
+    title: 'Acceptance of Terms',
+    titleAr: 'قبول الشروط',
+    body: 'By accessing or using the AZ-Edumanage platform, you agree to be bound by these Terms and Conditions. If you do not agree to all terms, you may not access or use the services.',
+    bodyAr: 'عند الوصول إلى منصة AZ-Edumanage أو استخدامها، فإنك توافق على الالتزام بهذه الشروط والأحكام. إذا لم توافق على جميع الشروط، فلا يجوز لك الوصول إلى الخدمات أو استخدامها.',
+    bullets: [],
+    bulletsAr: [],
+    visible: true,
+    displayOrder: 1,
+  },
+  {
+    icon: 'account_circle',
+    title: 'User Accounts',
+    titleAr: 'حسابات المستخدمين',
+    body: 'To access certain platform features, you must register for an account and provide accurate, current, and complete information.',
+    bodyAr: 'للوصول إلى بعض ميزات المنصة، يجب عليك تسجيل حساب وتقديم معلومات دقيقة وحديثة وكاملة.',
+    bullets: ['You are responsible for safeguarding your password.', 'You agree not to disclose your password to any third party.', 'You must notify us immediately if you become aware of any security breach.'],
+    bulletsAr: ['أنت مسؤول عن حماية كلمة المرور الخاصة بك.', 'توافق على عدم مشاركة كلمة المرور مع أي طرف ثالث.', 'يجب إخطارنا فورا عند علمك بأي خرق أمني.'],
+    visible: true,
+    displayOrder: 2,
+  },
+  {
+    icon: 'description',
+    title: 'SaaS Subscription & Trial',
+    titleAr: 'الاشتراك والتجربة المجانية',
+    body: 'AZ-Edumanage offers a free trial for new institutions. After the trial ends, premium features may be restricted unless a valid subscription plan is selected.',
+    bodyAr: 'توفر AZ-Edumanage تجربة مجانية للمؤسسات الجديدة. بعد انتهاء التجربة، قد يتم تقييد الميزات المدفوعة ما لم يتم اختيار باقة اشتراك صالحة.',
+    bullets: [],
+    bulletsAr: [],
+    visible: true,
+    displayOrder: 3,
+  },
+  {
+    icon: 'security',
+    title: 'Data Privacy & Institutional Records',
+    titleAr: 'خصوصية البيانات وسجلات المؤسسة',
+    body: 'As an institutional administrator, you are responsible for ensuring that student data uploaded to the platform complies with applicable educational privacy laws.',
+    bodyAr: 'بصفتك مسؤولا مؤسسيا، فأنت مسؤول عن ضمان توافق بيانات الطلاب المرفوعة على المنصة مع قوانين خصوصية التعليم المعمول بها.',
+    bullets: [],
+    bulletsAr: [],
+    visible: true,
+    displayOrder: 4,
+  },
+  {
+    icon: 'error',
+    title: 'Limitation of Liability',
+    titleAr: 'حدود المسؤولية',
+    body: 'AZ-Edumanage, its directors, employees, partners, agents, suppliers, or affiliates are not liable for indirect, incidental, special, consequential, or punitive damages.',
+    bodyAr: 'لا تتحمل AZ-Edumanage أو مديروها أو موظفوها أو شركاؤها أو وكلاؤها أو موردوها أو الشركات التابعة لها مسؤولية أي أضرار غير مباشرة أو عرضية أو خاصة أو تبعية أو عقابية.',
+    bullets: [],
+    bulletsAr: [],
+    visible: true,
+    displayOrder: 5,
+  },
+];
 
 @Component({
   selector: 'app-owner-web-settings',
@@ -145,6 +350,7 @@ export class OwnerWebSettingsComponent implements OnInit {
   readonly saveStatus = signal<SaveStatus | null>(null);
   readonly settings = this.facade.settings;
   readonly integrationIconOptions = INTEGRATION_ICON_OPTIONS;
+  readonly featureDetailIconOptions = FEATURE_DETAIL_ICON_OPTIONS;
   readonly tenantId = computed(() => this.settings()?.tenantId ?? this.facade.resolveTenantId());
   readonly publicWebsiteUrl = 'http://localhost:3000/';
   private readonly backendOrigin = environment.apiBaseUrl.replace(/\/api\/v1\/?$/, '');
@@ -169,6 +375,9 @@ export class OwnerWebSettingsComponent implements OnInit {
   readonly featureImageUploadProgressByIndex = signal<Record<number, number>>({});
   readonly featureImageUploadingByIndex = signal<Record<number, boolean>>({});
   readonly featureImageDragActiveByIndex = signal<Record<number, boolean>>({});
+  readonly featureDetailImageUploadProgressByIndex = signal<Record<number, number>>({});
+  readonly featureDetailImageUploadingByIndex = signal<Record<number, boolean>>({});
+  readonly featureDetailImageDragActiveByIndex = signal<Record<number, boolean>>({});
   readonly featureAccordionOpenByIndex = signal<Record<number, boolean>>({});
   private focusedFieldElement: HTMLInputElement | HTMLTextAreaElement | null = null;
   private promoEditorSelectionRange: Range | null = null;
@@ -197,6 +406,8 @@ export class OwnerWebSettingsComponent implements OnInit {
     { key: 'ctas', label: 'CTA Blocks' },
     { key: 'footer', label: 'Footer' },
     { key: 'marketing', label: 'Marketing' },
+    { key: 'about', label: 'About us' },
+    { key: 'terms', label: 'Terms & conditions' },
     { key: 'pixel', label: 'Pixel' },
     { key: 'onboarding', label: 'Onboarding' },
     { key: 'trial', label: 'Trial Dashboard' },
@@ -322,6 +533,40 @@ export class OwnerWebSettingsComponent implements OnInit {
       docsSectionDescriptionAr: [''],
       docsVideos: this.fb.array([]),
       facebookPixelId: ['2231145617703009', [Validators.pattern(/^\d{5,64}$/)]],
+      about: this.fb.group({
+        missionBadge: [DEFAULT_ABOUT_CONTENT.missionBadge],
+        missionBadgeAr: [DEFAULT_ABOUT_CONTENT.missionBadgeAr],
+        heroTitle: [DEFAULT_ABOUT_CONTENT.heroTitle],
+        heroTitleAr: [DEFAULT_ABOUT_CONTENT.heroTitleAr],
+        heroDescription: [DEFAULT_ABOUT_CONTENT.heroDescription],
+        heroDescriptionAr: [DEFAULT_ABOUT_CONTENT.heroDescriptionAr],
+        storyTitle: [DEFAULT_ABOUT_CONTENT.storyTitle],
+        storyTitleAr: [DEFAULT_ABOUT_CONTENT.storyTitleAr],
+        storyLead: [DEFAULT_ABOUT_CONTENT.storyLead],
+        storyLeadAr: [DEFAULT_ABOUT_CONTENT.storyLeadAr],
+        storyBody: [DEFAULT_ABOUT_CONTENT.storyBody],
+        storyBodyAr: [DEFAULT_ABOUT_CONTENT.storyBodyAr],
+        imageUrl: [DEFAULT_ABOUT_CONTENT.imageUrl],
+        imageAlt: [DEFAULT_ABOUT_CONTENT.imageAlt],
+        imageAltAr: [DEFAULT_ABOUT_CONTENT.imageAltAr],
+        valuesTitle: [DEFAULT_ABOUT_CONTENT.valuesTitle],
+        valuesTitleAr: [DEFAULT_ABOUT_CONTENT.valuesTitleAr],
+        partnersTitle: [DEFAULT_ABOUT_CONTENT.partnersTitle],
+        partnersTitleAr: [DEFAULT_ABOUT_CONTENT.partnersTitleAr],
+        partnersDescription: [DEFAULT_ABOUT_CONTENT.partnersDescription],
+        partnersDescriptionAr: [DEFAULT_ABOUT_CONTENT.partnersDescriptionAr],
+        partners: this.fb.array([]),
+      }),
+      terms: this.fb.group({
+        title: [DEFAULT_TERMS_CONTENT.title],
+        titleAr: [DEFAULT_TERMS_CONTENT.titleAr],
+        lastUpdated: [DEFAULT_TERMS_CONTENT.lastUpdated],
+        lastUpdatedAr: [DEFAULT_TERMS_CONTENT.lastUpdatedAr],
+        contactText: [DEFAULT_TERMS_CONTENT.contactText],
+        contactTextAr: [DEFAULT_TERMS_CONTENT.contactTextAr],
+        contactEmail: [DEFAULT_TERMS_CONTENT.contactEmail],
+        sections: this.fb.array([]),
+      }),
     }),
     onboarding: this.fb.group({
       stepOneTitle: ['', [Validators.required]],
@@ -388,6 +633,12 @@ export class OwnerWebSettingsComponent implements OnInit {
   }
   get marketingDocsVideos(): FormArray<FormGroup> {
     return this.form.get(['marketing', 'docsVideos']) as FormArray<FormGroup>;
+  }
+  get aboutPartners(): FormArray<FormGroup> {
+    return this.form.get(['marketing', 'about', 'partners']) as FormArray<FormGroup>;
+  }
+  get termsSections(): FormArray<FormGroup> {
+    return this.form.get(['marketing', 'terms', 'sections']) as FormArray<FormGroup>;
   }
   get trialFeatureBullets(): FormArray<FormGroup> {
     return this.form.get(['trialDashboard', 'trialFeatureBullets']) as FormArray<FormGroup>;
@@ -536,6 +787,50 @@ export class OwnerWebSettingsComponent implements OnInit {
       detailContent: '',
       detailContentAr: '',
       detailImageUrl: '',
+      detailEyebrow: '',
+      detailEyebrowAr: '',
+      detailPrimaryCtaLabel: '',
+      detailPrimaryCtaLabelAr: '',
+      detailPrimaryCtaLink: '/signup',
+      detailSecondaryCtaLabel: '',
+      detailSecondaryCtaLabelAr: '',
+      detailSecondaryCtaLink: '#features',
+      detailTrustText: '',
+      detailTrustTextAr: '',
+      detailMockTitle: '',
+      detailMockTitleAr: '',
+      detailMockSubtitle: '',
+      detailMockSubtitleAr: '',
+      detailMockMeta: '',
+      detailMockMetaAr: '',
+      detailMockProgressValue: '',
+      detailMockProgressLabel: '',
+      detailMockProgressLabelAr: '',
+      detailMockStatOneLabel: '',
+      detailMockStatOneLabelAr: '',
+      detailMockStatOneValue: '',
+      detailMockStatTwoLabel: '',
+      detailMockStatTwoLabelAr: '',
+      detailMockStatTwoValue: '',
+      detailMockStatThreeLabel: '',
+      detailMockStatThreeLabelAr: '',
+      detailMockStatThreeValue: '',
+      detailMockScanName: '',
+      detailMockScanNameAr: '',
+      detailMockScanStatus: '',
+      detailMockScanStatusAr: '',
+      detailSectionTitle: '',
+      detailSectionTitleAr: '',
+      detailSectionDescription: '',
+      detailSectionDescriptionAr: '',
+      detailCards: [],
+      detailCtaTitle: '',
+      detailCtaTitleAr: '',
+      detailCtaDescription: '',
+      detailCtaDescriptionAr: '',
+      detailCtaButtonLabel: '',
+      detailCtaButtonLabelAr: '',
+      detailCtaButtonLink: '/signup',
       visible: true,
       displayOrder: this.features.length + 1,
     }));
@@ -582,6 +877,15 @@ export class OwnerWebSettingsComponent implements OnInit {
 
   featurePreviewUrl(index: number): string {
     const raw = String(this.features.at(index)?.get('imageUrl')?.value ?? '').trim();
+    return this.resolveOwnerAssetUrl(raw);
+  }
+
+  featureDetailPreviewUrl(index: number): string {
+    const raw = String(this.features.at(index)?.get('detailImageUrl')?.value ?? '').trim();
+    return this.resolveOwnerAssetUrl(raw);
+  }
+
+  private resolveOwnerAssetUrl(raw: string): string {
     if (!raw) {
       return '';
     }
@@ -655,6 +959,37 @@ export class OwnerWebSettingsComponent implements OnInit {
     this.marketingDocsVideos.removeAt(index);
     const firstUrl = this.marketingDocsVideos.at(0)?.get('url')?.value ?? '';
     (this.form.get(['marketing', 'docsVideoUrl']) as FormControl<string>).setValue(String(firstUrl));
+  }
+  addAboutPartner(): void {
+    this.aboutPartners.push(this.buildAboutPartnerGroup({
+      name: '',
+      nameAr: '',
+      description: '',
+      descriptionAr: '',
+      logoUrl: '',
+      websiteUrl: '',
+      visible: true,
+      displayOrder: this.aboutPartners.length + 1,
+    }));
+  }
+  removeAboutPartner(index: number): void {
+    this.aboutPartners.removeAt(index);
+  }
+  addTermsSection(): void {
+    this.termsSections.push(this.buildTermsSectionGroup({
+      icon: 'description',
+      title: '',
+      titleAr: '',
+      body: '',
+      bodyAr: '',
+      bullets: [],
+      bulletsAr: [],
+      visible: true,
+      displayOrder: this.termsSections.length + 1,
+    }));
+  }
+  removeTermsSection(index: number): void {
+    this.termsSections.removeAt(index);
   }
   setDocsVideoMode(index: number, mode: 'url' | 'upload'): void {
     this.docsVideoModeByIndex.update((current) => ({ ...current, [index]: mode }));
@@ -1017,6 +1352,99 @@ export class OwnerWebSettingsComponent implements OnInit {
     return !!this.featureImageDragActiveByIndex()[index];
   }
 
+  featureDetailImageUploadProgress(index: number): number {
+    return this.featureDetailImageUploadProgressByIndex()[index] ?? 0;
+  }
+
+  featureDetailImageUploading(index: number): boolean {
+    return !!this.featureDetailImageUploadingByIndex()[index];
+  }
+
+  featureDetailImageDragActive(index: number): boolean {
+    return !!this.featureDetailImageDragActiveByIndex()[index];
+  }
+
+  async onFeatureDetailImageFileSelected(event: Event, index: number): Promise<void> {
+    const input = event.target as HTMLInputElement | null;
+    const file = input?.files?.[0];
+    if (!file) {
+      return;
+    }
+    this.uploadFeatureDetailImageFile(file, index, input);
+  }
+
+  onFeatureDetailImageDragOver(event: DragEvent, index: number): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.featureDetailImageDragActiveByIndex.update((s) => ({ ...s, [index]: true }));
+  }
+
+  onFeatureDetailImageDragLeave(event: DragEvent, index: number): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.featureDetailImageDragActiveByIndex.update((s) => ({ ...s, [index]: false }));
+  }
+
+  onFeatureDetailImageDrop(event: DragEvent, index: number): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.featureDetailImageDragActiveByIndex.update((s) => ({ ...s, [index]: false }));
+    const file = event.dataTransfer?.files?.[0];
+    if (!file) {
+      return;
+    }
+    this.uploadFeatureDetailImageFile(file, index);
+  }
+
+  private uploadFeatureDetailImageFile(file: File, index: number, input?: HTMLInputElement | null): void {
+    if (!file.type.startsWith('image/')) {
+      this.saveStatus.set({
+        type: 'error',
+        title: 'Invalid File',
+        message: 'Please choose an image file.',
+      });
+      return;
+    }
+
+    this.featureDetailImageUploadingByIndex.update((s) => ({ ...s, [index]: true }));
+    this.featureDetailImageUploadProgressByIndex.update((s) => ({ ...s, [index]: 0 }));
+
+    this.facade.uploadWebsiteAssetWithProgress('feature-detail', file).subscribe({
+      next: (evt) => {
+        if (evt.type === HttpEventType.UploadProgress) {
+          const total = evt.total ?? file.size;
+          const percent = total > 0 ? Math.round((evt.loaded / total) * 100) : 0;
+          this.featureDetailImageUploadProgressByIndex.update((s) => ({ ...s, [index]: percent }));
+        }
+        if (evt.type === HttpEventType.Response && evt.body) {
+          const control = this.features.at(index).get('detailImageUrl') as FormControl<string>;
+          control.setValue(evt.body.url);
+          control.markAsDirty();
+          this.featureDetailImageUploadProgressByIndex.update((s) => ({ ...s, [index]: 100 }));
+          this.saveStatus.set({
+            type: 'success',
+            title: 'Image Uploaded',
+            message: 'Feature detail image uploaded. Save draft and publish to apply.',
+          });
+        }
+      },
+      error: (error) => {
+        this.featureDetailImageUploadProgressByIndex.update((s) => ({ ...s, [index]: 0 }));
+        this.saveStatus.set({
+          type: 'error',
+          title: 'Upload Failed',
+          message: this.resolveError(error),
+        });
+      },
+      complete: () => {
+        this.featureDetailImageUploadingByIndex.update((s) => ({ ...s, [index]: false }));
+        if (input) {
+          input.value = '';
+        }
+      },
+    });
+  }
+
   private uploadFeatureImageFile(file: File, index: number, input?: HTMLInputElement | null): void {
     if (!file.type.startsWith('image/')) {
       this.saveStatus.set({
@@ -1319,6 +1747,31 @@ export class OwnerWebSettingsComponent implements OnInit {
     return this.pricingPlans.at(planIndex).get('features') as FormArray<FormGroup>;
   }
 
+  featureDetailCardsAt(featureIndex: number): FormArray<FormGroup> {
+    return this.features.at(featureIndex).get('detailCards') as FormArray<FormGroup>;
+  }
+
+  addFeatureDetailCard(featureIndex: number): void {
+    const cards = this.featureDetailCardsAt(featureIndex);
+    cards.push(this.buildFeatureDetailCardGroup({
+      iconKey: 'check_circle',
+      title: '',
+      titleAr: '',
+      description: '',
+      descriptionAr: '',
+      displayOrder: cards.length + 1,
+    }));
+    cards.controls.forEach((group, index) => group.get('displayOrder')?.setValue(index + 1));
+    cards.markAsDirty();
+    this.features.at(featureIndex).markAsDirty();
+  }
+
+  removeFeatureDetailCard(featureIndex: number, cardIndex: number): void {
+    const cards = this.featureDetailCardsAt(featureIndex);
+    cards.removeAt(cardIndex);
+    cards.controls.forEach((group, index) => group.get('displayOrder')?.setValue(index + 1));
+  }
+
   addPricingFeature(planIndex: number): void {
     const arr = this.pricingFeaturesAt(planIndex);
     arr.push(this.buildPricingFeatureGroup({ featureText: '', included: true, displayOrder: arr.length + 1 }));
@@ -1365,6 +1818,10 @@ export class OwnerWebSettingsComponent implements OnInit {
         return this.form.get('footerLinks');
       case 'marketing':
         return this.form.get('marketing');
+      case 'about':
+        return this.form.get(['marketing', 'about']);
+      case 'terms':
+        return this.form.get(['marketing', 'terms']);
       case 'pixel':
         return this.form.get(['marketing', 'facebookPixelId']);
       case 'onboarding':
@@ -1502,6 +1959,38 @@ export class OwnerWebSettingsComponent implements OnInit {
         docsSectionDescriptionAr: data.marketing?.docsSectionDescriptionAr ?? DEFAULT_DOCS_SECTION_DESCRIPTION_AR,
         facebookPixelId: data.marketing?.facebookPixelId ?? '2231145617703009',
         docsVideos: [],
+        about: {
+          missionBadge: data.marketing?.about?.missionBadge ?? DEFAULT_ABOUT_CONTENT.missionBadge,
+          missionBadgeAr: data.marketing?.about?.missionBadgeAr ?? DEFAULT_ABOUT_CONTENT.missionBadgeAr,
+          heroTitle: data.marketing?.about?.heroTitle ?? DEFAULT_ABOUT_CONTENT.heroTitle,
+          heroTitleAr: data.marketing?.about?.heroTitleAr ?? DEFAULT_ABOUT_CONTENT.heroTitleAr,
+          heroDescription: data.marketing?.about?.heroDescription ?? DEFAULT_ABOUT_CONTENT.heroDescription,
+          heroDescriptionAr: data.marketing?.about?.heroDescriptionAr ?? DEFAULT_ABOUT_CONTENT.heroDescriptionAr,
+          storyTitle: data.marketing?.about?.storyTitle ?? DEFAULT_ABOUT_CONTENT.storyTitle,
+          storyTitleAr: data.marketing?.about?.storyTitleAr ?? DEFAULT_ABOUT_CONTENT.storyTitleAr,
+          storyLead: data.marketing?.about?.storyLead ?? DEFAULT_ABOUT_CONTENT.storyLead,
+          storyLeadAr: data.marketing?.about?.storyLeadAr ?? DEFAULT_ABOUT_CONTENT.storyLeadAr,
+          storyBody: data.marketing?.about?.storyBody ?? DEFAULT_ABOUT_CONTENT.storyBody,
+          storyBodyAr: data.marketing?.about?.storyBodyAr ?? DEFAULT_ABOUT_CONTENT.storyBodyAr,
+          imageUrl: data.marketing?.about?.imageUrl ?? DEFAULT_ABOUT_CONTENT.imageUrl,
+          imageAlt: data.marketing?.about?.imageAlt ?? DEFAULT_ABOUT_CONTENT.imageAlt,
+          imageAltAr: data.marketing?.about?.imageAltAr ?? DEFAULT_ABOUT_CONTENT.imageAltAr,
+          valuesTitle: data.marketing?.about?.valuesTitle ?? DEFAULT_ABOUT_CONTENT.valuesTitle,
+          valuesTitleAr: data.marketing?.about?.valuesTitleAr ?? DEFAULT_ABOUT_CONTENT.valuesTitleAr,
+          partnersTitle: data.marketing?.about?.partnersTitle ?? DEFAULT_ABOUT_CONTENT.partnersTitle,
+          partnersTitleAr: data.marketing?.about?.partnersTitleAr ?? DEFAULT_ABOUT_CONTENT.partnersTitleAr,
+          partnersDescription: data.marketing?.about?.partnersDescription ?? DEFAULT_ABOUT_CONTENT.partnersDescription,
+          partnersDescriptionAr: data.marketing?.about?.partnersDescriptionAr ?? DEFAULT_ABOUT_CONTENT.partnersDescriptionAr,
+        },
+        terms: {
+          title: data.marketing?.terms?.title ?? DEFAULT_TERMS_CONTENT.title,
+          titleAr: data.marketing?.terms?.titleAr ?? DEFAULT_TERMS_CONTENT.titleAr,
+          lastUpdated: data.marketing?.terms?.lastUpdated ?? DEFAULT_TERMS_CONTENT.lastUpdated,
+          lastUpdatedAr: data.marketing?.terms?.lastUpdatedAr ?? DEFAULT_TERMS_CONTENT.lastUpdatedAr,
+          contactText: data.marketing?.terms?.contactText ?? DEFAULT_TERMS_CONTENT.contactText,
+          contactTextAr: data.marketing?.terms?.contactTextAr ?? DEFAULT_TERMS_CONTENT.contactTextAr,
+          contactEmail: data.marketing?.terms?.contactEmail ?? DEFAULT_TERMS_CONTENT.contactEmail,
+        },
       },
       trialDashboard: {
         headerTitle: data.trialDashboard?.headerTitle ?? '',
@@ -1581,6 +2070,16 @@ export class OwnerWebSettingsComponent implements OnInit {
       ),
     );
     this.resetFormArray(
+      this.aboutPartners,
+      (data.marketing?.about?.partners?.length ? data.marketing.about.partners : DEFAULT_ABOUT_PARTNERS)
+        .map((partner, index) => this.buildAboutPartnerGroup({ ...partner, displayOrder: partner.displayOrder ?? index + 1 })),
+    );
+    this.resetFormArray(
+      this.termsSections,
+      (data.marketing?.terms?.sections?.length ? data.marketing.terms.sections : DEFAULT_TERMS_SECTIONS)
+        .map((section, index) => this.buildTermsSectionGroup({ ...section, displayOrder: section.displayOrder ?? index + 1 })),
+    );
+    this.resetFormArray(
       this.trialFeatureBullets,
       (data.trialDashboard?.trialFeatureBullets ?? []).map((item) => this.fb.group({ value: [item, Validators.required] })),
     );
@@ -1647,8 +2146,80 @@ export class OwnerWebSettingsComponent implements OnInit {
       detailContent: [row.detailContent ?? ''],
       detailContentAr: [row.detailContentAr ?? ''],
       detailImageUrl: [row.detailImageUrl ?? ''],
+      detailEyebrow: [row.detailEyebrow ?? ''],
+      detailEyebrowAr: [row.detailEyebrowAr ?? ''],
+      detailPrimaryCtaLabel: [row.detailPrimaryCtaLabel ?? ''],
+      detailPrimaryCtaLabelAr: [row.detailPrimaryCtaLabelAr ?? ''],
+      detailPrimaryCtaLink: [row.detailPrimaryCtaLink ?? '/signup'],
+      detailSecondaryCtaLabel: [row.detailSecondaryCtaLabel ?? ''],
+      detailSecondaryCtaLabelAr: [row.detailSecondaryCtaLabelAr ?? ''],
+      detailSecondaryCtaLink: [row.detailSecondaryCtaLink ?? '#features'],
+      detailTrustText: [row.detailTrustText ?? ''],
+      detailTrustTextAr: [row.detailTrustTextAr ?? ''],
+      detailMockTitle: [row.detailMockTitle ?? ''],
+      detailMockTitleAr: [row.detailMockTitleAr ?? ''],
+      detailMockSubtitle: [row.detailMockSubtitle ?? ''],
+      detailMockSubtitleAr: [row.detailMockSubtitleAr ?? ''],
+      detailMockMeta: [row.detailMockMeta ?? ''],
+      detailMockMetaAr: [row.detailMockMetaAr ?? ''],
+      detailMockProgressValue: [row.detailMockProgressValue ?? ''],
+      detailMockProgressLabel: [row.detailMockProgressLabel ?? ''],
+      detailMockProgressLabelAr: [row.detailMockProgressLabelAr ?? ''],
+      detailMockStatOneLabel: [row.detailMockStatOneLabel ?? ''],
+      detailMockStatOneLabelAr: [row.detailMockStatOneLabelAr ?? ''],
+      detailMockStatOneValue: [row.detailMockStatOneValue ?? ''],
+      detailMockStatTwoLabel: [row.detailMockStatTwoLabel ?? ''],
+      detailMockStatTwoLabelAr: [row.detailMockStatTwoLabelAr ?? ''],
+      detailMockStatTwoValue: [row.detailMockStatTwoValue ?? ''],
+      detailMockStatThreeLabel: [row.detailMockStatThreeLabel ?? ''],
+      detailMockStatThreeLabelAr: [row.detailMockStatThreeLabelAr ?? ''],
+      detailMockStatThreeValue: [row.detailMockStatThreeValue ?? ''],
+      detailMockScanName: [row.detailMockScanName ?? ''],
+      detailMockScanNameAr: [row.detailMockScanNameAr ?? ''],
+      detailMockScanStatus: [row.detailMockScanStatus ?? ''],
+      detailMockScanStatusAr: [row.detailMockScanStatusAr ?? ''],
+      detailSectionTitle: [row.detailSectionTitle ?? ''],
+      detailSectionTitleAr: [row.detailSectionTitleAr ?? ''],
+      detailSectionDescription: [row.detailSectionDescription ?? ''],
+      detailSectionDescriptionAr: [row.detailSectionDescriptionAr ?? ''],
+      detailCards: this.fb.array((row.detailCards ?? []).map((card) => this.buildFeatureDetailCardGroup(card))),
+      detailCtaTitle: [row.detailCtaTitle ?? ''],
+      detailCtaTitleAr: [row.detailCtaTitleAr ?? ''],
+      detailCtaDescription: [row.detailCtaDescription ?? ''],
+      detailCtaDescriptionAr: [row.detailCtaDescriptionAr ?? ''],
+      detailCtaButtonLabel: [row.detailCtaButtonLabel ?? ''],
+      detailCtaButtonLabelAr: [row.detailCtaButtonLabelAr ?? ''],
+      detailCtaButtonLink: [row.detailCtaButtonLink ?? '/signup'],
       visible: [row.visible],
       displayOrder: [row.displayOrder],
+    });
+  }
+
+  private buildFeatureDetailCardGroup(row: NonNullable<SaveWebsiteSettingsRequest['features'][number]['detailCards']>[number]): FormGroup {
+    return this.fb.group({
+      iconKey: [row.iconKey ?? 'check_circle'],
+      title: [row.title ?? ''],
+      titleAr: [row.titleAr ?? ''],
+      description: [row.description ?? ''],
+      descriptionAr: [row.descriptionAr ?? ''],
+      displayOrder: [row.displayOrder ?? 1],
+    });
+  }
+
+  private buildFeatureDetailCardsPayload(
+    featureIndex: number,
+    fallbackCards: NonNullable<SaveWebsiteSettingsRequest['features'][number]['detailCards']> = [],
+  ): NonNullable<SaveWebsiteSettingsRequest['features'][number]['detailCards']> {
+    return this.featureDetailCardsAt(featureIndex).controls.map((cardGroup, cardIndex) => {
+      const fallback = fallbackCards[cardIndex] ?? {};
+      return {
+        iconKey: String(cardGroup.get('iconKey')?.value ?? fallback.iconKey ?? 'check_circle').trim() || 'check_circle',
+        title: this.stripHtmlToText(String(cardGroup.get('title')?.value ?? fallback.title ?? '')).trim(),
+        titleAr: this.stripHtmlToText(String(cardGroup.get('titleAr')?.value ?? fallback.titleAr ?? '')).trim(),
+        description: this.normalizeRichHtml(String(cardGroup.get('description')?.value ?? fallback.description ?? '')),
+        descriptionAr: this.normalizeRichHtml(String(cardGroup.get('descriptionAr')?.value ?? fallback.descriptionAr ?? '')),
+        displayOrder: Number(cardGroup.get('displayOrder')?.value ?? fallback.displayOrder ?? cardIndex + 1),
+      };
     });
   }
 
@@ -1712,6 +2283,33 @@ export class OwnerWebSettingsComponent implements OnInit {
       routePath: [row.routePath, Validators.required],
       visible: [row.visible],
       displayOrder: [row.displayOrder],
+    });
+  }
+
+  private buildAboutPartnerGroup(row: NonNullable<SaveWebsiteSettingsRequest['marketing']['about']>['partners'][number]): FormGroup {
+    return this.fb.group({
+      name: [row.name ?? '', Validators.required],
+      nameAr: [row.nameAr ?? ''],
+      description: [row.description ?? ''],
+      descriptionAr: [row.descriptionAr ?? ''],
+      logoUrl: [row.logoUrl ?? ''],
+      websiteUrl: [row.websiteUrl ?? ''],
+      visible: [row.visible ?? true],
+      displayOrder: [row.displayOrder ?? this.aboutPartners.length + 1],
+    });
+  }
+
+  private buildTermsSectionGroup(row: NonNullable<SaveWebsiteSettingsRequest['marketing']['terms']>['sections'][number]): FormGroup {
+    return this.fb.group({
+      icon: [row.icon ?? 'description'],
+      title: [row.title ?? '', Validators.required],
+      titleAr: [row.titleAr ?? ''],
+      body: [row.body ?? ''],
+      bodyAr: [row.bodyAr ?? ''],
+      bullets: [(row.bullets ?? []).join('\n')],
+      bulletsAr: [(row.bulletsAr ?? []).join('\n')],
+      visible: [row.visible ?? true],
+      displayOrder: [row.displayOrder ?? this.termsSections.length + 1],
     });
   }
 
@@ -1808,6 +2406,50 @@ export class OwnerWebSettingsComponent implements OnInit {
         detailContent: this.normalizeRichHtml(String(group.get('detailContent')?.value ?? (fallback as { detailContent?: string | null }).detailContent ?? '')),
         detailContentAr: this.normalizeRichHtml(String(group.get('detailContentAr')?.value ?? (fallback as { detailContentAr?: string | null }).detailContentAr ?? '')),
         detailImageUrl: String(group.get('detailImageUrl')?.value ?? (fallback as { detailImageUrl?: string | null }).detailImageUrl ?? '').trim(),
+        detailEyebrow: this.stripHtmlToText(String(group.get('detailEyebrow')?.value ?? fallback.detailEyebrow ?? '')).trim(),
+        detailEyebrowAr: this.stripHtmlToText(String(group.get('detailEyebrowAr')?.value ?? fallback.detailEyebrowAr ?? '')).trim(),
+        detailPrimaryCtaLabel: String(group.get('detailPrimaryCtaLabel')?.value ?? fallback.detailPrimaryCtaLabel ?? '').trim(),
+        detailPrimaryCtaLabelAr: String(group.get('detailPrimaryCtaLabelAr')?.value ?? fallback.detailPrimaryCtaLabelAr ?? '').trim(),
+        detailPrimaryCtaLink: String(group.get('detailPrimaryCtaLink')?.value ?? fallback.detailPrimaryCtaLink ?? '').trim(),
+        detailSecondaryCtaLabel: String(group.get('detailSecondaryCtaLabel')?.value ?? fallback.detailSecondaryCtaLabel ?? '').trim(),
+        detailSecondaryCtaLabelAr: String(group.get('detailSecondaryCtaLabelAr')?.value ?? fallback.detailSecondaryCtaLabelAr ?? '').trim(),
+        detailSecondaryCtaLink: String(group.get('detailSecondaryCtaLink')?.value ?? fallback.detailSecondaryCtaLink ?? '').trim(),
+        detailTrustText: this.stripHtmlToText(String(group.get('detailTrustText')?.value ?? fallback.detailTrustText ?? '')).trim(),
+        detailTrustTextAr: this.stripHtmlToText(String(group.get('detailTrustTextAr')?.value ?? fallback.detailTrustTextAr ?? '')).trim(),
+        detailMockTitle: this.stripHtmlToText(String(group.get('detailMockTitle')?.value ?? fallback.detailMockTitle ?? '')).trim(),
+        detailMockTitleAr: this.stripHtmlToText(String(group.get('detailMockTitleAr')?.value ?? fallback.detailMockTitleAr ?? '')).trim(),
+        detailMockSubtitle: this.stripHtmlToText(String(group.get('detailMockSubtitle')?.value ?? fallback.detailMockSubtitle ?? '')).trim(),
+        detailMockSubtitleAr: this.stripHtmlToText(String(group.get('detailMockSubtitleAr')?.value ?? fallback.detailMockSubtitleAr ?? '')).trim(),
+        detailMockMeta: this.stripHtmlToText(String(group.get('detailMockMeta')?.value ?? fallback.detailMockMeta ?? '')).trim(),
+        detailMockMetaAr: this.stripHtmlToText(String(group.get('detailMockMetaAr')?.value ?? fallback.detailMockMetaAr ?? '')).trim(),
+        detailMockProgressValue: String(group.get('detailMockProgressValue')?.value ?? fallback.detailMockProgressValue ?? '').trim(),
+        detailMockProgressLabel: this.stripHtmlToText(String(group.get('detailMockProgressLabel')?.value ?? fallback.detailMockProgressLabel ?? '')).trim(),
+        detailMockProgressLabelAr: this.stripHtmlToText(String(group.get('detailMockProgressLabelAr')?.value ?? fallback.detailMockProgressLabelAr ?? '')).trim(),
+        detailMockStatOneLabel: this.stripHtmlToText(String(group.get('detailMockStatOneLabel')?.value ?? fallback.detailMockStatOneLabel ?? '')).trim(),
+        detailMockStatOneLabelAr: this.stripHtmlToText(String(group.get('detailMockStatOneLabelAr')?.value ?? fallback.detailMockStatOneLabelAr ?? '')).trim(),
+        detailMockStatOneValue: String(group.get('detailMockStatOneValue')?.value ?? fallback.detailMockStatOneValue ?? '').trim(),
+        detailMockStatTwoLabel: this.stripHtmlToText(String(group.get('detailMockStatTwoLabel')?.value ?? fallback.detailMockStatTwoLabel ?? '')).trim(),
+        detailMockStatTwoLabelAr: this.stripHtmlToText(String(group.get('detailMockStatTwoLabelAr')?.value ?? fallback.detailMockStatTwoLabelAr ?? '')).trim(),
+        detailMockStatTwoValue: String(group.get('detailMockStatTwoValue')?.value ?? fallback.detailMockStatTwoValue ?? '').trim(),
+        detailMockStatThreeLabel: this.stripHtmlToText(String(group.get('detailMockStatThreeLabel')?.value ?? fallback.detailMockStatThreeLabel ?? '')).trim(),
+        detailMockStatThreeLabelAr: this.stripHtmlToText(String(group.get('detailMockStatThreeLabelAr')?.value ?? fallback.detailMockStatThreeLabelAr ?? '')).trim(),
+        detailMockStatThreeValue: String(group.get('detailMockStatThreeValue')?.value ?? fallback.detailMockStatThreeValue ?? '').trim(),
+        detailMockScanName: this.stripHtmlToText(String(group.get('detailMockScanName')?.value ?? fallback.detailMockScanName ?? '')).trim(),
+        detailMockScanNameAr: this.stripHtmlToText(String(group.get('detailMockScanNameAr')?.value ?? fallback.detailMockScanNameAr ?? '')).trim(),
+        detailMockScanStatus: this.stripHtmlToText(String(group.get('detailMockScanStatus')?.value ?? fallback.detailMockScanStatus ?? '')).trim(),
+        detailMockScanStatusAr: this.stripHtmlToText(String(group.get('detailMockScanStatusAr')?.value ?? fallback.detailMockScanStatusAr ?? '')).trim(),
+        detailSectionTitle: this.stripHtmlToText(String(group.get('detailSectionTitle')?.value ?? fallback.detailSectionTitle ?? '')).trim(),
+        detailSectionTitleAr: this.stripHtmlToText(String(group.get('detailSectionTitleAr')?.value ?? fallback.detailSectionTitleAr ?? '')).trim(),
+        detailSectionDescription: this.normalizeRichHtml(String(group.get('detailSectionDescription')?.value ?? fallback.detailSectionDescription ?? '')),
+        detailSectionDescriptionAr: this.normalizeRichHtml(String(group.get('detailSectionDescriptionAr')?.value ?? fallback.detailSectionDescriptionAr ?? '')),
+        detailCards: this.buildFeatureDetailCardsPayload(index, fallback.detailCards ?? []),
+        detailCtaTitle: this.stripHtmlToText(String(group.get('detailCtaTitle')?.value ?? fallback.detailCtaTitle ?? '')).trim(),
+        detailCtaTitleAr: this.stripHtmlToText(String(group.get('detailCtaTitleAr')?.value ?? fallback.detailCtaTitleAr ?? '')).trim(),
+        detailCtaDescription: this.normalizeRichHtml(String(group.get('detailCtaDescription')?.value ?? fallback.detailCtaDescription ?? '')),
+        detailCtaDescriptionAr: this.normalizeRichHtml(String(group.get('detailCtaDescriptionAr')?.value ?? fallback.detailCtaDescriptionAr ?? '')),
+        detailCtaButtonLabel: String(group.get('detailCtaButtonLabel')?.value ?? fallback.detailCtaButtonLabel ?? '').trim(),
+        detailCtaButtonLabelAr: String(group.get('detailCtaButtonLabelAr')?.value ?? fallback.detailCtaButtonLabelAr ?? '').trim(),
+        detailCtaButtonLink: String(group.get('detailCtaButtonLink')?.value ?? fallback.detailCtaButtonLink ?? '').trim(),
         visible: Boolean(group.get('visible')?.value ?? fallback.visible ?? true),
         displayOrder: Number(group.get('displayOrder')?.value ?? fallback.displayOrder ?? index + 1),
       };
@@ -1971,6 +2613,59 @@ export class OwnerWebSettingsComponent implements OnInit {
           }))
           .filter((item) => item.url.length > 0),
         facebookPixelId: String(raw.marketing?.facebookPixelId ?? '').trim(),
+        about: {
+          missionBadge: String(raw.marketing?.about?.missionBadge ?? '').trim(),
+          missionBadgeAr: String(raw.marketing?.about?.missionBadgeAr ?? '').trim(),
+          heroTitle: String(raw.marketing?.about?.heroTitle ?? '').trim(),
+          heroTitleAr: String(raw.marketing?.about?.heroTitleAr ?? '').trim(),
+          heroDescription: String(raw.marketing?.about?.heroDescription ?? '').trim(),
+          heroDescriptionAr: String(raw.marketing?.about?.heroDescriptionAr ?? '').trim(),
+          storyTitle: String(raw.marketing?.about?.storyTitle ?? '').trim(),
+          storyTitleAr: String(raw.marketing?.about?.storyTitleAr ?? '').trim(),
+          storyLead: String(raw.marketing?.about?.storyLead ?? '').trim(),
+          storyLeadAr: String(raw.marketing?.about?.storyLeadAr ?? '').trim(),
+          storyBody: String(raw.marketing?.about?.storyBody ?? '').trim(),
+          storyBodyAr: String(raw.marketing?.about?.storyBodyAr ?? '').trim(),
+          imageUrl: String(raw.marketing?.about?.imageUrl ?? '').trim(),
+          imageAlt: String(raw.marketing?.about?.imageAlt ?? '').trim(),
+          imageAltAr: String(raw.marketing?.about?.imageAltAr ?? '').trim(),
+          valuesTitle: String(raw.marketing?.about?.valuesTitle ?? '').trim(),
+          valuesTitleAr: String(raw.marketing?.about?.valuesTitleAr ?? '').trim(),
+          partnersTitle: String(raw.marketing?.about?.partnersTitle ?? '').trim(),
+          partnersTitleAr: String(raw.marketing?.about?.partnersTitleAr ?? '').trim(),
+          partnersDescription: String(raw.marketing?.about?.partnersDescription ?? '').trim(),
+          partnersDescriptionAr: String(raw.marketing?.about?.partnersDescriptionAr ?? '').trim(),
+          partners: this.aboutPartners.controls.map((group, index) => ({
+            name: String(group.get('name')?.value ?? '').trim(),
+            nameAr: String(group.get('nameAr')?.value ?? '').trim(),
+            description: String(group.get('description')?.value ?? '').trim(),
+            descriptionAr: String(group.get('descriptionAr')?.value ?? '').trim(),
+            logoUrl: String(group.get('logoUrl')?.value ?? '').trim(),
+            websiteUrl: String(group.get('websiteUrl')?.value ?? '').trim(),
+            visible: Boolean(group.get('visible')?.value ?? true),
+            displayOrder: Number(group.get('displayOrder')?.value ?? index + 1),
+          })),
+        },
+        terms: {
+          title: String(raw.marketing?.terms?.title ?? '').trim(),
+          titleAr: String(raw.marketing?.terms?.titleAr ?? '').trim(),
+          lastUpdated: String(raw.marketing?.terms?.lastUpdated ?? '').trim(),
+          lastUpdatedAr: String(raw.marketing?.terms?.lastUpdatedAr ?? '').trim(),
+          contactText: String(raw.marketing?.terms?.contactText ?? '').trim(),
+          contactTextAr: String(raw.marketing?.terms?.contactTextAr ?? '').trim(),
+          contactEmail: String(raw.marketing?.terms?.contactEmail ?? '').trim(),
+          sections: this.termsSections.controls.map((group, index) => ({
+            icon: String(group.get('icon')?.value ?? 'description').trim(),
+            title: String(group.get('title')?.value ?? '').trim(),
+            titleAr: String(group.get('titleAr')?.value ?? '').trim(),
+            body: String(group.get('body')?.value ?? '').trim(),
+            bodyAr: String(group.get('bodyAr')?.value ?? '').trim(),
+            bullets: this.linesToArray(group.get('bullets')?.value),
+            bulletsAr: this.linesToArray(group.get('bulletsAr')?.value),
+            visible: Boolean(group.get('visible')?.value ?? true),
+            displayOrder: Number(group.get('displayOrder')?.value ?? index + 1),
+          })),
+        },
       },
       onboarding: {
         stepOneTitle: raw.onboarding?.stepOneTitle ?? '',
@@ -2007,6 +2702,13 @@ export class OwnerWebSettingsComponent implements OnInit {
       .map((value) => String(value ?? '').trim())
       .filter((value) => value.length > 0 && value !== '-');
     return parts.join(' ').trim();
+  }
+
+  private linesToArray(value: unknown): string[] {
+    return String(value ?? '')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
   }
 
   private resolveError(error: unknown): string {

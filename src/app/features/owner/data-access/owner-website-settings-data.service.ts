@@ -99,7 +99,60 @@ export interface FeatureItem {
   detailContent?: string | null;
   detailContentAr?: string | null;
   detailImageUrl?: string | null;
+  detailEyebrow?: string | null;
+  detailEyebrowAr?: string | null;
+  detailPrimaryCtaLabel?: string | null;
+  detailPrimaryCtaLabelAr?: string | null;
+  detailPrimaryCtaLink?: string | null;
+  detailSecondaryCtaLabel?: string | null;
+  detailSecondaryCtaLabelAr?: string | null;
+  detailSecondaryCtaLink?: string | null;
+  detailTrustText?: string | null;
+  detailTrustTextAr?: string | null;
+  detailMockTitle?: string | null;
+  detailMockTitleAr?: string | null;
+  detailMockSubtitle?: string | null;
+  detailMockSubtitleAr?: string | null;
+  detailMockMeta?: string | null;
+  detailMockMetaAr?: string | null;
+  detailMockProgressValue?: string | null;
+  detailMockProgressLabel?: string | null;
+  detailMockProgressLabelAr?: string | null;
+  detailMockStatOneLabel?: string | null;
+  detailMockStatOneLabelAr?: string | null;
+  detailMockStatOneValue?: string | null;
+  detailMockStatTwoLabel?: string | null;
+  detailMockStatTwoLabelAr?: string | null;
+  detailMockStatTwoValue?: string | null;
+  detailMockStatThreeLabel?: string | null;
+  detailMockStatThreeLabelAr?: string | null;
+  detailMockStatThreeValue?: string | null;
+  detailMockScanName?: string | null;
+  detailMockScanNameAr?: string | null;
+  detailMockScanStatus?: string | null;
+  detailMockScanStatusAr?: string | null;
+  detailSectionTitle?: string | null;
+  detailSectionTitleAr?: string | null;
+  detailSectionDescription?: string | null;
+  detailSectionDescriptionAr?: string | null;
+  detailCards?: FeatureDetailCard[];
+  detailCtaTitle?: string | null;
+  detailCtaTitleAr?: string | null;
+  detailCtaDescription?: string | null;
+  detailCtaDescriptionAr?: string | null;
+  detailCtaButtonLabel?: string | null;
+  detailCtaButtonLabelAr?: string | null;
+  detailCtaButtonLink?: string | null;
   visible: boolean;
+  displayOrder: number;
+}
+
+export interface FeatureDetailCard {
+  iconKey?: string | null;
+  title?: string | null;
+  titleAr?: string | null;
+  description?: string | null;
+  descriptionAr?: string | null;
   displayOrder: number;
 }
 
@@ -199,6 +252,65 @@ export interface MarketingContactConfig {
   hqValueAr?: string | null;
 }
 
+export interface AboutPartnerConfig {
+  name: string;
+  nameAr?: string | null;
+  description?: string | null;
+  descriptionAr?: string | null;
+  logoUrl?: string | null;
+  websiteUrl?: string | null;
+  visible: boolean;
+  displayOrder: number;
+}
+
+export interface AboutContentConfig {
+  missionBadge?: string | null;
+  missionBadgeAr?: string | null;
+  heroTitle?: string | null;
+  heroTitleAr?: string | null;
+  heroDescription?: string | null;
+  heroDescriptionAr?: string | null;
+  storyTitle?: string | null;
+  storyTitleAr?: string | null;
+  storyLead?: string | null;
+  storyLeadAr?: string | null;
+  storyBody?: string | null;
+  storyBodyAr?: string | null;
+  imageUrl?: string | null;
+  imageAlt?: string | null;
+  imageAltAr?: string | null;
+  valuesTitle?: string | null;
+  valuesTitleAr?: string | null;
+  partnersTitle?: string | null;
+  partnersTitleAr?: string | null;
+  partnersDescription?: string | null;
+  partnersDescriptionAr?: string | null;
+  partners: AboutPartnerConfig[];
+}
+
+export interface TermsSectionConfig {
+  icon?: string | null;
+  title?: string | null;
+  titleAr?: string | null;
+  body?: string | null;
+  bodyAr?: string | null;
+  bullets?: string[] | null;
+  bulletsAr?: string[] | null;
+  visible: boolean;
+  displayOrder: number;
+}
+
+export interface TermsContentConfig {
+  title?: string | null;
+  titleAr?: string | null;
+  lastUpdated?: string | null;
+  lastUpdatedAr?: string | null;
+  contactText?: string | null;
+  contactTextAr?: string | null;
+  contactEmail?: string | null;
+  sections: TermsSectionConfig[];
+}
+
 export interface MarketingConfig {
   promo: MarketingPromoConfig;
   steps: MarketingStepConfig[];
@@ -243,6 +355,8 @@ export interface MarketingConfig {
   docsSectionDescriptionAr?: string | null;
   docsVideos?: { title?: string | null; url: string }[];
   facebookPixelId?: string | null;
+  about?: AboutContentConfig | null;
+  terms?: TermsContentConfig | null;
 }
 
 export interface OnboardingConfig {
