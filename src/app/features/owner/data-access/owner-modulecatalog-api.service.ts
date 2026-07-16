@@ -23,6 +23,8 @@ export interface UpdateFeaturePayload {
   active: boolean;
 }
 
+export type CreateFeaturePayload = UpdateFeaturePayload;
+
 export interface CreateModulePayload {
   nameEn: string;
   nameAr: string;
@@ -74,6 +76,18 @@ export class OwnerModuleCatalogApiService {
     return firstValueFrom(
       this.http.put<ModuleCatalogFeature>(`${environment.apiBaseUrl}/module-catalog/features/${id}`, payload),
     );
+  }
+
+  async createFeature(payload: CreateFeaturePayload): Promise<ModuleCatalogFeature> {
+    await this.authApi.ensureLoggedIn();
+    return firstValueFrom(
+      this.http.post<ModuleCatalogFeature>(`${environment.apiBaseUrl}/module-catalog/features`, payload),
+    );
+  }
+
+  async deleteFeature(id: string): Promise<void> {
+    await this.authApi.ensureLoggedIn();
+    await firstValueFrom(this.http.delete(`${environment.apiBaseUrl}/module-catalog/features/${id}`));
   }
 
   async listModules(): Promise<OwnerModule[]> {

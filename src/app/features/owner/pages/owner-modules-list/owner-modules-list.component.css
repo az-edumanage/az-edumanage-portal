@@ -233,6 +233,15 @@
   background: #fff1f2;
 }
 
+.owner-modules-action-btn--disabled,
+.owner-modules-action-btn:disabled {
+  cursor: not-allowed;
+  border-color: var(--color-border-primary, #e2e8f0);
+  color: var(--color-text-muted, #64748b);
+  background: var(--color-bg-muted, #f8fafc);
+  opacity: 0.75;
+}
+
 .owner-modules-modal-backdrop {
   position: fixed;
   inset: 0;

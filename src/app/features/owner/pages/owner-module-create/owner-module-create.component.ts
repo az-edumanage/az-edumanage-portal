@@ -130,7 +130,7 @@ export class OwnerModuleCreateComponent {
     this.editingId = id;
 
     const module = await this.modulesData.getModule(id);
-    this.currentPlans = module.includedInPlans ?? ['All Plans'];
+    this.currentPlans = module.includedInPlans?.length ? module.includedInPlans : ['All Plans'];
 
     this.form.patchValue({
       nameAr: module.nameAr ?? '',
