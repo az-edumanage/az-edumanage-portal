@@ -979,7 +979,44 @@
                   </div>
                 </section>
               </div>
-              <input formControlName="avatarUrl" class="owner-web-input mt-3" placeholder="Avatar URL" />
+              <section class="owner-web-testimonial-media mt-3">
+                <div class="owner-web-testimonial-upload">
+                  <label class="owner-web-field">
+                    <span>Author Image</span>
+                    <input formControlName="avatarUrl" class="owner-web-input" placeholder="https://... or /api/..." />
+                  </label>
+                  <label
+                    class="owner-web-upload-dropzone owner-web-testimonial-dropzone cursor-pointer"
+                    [class.owner-web-upload-dropzone-active]="testimonialAvatarDragActive($index)"
+                    (dragover)="onTestimonialAvatarDragOver($event, $index)"
+                    (dragleave)="onTestimonialAvatarDragLeave($event, $index)"
+                    (drop)="onTestimonialAvatarDrop($event, $index)">
+                    <input type="file" accept="image/*" class="hidden" (change)="onTestimonialAvatarFileSelected($event, $index)" />
+                    <span class="owner-web-upload-dropzone-icon-wrap">
+                      <mat-icon class="owner-web-upload-dropzone-icon">account_circle</mat-icon>
+                    </span>
+                    <p class="owner-web-upload-dropzone-title">
+                      <span class="owner-web-upload-dropzone-link">Upload author image</span>
+                      <span class="text-slate-500"> or drag and drop</span>
+                    </p>
+                    <p class="owner-web-upload-dropzone-hint">PNG, JPG, GIF up to 10MB</p>
+                  </label>
+                  @if (testimonialAvatarUploading($index)) {
+                    <p class="text-xs text-slate-500">Uploading... {{ testimonialAvatarUploadProgress($index) }}%</p>
+                  }
+                  <div class="w-full h-2 bg-slate-100 rounded overflow-hidden border border-slate-200">
+                    <div class="h-full bg-indigo-600 transition-all duration-200" [style.width.%]="testimonialAvatarUploadProgress($index)"></div>
+                  </div>
+                </div>
+                <div class="owner-web-testimonial-preview">
+                  @if (row.get('avatarUrl')?.value) {
+                    <img [src]="testimonialAvatarPreviewUrl($index)" alt="Testimonial author preview" />
+                  } @else {
+                    <mat-icon>person</mat-icon>
+                    <span>No author image selected</span>
+                  }
+                </div>
+              </section>
             </div>
           }
         </div>
