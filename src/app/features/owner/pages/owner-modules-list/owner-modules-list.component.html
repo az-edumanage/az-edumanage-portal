@@ -154,8 +154,15 @@
                 <button type="button" class="owner-modules-action-btn owner-modules-action-btn--neutral" (click)="openEdit(module)">
                   Edit
                 </button>
-                <button type="button" class="owner-modules-action-btn owner-modules-action-btn--danger" (click)="openDeleteConfirm(module)">
-                  Delete
+                <button
+                  type="button"
+                  class="owner-modules-action-btn owner-modules-action-btn--danger"
+                  [class.owner-modules-action-btn--disabled]="isProtectedModule(module)"
+                  [disabled]="isProtectedModule(module)"
+                  [title]="isProtectedModule(module) ? 'Protected system module' : 'Delete module'"
+                  (click)="openDeleteConfirm(module)"
+                >
+                  {{ isProtectedModule(module) ? 'Protected' : 'Delete' }}
                 </button>
                 <button [routerLink]="['/owner/modules', module.id]" class="owner-modules-view-link">
                   View Details

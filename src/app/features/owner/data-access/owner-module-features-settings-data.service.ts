@@ -68,6 +68,33 @@ export class OwnerModuleFeaturesSettingsDataService {
     );
   }
 
+  async createFeature(payload: Omit<OwnerModuleFeatureSetting, 'id'>): Promise<void> {
+    const created = await this.moduleCatalogApi.createFeature({
+      nameAr: payload.nameAr,
+      nameEn: payload.nameEn,
+      moduleCategory: payload.moduleCategory,
+      price: payload.price,
+      active: payload.enabled,
+    });
+
+    this.featuresState.update((current) => [
+      {
+        id: created.id,
+        nameAr: created.nameAr,
+        nameEn: created.nameEn,
+        moduleCategory: created.moduleCategory,
+        price: created.price,
+        enabled: created.active,
+      },
+      ...current,
+    ]);
+  }
+
+  async deleteFeature(id: string): Promise<void> {
+    await this.moduleCatalogApi.deleteFeature(id);
+    this.featuresState.update((current) => current.filter((item) => item.id !== id));
+  }
+
   async toggleFeature(id: string, enabled: boolean): Promise<void> {
     const current = this.featuresState().find((item) => item.id === id);
     if (!current) return;

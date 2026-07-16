@@ -36,8 +36,11 @@ export class OwnerSettingsModulesFeaturesTabComponent {
   readonly loading = this.data.loading;
   readonly showModal = signal(false);
   readonly editingId = signal<string | null>(null);
+  readonly pendingDelete = signal<OwnerModuleFeatureSetting | null>(null);
+  readonly deletingId = signal<string | null>(null);
   readonly submitting = signal(false);
-  readonly canSubmit = computed(() => this.form.valid);
+  readonly modalTitle = computed(() => this.editingId() ? 'Edit Module Feature' : 'Add Module Feature');
+  readonly modalSubmitLabel = computed(() => this.editingId() ? 'Save Changes' : 'Create Feature');
 
   readonly form = this.fb.group({
     nameAr: ['', Validators.required],
@@ -53,6 +56,18 @@ export class OwnerSettingsModulesFeaturesTabComponent {
 
   onSearch(query: string): void {
     this.query.set(query);
+  }
+
+  openCreateModal(): void {
+    this.editingId.set(null);
+    this.form.reset({
+      nameAr: '',
+      nameEn: '',
+      moduleCategory: '',
+      price: 0,
+      enabled: true,
+    });
+    this.showModal.set(true);
   }
 
   openEditModal(item: OwnerModuleFeatureSetting): void {
@@ -72,25 +87,57 @@ export class OwnerSettingsModulesFeaturesTabComponent {
   }
 
   async save(): Promise<void> {
-    if (this.form.invalid || !this.editingId()) {
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
+    const payload = {
+      nameAr: (this.form.controls.nameAr.value ?? '').trim(),
+      nameEn: (this.form.controls.nameEn.value ?? '').trim(),
+      moduleCategory: (this.form.controls.moduleCategory.value ?? '').trim(),
+      price: Number(this.form.controls.price.value ?? 0),
+      enabled: !!this.form.controls.enabled.value,
+    };
+
     this.submitting.set(true);
     try {
-      await this.data.updateFeature({
-        id: this.editingId() as string,
-        nameAr: (this.form.controls.nameAr.value ?? '').trim(),
-        nameEn: (this.form.controls.nameEn.value ?? '').trim(),
-        moduleCategory: (this.form.controls.moduleCategory.value ?? '').trim(),
-        price: Number(this.form.controls.price.value ?? 0),
-        enabled: !!this.form.controls.enabled.value,
-      });
+      const editingId = this.editingId();
+      if (editingId) {
+        await this.data.updateFeature({ id: editingId, ...payload });
+      } else {
+        await this.data.createFeature(payload);
+      }
       await this.data.reload();
       this.closeModal();
     } finally {
       this.submitting.set(false);
+    }
+  }
+
+  openDeleteConfirm(item: OwnerModuleFeatureSetting): void {
+    this.pendingDelete.set(item);
+  }
+
+  closeDeleteConfirm(): void {
+    if (this.deletingId()) {
+      return;
+    }
+    this.pendingDelete.set(null);
+  }
+
+  async confirmDeleteFeature(): Promise<void> {
+    const item = this.pendingDelete();
+    if (!item) {
+      return;
+    }
+
+    this.deletingId.set(item.id);
+    try {
+      await this.data.deleteFeature(item.id);
+      this.pendingDelete.set(null);
+    } finally {
+      this.deletingId.set(null);
     }
   }
 }

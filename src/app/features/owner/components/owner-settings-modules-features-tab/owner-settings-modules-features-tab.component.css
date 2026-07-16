@@ -2,6 +2,13 @@
   display: block;
 }
 
+.owner-mod-features-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .owner-mod-features-checkbox {
   width: 1rem;
   height: 1rem;
@@ -55,4 +62,44 @@
 .owner-mod-features-btn-save:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+.owner-mod-features-btn-danger {
+  border: 1px solid transparent;
+  background: #dc2626;
+  color: #fff;
+}
+
+.owner-mod-features-btn-danger:hover {
+  background: #b91c1c;
+}
+
+.owner-mod-features-btn-danger:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.owner-mod-features-delete-btn {
+  color: #dc2626;
+}
+
+.owner-mod-features-delete-btn:hover {
+  background: rgba(220, 38, 38, 0.08);
+  color: #b91c1c;
+}
+
+.owner-mod-features-delete-btn:disabled {
+  cursor: wait;
+  opacity: 0.45;
+}
+
+@media (max-width: 640px) {
+  .owner-mod-features-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .owner-mod-features-header .owner-mod-features-btn {
+    justify-content: center;
+  }
 }

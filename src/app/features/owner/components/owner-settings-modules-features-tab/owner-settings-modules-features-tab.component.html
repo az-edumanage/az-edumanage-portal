@@ -1,9 +1,15 @@
 <div class="owner-settings-card owner-settings-card--shell">
-  <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-    <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Modules Features</h3>
-    <p class="text-sm text-slate-500 dark:text-slate-500 mt-1">
-      Manage all existing module features with localized names, price, and status.
-    </p>
+  <div class="p-6 border-b border-slate-200 dark:border-slate-800 owner-mod-features-header">
+    <div>
+      <h3 class="owner-settings-card-title text-lg font-semibold text-slate-900 dark:text-white">Modules Features</h3>
+      <p class="text-sm text-slate-500 dark:text-slate-500 mt-1">
+        Manage all existing module features with localized names, price, and status.
+      </p>
+    </div>
+    <button type="button" class="owner-mod-features-btn owner-mod-features-btn-save" (click)="openCreateModal()">
+      <mat-icon class="text-sm">add</mat-icon>
+      Add Feature
+    </button>
   </div>
 
   <div class="p-6 overflow-x-auto">
@@ -44,8 +50,17 @@
               >
             </td>
             <td class="py-3 text-right">
-              <button type="button" (click)="openEditModal(item)" class="owner-status-icon-btn" title="Edit">
+              <button type="button" (click)="openEditModal(item)" class="owner-status-icon-btn" title="Edit feature">
                 <mat-icon class="text-sm">edit</mat-icon>
+              </button>
+              <button
+                type="button"
+                (click)="openDeleteConfirm(item)"
+                class="owner-status-icon-btn owner-mod-features-delete-btn"
+                [disabled]="deletingId() === item.id"
+                title="Delete feature"
+              >
+                <mat-icon class="text-sm">delete</mat-icon>
               </button>
             </td>
           </tr>
@@ -67,7 +82,7 @@
   <div class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
     <div class="owner-status-modal w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
       <div class="p-5 border-b border-slate-200 dark:border-slate-800">
-        <h4 class="text-lg font-semibold text-slate-900 dark:text-white">Edit Module Feature</h4>
+        <h4 class="text-lg font-semibold text-slate-900 dark:text-white">{{ modalTitle() }}</h4>
       </div>
 
       <form [formGroup]="form" (ngSubmit)="save()" class="p-5 space-y-4">
@@ -100,12 +115,62 @@
           <button type="button" (click)="closeModal()" class="owner-mod-features-btn owner-mod-features-btn-cancel">
             Cancel
           </button>
-          <button type="submit" [disabled]="!canSubmit() || submitting()" class="owner-mod-features-btn owner-mod-features-btn-save">
+          <button type="submit" [disabled]="form.invalid || submitting()" class="owner-mod-features-btn owner-mod-features-btn-save">
             <mat-icon class="text-sm">check</mat-icon>
-            Save Changes
+            {{ modalSubmitLabel() }}
           </button>
         </div>
       </form>
+    </div>
+  </div>
+}
+
+@if (pendingDelete()) {
+  <div class="fixed inset-0 z-[130] flex items-center justify-center p-4">
+    <button
+      type="button"
+      class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+      aria-label="Close delete confirmation"
+      (click)="closeDeleteConfirm()"
+    ></button>
+
+    <div class="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+      <div class="flex items-center gap-3 border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+        <div class="rounded-lg bg-red-100 p-2 dark:bg-red-900/20">
+          <mat-icon class="text-red-600">delete</mat-icon>
+        </div>
+        <h4 class="text-lg font-semibold text-slate-900 dark:text-white">Delete Module Feature</h4>
+      </div>
+
+      <div class="space-y-3 p-6 text-sm">
+        <p class="text-slate-700 dark:text-slate-300">
+          Are you sure you want to delete
+          <span class="font-bold text-slate-950 dark:text-white">{{ pendingDelete()!.nameEn }}</span>?
+        </p>
+        <p class="text-slate-500 dark:text-slate-400">
+          This will remove the feature from module options and detach it from existing modules.
+        </p>
+      </div>
+
+      <div class="flex justify-end gap-3 border-t border-slate-200 px-6 py-4 dark:border-slate-800">
+        <button
+          type="button"
+          class="owner-mod-features-btn owner-mod-features-btn-cancel"
+          [disabled]="!!deletingId()"
+          (click)="closeDeleteConfirm()"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="owner-mod-features-btn owner-mod-features-btn-danger"
+          [disabled]="!!deletingId()"
+          (click)="confirmDeleteFeature()"
+        >
+          <mat-icon class="text-sm">delete</mat-icon>
+          {{ deletingId() ? 'Deleting...' : 'Delete Feature' }}
+        </button>
+      </div>
     </div>
   </div>
 }

@@ -14,6 +14,35 @@ import { OwnerModulesDataService } from '../../data-access/owner-modules-data.se
   styleUrl: './owner-modules-list.component.css'
 })
 export class OwnerModulesListComponent {
+  private readonly protectedModuleCodes = new Set([
+    'students-management',
+    'exams-and-quiz',
+    'parent-portal',
+    'lms',
+    'questions-bank',
+    'students-community',
+    'book-store',
+    'advanced-analytics',
+    'competitions',
+    'live-sessions',
+    'social-media',
+    'market-place',
+  ]);
+  private readonly protectedModuleNames = new Set([
+    'students management',
+    'exams and quiz',
+    'parent portal',
+    'lms',
+    'questions bank',
+    'students community',
+    'book store',
+    'advanced analytics',
+    'competitions',
+    'live sessions',
+    'social media',
+    'market place',
+  ]);
+
   private readonly facade = inject(OwnerModulesListFacade);
   private readonly data = inject(OwnerModulesDataService);
   private readonly router = inject(Router);
@@ -33,7 +62,19 @@ export class OwnerModulesListComponent {
   }
 
   openDeleteConfirm(module: OwnerModule): void {
+    if (this.isProtectedModule(module)) {
+      this.actionStatus = {
+        success: false,
+        message: 'Protected system modules cannot be deleted.',
+      };
+      return;
+    }
     this.pendingDeleteModule = module;
+  }
+
+  isProtectedModule(module: OwnerModule): boolean {
+    return this.protectedModuleCodes.has(module.code.toLowerCase()) ||
+      this.protectedModuleNames.has(module.name.toLowerCase());
   }
 
   closeDeleteConfirm(): void {
