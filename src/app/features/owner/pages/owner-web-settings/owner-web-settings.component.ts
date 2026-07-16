@@ -378,6 +378,9 @@ export class OwnerWebSettingsComponent implements OnInit {
   readonly featureDetailImageUploadProgressByIndex = signal<Record<number, number>>({});
   readonly featureDetailImageUploadingByIndex = signal<Record<number, boolean>>({});
   readonly featureDetailImageDragActiveByIndex = signal<Record<number, boolean>>({});
+  readonly testimonialAvatarUploadProgressByIndex = signal<Record<number, number>>({});
+  readonly testimonialAvatarUploadingByIndex = signal<Record<number, boolean>>({});
+  readonly testimonialAvatarDragActiveByIndex = signal<Record<number, boolean>>({});
   readonly featureAccordionOpenByIndex = signal<Record<number, boolean>>({});
   private focusedFieldElement: HTMLInputElement | HTMLTextAreaElement | null = null;
   private promoEditorSelectionRange: Range | null = null;
@@ -882,6 +885,11 @@ export class OwnerWebSettingsComponent implements OnInit {
 
   featureDetailPreviewUrl(index: number): string {
     const raw = String(this.features.at(index)?.get('detailImageUrl')?.value ?? '').trim();
+    return this.resolveOwnerAssetUrl(raw);
+  }
+
+  testimonialAvatarPreviewUrl(index: number): string {
+    const raw = String(this.testimonials.at(index)?.get('avatarUrl')?.value ?? '').trim();
     return this.resolveOwnerAssetUrl(raw);
   }
 
@@ -1396,6 +1404,50 @@ export class OwnerWebSettingsComponent implements OnInit {
     this.uploadFeatureDetailImageFile(file, index);
   }
 
+  testimonialAvatarUploadProgress(index: number): number {
+    return this.testimonialAvatarUploadProgressByIndex()[index] ?? 0;
+  }
+
+  testimonialAvatarUploading(index: number): boolean {
+    return !!this.testimonialAvatarUploadingByIndex()[index];
+  }
+
+  testimonialAvatarDragActive(index: number): boolean {
+    return !!this.testimonialAvatarDragActiveByIndex()[index];
+  }
+
+  async onTestimonialAvatarFileSelected(event: Event, index: number): Promise<void> {
+    const input = event.target as HTMLInputElement | null;
+    const file = input?.files?.[0];
+    if (!file) {
+      return;
+    }
+    this.uploadTestimonialAvatarFile(file, index, input);
+  }
+
+  onTestimonialAvatarDragOver(event: DragEvent, index: number): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.testimonialAvatarDragActiveByIndex.update((s) => ({ ...s, [index]: true }));
+  }
+
+  onTestimonialAvatarDragLeave(event: DragEvent, index: number): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.testimonialAvatarDragActiveByIndex.update((s) => ({ ...s, [index]: false }));
+  }
+
+  onTestimonialAvatarDrop(event: DragEvent, index: number): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.testimonialAvatarDragActiveByIndex.update((s) => ({ ...s, [index]: false }));
+    const file = event.dataTransfer?.files?.[0];
+    if (!file) {
+      return;
+    }
+    this.uploadTestimonialAvatarFile(file, index);
+  }
+
   private uploadFeatureDetailImageFile(file: File, index: number, input?: HTMLInputElement | null): void {
     if (!file.type.startsWith('image/')) {
       this.saveStatus.set({
@@ -1438,6 +1490,55 @@ export class OwnerWebSettingsComponent implements OnInit {
       },
       complete: () => {
         this.featureDetailImageUploadingByIndex.update((s) => ({ ...s, [index]: false }));
+        if (input) {
+          input.value = '';
+        }
+      },
+    });
+  }
+
+  private uploadTestimonialAvatarFile(file: File, index: number, input?: HTMLInputElement | null): void {
+    if (!file.type.startsWith('image/')) {
+      this.saveStatus.set({
+        type: 'error',
+        title: 'Invalid File',
+        message: 'Please choose an image file.',
+      });
+      return;
+    }
+
+    this.testimonialAvatarUploadingByIndex.update((s) => ({ ...s, [index]: true }));
+    this.testimonialAvatarUploadProgressByIndex.update((s) => ({ ...s, [index]: 0 }));
+
+    this.facade.uploadWebsiteAssetWithProgress('testimonials', file).subscribe({
+      next: (evt) => {
+        if (evt.type === HttpEventType.UploadProgress) {
+          const total = evt.total ?? file.size;
+          const percent = total > 0 ? Math.round((evt.loaded / total) * 100) : 0;
+          this.testimonialAvatarUploadProgressByIndex.update((s) => ({ ...s, [index]: percent }));
+        }
+        if (evt.type === HttpEventType.Response && evt.body) {
+          const control = this.testimonials.at(index).get('avatarUrl') as FormControl<string>;
+          control.setValue(evt.body.url);
+          control.markAsDirty();
+          this.testimonialAvatarUploadProgressByIndex.update((s) => ({ ...s, [index]: 100 }));
+          this.saveStatus.set({
+            type: 'success',
+            title: 'Image Uploaded',
+            message: 'Testimonial image uploaded. Save draft and publish to apply.',
+          });
+        }
+      },
+      error: (error) => {
+        this.testimonialAvatarUploadProgressByIndex.update((s) => ({ ...s, [index]: 0 }));
+        this.saveStatus.set({
+          type: 'error',
+          title: 'Upload Failed',
+          message: this.resolveError(error),
+        });
+      },
+      complete: () => {
+        this.testimonialAvatarUploadingByIndex.update((s) => ({ ...s, [index]: false }));
         if (input) {
           input.value = '';
         }
