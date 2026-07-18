@@ -90,6 +90,7 @@ describe('SidebarComponent', () => {
     const universityEducation = academicItems.find((item) => item.labelKey === 'sidebar.item.universityEducation');
 
     expect(routes).toContain('/tenant/overview');
+    expect(routes).toContain('/tenant/platform-user-guide');
     expect(routes).toContain('/tenant/students');
     expect(routes).toContain('/tenant/parents');
     expect(routes).toContain('/tenant/settings');
@@ -111,6 +112,10 @@ describe('SidebarComponent', () => {
     expect(mainItems.map((item) => item.labelKey)).not.toContain('sidebar.item.groupsClasses');
     expect(mainItems.map((item) => item.labelKey)).not.toContain('sidebar.item.basicEducation');
     expect(mainItems.map((item) => item.labelKey)).not.toContain('sidebar.item.universityEducation');
+    expect(mainItems.map((item) => [item.labelKey, item.route])).toEqual([
+      ['sidebar.item.overview', '/tenant/overview'],
+      ['sidebar.item.platformUserGuide', '/tenant/platform-user-guide'],
+    ]);
     expect(usersItems.map((item) => [item.labelKey, item.route])).toEqual([
       ['sidebar.item.students', '/tenant/students'],
       ['sidebar.item.parents', '/tenant/parents'],

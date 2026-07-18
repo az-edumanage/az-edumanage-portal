@@ -1,0 +1,47 @@
+<div class="tenant-guide-page" [attr.dir]="language() === 'ar' ? 'rtl' : 'ltr'">
+  <header class="tenant-guide-header">
+    <div>
+      <p>{{ language() === 'ar' ? 'مركز المساعدة' : 'Help center' }}</p>
+      <h1>{{ language() === 'ar' ? 'دليل الاستخدام' : 'Platform User Guide' }}</h1>
+      <span>{{ language() === 'ar' ? 'شروحات مرئية تساعدك على إدارة المنصة.' : 'Video walkthroughs for the tasks you use most.' }}</span>
+    </div>
+    <div class="tenant-guide-count"><mat-icon>video_library</mat-icon><strong>{{ cards().length }}</strong><span>{{ language() === 'ar' ? 'فيديو' : 'videos' }}</span></div>
+  </header>
+
+  @if (loading()) {
+    <div class="tenant-guide-state"><mat-icon class="tenant-guide-spin">progress_activity</mat-icon><span>{{ language() === 'ar' ? 'جاري تحميل الدليل' : 'Loading user guide' }}</span></div>
+  } @else if (error()) {
+    <div class="tenant-guide-alert"><mat-icon>error_outline</mat-icon>{{ error() }}</div>
+  } @else if (cards().length === 0) {
+    <div class="tenant-guide-state"><mat-icon>ondemand_video</mat-icon><h2>{{ language() === 'ar' ? 'لا توجد فيديوهات متاحة حالياً' : 'No guide videos are available yet' }}</h2></div>
+  } @else {
+    <section class="tenant-guide-grid" [attr.aria-label]="language() === 'ar' ? 'فيديوهات دليل الاستخدام' : 'Platform guide videos'">
+      @for (card of cards(); track card.id) {
+        <button type="button" class="tenant-guide-card" (click)="openVideo(card)" [attr.aria-label]="(language() === 'ar' ? 'تشغيل ' : 'Play ') + title(card)">
+          <span class="tenant-guide-media">
+            <img [src]="imageUrl(card)" [alt]="title(card)" loading="lazy">
+            <span class="tenant-guide-play"><mat-icon>play_arrow</mat-icon></span>
+          </span>
+          <span class="tenant-guide-copy"><strong>{{ title(card) }}</strong><span>{{ description(card) }}</span><span class="tenant-guide-watch">{{ language() === 'ar' ? 'مشاهدة الفيديو' : 'Watch video' }}<mat-icon>{{ language() === 'ar' ? 'arrow_back' : 'arrow_forward' }}</mat-icon></span></span>
+        </button>
+      }
+    </section>
+  }
+</div>
+
+@if (selectedCard(); as card) {
+  <div class="tenant-guide-backdrop" [attr.dir]="language() === 'ar' ? 'rtl' : 'ltr'">
+    <button type="button" class="tenant-guide-dismiss" [attr.aria-label]="language() === 'ar' ? 'إغلاق الفيديو' : 'Close video'" (click)="closeVideo()"></button>
+    <section class="tenant-guide-modal" role="dialog" aria-modal="true" aria-labelledby="tenant-guide-video-title">
+      <header><div><p>{{ language() === 'ar' ? 'دليل الاستخدام' : 'Platform User Guide' }}</p><h2 id="tenant-guide-video-title">{{ title(card) }}</h2></div><button type="button" title="Close" (click)="closeVideo()"><mat-icon>close</mat-icon></button></header>
+      <div class="tenant-guide-player">
+        @if (embedUrl()) {
+          <iframe [src]="embedUrl()" [title]="title(card)" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+        } @else if (directVideoUrl()) {
+          <video [src]="directVideoUrl()" controls autoplay playsinline></video>
+        }
+      </div>
+      <p class="tenant-guide-modal-description">{{ description(card) }}</p>
+    </section>
+  </div>
+}

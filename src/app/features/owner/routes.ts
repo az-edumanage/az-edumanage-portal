@@ -41,6 +41,7 @@ import { OwnerTestQuestionBankComponent } from './pages/owner-test-question-bank
 import { OwnerRoleCreateComponent } from './pages/owner-role-create/owner-role-create.component';
 import { OwnerRolesListComponent } from './pages/owner-roles-list/owner-roles-list.component';
 import { OwnerWebSettingsComponent } from './pages/owner-web-settings/owner-web-settings.component';
+import { OwnerPlatformGuideComponent } from './pages/owner-platform-guide/owner-platform-guide.component';
 
 export const OWNER_ROUTES: Routes = [
   { path: 'overview', component: OwnerOverviewComponent },
@@ -107,5 +108,6 @@ export const OWNER_ROUTES: Routes = [
   { path: 'notifications/:id', component: OwnerNotificationDetailsComponent },
   { path: 'settings', component: OwnerSettingsComponent },
   { path: 'web-settings', component: OwnerWebSettingsComponent },
+  { path: 'platform-user-guide', component: OwnerPlatformGuideComponent },
   { path: 'test', component: OwnerTestQuestionBankComponent },
 ];

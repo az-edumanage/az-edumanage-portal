@@ -1,0 +1,100 @@
+<div class="guide-admin-page">
+  <header class="guide-admin-header">
+    <div>
+      <p class="guide-admin-eyebrow">Content management</p>
+      <h1>Platform User Guide</h1>
+      <p>Manage the help videos available to every tenant dashboard.</p>
+    </div>
+    <button type="button" class="guide-admin-primary" (click)="openCreate()">
+      <mat-icon>add</mat-icon>
+      Add guide card
+    </button>
+  </header>
+
+  @if (error() && !editorOpen()) {
+    <div class="guide-admin-alert"><mat-icon>error_outline</mat-icon>{{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="guide-admin-state"><mat-icon class="guide-spin">progress_activity</mat-icon><span>Loading guide cards</span></div>
+  } @else if (cards().length === 0) {
+    <div class="guide-admin-empty">
+      <mat-icon>video_library</mat-icon>
+      <h2>No guide cards yet</h2>
+      <p>Add the first walkthrough for tenant users.</p>
+      <button type="button" class="guide-admin-secondary" (click)="openCreate()">Add guide card</button>
+    </div>
+  } @else {
+    <section class="guide-admin-grid" aria-label="Platform guide cards">
+      @for (card of cards(); track card.id) {
+        <article class="guide-admin-card" [class.guide-admin-card--hidden]="!card.visible">
+          <div class="guide-admin-media">
+            <img [src]="imagePreview(card.imageUrl)" [alt]="card.title" loading="lazy">
+            <span class="guide-admin-order">{{ card.displayOrder + 1 }}</span>
+            @if (!card.visible) { <span class="guide-admin-hidden">Hidden</span> }
+          </div>
+          <div class="guide-admin-card-body">
+            <h2>{{ card.title }}</h2>
+            <p>{{ card.description }}</p>
+            @if (card.titleAr) { <p class="guide-admin-ar" dir="rtl">{{ card.titleAr }}</p> }
+          </div>
+          <footer class="guide-admin-card-actions">
+            <button type="button" title="Edit guide card" (click)="openEdit(card)"><mat-icon>edit</mat-icon><span>Edit</span></button>
+            <button type="button" class="guide-admin-danger" title="Delete guide card" [disabled]="deletingId() === card.id" (click)="deleteCard(card)">
+              <mat-icon>{{ deletingId() === card.id ? 'progress_activity' : 'delete' }}</mat-icon><span>Delete</span>
+            </button>
+          </footer>
+        </article>
+      }
+    </section>
+  }
+</div>
+
+@if (editorOpen()) {
+  <div class="guide-admin-backdrop">
+    <button type="button" class="guide-admin-dismiss" aria-label="Close guide card editor" (click)="closeEditor()"></button>
+    <section class="guide-admin-modal" role="dialog" aria-modal="true" aria-labelledby="guide-editor-title">
+      <header class="guide-admin-modal-head">
+        <div><p class="guide-admin-eyebrow">Tenant help content</p><h2 id="guide-editor-title">{{ editingId() === null ? 'Add guide card' : 'Edit guide card' }}</h2></div>
+        <button type="button" class="guide-admin-icon" title="Close" (click)="closeEditor()"><mat-icon>close</mat-icon></button>
+      </header>
+
+      <form [formGroup]="form" (ngSubmit)="save()" class="guide-admin-form">
+        @if (error()) { <div class="guide-admin-alert"><mat-icon>error_outline</mat-icon>{{ error() }}</div> }
+        <div class="guide-admin-fields guide-admin-fields--two">
+          <label>English title<input formControlName="title" placeholder="Create your first group"></label>
+          <label>Arabic title<input formControlName="titleAr" dir="rtl" placeholder="إنشاء مجموعتك الأولى"></label>
+        </div>
+        <div class="guide-admin-fields guide-admin-fields--two">
+          <label>English description<textarea formControlName="description" rows="4" placeholder="A short summary of this walkthrough"></textarea></label>
+          <label>Arabic description<textarea formControlName="descriptionAr" rows="4" dir="rtl" placeholder="وصف مختصر لهذا الشرح"></textarea></label>
+        </div>
+
+        <div class="guide-admin-upload-grid">
+          <div class="guide-admin-upload">
+            <div><strong>Card image</strong><span>JPG, PNG or WebP</span></div>
+            @if (form.controls.imageUrl.value) { <img [src]="imagePreview(form.controls.imageUrl.value)" alt="Card preview"> }
+            <label class="guide-admin-secondary"><mat-icon>upload</mat-icon>{{ imageUploading() ? 'Uploading...' : 'Upload image' }}<input type="file" accept="image/*" (change)="uploadImage($event)" [disabled]="imageUploading()"></label>
+            <input formControlName="imageUrl" placeholder="Or paste an image URL">
+          </div>
+          <div class="guide-admin-upload">
+            <div><strong>Guide video</strong><span>Upload a video or use YouTube, Vimeo, or a direct URL</span></div>
+            <label class="guide-admin-secondary"><mat-icon>video_file</mat-icon>{{ videoUploading() ? 'Uploading...' : 'Upload video' }}<input type="file" accept="video/*" (change)="uploadVideo($event)" [disabled]="videoUploading()"></label>
+            <input formControlName="videoUrl" placeholder="https://youtube.com/watch?v=...">
+          </div>
+        </div>
+
+        <div class="guide-admin-fields guide-admin-fields--settings">
+          <label>Display order<input type="number" min="0" formControlName="displayOrder"></label>
+          <label class="guide-admin-check"><input type="checkbox" formControlName="visible"><span>Visible to tenants</span></label>
+        </div>
+        <footer class="guide-admin-modal-actions">
+          <button type="button" class="guide-admin-secondary" (click)="closeEditor()">Cancel</button>
+          <button type="submit" class="guide-admin-primary" [disabled]="saving() || imageUploading() || videoUploading()">
+            <mat-icon>{{ saving() ? 'progress_activity' : 'save' }}</mat-icon>{{ saving() ? 'Saving...' : 'Save guide card' }}
+          </button>
+        </footer>
+      </form>
+    </section>
+  </div>
+}

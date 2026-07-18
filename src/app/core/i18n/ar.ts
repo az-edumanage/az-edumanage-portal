@@ -87,6 +87,7 @@ export const AR_TRANSLATIONS: Record<I18nKey, string> = {
   'sidebar.item.webSettings': 'إعدادات الويب',
   'sidebar.item.lms': 'LMS',
   'sidebar.item.overview': 'نظرة عامة',
+  'sidebar.item.platformUserGuide': 'دليل الاستخدام',
   'sidebar.item.students': 'الطلاب',
   'sidebar.item.childs': 'الأبناء',
   'sidebar.item.parents': 'أولياء الأمور',

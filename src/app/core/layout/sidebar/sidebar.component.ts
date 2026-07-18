@@ -205,6 +205,7 @@ export class SidebarComponent {
               { labelKey: 'sidebar.item.notifications', icon: 'notifications', route: '/owner/notifications' },
               { labelKey: 'sidebar.item.platformSettings', icon: 'settings', route: '/owner/settings' },
               { labelKey: 'sidebar.item.webSettings', icon: 'public', route: '/owner/web-settings' },
+              { labelKey: 'sidebar.item.platformUserGuide', icon: 'video_library', route: '/owner/platform-user-guide' },
               { labelKey: 'sidebar.item.questionBank', icon: 'quiz', route: '/owner/test' },
             ]
           }
@@ -215,6 +216,7 @@ export class SidebarComponent {
             titleKey: 'sidebar.section.main',
             items: [
               { labelKey: 'sidebar.item.overview', icon: 'dashboard', route: '/tenant/overview' },
+              { labelKey: 'sidebar.item.platformUserGuide', icon: 'video_library', route: '/tenant/platform-user-guide' },
             ]
           },
           {

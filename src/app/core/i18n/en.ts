@@ -62,6 +62,7 @@ export const EN_TRANSLATIONS = {
   'sidebar.item.webSettings': 'Web Settings',
   'sidebar.item.lms': 'LMS',
   'sidebar.item.overview': 'Overview',
+  'sidebar.item.platformUserGuide': 'Platform User Guide',
   'sidebar.item.students': 'Students',
   'sidebar.item.childs': 'Childs',
   'sidebar.item.parents': 'Parents',
