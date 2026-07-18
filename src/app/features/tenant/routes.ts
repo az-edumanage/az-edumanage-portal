@@ -72,6 +72,7 @@ import { TenantPlatformSettingsComponent } from './pages/tenant-platform-setting
 import { TenantLmsSettingsComponent } from './pages/tenant-lms-settings/tenant-lms-settings.component';
 import { TenantProfileComponent } from './pages/tenant-profile/tenant-profile.component';
 import { TenantAccessStateComponent } from './pages/tenant-access-state/tenant-access-state.component';
+import { TenantPlatformGuideComponent } from './pages/tenant-platform-guide/tenant-platform-guide.component';
 import { StudentExamEvaluationComponent } from '../student/pages/student-exam-evaluation/student-exam-evaluation.component';
 import { StudentExamReportComponent } from '../student/pages/student-exam-report/student-exam-report.component';
 import { passwordChangeRequiredChildGuard, passwordChangeRequiredGuard } from '../../core/guards/role.guard';
@@ -114,6 +115,7 @@ export const TENANT_ROUTES: Routes = [
     canActivateChild: [passwordChangeRequiredChildGuard, tenantOperationalAccessGuard, tenantPermissionGuard],
     children: [
       { path: 'overview', component: TenantDashboardComponent },
+      { path: 'platform-user-guide', component: TenantPlatformGuideComponent },
       { path: 'profile', component: TenantProfileComponent },
       { path: 'students', component: TenantStudentsComponent, data: { requiredPermission: 'tenant.students.view' } },
       { path: 'students/create', component: TenantStudentCreateComponent, data: { requiredPermission: 'tenant.students.manage' } },
