@@ -25,6 +25,7 @@ export class TenantTeachersFacade {
   readonly teacherStatusFilter = this.store.teacherStatusFilter;
   readonly capacity = this.store.capacity;
   readonly isCapacityLoading = this.store.isCapacityLoading;
+  readonly capacityLoadFailed = this.store.capacityLoadFailed;
   readonly hasStatusFilter = this.store.hasStatusFilter;
 
   readonly teachers = this.store.teachers;
@@ -207,17 +208,13 @@ export class TenantTeachersFacade {
 
   private loadCapacity(): void {
     this.store.setCapacityLoading(true);
+    this.store.setCapacityLoadFailed(false);
     this.data
       .capacity()
       .pipe(finalize(() => this.store.setCapacityLoading(false)))
       .subscribe({
         next: (capacity) => this.store.setCapacity(capacity),
-        error: () => this.store.setCapacity({
-          tenantType: 'CENTER',
-          currentTeachers: this.teachers().length,
-          maxTeachers: null,
-          canCreate: true,
-        }),
+        error: () => this.store.setCapacityLoadFailed(true),
       });
   }
 }

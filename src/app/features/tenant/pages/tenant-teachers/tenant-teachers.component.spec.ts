@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { TenantTeachersDataService } from '../../data-access/tenant-teachers-data.service';
 import { Teacher } from '../../models/tenant-teachers.models';
 import { TenantTeachersComponent } from './tenant-teachers.component';
@@ -91,6 +91,22 @@ describe('TenantTeachersComponent', () => {
     expect(dialog).not.toBeNull();
     expect(dialog?.textContent).toContain('Teacher limit reached');
     expect(dialog?.textContent).toContain('This tenant type can have one teacher only.');
+  });
+
+  it('shows the limit dialog when capacity cannot be loaded and a teacher already exists', () => {
+    data.capacity.mockReturnValue(throwError(() => new Error('Capacity unavailable')));
+    fixture.destroy();
+    fixture = TestBed.createComponent(TenantTeachersComponent);
+    fixture.detectChanges();
+
+    const addTeacherButton = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('button'),
+    ).find((button) => button.textContent?.includes('Add Teacher'));
+
+    addTeacherButton?.click();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('[role="dialog"]')).not.toBeNull();
   });
 
   function textContent(): string {

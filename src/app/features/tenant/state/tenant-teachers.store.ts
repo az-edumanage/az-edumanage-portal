@@ -55,6 +55,7 @@ export class TenantTeachersStore {
   readonly teacherStatusFilter = signal<TeacherStatusFilter>('all');
   readonly capacity = signal<TeacherCapacity>(DEFAULT_CAPACITY);
   readonly isCapacityLoading = signal(false);
+  readonly capacityLoadFailed = signal(false);
 
   readonly activeFiltersCount = computed(() => {
     let count = 0;
@@ -152,6 +153,10 @@ export class TenantTeachersStore {
 
   setCapacityLoading(value: boolean): void {
     this.isCapacityLoading.set(value);
+  }
+
+  setCapacityLoadFailed(value: boolean): void {
+    this.capacityLoadFailed.set(value);
   }
 
   updateTeacher(value: Teacher): void {
