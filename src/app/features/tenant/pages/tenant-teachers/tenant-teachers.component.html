@@ -45,12 +45,11 @@
           } @else {
             <button
               type="button"
-              class="flex items-center gap-2 px-4 h-10 border border-slate-200 bg-slate-100 text-slate-500 rounded-lg text-sm font-medium cursor-not-allowed dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
-              title="Teacher tenants can add only one teacher"
-              disabled
+              class="flex items-center gap-2 px-4 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20"
+              (click)="openCapacityDialog()"
             >
-              <mat-icon class="text-sm">person</mat-icon>
-              1 teacher limit reached
+              <mat-icon class="text-sm">person_add</mat-icon>
+              Add Teacher
             </button>
           }
         </div>
@@ -557,6 +556,46 @@
               </div>
             </form>
           </div>
+        </div>
+      }
+
+      @if (isCapacityDialogOpen()) {
+        <div class="tenant-teachers-modal-backdrop">
+          <button
+            type="button"
+            class="tenant-teachers-modal-dismiss"
+            aria-label="Close teacher limit dialog"
+            (click)="closeCapacityDialog()"
+          ></button>
+          <section
+            class="tenant-teachers-capacity-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="teacher-capacity-dialog-title"
+          >
+            <div class="tenant-teachers-capacity-icon" aria-hidden="true">
+              <mat-icon>person</mat-icon>
+            </div>
+            <div class="tenant-teachers-capacity-content">
+              <div class="tenant-teachers-password-head">
+                <div>
+                  <h3 id="teacher-capacity-dialog-title" class="tenant-teachers-card-name">Teacher limit reached</h3>
+                  <p class="tenant-teachers-card-email">Teacher tenant</p>
+                </div>
+                <button type="button" (click)="closeCapacityDialog()" class="tenant-teachers-icon-btn" title="Close">
+                  <mat-icon class="text-sm">close</mat-icon>
+                </button>
+              </div>
+              <p class="tenant-teachers-delete-text">
+                This tenant type can have one teacher only. Delete the current teacher before adding another one.
+              </p>
+              <div class="tenant-teachers-password-actions">
+                <button type="button" (click)="closeCapacityDialog()" class="tenant-teachers-filter-apply tenant-teachers-delete-close">
+                  Close
+                </button>
+              </div>
+            </div>
+          </section>
         </div>
       }
 

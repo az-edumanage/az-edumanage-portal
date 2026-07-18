@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -16,6 +16,7 @@ import { Teacher } from '../../models/tenant-teachers.models';
   styleUrl: './tenant-teachers.component.css',
   host: {
     '(document:click)': 'closeSettings()',
+    '(document:keydown.escape)': 'closeCapacityDialog()',
   },
 })
 export class TenantTeachersComponent implements OnInit {
@@ -55,6 +56,7 @@ export class TenantTeachersComponent implements OnInit {
   readonly passwordError = this.facade.passwordError;
   readonly passwordSuccess = this.facade.passwordSuccess;
   readonly deleteState = this.facade.deleteState;
+  readonly isCapacityDialogOpen = signal(false);
 
   readonly filterForm = this.fb.group({
     subject: [''],
@@ -148,6 +150,14 @@ export class TenantTeachersComponent implements OnInit {
 
   setPageSize(value: string): void {
     this.facade.setPageSize(Number(value));
+  }
+
+  openCapacityDialog(): void {
+    this.isCapacityDialogOpen.set(true);
+  }
+
+  closeCapacityDialog(): void {
+    this.isCapacityDialogOpen.set(false);
   }
 
   openPasswordModal(event: Event, teacher: Teacher): void {

@@ -76,11 +76,21 @@ describe('TenantTeachersComponent', () => {
     expect(fixture.componentInstance.filteredTeachers().map((teacher) => teacher.id)).toEqual(['teacher-1', 'teacher-2']);
   });
 
-  it('disables teacher creation when a teacher tenant reaches its single-teacher limit', () => {
-    const text = textContent();
+  it('shows a dialog when a teacher tenant at its limit clicks Add Teacher', () => {
+    const addTeacherButton = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('button'),
+    ).find((button) => button.textContent?.includes('Add Teacher'));
 
-    expect(text).toContain('1 teacher limit reached');
+    expect(addTeacherButton).toBeDefined();
     expect((fixture.nativeElement as HTMLElement).querySelector('a[href="/tenant/teachers/create"]')).toBeNull();
+
+    addTeacherButton?.click();
+    fixture.detectChanges();
+
+    const dialog = (fixture.nativeElement as HTMLElement).querySelector('[role="dialog"]');
+    expect(dialog).not.toBeNull();
+    expect(dialog?.textContent).toContain('Teacher limit reached');
+    expect(dialog?.textContent).toContain('This tenant type can have one teacher only.');
   });
 
   function textContent(): string {
