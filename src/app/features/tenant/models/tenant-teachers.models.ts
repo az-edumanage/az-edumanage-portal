@@ -14,6 +14,13 @@ export interface TeacherStatusSummary {
   unavailableReason?: string | null;
 }
 
+export interface TeacherCapacity {
+  tenantType: 'TEACHER' | 'CENTER';
+  currentTeachers: number;
+  maxTeachers: number | null;
+  canCreate: boolean;
+}
+
 export interface TeacherSubject {
   id: string;
   name: string;

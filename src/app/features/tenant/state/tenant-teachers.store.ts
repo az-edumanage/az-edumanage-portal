@@ -1,5 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { Teacher, TeacherStatusFilter, TeacherStatusSummary } from '../models/tenant-teachers.models';
+import { Teacher, TeacherCapacity, TeacherStatusFilter, TeacherStatusSummary } from '../models/tenant-teachers.models';
 
 export type TeacherDeleteStatus = 'closed' | 'confirming' | 'deleting' | 'success' | 'failed';
 
@@ -18,6 +18,13 @@ const EMPTY_STATUS_SUMMARY: TeacherStatusSummary = {
   today: '',
   asOf: '',
   unavailableReason: null,
+};
+
+const DEFAULT_CAPACITY: TeacherCapacity = {
+  tenantType: 'CENTER',
+  currentTeachers: 0,
+  maxTeachers: null,
+  canCreate: true,
 };
 
 @Injectable({ providedIn: 'root' })
@@ -46,6 +53,8 @@ export class TenantTeachersStore {
   readonly isStatusSummaryLoading = signal(false);
   readonly statusSummaryError = signal<string | null>(null);
   readonly teacherStatusFilter = signal<TeacherStatusFilter>('all');
+  readonly capacity = signal<TeacherCapacity>(DEFAULT_CAPACITY);
+  readonly isCapacityLoading = signal(false);
 
   readonly activeFiltersCount = computed(() => {
     let count = 0;
@@ -135,6 +144,14 @@ export class TenantTeachersStore {
   setTeachers(value: Teacher[]): void {
     this.teachers.set(value);
     this.clampPage();
+  }
+
+  setCapacity(value: TeacherCapacity): void {
+    this.capacity.set(value);
+  }
+
+  setCapacityLoading(value: boolean): void {
+    this.isCapacityLoading.set(value);
   }
 
   updateTeacher(value: Teacher): void {

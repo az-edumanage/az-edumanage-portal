@@ -1,13 +1,20 @@
 import { TestBed } from '@angular/core/testing';
 import { Observable, of, throwError } from 'rxjs';
 import { TenantTeachersDataService } from '../data-access/tenant-teachers-data.service';
-import { Teacher, TeacherStatus } from '../models/tenant-teachers.models';
+import { Teacher, TeacherCapacity, TeacherStatus, TeacherStatusSummary } from '../models/tenant-teachers.models';
 import { TenantTeachersFacade } from './tenant-teachers.facade';
 import { TenantTeachersStore } from './tenant-teachers.store';
 
 class TenantTeachersDataServiceMock {
   deleteTeacher = vi.fn<(teacherId: string) => Observable<void>>(() => of(undefined));
   listTeachers = vi.fn<() => Observable<Teacher[]>>(() => of([]));
+  statusSummary = vi.fn<() => Observable<TeacherStatusSummary>>();
+  capacity = vi.fn<() => Observable<TeacherCapacity>>(() => of({
+    tenantType: 'CENTER',
+    currentTeachers: 0,
+    maxTeachers: null,
+    canCreate: true,
+  }));
   updateStatus = vi.fn<(teacher: Teacher, status: TeacherStatus) => Observable<Teacher>>();
   changeTeacherPassword = vi.fn<(teacherId: string, newPassword: string) => Observable<void>>();
 }

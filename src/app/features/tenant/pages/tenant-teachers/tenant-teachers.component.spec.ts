@@ -10,12 +10,14 @@ describe('TenantTeachersComponent', () => {
   let data: {
     listTeachers: ReturnType<typeof vi.fn>;
     statusSummary: ReturnType<typeof vi.fn>;
+    capacity: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(async () => {
     data = {
       listTeachers: vi.fn(),
       statusSummary: vi.fn(),
+      capacity: vi.fn(),
     };
     data.listTeachers.mockReturnValue(of([
       teacherFixture('teacher-1', 'Dr. Ahmed Zewail'),
@@ -30,6 +32,12 @@ describe('TenantTeachersComponent', () => {
       today: '2026-06-29',
       asOf: '2026-06-29T13:30:00+03:00',
       unavailableReason: null,
+    }));
+    data.capacity.mockReturnValue(of({
+      tenantType: 'TEACHER',
+      currentTeachers: 1,
+      maxTeachers: 1,
+      canCreate: false,
     }));
 
     await TestBed.configureTestingModule({
@@ -66,6 +74,13 @@ describe('TenantTeachersComponent', () => {
     fixture.componentInstance.selectAllTeachers();
     fixture.detectChanges();
     expect(fixture.componentInstance.filteredTeachers().map((teacher) => teacher.id)).toEqual(['teacher-1', 'teacher-2']);
+  });
+
+  it('disables teacher creation when a teacher tenant reaches its single-teacher limit', () => {
+    const text = textContent();
+
+    expect(text).toContain('1 teacher limit reached');
+    expect((fixture.nativeElement as HTMLElement).querySelector('a[href="/tenant/teachers/create"]')).toBeNull();
   });
 
   function textContent(): string {

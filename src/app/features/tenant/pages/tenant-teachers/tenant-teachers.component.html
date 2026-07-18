@@ -28,10 +28,31 @@
               <mat-icon class="text-sm block">view_list</mat-icon>
             </button>
           </div>
-          <a routerLink="/tenant/teachers/create" class="flex items-center gap-2 px-4 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20">
-            <mat-icon class="text-sm">person_add</mat-icon>
-            Add Teacher
-          </a>
+          @if (isCapacityLoading()) {
+            <button
+              type="button"
+              class="flex items-center gap-2 px-4 h-10 border border-slate-200 bg-slate-100 text-slate-500 rounded-lg text-sm font-medium cursor-wait dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
+              disabled
+            >
+              <mat-icon class="text-sm">hourglass_top</mat-icon>
+              Checking limit
+            </button>
+          } @else if (capacity().canCreate) {
+            <a routerLink="/tenant/teachers/create" class="flex items-center gap-2 px-4 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20">
+              <mat-icon class="text-sm">person_add</mat-icon>
+              Add Teacher
+            </a>
+          } @else {
+            <button
+              type="button"
+              class="flex items-center gap-2 px-4 h-10 border border-slate-200 bg-slate-100 text-slate-500 rounded-lg text-sm font-medium cursor-not-allowed dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
+              title="Teacher tenants can add only one teacher"
+              disabled
+            >
+              <mat-icon class="text-sm">person</mat-icon>
+              1 teacher limit reached
+            </button>
+          }
         </div>
       </div>
 
