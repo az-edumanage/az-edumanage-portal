@@ -29,12 +29,24 @@
               <mat-icon class="text-sm block">view_list</mat-icon>
             </button>
           </div>
+          <button type="button" (click)="openRegistrationLinks()" class="flex items-center gap-2 px-3 h-10 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <mat-icon class="text-sm">link</mat-icon>
+            Registration Link
+          </button>
           <button type="button" (click)="openCreateStudent()" class="flex items-center gap-2 px-4 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20">
             <mat-icon class="text-sm">person_add</mat-icon>
             Add Student
           </button>
         </div>
       </div>
+
+      <nav class="tenant-student-tabs" aria-label="Student views">
+        <a routerLink="/tenant/students" class="tenant-student-tab-active" aria-current="page">Students</a>
+        <a routerLink="/tenant/students/pending">
+          Pending
+          @if (pendingRegistrationCount() > 0) { <span>{{ pendingRegistrationCount() }}</span> }
+        </a>
+      </nav>
 
       <section class="tenant-students-summary-grid" aria-label="Student attendance summary">
         @for (card of attendanceCards(); track card.key) {
@@ -474,6 +486,47 @@
             }
           </div>
         </div>
+      </div>
+    }
+
+    @if (linkModalOpen()) {
+      <div class="registration-link-backdrop" role="presentation">
+        <section class="registration-link-modal" role="dialog" aria-modal="true" aria-labelledby="registration-link-title">
+          <header>
+            <div><h3 id="registration-link-title">Student registration link</h3><p>Create a public link and choose when it expires.</p></div>
+            <button type="button" aria-label="Close registration links" (click)="closeRegistrationLinks()"><mat-icon>close</mat-icon></button>
+          </header>
+          <div class="registration-link-body">
+            <div class="registration-link-create">
+              <label for="registration-expiry">Expires at</label>
+              <div><input id="registration-expiry" type="datetime-local" [ngModel]="linkExpiry()" (ngModelChange)="linkExpiry.set($event)"><button type="button" (click)="createRegistrationLink()" [disabled]="linkLoading()"><mat-icon>add_link</mat-icon>Create link</button></div>
+            </div>
+            @if (generatedRegistrationUrl()) {
+              <div class="generated-link" role="status">
+                <div><strong>Link created</strong><span>This URL is shown once. Store it before closing.</span></div>
+                <div><input readonly [value]="generatedRegistrationUrl()" (focus)="$any($event.target).select()"><button type="button" (click)="copyRegistrationLink()"><mat-icon>{{ linkCopied() ? 'check' : 'content_copy' }}</mat-icon>{{ linkCopied() ? 'Copied' : 'Copy' }}</button></div>
+              </div>
+            }
+            @if (linkError()) { <div class="registration-link-error"><mat-icon>error_outline</mat-icon><span>{{ linkError() }}</span></div> }
+            <div class="registration-link-list">
+              <h4>Recent links</h4>
+              @if (linkLoading() && registrationLinks().length === 0) {
+                <p>Loading links...</p>
+              } @else if (registrationLinks().length === 0) {
+                <p>No registration links have been created.</p>
+              } @else {
+                @for (link of registrationLinks(); track link.id) {
+                  <div class="registration-link-row">
+                    <span class="registration-link-status" [class.registration-link-status-active]="link.active">{{ link.active ? 'Active' : (link.revokedAt ? 'Revoked' : 'Expired') }}</span>
+                    <div><strong>Expires {{ link.expiresAt | date:'medium' }}</strong><span>Created {{ link.createdAt | date:'medium' }}</span></div>
+                    @if (link.active) { <button type="button" (click)="revokeRegistrationLink(link)" [disabled]="linkLoading()">Revoke</button> }
+                  </div>
+                }
+              }
+            </div>
+          </div>
+          <footer><button type="button" (click)="closeRegistrationLinks()">Close</button></footer>
+        </section>
       </div>
     }
   

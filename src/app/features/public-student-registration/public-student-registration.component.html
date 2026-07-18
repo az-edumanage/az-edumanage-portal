@@ -1,0 +1,129 @@
+<main class="registration-page" [attr.dir]="isArabic() ? 'rtl' : 'ltr'">
+  <header class="registration-header">
+    <img src="/logo.svg" alt="EduManage" class="registration-logo">
+    <button type="button" class="language-button" (click)="toggleLanguage()">
+      <mat-icon>language</mat-icon>
+      {{ isArabic() ? 'English' : 'العربية' }}
+    </button>
+  </header>
+
+  <section class="registration-shell">
+    @if (loading()) {
+      <div class="registration-loading" aria-live="polite">
+        <span></span><span></span><span></span>
+      </div>
+    } @else if (submitted()) {
+      <div class="registration-result" role="status">
+        <span class="result-icon result-icon-success"><mat-icon>check</mat-icon></span>
+        <h1>{{ isArabic() ? 'تم إرسال طلبك' : 'Request submitted' }}</h1>
+        <p>{{ isArabic() ? 'سيراجع مسؤول المنصة بياناتك. سيتم إنشاء حسابك بعد الموافقة.' : 'The center administrator will review your details. Your account will be created after approval.' }}</p>
+      </div>
+    } @else if (!metadata()) {
+      <div class="registration-result" role="alert">
+        <span class="result-icon result-icon-error"><mat-icon>link_off</mat-icon></span>
+        <h1>{{ isArabic() ? 'الرابط غير متاح' : 'Link unavailable' }}</h1>
+        <p>{{ error() }}</p>
+      </div>
+    } @else {
+      <div class="registration-title">
+        <span class="registration-mark"><mat-icon>school</mat-icon></span>
+        <div>
+          <h1>{{ isArabic() ? 'طلب تسجيل طالب' : 'Student registration request' }}</h1>
+          <p>{{ metadata()?.tenantName }}</p>
+        </div>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="registration-form">
+        <fieldset>
+          <legend>{{ isArabic() ? 'بيانات الطالب' : 'Student details' }}</legend>
+          <div class="form-grid">
+            <label class="field field-wide">
+              <span>{{ isArabic() ? 'الاسم الكامل' : 'Full name' }} *</span>
+              <input formControlName="fullName" autocomplete="name">
+            </label>
+            <label class="field">
+              <span>{{ isArabic() ? 'البريد الإلكتروني' : 'Email' }}</span>
+              <input type="email" formControlName="email" autocomplete="email">
+            </label>
+            <label class="field">
+              <span>{{ isArabic() ? 'رقم الهاتف' : 'Phone number' }}</span>
+              <input formControlName="phone" autocomplete="tel">
+            </label>
+            <label class="field">
+              <span>{{ isArabic() ? 'النوع' : 'Gender' }} *</span>
+              <select formControlName="gender">
+                <option value="">{{ isArabic() ? 'اختر النوع' : 'Select gender' }}</option>
+                <option value="Male">{{ isArabic() ? 'ذكر' : 'Male' }}</option>
+                <option value="Female">{{ isArabic() ? 'أنثى' : 'Female' }}</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>{{ isArabic() ? 'تاريخ الميلاد' : 'Date of birth' }} *</span>
+              <input type="date" formControlName="birthDate">
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>{{ isArabic() ? 'بيانات الدخول' : 'Account access' }}</legend>
+          <div class="form-grid">
+            <label class="field">
+              <span>{{ isArabic() ? 'اسم المستخدم' : 'User name' }} *</span>
+              <input formControlName="username" autocomplete="username">
+            </label>
+            <label class="field">
+              <span>{{ isArabic() ? 'كلمة المرور' : 'Password' }} *</span>
+              <input type="password" formControlName="password" autocomplete="new-password">
+              <small>{{ isArabic() ? '8 أحرف على الأقل' : 'At least 8 characters' }}</small>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>{{ isArabic() ? 'المرحلة التعليمية' : 'Education' }}</legend>
+          <div class="education-switch" role="radiogroup">
+            <label><input type="radio" formControlName="educationCategory" value="BASIC_EDUCATION"> {{ isArabic() ? 'التعليم الأساسي' : 'Basic education' }}</label>
+            <label><input type="radio" formControlName="educationCategory" value="UNIVERSITY_EDUCATION"> {{ isArabic() ? 'التعليم الجامعي' : 'University education' }}</label>
+          </div>
+          @if (form.controls.educationCategory.value === 'BASIC_EDUCATION') {
+            <div class="form-grid">
+              <label class="field">
+                <span>{{ isArabic() ? 'المرحلة' : 'Stage' }} *</span>
+                <select formControlName="stageId"><option value="">{{ isArabic() ? 'اختر المرحلة' : 'Select stage' }}</option>@for (stage of metadata()?.stages ?? []; track stage.id) {<option [value]="stage.id">{{ stage.name }}</option>}</select>
+              </label>
+              <label class="field">
+                <span>{{ isArabic() ? 'الصف' : 'Grade' }} *</span>
+                <select formControlName="gradeId" [disabled]="!form.controls.stageId.value"><option value="">{{ isArabic() ? 'اختر الصف' : 'Select grade' }}</option>@for (grade of filteredGrades(); track grade.id) {<option [value]="grade.id">{{ grade.name }}</option>}</select>
+              </label>
+            </div>
+          } @else {
+            <div class="form-grid">
+              <label class="field">
+                <span>{{ isArabic() ? 'الجامعة' : 'University' }} *</span>
+                <select formControlName="universityId"><option value="">{{ isArabic() ? 'اختر الجامعة' : 'Select university' }}</option>@for (university of metadata()?.universities ?? []; track university.id) {<option [value]="university.id">{{ university.name }}</option>}</select>
+              </label>
+              <label class="field">
+                <span>{{ isArabic() ? 'الكلية' : 'College' }} *</span>
+                <select formControlName="collegeId" [disabled]="!form.controls.universityId.value"><option value="">{{ isArabic() ? 'اختر الكلية' : 'Select college' }}</option>@for (college of filteredColleges(); track college.id) {<option [value]="college.id">{{ college.name }}</option>}</select>
+              </label>
+            </div>
+          }
+        </fieldset>
+
+        <fieldset>
+          <legend>{{ isArabic() ? 'بيانات ولي الأمر (اختياري)' : 'Parent details (optional)' }}</legend>
+          <div class="form-grid">
+            <label class="field"><span>{{ isArabic() ? 'اسم ولي الأمر' : 'Parent name' }}</span><input formControlName="parentName"></label>
+            <label class="field"><span>{{ isArabic() ? 'هاتف ولي الأمر' : 'Parent phone' }}</span><input formControlName="parentPhone"></label>
+          </div>
+        </fieldset>
+
+        @if (error()) { <div class="form-error" role="alert"><mat-icon>error_outline</mat-icon><span>{{ error() }}</span></div> }
+        <button type="submit" class="submit-button" [disabled]="submitting()">
+          <mat-icon>{{ submitting() ? 'sync' : 'send' }}</mat-icon>
+          {{ submitting() ? (isArabic() ? 'جارٍ الإرسال...' : 'Submitting...') : (isArabic() ? 'إرسال طلب التسجيل' : 'Submit registration') }}
+        </button>
+      </form>
+    }
+  </section>
+</main>
