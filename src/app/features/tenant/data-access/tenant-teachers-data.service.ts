@@ -23,7 +23,9 @@ export class TenantTeachersDataService {
 
   capacity(): Observable<TeacherCapacity> {
     return this.http
-      .get<TeacherCapacity>(`${this.teachersUrl}/capacity`)
+      .get<TeacherCapacity>(`${this.teachersUrl}/capacity`, {
+        params: { _: Date.now().toString() },
+      })
       .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load teacher capacity')));
   }
 

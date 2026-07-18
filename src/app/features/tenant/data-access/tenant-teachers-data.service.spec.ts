@@ -49,6 +49,23 @@ describe('TenantTeachersDataService', () => {
     });
   });
 
+  it('loads teacher capacity without allowing a cached response', () => {
+    service.capacity().subscribe((capacity) => {
+      expect(capacity.tenantType).toBe('TEACHER');
+      expect(capacity.canCreate).toBe(false);
+    });
+
+    const request = httpTesting.expectOne((req) =>
+      req.url.endsWith('/tenant/teachers/capacity') && req.params.has('_'));
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      tenantType: 'TEACHER',
+      currentTeachers: 1,
+      maxTeachers: 1,
+      canCreate: false,
+    });
+  });
+
   it('sends exit group requests for a teacher', () => {
     service.exitTeacherGroup('teacher-1', 'group-1').subscribe((result) => {
       expect(result).toBeNull();

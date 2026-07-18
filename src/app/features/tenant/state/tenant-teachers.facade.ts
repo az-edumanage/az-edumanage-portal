@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { finalize } from 'rxjs';
+import { Observable, catchError, finalize, tap, throwError } from 'rxjs';
 import { TenantTeachersStore } from './tenant-teachers.store';
-import { Teacher } from '../models/tenant-teachers.models';
+import { Teacher, TeacherCapacity } from '../models/tenant-teachers.models';
 import { TenantTeachersDataService } from '../data-access/tenant-teachers-data.service';
 
 @Injectable({ providedIn: 'root' })
@@ -206,15 +206,20 @@ export class TenantTeachersFacade {
     });
   }
 
-  private loadCapacity(): void {
+  checkCapacityForCreate(): Observable<TeacherCapacity> {
     this.store.setCapacityLoading(true);
     this.store.setCapacityLoadFailed(false);
-    this.data
-      .capacity()
-      .pipe(finalize(() => this.store.setCapacityLoading(false)))
-      .subscribe({
-        next: (capacity) => this.store.setCapacity(capacity),
-        error: () => this.store.setCapacityLoadFailed(true),
-      });
+    return this.data.capacity().pipe(
+      tap((capacity) => this.store.setCapacity(capacity)),
+      catchError((error: Error) => {
+        this.store.setCapacityLoadFailed(true);
+        return throwError(() => error);
+      }),
+      finalize(() => this.store.setCapacityLoading(false)),
+    );
+  }
+
+  private loadCapacity(): void {
+    this.checkCapacityForCreate().subscribe({ error: () => undefined });
   }
 }
