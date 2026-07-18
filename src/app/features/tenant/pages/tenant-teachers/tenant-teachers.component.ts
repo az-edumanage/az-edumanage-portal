@@ -34,6 +34,8 @@ export class TenantTeachersComponent implements OnInit {
   readonly isStatusSummaryLoading = this.facade.isStatusSummaryLoading;
   readonly statusSummaryError = this.facade.statusSummaryError;
   readonly teacherStatusFilter = this.facade.teacherStatusFilter;
+  readonly capacity = this.facade.capacity;
+  readonly isCapacityLoading = this.facade.isCapacityLoading;
   readonly hasStatusFilter = this.facade.hasStatusFilter;
   readonly subjectOptions = this.facade.subjectOptions;
   readonly activeSettingsId = this.facade.activeSettingsId;

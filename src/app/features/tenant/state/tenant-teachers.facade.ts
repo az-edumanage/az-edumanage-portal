@@ -23,6 +23,8 @@ export class TenantTeachersFacade {
   readonly isStatusSummaryLoading = this.store.isStatusSummaryLoading;
   readonly statusSummaryError = this.store.statusSummaryError;
   readonly teacherStatusFilter = this.store.teacherStatusFilter;
+  readonly capacity = this.store.capacity;
+  readonly isCapacityLoading = this.store.isCapacityLoading;
   readonly hasStatusFilter = this.store.hasStatusFilter;
 
   readonly teachers = this.store.teachers;
@@ -62,6 +64,7 @@ export class TenantTeachersFacade {
         next: (summary) => this.store.setStatusSummary(summary),
         error: (error: Error) => this.store.setStatusSummaryError(error.message),
       });
+    this.loadCapacity();
   }
 
   setFilters(subject: string, status: string, sortBy: string): void {
@@ -196,8 +199,25 @@ export class TenantTeachersFacade {
       next: () => {
         this.store.removeTeacher(teacher.id);
         this.store.setDeleteSuccess('Teacher deleted successfully.');
+        this.loadCapacity();
       },
       error: (error: Error) => this.store.setDeleteFailed(error.message),
     });
+  }
+
+  private loadCapacity(): void {
+    this.store.setCapacityLoading(true);
+    this.data
+      .capacity()
+      .pipe(finalize(() => this.store.setCapacityLoading(false)))
+      .subscribe({
+        next: (capacity) => this.store.setCapacity(capacity),
+        error: () => this.store.setCapacity({
+          tenantType: 'CENTER',
+          currentTeachers: this.teachers().length,
+          maxTeachers: null,
+          canCreate: true,
+        }),
+      });
   }
 }
