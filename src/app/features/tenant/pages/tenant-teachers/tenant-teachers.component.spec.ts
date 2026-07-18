@@ -93,6 +93,28 @@ describe('TenantTeachersComponent', () => {
     expect(dialog?.textContent).toContain('This tenant type can have one teacher only.');
   });
 
+  it('uses the loaded teacher count when a stale teacher capacity response still allows creation', () => {
+    data.listTeachers.mockReturnValue(of([teacherFixture('teacher-1', 'Dr. Ahmed Zewail')]));
+    data.capacity.mockReturnValue(of({
+      tenantType: 'TEACHER',
+      currentTeachers: 0,
+      maxTeachers: 1,
+      canCreate: true,
+    }));
+    fixture.destroy();
+    fixture = TestBed.createComponent(TenantTeachersComponent);
+    fixture.detectChanges();
+
+    const addTeacherButton = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('button'),
+    ).find((button) => button.textContent?.includes('Add Teacher'));
+
+    addTeacherButton?.click();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('[role="dialog"]')).not.toBeNull();
+  });
+
   it('shows the limit dialog when capacity cannot be loaded and a teacher already exists', () => {
     data.capacity.mockReturnValue(throwError(() => new Error('Capacity unavailable')));
     fixture.destroy();

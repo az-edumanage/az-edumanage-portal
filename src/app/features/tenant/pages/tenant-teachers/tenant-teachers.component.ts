@@ -39,10 +39,15 @@ export class TenantTeachersComponent implements OnInit {
   readonly isCapacityLoading = this.facade.isCapacityLoading;
   readonly capacityLoadFailed = this.facade.capacityLoadFailed;
   readonly isTeacherLimitReached = computed(() => {
-    if (!this.capacity().canCreate) {
+    const capacity = this.capacity();
+    const loadedTeacherCount = this.teachers().length;
+    if (!capacity.canCreate) {
       return true;
     }
-    return this.capacityLoadFailed() && this.teachers().length >= 1;
+    if (capacity.tenantType === 'TEACHER' && Math.max(capacity.currentTeachers, loadedTeacherCount) >= 1) {
+      return true;
+    }
+    return this.capacityLoadFailed() && loadedTeacherCount >= 1;
   });
   readonly hasStatusFilter = this.facade.hasStatusFilter;
   readonly subjectOptions = this.facade.subjectOptions;
@@ -164,7 +169,25 @@ export class TenantTeachersComponent implements OnInit {
       this.isCapacityDialogOpen.set(true);
       return;
     }
-    void this.router.navigate(['/tenant/teachers/create']);
+    this.facade
+      .checkCapacityForCreate()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          if (this.isTeacherLimitReached()) {
+            this.isCapacityDialogOpen.set(true);
+            return;
+          }
+          void this.router.navigate(['/tenant/teachers/create']);
+        },
+        error: () => {
+          if (this.teachers().length >= 1) {
+            this.isCapacityDialogOpen.set(true);
+            return;
+          }
+          void this.router.navigate(['/tenant/teachers/create']);
+        },
+      });
   }
 
   closeCapacityDialog(): void {
