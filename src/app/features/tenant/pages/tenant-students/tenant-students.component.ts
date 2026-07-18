@@ -4,7 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { startWith } from 'rxjs';
+import { firstValueFrom, startWith } from 'rxjs';
 import { TenantEducationalStagesDataService } from '../../data-access/tenant-educational-stages-data.service';
 import { TenantGradesDataService } from '../../data-access/tenant-grades-data.service';
 import { EducationalStage } from '../../models/tenant-educational-stages.models';
@@ -12,6 +12,8 @@ import { Grade } from '../../models/tenant-grades.models';
 import { StudentAttendanceFilter } from '../../models/tenant-students.models';
 import { TenantStudentsFacade } from '../../state/tenant-students.facade';
 import { TaskService } from '../../../../core/services/task.service';
+import { StudentRegistrationDataService } from '../../data-access/student-registration-data.service';
+import { StudentRegistrationLink } from '../../models/student-registration.models';
 
 @Component({
   selector: 'app-tenant-students',
@@ -26,6 +28,7 @@ export class TenantStudentsComponent {
   private readonly facade = inject(TenantStudentsFacade);
   private readonly router = inject(Router);
   private readonly taskService = inject(TaskService);
+  private readonly registrationData = inject(StudentRegistrationDataService);
   private readonly stagesData = inject(TenantEducationalStagesDataService);
   private readonly gradesData = inject(TenantGradesDataService);
   private readonly createStudentTaskId = 'create-student-task';
@@ -58,6 +61,14 @@ export class TenantStudentsComponent {
   readonly stages = signal<EducationalStage[]>([]);
   readonly grades = signal<Grade[]>([]);
   readonly selectedStageFilter = signal('');
+  readonly pendingRegistrationCount = this.registrationData.pendingCount;
+  readonly linkModalOpen = signal(false);
+  readonly registrationLinks = signal<StudentRegistrationLink[]>([]);
+  readonly linkExpiry = signal('');
+  readonly generatedRegistrationUrl = signal('');
+  readonly linkLoading = signal(false);
+  readonly linkError = signal<string | null>(null);
+  readonly linkCopied = signal(false);
   readonly stageOptions = computed(() => [...this.stages()].sort((a, b) => a.order - b.order || a.name.localeCompare(b.name)));
   readonly gradeOptions = computed(() => {
     const stageId = this.selectedStageFilter();
@@ -77,6 +88,7 @@ export class TenantStudentsComponent {
   });
 
   constructor() {
+    this.registrationData.startCountPolling();
     this.facade.loadStudents();
     void this.loadFilterOptions();
     this.filterForm.valueChanges
@@ -144,6 +156,72 @@ export class TenantStudentsComponent {
     void this.router.navigate(['/tenant/students/create']);
   }
 
+  async openRegistrationLinks(): Promise<void> {
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    this.linkExpiry.set(this.toLocalDateTime(expires));
+    this.generatedRegistrationUrl.set('');
+    this.linkCopied.set(false);
+    this.linkError.set(null);
+    this.linkModalOpen.set(true);
+    this.linkLoading.set(true);
+    try {
+      this.registrationLinks.set(await firstValueFrom(this.registrationData.listLinks()));
+    } catch (error) {
+      this.linkError.set(this.registrationData.errorMessage(error, 'Registration links could not be loaded.'));
+    } finally {
+      this.linkLoading.set(false);
+    }
+  }
+
+  closeRegistrationLinks(): void {
+    if (!this.linkLoading()) this.linkModalOpen.set(false);
+  }
+
+  async createRegistrationLink(): Promise<void> {
+    const expiresAt = new Date(this.linkExpiry());
+    if (!this.linkExpiry() || Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() <= Date.now()) {
+      this.linkError.set('Choose a future expiration date and time.');
+      return;
+    }
+    this.linkLoading.set(true);
+    this.linkError.set(null);
+    this.linkCopied.set(false);
+    try {
+      const link = await firstValueFrom(this.registrationData.createLink(expiresAt.toISOString()));
+      this.registrationLinks.update((items) => [link, ...items]);
+      this.generatedRegistrationUrl.set(`${window.location.origin}/student-register/${link.token}`);
+    } catch (error) {
+      this.linkError.set(this.registrationData.errorMessage(error, 'Registration link could not be created.'));
+    } finally {
+      this.linkLoading.set(false);
+    }
+  }
+
+  async copyRegistrationLink(): Promise<void> {
+    const url = this.generatedRegistrationUrl();
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      this.linkCopied.set(true);
+    } catch {
+      this.linkError.set('Copy failed. Select the link and copy it manually.');
+    }
+  }
+
+  async revokeRegistrationLink(link: StudentRegistrationLink): Promise<void> {
+    if (!link.active || this.linkLoading()) return;
+    this.linkLoading.set(true);
+    this.linkError.set(null);
+    try {
+      const revoked = await firstValueFrom(this.registrationData.revokeLink(link.id));
+      this.registrationLinks.update((items) => items.map((item) => item.id === revoked.id ? revoked : item));
+    } catch (error) {
+      this.linkError.set(this.registrationData.errorMessage(error, 'Registration link could not be revoked.'));
+    } finally {
+      this.linkLoading.set(false);
+    }
+  }
+
   openStudentDetails(studentId: string): void {
     void this.router.navigate(['/tenant/students', studentId]);
   }
@@ -202,5 +280,10 @@ export class TenantStudentsComponent {
       this.stages.set([]);
       this.grades.set([]);
     }
+  }
+
+  private toLocalDateTime(date: Date): string {
+    const offset = date.getTimezoneOffset() * 60_000;
+    return new Date(date.getTime() - offset).toISOString().slice(0, 16);
   }
 }

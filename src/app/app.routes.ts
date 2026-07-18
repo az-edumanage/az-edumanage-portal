@@ -63,6 +63,13 @@ export const routes: Routes = [
       import('./features/auth/pages/register/register.component').then((m) => m.RegisterComponent),
   },
   {
+    path: 'student-register/:token',
+    loadComponent: () =>
+      import('./features/public-student-registration/public-student-registration.component').then(
+        (m) => m.PublicStudentRegistrationComponent,
+      ),
+  },
+  {
     path: '',
     component: MainLayoutComponent,
     children: [

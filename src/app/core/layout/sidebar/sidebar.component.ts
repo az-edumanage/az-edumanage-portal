@@ -9,6 +9,7 @@ import { AuthIdentityService } from '../../auth/auth-identity.service';
 import { AuthApiService } from '../../auth/auth-api.service';
 import { TenantImpersonationService } from '../../auth/tenant-impersonation.service';
 import { TenantHostContextService } from '../../auth/tenant-host-context.service';
+import { StudentRegistrationDataService } from '../../../features/tenant/data-access/student-registration-data.service';
 
 interface MenuItem {
   labelKey: string;
@@ -38,6 +39,7 @@ export class SidebarComponent {
   private readonly authApi = inject(AuthApiService);
   private readonly tenantImpersonationService = inject(TenantImpersonationService);
   private readonly tenantHostContext = inject(TenantHostContextService);
+  private readonly studentRegistrations = inject(StudentRegistrationDataService);
   private readonly router = inject(Router);
   
   collapsed = this.dashboardService.sidebarCollapsed;
@@ -46,6 +48,12 @@ export class SidebarComponent {
 
   openAccordions = signal<Record<string, boolean>>({});
   isUserPanelOpen = signal(false);
+
+  constructor() {
+    if (this.currentRole() === 'tenant') {
+      this.studentRegistrations.startCountPolling();
+    }
+  }
 
   toggleAccordion(labelKey: string) {
     this.openAccordions.update((prev: Record<string, boolean>) => ({
@@ -222,7 +230,7 @@ export class SidebarComponent {
           {
             titleKey: 'sidebar.section.users',
             items: [
-              { labelKey: 'sidebar.item.students', icon: 'school', route: '/tenant/students', permission: 'tenant.students.view' },
+              { labelKey: 'sidebar.item.students', icon: 'school', route: '/tenant/students', permission: 'tenant.students.view', badge: this.studentRegistrations.pendingCount() },
               { labelKey: 'sidebar.item.parents', icon: 'family_restroom', route: '/tenant/parents', permission: 'tenant.students.view' },
               { labelKey: 'sidebar.item.teachers', icon: 'person', route: '/tenant/teachers', permission: 'tenant.teachers.view' },
               { labelKey: 'sidebar.item.users', icon: 'manage_accounts', route: '/tenant/users', permission: 'tenant.users.view' },
