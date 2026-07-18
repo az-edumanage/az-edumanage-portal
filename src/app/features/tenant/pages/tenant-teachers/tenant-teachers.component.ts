@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -37,6 +37,13 @@ export class TenantTeachersComponent implements OnInit {
   readonly teacherStatusFilter = this.facade.teacherStatusFilter;
   readonly capacity = this.facade.capacity;
   readonly isCapacityLoading = this.facade.isCapacityLoading;
+  readonly capacityLoadFailed = this.facade.capacityLoadFailed;
+  readonly isTeacherLimitReached = computed(() => {
+    if (!this.capacity().canCreate) {
+      return true;
+    }
+    return this.capacityLoadFailed() && this.teachers().length >= 1;
+  });
   readonly hasStatusFilter = this.facade.hasStatusFilter;
   readonly subjectOptions = this.facade.subjectOptions;
   readonly activeSettingsId = this.facade.activeSettingsId;
@@ -152,8 +159,12 @@ export class TenantTeachersComponent implements OnInit {
     this.facade.setPageSize(Number(value));
   }
 
-  openCapacityDialog(): void {
-    this.isCapacityDialogOpen.set(true);
+  addTeacher(): void {
+    if (this.isTeacherLimitReached()) {
+      this.isCapacityDialogOpen.set(true);
+      return;
+    }
+    void this.router.navigate(['/tenant/teachers/create']);
   }
 
   closeCapacityDialog(): void {

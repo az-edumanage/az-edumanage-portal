@@ -37,16 +37,11 @@
               <mat-icon class="text-sm">hourglass_top</mat-icon>
               Checking limit
             </button>
-          } @else if (capacity().canCreate) {
-            <a routerLink="/tenant/teachers/create" class="flex items-center gap-2 px-4 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20">
-              <mat-icon class="text-sm">person_add</mat-icon>
-              Add Teacher
-            </a>
           } @else {
             <button
               type="button"
               class="flex items-center gap-2 px-4 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20"
-              (click)="openCapacityDialog()"
+              (click)="addTeacher()"
             >
               <mat-icon class="text-sm">person_add</mat-icon>
               Add Teacher
