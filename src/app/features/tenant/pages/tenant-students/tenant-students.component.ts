@@ -11,6 +11,7 @@ import { EducationalStage } from '../../models/tenant-educational-stages.models'
 import { Grade } from '../../models/tenant-grades.models';
 import { StudentAttendanceFilter } from '../../models/tenant-students.models';
 import { TenantStudentsFacade } from '../../state/tenant-students.facade';
+import { TenantStudentsDataService } from '../../data-access/tenant-students-data.service';
 import { TaskService } from '../../../../core/services/task.service';
 import { StudentRegistrationDataService } from '../../data-access/student-registration-data.service';
 import { StudentRegistrationLink } from '../../models/student-registration.models';
@@ -26,6 +27,7 @@ export class TenantStudentsComponent {
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
   private readonly facade = inject(TenantStudentsFacade);
+  private readonly studentsData = inject(TenantStudentsDataService);
   private readonly router = inject(Router);
   private readonly taskService = inject(TaskService);
   private readonly registrationData = inject(StudentRegistrationDataService);
@@ -69,6 +71,9 @@ export class TenantStudentsComponent {
   readonly linkLoading = signal(false);
   readonly linkError = signal<string | null>(null);
   readonly linkCopied = signal(false);
+  readonly copiedLinkId = signal<string | null>(null);
+  readonly capacityDialogOpen = signal(false);
+  readonly studentCapacity = signal<{ currentStudents: number; maxStudents: number | null } | null>(null);
   readonly stageOptions = computed(() => [...this.stages()].sort((a, b) => a.order - b.order || a.name.localeCompare(b.name)));
   readonly gradeOptions = computed(() => {
     const stageId = this.selectedStageFilter();
@@ -151,9 +156,23 @@ export class TenantStudentsComponent {
     this.facade.setPageSize(Number(value));
   }
 
-  openCreateStudent(): void {
+  async openCreateStudent(): Promise<void> {
+    try {
+      const capacity = await firstValueFrom(this.studentsData.capacity());
+      this.studentCapacity.set(capacity);
+      if (!capacity.canCreate) {
+        this.capacityDialogOpen.set(true);
+        return;
+      }
+    } catch {
+      // The create endpoint remains the authoritative capacity guard.
+    }
     this.taskService.removeTask(this.createStudentTaskId);
     void this.router.navigate(['/tenant/students/create']);
+  }
+
+  closeCapacityDialog(): void {
+    this.capacityDialogOpen.set(false);
   }
 
   async openRegistrationLinks(): Promise<void> {
@@ -161,6 +180,7 @@ export class TenantStudentsComponent {
     this.linkExpiry.set(this.toLocalDateTime(expires));
     this.generatedRegistrationUrl.set('');
     this.linkCopied.set(false);
+    this.copiedLinkId.set(null);
     this.linkError.set(null);
     this.linkModalOpen.set(true);
     this.linkLoading.set(true);
@@ -219,6 +239,21 @@ export class TenantStudentsComponent {
       this.linkError.set(this.registrationData.errorMessage(error, 'Registration link could not be revoked.'));
     } finally {
       this.linkLoading.set(false);
+    }
+  }
+
+  registrationLinkUrl(link: StudentRegistrationLink): string {
+    return link.token ? `${window.location.origin}/student-register/${link.token}` : '';
+  }
+
+  async copySavedRegistrationLink(link: StudentRegistrationLink): Promise<void> {
+    const url = this.registrationLinkUrl(link);
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      this.copiedLinkId.set(link.id);
+    } catch {
+      this.linkError.set('Copy failed. Select the link and copy it manually.');
     }
   }
 

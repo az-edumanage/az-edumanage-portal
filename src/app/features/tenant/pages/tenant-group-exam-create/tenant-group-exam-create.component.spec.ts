@@ -232,6 +232,9 @@ describe("TenantGroupExamCreateComponent", () => {
           updatedAt: "2026-07-01T00:00:00Z",
         },
       ]),
+      uploadCurriculumQuestionMedia: vi.fn(),
+      createCurriculumQuestion: vi.fn(),
+      createBasicEducationExamQuestion: vi.fn(),
       toUserMessage: vi.fn((_error, fallback) => fallback),
     };
 
@@ -360,6 +363,90 @@ describe("TenantGroupExamCreateComponent", () => {
     expect(text).toContain("Add from basic questions");
     expect(text).toContain("Upload file");
     expect(text).not.toContain("Add from questions bank");
+    expect(
+      fixture.nativeElement.querySelector('input[type="file"]').multiple,
+    ).toBe(true);
+  });
+
+  it("uploads multiple files and lists them in the home work questions section", async () => {
+    subjectsData.uploadCurriculumQuestionMedia
+      .mockResolvedValueOnce({
+        url: "/media/questions/algebra.pdf",
+        fileName: "algebra.pdf",
+        originalName: "Algebra worksheet.pdf",
+        contentType: "application/pdf",
+        sizeBytes: 2048,
+      })
+      .mockResolvedValueOnce({
+        url: "/media/questions/geometry.png",
+        fileName: "geometry.png",
+        originalName: "Geometry diagram.png",
+        contentType: "image/png",
+        sizeBytes: 4096,
+      });
+    subjectsData.createBasicEducationExamQuestion
+      .mockImplementationOnce((_stageId: string, _gradeId: string, _subjectId: string, payload: any) =>
+        Promise.resolve({
+          id: "file-question-1",
+          ...payload,
+          answers: [],
+          createdAt: "2026-07-01T00:00:00Z",
+          updatedAt: "2026-07-01T00:00:00Z",
+        }),
+      )
+      .mockImplementationOnce((_stageId: string, _gradeId: string, _subjectId: string, payload: any) =>
+        Promise.resolve({
+          id: "file-question-2",
+          ...payload,
+          answers: [],
+          createdAt: "2026-07-01T00:00:00Z",
+          updatedAt: "2026-07-01T00:00:00Z",
+        }),
+      );
+
+    fixture.nativeElement.querySelector(".add-questions-button").click();
+    fixture.detectChanges();
+    const input = fixture.nativeElement.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    const files = [
+      new File(["pdf"], "Algebra worksheet.pdf", { type: "application/pdf" }),
+      new File(["image"], "Geometry diagram.png", { type: "image/png" }),
+    ];
+    Object.defineProperty(input, "files", { value: files, configurable: true });
+    input.dispatchEvent(new Event("change"));
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    expect(subjectsData.uploadCurriculumQuestionMedia).toHaveBeenCalledTimes(2);
+    expect(subjectsData.createBasicEducationExamQuestion).toHaveBeenNthCalledWith(
+      1,
+      "stage-1",
+      "grade-1",
+      "subject-1",
+      expect.objectContaining({
+        question: "Algebra worksheet.pdf",
+        type: "ESSAY",
+        curriculumNodeId: "node-motion",
+        mediaUrl: "/media/questions/algebra.pdf",
+      }),
+    );
+    expect(subjectsData.createCurriculumQuestion).not.toHaveBeenCalled();
+    expect(subjectsData.createBasicEducationExam).toHaveBeenCalledWith(
+      "stage-1",
+      "grade-1",
+      "subject-1",
+      expect.objectContaining({
+        questionIds: ["file-question-1", "file-question-2"],
+      }),
+    );
+    expect(fixture.nativeElement.textContent).toContain(
+      "2 questions linked to this home work",
+    );
+    expect(fixture.nativeElement.textContent).toContain("Algebra worksheet.pdf");
+    expect(fixture.nativeElement.textContent).toContain("Geometry diagram.png");
+    expect(fixture.nativeElement.textContent).toContain("Uploaded file");
   });
 
   it("does not render removed Save Options controls or Shuffle questions setting", () => {
@@ -554,7 +641,12 @@ describe("TenantGroupExamCreateComponent", () => {
     await new Promise<void>((resolve) => setTimeout(resolve, 0));
     fixture.detectChanges();
 
-    expect(subjectsData.listBasicEducationExams).toHaveBeenCalledWith("stage-1", "grade-1", "subject-1");
+    expect(subjectsData.listBasicEducationExams).toHaveBeenCalledWith(
+      "stage-1",
+      "grade-1",
+      "subject-1",
+      "HOME_WORK",
+    );
     expect(subjectsData.listBasicEducationExamLinkedQuestions).toHaveBeenCalledWith(
       "stage-1",
       "grade-1",

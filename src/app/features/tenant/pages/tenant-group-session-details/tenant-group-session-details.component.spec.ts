@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
@@ -7,12 +8,15 @@ import { GroupDetails } from '../../models/tenant-group-details.models';
 import { TenantGroupDetailsDataService } from '../../data-access/tenant-group-details-data.service';
 import { TenantGroupAttendanceDataService } from '../../data-access/tenant-group-attendance-data.service';
 import { TenantSubjectsDataService } from '../../data-access/tenant-subjects-data.service';
+import { AuthIdentityService } from '../../../../core/auth/auth-identity.service';
+import { TENANT_MODULES } from '../../../../core/auth/tenant-module-entitlements';
 import { TenantGroupSessionDetailsComponent } from './tenant-group-session-details.component';
 
 describe('TenantGroupSessionDetailsComponent', () => {
   let fixture: ComponentFixture<TenantGroupSessionDetailsComponent>;
   let createObjectUrlSpy: ReturnType<typeof vi.spyOn>;
   let revokeObjectUrlSpy: ReturnType<typeof vi.spyOn>;
+  const examsModuleEnabled = signal(true);
   const lessonNodeId = '11111111-1111-4111-8111-111111111111';
   const group: GroupDetails = {
     id: 'group-123',
@@ -123,6 +127,7 @@ describe('TenantGroupSessionDetailsComponent', () => {
   });
 
   beforeEach(async () => {
+    examsModuleEnabled.set(true);
     sessionStorage.clear();
     createObjectUrlSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:preview-pdf');
     revokeObjectUrlSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
@@ -542,6 +547,12 @@ describe('TenantGroupSessionDetailsComponent', () => {
         { provide: TenantGroupDetailsDataService, useValue: data },
         { provide: TenantGroupAttendanceDataService, useValue: attendanceData },
         { provide: TenantSubjectsDataService, useValue: subjectsData },
+        {
+          provide: AuthIdentityService,
+          useValue: {
+            hasModule: vi.fn((moduleCode: string) => moduleCode !== TENANT_MODULES.examsAndQuiz || examsModuleEnabled()),
+          },
+        },
       ],
     }).compileComponents();
 
@@ -755,6 +766,30 @@ describe('TenantGroupSessionDetailsComponent', () => {
     expect(data.loadGroupLibraryNotes).toHaveBeenCalledWith('group-123', 'folder-1', { scope: 'tenant' });
     expect(noteDrawerText).toContain('Class note');
     expect(noteDrawerText).toContain('Newton note content');
+  });
+
+  it('hides home work controls and skips loading exams when the plan excludes Exams & Quiz', async () => {
+    data.loadGroupExams.mockClear();
+    examsModuleEnabled.set(false);
+
+    const restrictedFixture = TestBed.createComponent(TenantGroupSessionDetailsComponent);
+    restrictedFixture.detectChanges();
+    await restrictedFixture.whenStable();
+    restrictedFixture.detectChanges();
+
+    const text = restrictedFixture.nativeElement.textContent as string;
+    const tabs = Array.from(
+      restrictedFixture.nativeElement.querySelectorAll('.tenant-group-session-tab') as NodeListOf<HTMLButtonElement>,
+    );
+    const quickActions = restrictedFixture.nativeElement.querySelector('.tenant-group-session-quick-actions') as HTMLElement;
+
+    expect(tabs.some((button) => button.textContent?.includes('Home Work'))).toBe(false);
+    expect(quickActions.textContent).not.toContain('Home Work');
+    expect(text).toContain('Students');
+    expect(text).toContain('Lessons');
+    expect(data.loadGroupExams).not.toHaveBeenCalled();
+
+    restrictedFixture.destroy();
   });
 
   it('shows saved anytime home work in the session home work tab', async () => {

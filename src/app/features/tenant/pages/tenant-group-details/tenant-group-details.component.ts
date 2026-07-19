@@ -13,6 +13,8 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { I18nService } from '../../../../core/services/i18n.service';
+import { AuthIdentityService } from '../../../../core/auth/auth-identity.service';
+import { TENANT_MODULES } from '../../../../core/auth/tenant-module-entitlements';
 import { GroupDetails, GroupExamRow, GroupLesson, GroupLessonContent, GroupStudent } from '../../models/tenant-group-details.models';
 import {
   TenantCurriculumMaterialFile,
@@ -123,6 +125,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   private readonly facade = inject(TenantGroupDetailsFacade);
   private readonly groupDetailsData = inject(TenantGroupDetailsDataService);
   private readonly subjectsData = inject(TenantSubjectsDataService);
+  private readonly authIdentity = inject(AuthIdentityService);
   private readonly i18n = inject(I18nService);
   private readonly http = inject(HttpClient);
   private readonly sanitizer = inject(DomSanitizer);
@@ -155,6 +158,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   readonly eventFormError = signal<string | null>(null);
   readonly customCalendarEvents = signal<EventInput[]>([]);
   readonly activeTab = signal<GroupDetailsTab>('sessions');
+  readonly examsEnabled = computed(() => this.authIdentity.hasModule(TENANT_MODULES.examsAndQuiz));
   readonly sessionSearchTerm = signal('');
   readonly sessionFilter = signal<SessionFilter>('all');
   readonly sessionFilterPanelOpen = signal(false);
@@ -502,7 +506,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
       if (group?.id && loadedGroupId && loadedGroupId !== group.id) {
         this.resetGroupExams();
       }
-      if (this.activeTab() !== 'exams' || !group?.id) {
+      if (!this.examsEnabled() || this.activeTab() !== 'exams' || !group?.id) {
         return;
       }
       const loaded = untracked(() => this.groupExamsLoaded());
@@ -608,6 +612,9 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   }
 
   selectTab(tab: GroupDetailsTab): void {
+    if (tab === 'exams' && !this.examsEnabled()) {
+      return;
+    }
     this.activeTab.set(tab);
     if (tab === 'lessons') {
       void this.loadAndSyncGroupLessons();
@@ -628,7 +635,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   }
 
   async loadGroupExams(force = false): Promise<void> {
-    if (!this.groupId || this.groupExamsLoading() || (!force && this.groupExamsLoaded())) {
+    if (!this.examsEnabled() || !this.groupId || this.groupExamsLoading() || (!force && this.groupExamsLoaded())) {
       return;
     }
     this.groupExamsLoading.set(true);

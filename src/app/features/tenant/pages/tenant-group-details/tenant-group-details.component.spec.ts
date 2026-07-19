@@ -5,6 +5,8 @@ import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angul
 import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { I18nService } from '../../../../core/services/i18n.service';
+import { AuthIdentityService } from '../../../../core/auth/auth-identity.service';
+import { TENANT_MODULES } from '../../../../core/auth/tenant-module-entitlements';
 import { GroupDetails, GroupStudent } from '../../models/tenant-group-details.models';
 import { TenantGroupDetailsDataService } from '../../data-access/tenant-group-details-data.service';
 import { TenantSubjectsDataService } from '../../data-access/tenant-subjects-data.service';
@@ -112,6 +114,10 @@ describe('TenantGroupDetailsComponent', () => {
   const i18n = {
     language: signal<'en' | 'ar'>('en'),
   };
+  const examsModuleEnabled = signal(true);
+  const authIdentity = {
+    hasModule: vi.fn((moduleCode: string) => moduleCode !== TENANT_MODULES.examsAndQuiz || examsModuleEnabled()),
+  };
 
   beforeEach(async () => {
     facade.loadGroup.mockClear();
@@ -126,6 +132,7 @@ describe('TenantGroupDetailsComponent', () => {
     localStorage.removeItem('tenant-group:group-123:display-payment-status');
     facade.isLoading.set(false);
     facade.error.set(null);
+    examsModuleEnabled.set(true);
     groupDetailsData.loadGroupExams.mockReset();
     groupDetailsData.loadGroupExams.mockReturnValue(of([]));
     groupDetailsData.deleteGroupExam.mockReset();
@@ -238,6 +245,7 @@ describe('TenantGroupDetailsComponent', () => {
         { provide: TenantGroupDetailsDataService, useValue: groupDetailsData },
         { provide: TenantSubjectsDataService, useValue: subjectsData },
         { provide: I18nService, useValue: i18n },
+        { provide: AuthIdentityService, useValue: authIdentity },
         provideHttpClient(),
       ],
     }).compileComponents();
@@ -331,6 +339,25 @@ describe('TenantGroupDetailsComponent', () => {
     expect(tabButtons.indexOf('Exams')).toBeLessThan(tabButtons.indexOf('Overview'));
     expect(tabs.compareDocumentPosition(sessionsPanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(fixture.componentInstance.activeTab()).toBe('sessions');
+  });
+
+  it('hides exam entry points and does not load exams without the Exams & Quiz module', () => {
+    examsModuleEnabled.set(false);
+    fixture.detectChanges();
+
+    const tabButtons = Array.from(
+      fixture.nativeElement.querySelectorAll('.tenant-group-detail-tab span'),
+      (label) => (label as HTMLElement).textContent?.trim(),
+    );
+    const quickActions = fixture.nativeElement.querySelector('.bg-indigo-600') as HTMLElement;
+
+    fixture.componentInstance.selectTab('exams');
+    fixture.detectChanges();
+
+    expect(tabButtons).not.toContain('Exams');
+    expect(quickActions.textContent).not.toContain('Exam');
+    expect(fixture.componentInstance.activeTab()).toBe('sessions');
+    expect(groupDetailsData.loadGroupExams).not.toHaveBeenCalled();
   });
 
   it('loads and renders published exams from the exams tab', async () => {

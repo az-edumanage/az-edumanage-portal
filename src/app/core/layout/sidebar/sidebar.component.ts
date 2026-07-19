@@ -10,12 +10,15 @@ import { AuthApiService } from '../../auth/auth-api.service';
 import { TenantImpersonationService } from '../../auth/tenant-impersonation.service';
 import { TenantHostContextService } from '../../auth/tenant-host-context.service';
 import { StudentRegistrationDataService } from '../../../features/tenant/data-access/student-registration-data.service';
+import { TENANT_MODULES, type TenantModuleCode } from '../../auth/tenant-module-entitlements';
 
 interface MenuItem {
   labelKey: string;
   icon: string;
   route?: string;
   permission?: string;
+  module?: TenantModuleCode;
+  modules?: readonly TenantModuleCode[];
   badge?: number;
   children?: MenuItem[];
 }
@@ -50,7 +53,7 @@ export class SidebarComponent {
   isUserPanelOpen = signal(false);
 
   constructor() {
-    if (this.currentRole() === 'tenant') {
+    if (this.currentRole() === 'tenant' && this.authIdentityService.hasModule(TENANT_MODULES.studentsManagement)) {
       this.studentRegistrations.startCountPolling();
     }
   }
@@ -230,8 +233,8 @@ export class SidebarComponent {
           {
             titleKey: 'sidebar.section.users',
             items: [
-              { labelKey: 'sidebar.item.students', icon: 'school', route: '/tenant/students', permission: 'tenant.students.view', badge: this.studentRegistrations.pendingCount() },
-              { labelKey: 'sidebar.item.parents', icon: 'family_restroom', route: '/tenant/parents', permission: 'tenant.students.view' },
+              { labelKey: 'sidebar.item.students', icon: 'school', route: '/tenant/students', permission: 'tenant.students.view', module: TENANT_MODULES.studentsManagement, badge: this.studentRegistrations.pendingCount() },
+              { labelKey: 'sidebar.item.parents', icon: 'family_restroom', route: '/tenant/parents', permission: 'tenant.students.view', modules: [TENANT_MODULES.studentsManagement, TENANT_MODULES.parentPortal] },
               { labelKey: 'sidebar.item.teachers', icon: 'person', route: '/tenant/teachers', permission: 'tenant.teachers.view' },
               { labelKey: 'sidebar.item.users', icon: 'manage_accounts', route: '/tenant/users', permission: 'tenant.users.view' },
             ]
@@ -264,22 +267,23 @@ export class SidebarComponent {
             titleKey: 'sidebar.section.attendance',
             items: [
               { labelKey: 'sidebar.item.schedule', icon: 'calendar_today', route: '/tenant/schedule', permission: 'tenant.attendance.view' },
-              { labelKey: 'sidebar.item.attendance', icon: 'fact_check', route: '/tenant/attendance', permission: 'tenant.attendance.view' },
+              { labelKey: 'sidebar.item.attendance', icon: 'fact_check', route: '/tenant/attendance', permission: 'tenant.attendance.view', module: TENANT_MODULES.studentsManagement },
             ]
           },
           {
             titleKey: 'sidebar.section.examsEvaluation',
             items: [
-              { labelKey: 'sidebar.item.examsGrades', icon: 'assignment', route: '/tenant/exams', permission: 'tenant.exams.manage' },
-              { labelKey: 'sidebar.item.questionsBank', icon: 'quiz', route: '/tenant/questions-bank', permission: 'tenant.questionBank.manage' },
+              { labelKey: 'sidebar.item.examsGrades', icon: 'assignment', route: '/tenant/exams', permission: 'tenant.exams.manage', module: TENANT_MODULES.examsAndQuiz },
+              { labelKey: 'sidebar.item.questionsBank', icon: 'quiz', route: '/tenant/questions-bank', permission: 'tenant.questionBank.manage', module: TENANT_MODULES.questionsBank },
               {
                 labelKey: 'sidebar.item.examEvaluation',
                 icon: 'grades',
                 permission: 'tenant.grades.view',
+                module: TENANT_MODULES.examsAndQuiz,
                 children: [
-                  { labelKey: 'sidebar.item.examEvaluationList', icon: '', route: '/tenant/exam-evaluation', permission: 'tenant.grades.view' },
-                  { labelKey: 'sidebar.item.homeWorkEvaluation', icon: '', route: '/tenant/evaluation/home-work', permission: 'tenant.grades.view' },
-                  { labelKey: 'sidebar.item.assessmentEvaluation', icon: '', route: '/tenant/evaluation/assessment', permission: 'tenant.grades.view' },
+                  { labelKey: 'sidebar.item.examEvaluationList', icon: '', route: '/tenant/exam-evaluation', permission: 'tenant.grades.view', module: TENANT_MODULES.examsAndQuiz },
+                  { labelKey: 'sidebar.item.homeWorkEvaluation', icon: '', route: '/tenant/evaluation/home-work', permission: 'tenant.grades.view', module: TENANT_MODULES.examsAndQuiz },
+                  { labelKey: 'sidebar.item.assessmentEvaluation', icon: '', route: '/tenant/evaluation/assessment', permission: 'tenant.grades.view', module: TENANT_MODULES.examsAndQuiz },
                 ],
               },
             ]
@@ -293,8 +297,8 @@ export class SidebarComponent {
           {
             titleKey: 'sidebar.section.settings',
             items: [
-              { labelKey: 'sidebar.item.reports', icon: 'bar_chart', route: '/tenant/reports', permission: 'tenant.reports.view' },
-              { labelKey: 'sidebar.item.lms', icon: 'public', route: '/tenant/lms-settings', permission: 'tenant.settings.manage' },
+              { labelKey: 'sidebar.item.reports', icon: 'bar_chart', route: '/tenant/reports', permission: 'tenant.reports.view', module: TENANT_MODULES.advancedAnalytics },
+              { labelKey: 'sidebar.item.lms', icon: 'public', route: '/tenant/lms-settings', permission: 'tenant.settings.manage', module: TENANT_MODULES.lms },
               { labelKey: 'sidebar.item.platformSettings', icon: 'settings', route: '/tenant/settings', permission: 'tenant.settings.manage' },
               { labelKey: 'sidebar.item.rolesPermissions', icon: 'admin_panel_settings', route: '/tenant/users/roles-permissions', permission: 'tenant.roles.view' },
               { labelKey: 'sidebar.item.rooms', icon: 'rooms', route: '/tenant/rooms', permission: 'tenant.rooms.view' },
@@ -302,31 +306,32 @@ export class SidebarComponent {
           }
         ]);
       case 'teacher':
-        return [
+        return this.filterTenantMenu([
           {
             titleKey: 'sidebar.section.main',
             items: [
               { labelKey: 'sidebar.item.overview', icon: 'dashboard', route: '/teacher/overview' },
               { labelKey: 'sidebar.item.mySchedule', icon: 'calendar_month', route: '/teacher/schedule' },
               { labelKey: 'sidebar.item.myGroups', icon: 'groups', route: '/teacher/groups' },
-              { labelKey: 'sidebar.item.attendance', icon: 'fact_check', route: '/teacher/attendance' },
-              { labelKey: 'sidebar.item.examsGrades', icon: 'assignment_turned_in', route: '/teacher/exams' },
+              { labelKey: 'sidebar.item.attendance', icon: 'fact_check', route: '/teacher/attendance', module: TENANT_MODULES.studentsManagement },
+              { labelKey: 'sidebar.item.examsGrades', icon: 'assignment_turned_in', route: '/teacher/exams', module: TENANT_MODULES.examsAndQuiz },
               {
                 labelKey: 'sidebar.item.examEvaluation',
                 icon: 'fact_check',
+                module: TENANT_MODULES.examsAndQuiz,
                 children: [
-                  { labelKey: 'sidebar.item.examsEvaluation', icon: '', route: '/teacher/evaluation/exams' },
-                  { labelKey: 'sidebar.item.homeWorkEvaluation', icon: '', route: '/teacher/evaluation/home-work' },
-                  { labelKey: 'sidebar.item.sessionAssessment', icon: '', route: '/teacher/evaluation/session-assessment' },
+                  { labelKey: 'sidebar.item.examsEvaluation', icon: '', route: '/teacher/evaluation/exams', module: TENANT_MODULES.examsAndQuiz },
+                  { labelKey: 'sidebar.item.homeWorkEvaluation', icon: '', route: '/teacher/evaluation/home-work', module: TENANT_MODULES.examsAndQuiz },
+                  { labelKey: 'sidebar.item.sessionAssessment', icon: '', route: '/teacher/evaluation/session-assessment', module: TENANT_MODULES.examsAndQuiz },
                 ],
               },
               { labelKey: 'sidebar.item.messages', icon: 'chat', route: '/teacher/messages' },
               { labelKey: 'sidebar.item.profile', icon: 'person', route: '/teacher/profile' },
             ]
           }
-        ];
+        ]);
       case 'student':
-        return [
+        return this.filterTenantMenu([
           {
             titleKey: 'sidebar.section.main',
             items: [
@@ -334,22 +339,23 @@ export class SidebarComponent {
               { labelKey: 'sidebar.item.schedule', icon: 'calendar_today', route: '/student/schedule' },
               { labelKey: 'sidebar.item.myCourses', icon: 'school', route: '/student/my-courses' },
               { labelKey: 'sidebar.item.myGroups', icon: 'groups', route: '/student/my-groups' },
-              { labelKey: 'sidebar.item.examsGrades', icon: 'assignment', route: '/student/exams' },
-              { labelKey: 'sidebar.item.homeWork', icon: 'assignment_turned_in', route: '/student/home-work' },
+              { labelKey: 'sidebar.item.examsGrades', icon: 'assignment', route: '/student/exams', module: TENANT_MODULES.examsAndQuiz },
+              { labelKey: 'sidebar.item.homeWork', icon: 'assignment_turned_in', route: '/student/home-work', module: TENANT_MODULES.examsAndQuiz },
               {
                 labelKey: 'sidebar.item.examEvaluation',
                 icon: 'fact_check',
+                module: TENANT_MODULES.examsAndQuiz,
                 children: [
-                  { labelKey: 'sidebar.item.examsEvaluation', icon: '', route: '/student/evaluation/exams' },
-                  { labelKey: 'sidebar.item.homeWorkEvaluation', icon: '', route: '/student/evaluation/home-work' },
+                  { labelKey: 'sidebar.item.examsEvaluation', icon: '', route: '/student/evaluation/exams', module: TENANT_MODULES.examsAndQuiz },
+                  { labelKey: 'sidebar.item.homeWorkEvaluation', icon: '', route: '/student/evaluation/home-work', module: TENANT_MODULES.examsAndQuiz },
                 ],
               },
               { labelKey: 'sidebar.item.billing', icon: 'receipt_long', route: '/student/billing' },
             ],
           },
-        ];
+        ]);
       case 'parent':
-        return [
+        return this.filterTenantMenu([
           {
             titleKey: 'sidebar.section.main',
             items: [
@@ -359,16 +365,17 @@ export class SidebarComponent {
               {
                 labelKey: 'sidebar.item.examEvaluation',
                 icon: 'fact_check',
+                module: TENANT_MODULES.examsAndQuiz,
                 children: [
-                  { labelKey: 'sidebar.item.examEvaluationList', icon: '', route: '/parent/exam-evaluation' },
-                  { labelKey: 'sidebar.item.homeWorkEvaluation', icon: '', route: '/parent/home-work-evaluation' },
-                  { labelKey: 'sidebar.item.sessionAssessment', icon: '', route: '/parent/session-assessment' },
+                  { labelKey: 'sidebar.item.examEvaluationList', icon: '', route: '/parent/exam-evaluation', module: TENANT_MODULES.examsAndQuiz },
+                  { labelKey: 'sidebar.item.homeWorkEvaluation', icon: '', route: '/parent/home-work-evaluation', module: TENANT_MODULES.examsAndQuiz },
+                  { labelKey: 'sidebar.item.sessionAssessment', icon: '', route: '/parent/session-assessment', module: TENANT_MODULES.examsAndQuiz },
                 ],
               },
               { labelKey: 'sidebar.item.billing', icon: 'receipt_long', route: '/parent/billing' },
             ],
           },
-        ];
+        ]);
       default:
         return [];
     }
@@ -390,7 +397,9 @@ export class SidebarComponent {
       ?.map((child) => this.filterTenantItem(child))
       .filter((child): child is MenuItem => child !== null);
     const allowed = !item.permission || this.authIdentityService.hasPermission(item.permission);
-    if (!allowed && (!children || children.length === 0)) {
+    const requiredModules = item.modules ?? (item.module ? [item.module] : []);
+    const moduleEnabled = this.authIdentityService.hasAllModules(requiredModules);
+    if ((!allowed || !moduleEnabled) && (!children || children.length === 0)) {
       return null;
     }
     return { ...item, children };

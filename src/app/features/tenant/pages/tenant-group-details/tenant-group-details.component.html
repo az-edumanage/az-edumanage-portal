@@ -188,19 +188,21 @@
           <mat-icon>local_library</mat-icon>
           <span>{{ tabLabel('library') }}</span>
         </button>
-        <button
-          type="button"
-          class="tenant-group-detail-tab"
-          [class.tenant-group-detail-tab--active]="activeTab() === 'exams'"
-          role="tab"
-          [attr.aria-selected]="activeTab() === 'exams'"
-          aria-controls="tenant-group-exams-panel"
-          id="tenant-group-exams-tab"
-          (click)="selectTab('exams')"
-        >
-          <mat-icon>assignment</mat-icon>
-          <span>{{ tabLabel('exams') }}</span>
-        </button>
+        @if (examsEnabled()) {
+          <button
+            type="button"
+            class="tenant-group-detail-tab"
+            [class.tenant-group-detail-tab--active]="activeTab() === 'exams'"
+            role="tab"
+            [attr.aria-selected]="activeTab() === 'exams'"
+            aria-controls="tenant-group-exams-panel"
+            id="tenant-group-exams-tab"
+            (click)="selectTab('exams')"
+          >
+            <mat-icon>assignment</mat-icon>
+            <span>{{ tabLabel('exams') }}</span>
+          </button>
+        }
         <button
           type="button"
           class="tenant-group-detail-tab"
@@ -1247,10 +1249,12 @@
                 <mat-icon>how_to_reg</mat-icon>
                 <span class="text-[10px] font-bold uppercase">Attendance</span>
               </a>
-              <a [routerLink]="groupChildRoute('exam')" [queryParams]="{ freshCreate: true }" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
-                <mat-icon>assignment</mat-icon>
-                <span class="text-[10px] font-bold uppercase">Exam</span>
-              </a>
+              @if (examsEnabled()) {
+                <a [routerLink]="groupChildRoute('exam')" [queryParams]="{ freshCreate: true }" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+                  <mat-icon>assignment</mat-icon>
+                  <span class="text-[10px] font-bold uppercase">Exam</span>
+                </a>
+              }
               <a [routerLink]="groupChildRoute('broadcast')" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
                 <mat-icon>mail</mat-icon>
                 <span class="text-[10px] font-bold uppercase">Broadcast</span>

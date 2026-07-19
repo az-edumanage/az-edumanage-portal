@@ -3,10 +3,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { TenantEducationalStagesDataService } from '../../data-access/tenant-educational-stages-data.service';
 import { TenantGradesDataService } from '../../data-access/tenant-grades-data.service';
+import { TenantStudentsDataService } from '../../data-access/tenant-students-data.service';
 import { Student, StudentAttendanceCard } from '../../models/tenant-students.models';
 import { TenantStudentsFacade } from '../../state/tenant-students.facade';
 import { TaskService } from '../../../../core/services/task.service';
 import { TenantStudentsComponent } from './tenant-students.component';
+import { of } from 'rxjs';
 
 describe('TenantStudentsComponent', () => {
   let fixture: ComponentFixture<TenantStudentsComponent>;
@@ -14,6 +16,7 @@ describe('TenantStudentsComponent', () => {
   let taskService: { removeTask: ReturnType<typeof vi.fn> };
   let stagesData: { listStages: ReturnType<typeof vi.fn> };
   let gradesData: { listGrades: ReturnType<typeof vi.fn> };
+  let studentsData: { capacity: ReturnType<typeof vi.fn> };
   let facade: {
     searchQuery: ReturnType<typeof signal<string>>;
     showFilterPanel: ReturnType<typeof signal<boolean>>;
@@ -100,6 +103,9 @@ describe('TenantStudentsComponent', () => {
         },
       ]),
     };
+    studentsData = {
+      capacity: vi.fn().mockReturnValue(of({ currentStudents: 0, maxStudents: 10, canCreate: true })),
+    };
     facade = {
       searchQuery: signal(''),
       showFilterPanel: signal(false),
@@ -181,6 +187,7 @@ describe('TenantStudentsComponent', () => {
         { provide: TaskService, useValue: taskService },
         { provide: TenantEducationalStagesDataService, useValue: stagesData },
         { provide: TenantGradesDataService, useValue: gradesData },
+        { provide: TenantStudentsDataService, useValue: studentsData },
       ],
     }).compileComponents();
 
@@ -193,15 +200,31 @@ describe('TenantStudentsComponent', () => {
     expect(facade.loadStudents).toHaveBeenCalledOnce();
   });
 
-  it('clears the saved create draft before opening the add student form', () => {
+  it('clears the saved create draft before opening the add student form', async () => {
     const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
     const addButton = Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>)
       .find((button): button is HTMLButtonElement => button.textContent?.includes('Add Student') ?? false);
     addButton?.click();
+    await fixture.whenStable();
 
     expect(taskService.removeTask).toHaveBeenCalledWith('create-student-task');
     expect(navigateSpy).toHaveBeenCalledWith(['/tenant/students/create']);
+  });
+
+  it('shows the plan limit dialog instead of opening the create form', async () => {
+    studentsData.capacity.mockReturnValue(of({ currentStudents: 10, maxStudents: 10, canCreate: false }));
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const addButton = Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>)
+      .find((button): button is HTMLButtonElement => button.textContent?.includes('Add Student') ?? false);
+    addButton?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Student limit reached');
+    expect(fixture.nativeElement.textContent).toContain('up to 10 students');
+    expect(navigateSpy).not.toHaveBeenCalled();
   });
 
   it('renders attendance summary cards above the list controls', () => {

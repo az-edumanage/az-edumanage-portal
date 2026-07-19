@@ -7,6 +7,7 @@ import { Grade } from '../models/tenant-grades.models';
 import {
   Student,
   StudentAttendanceSummary,
+  StudentCapacity,
   StudentDetails,
   StudentScheduleRow,
   StudentScheduleSummary,
@@ -43,6 +44,12 @@ export class TenantStudentsDataService {
         switchMap((records) => this.toStudentsWithAssignedEducation(records ?? [])),
         catchError((error: HttpErrorResponse) => this.handleError(error)),
       );
+  }
+
+  capacity(): Observable<StudentCapacity> {
+    return this.http
+      .get<StudentCapacity>(`${this.studentsUrl}/capacity`, { params: { _: Date.now().toString() } })
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error)));
   }
 
   loadParents(): Observable<TenantParent[]> {
@@ -221,10 +228,12 @@ export class TenantStudentsDataService {
   private toStudentDetails(record: TenantStudentBackendRecord, lookup?: StudentEducationLookup): StudentDetails {
     return {
       ...this.toStudent(record, lookup),
+      studentUsername: record.studentUsername ?? '',
       phone: record.phone ?? '',
       barcodeNumber: record.barcodeNumber ?? record.barcode_number ?? '',
       gender: record.gender ?? '',
       birthDate: this.toFullDate(record.birthDate ?? null),
+      parentUsername: record.parentUsername ?? '',
       parentName: record.parentName ?? '',
       parentPhone: record.parentPhone ?? '',
       address: record.address ?? '',

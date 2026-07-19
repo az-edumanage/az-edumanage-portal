@@ -7,6 +7,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { jsPDF } from 'jspdf';
 import autoTable, { RowInput } from 'jspdf-autotable';
+import { AuthIdentityService } from '../../../../core/auth/auth-identity.service';
+import { TENANT_MODULES } from '../../../../core/auth/tenant-module-entitlements';
 import { TenantGroupAttendanceDataService } from '../../data-access/tenant-group-attendance-data.service';
 import {
   GroupDetails,
@@ -108,6 +110,7 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
   private readonly subjectsData = inject(TenantSubjectsDataService);
   private readonly http = inject(HttpClient);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly authIdentity = inject(AuthIdentityService);
 
   @ViewChild('sessionBarcodeInput') private sessionBarcodeInput?: ElementRef<HTMLInputElement>;
 
@@ -131,6 +134,7 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
   readonly pendingDeleteSessionLesson = signal<PendingDeleteSessionLesson | null>(null);
   readonly sessionLessonActionError = signal<string | null>(null);
   readonly activeContentTab = signal<SessionContentTab>('students');
+  readonly homeWorkEnabled = computed(() => this.authIdentity.hasModule(TENANT_MODULES.examsAndQuiz));
   readonly studentSearch = signal('');
   readonly studentStatusFilter = signal<StudentStatusFilter>('all');
   readonly studentPageIndex = signal(0);
@@ -287,9 +291,9 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     });
     this.routeQuerySubscription = this.route.queryParamMap.subscribe((params) => {
       const tab = params.get('tab');
-      if (tab === 'students' || tab === 'lessons' || tab === 'exams') {
+      if (tab === 'students' || tab === 'lessons' || (tab === 'exams' && this.homeWorkEnabled())) {
         this.activeContentTab.set(tab);
-      } else if (tab === 'homeWork') {
+      } else if (tab === 'homeWork' && this.homeWorkEnabled()) {
         this.activeContentTab.set('exams');
       }
     });
@@ -572,6 +576,9 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
   }
 
   setContentTab(tab: SessionContentTab): void {
+    if (tab === 'exams' && !this.homeWorkEnabled()) {
+      return;
+    }
     this.activeContentTab.set(tab);
   }
 
@@ -1650,6 +1657,12 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
   }
 
   private async loadSessionExams(): Promise<void> {
+    if (!this.homeWorkEnabled()) {
+      this.sessionExams.set([]);
+      this.sessionExamsLoading.set(false);
+      this.sessionExamsError.set(null);
+      return;
+    }
     this.sessionExamsLoading.set(true);
     this.sessionExamsError.set(null);
     try {

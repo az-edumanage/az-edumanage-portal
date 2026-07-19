@@ -1,6 +1,7 @@
 import { Injectable, computed, signal } from '@angular/core';
 
 import type { TenantPlanContext, TenantRoleAssignmentContext } from './auth-api.service';
+import type { TenantModuleCode } from './tenant-module-entitlements';
 
 export interface AuthIdentity {
   username: string;
@@ -69,6 +70,16 @@ export class AuthIdentityService {
 
   hasAnyPermission(permissions: readonly string[]): boolean {
     return permissions.some((permission) => this.hasPermission(permission));
+  }
+
+  hasModule(moduleCode: TenantModuleCode | string): boolean {
+    const normalizedCode = moduleCode.trim().toLowerCase();
+    return this.identityState()?.tenantPlan?.moduleCodes
+      ?.some((code) => code.trim().toLowerCase() === normalizedCode) ?? false;
+  }
+
+  hasAllModules(moduleCodes: readonly (TenantModuleCode | string)[]): boolean {
+    return moduleCodes.every((moduleCode) => this.hasModule(moduleCode));
   }
 
   private hasFullTenantAccess(): boolean {

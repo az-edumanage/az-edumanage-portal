@@ -27,6 +27,11 @@ interface SessionHomeWorkQuestionRow {
   answerCount: number;
   weight: number | null;
   tags: string[];
+  mediaUrl?: string | null;
+  mediaOriginalName?: string | null;
+  mediaContentType?: string | null;
+  mediaSizeBytes?: number | null;
+  questionSource?: string | null;
 }
 
 interface BasicQuestionLoadResult {
@@ -69,7 +74,8 @@ export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
   readonly previewError = this.facade.previewError;
   readonly examForm = this.facade.examForm;
   readonly questionOptionsOpen = signal(false);
-  readonly uploadFileName = signal<string | null>(null);
+  readonly uploadFileNames = signal<string[]>([]);
+  readonly uploadingQuestionFiles = signal(false);
   readonly questionContextLoading = signal(false);
   readonly questionContextError = signal<string | null>(null);
   readonly basicQuestionsDrawerOpen = signal(false);
@@ -282,10 +288,115 @@ export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
     }
   }
 
-  onQuestionFileSelected(event: Event): void {
+  async onQuestionFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement | null;
-    const file = input?.files?.[0] ?? null;
-    this.uploadFileName.set(file?.name ?? null);
+    const files = Array.from(input?.files ?? []);
+    this.uploadFileNames.set(files.map((file) => file.name));
+    if (files.length === 0) {
+      return;
+    }
+
+    const context = this.groupContext();
+    if (!this.hasBasicEducationQuestionContext(context)) {
+      this.questionContextError.set(
+        "Choose a basic education group before uploading question files.",
+      );
+      return;
+    }
+
+    this.uploadingQuestionFiles.set(true);
+    this.questionContextLoading.set(true);
+    this.questionContextError.set(null);
+    try {
+      const curriculum = await this.subjectsData.getSubjectCurriculum(context.subjectId);
+      const nodeId = curriculum
+        ? this.collectCurriculumNodeIds(curriculum)[0] ?? null
+        : null;
+      if (!nodeId) {
+        throw new Error("Add a curriculum item before uploading question files.");
+      }
+
+      const uploadedQuestions: TenantCurriculumQuestion[] = [];
+      for (const file of files) {
+        const uploaded = await this.subjectsData.uploadCurriculumQuestionMedia(file);
+        uploadedQuestions.push(
+          await this.subjectsData.createBasicEducationExamQuestion(
+            context.stageId,
+            context.gradeId,
+            context.subjectId,
+            {
+              question: file.name,
+              type: "ESSAY",
+              answer: null,
+              description: null,
+              mediaUrl: uploaded.url,
+              mediaFileName: uploaded.fileName,
+              mediaOriginalName: uploaded.originalName,
+              mediaContentType: uploaded.contentType,
+              mediaSizeBytes: uploaded.sizeBytes,
+              bloomId: null,
+              difficultyId: null,
+              weight: 1,
+              skillId: null,
+              curriculumNodeId: nodeId,
+              questionSource: "HOME_WORK_FILE_UPLOAD",
+              answerExplanation: null,
+              tags: [],
+            },
+          ),
+        );
+      }
+
+      const currentRows = this.examQuestionRows();
+      const uploadedRows = uploadedQuestions.map((question) =>
+        this.toQuestionRow(question, curriculum, nodeId),
+      );
+      const nextRows = [...currentRows, ...uploadedRows];
+      const exam = await this.saveSessionHomeWorkExam(
+        nextRows.map((question) => question.id),
+      );
+      this.examQuestionRows.set(nextRows);
+      sessionStorage.setItem(
+        this.examQuestionDraftStorageKey(context, exam.id),
+        JSON.stringify(nextRows.map((question) => question.id)),
+      );
+      sessionStorage.setItem(
+        this.examQuestionDraftStorageKey(context),
+        JSON.stringify(nextRows.map((question) => question.id)),
+      );
+      this.uploadFileNames.set([]);
+      this.questionOptionsOpen.set(false);
+    } catch (error) {
+      this.questionContextError.set(
+        this.subjectsData.toUserMessage(
+          error,
+          "Unable to upload question files. Please try again.",
+        ),
+      );
+    } finally {
+      this.uploadingQuestionFiles.set(false);
+      this.questionContextLoading.set(false);
+      if (input) {
+        input.value = "";
+      }
+    }
+  }
+
+  isUploadedQuestionFile(question: SessionHomeWorkQuestionRow): boolean {
+    return question.questionSource === "HOME_WORK_FILE_UPLOAD";
+  }
+
+  questionFileSize(sizeBytes?: number | null): string {
+    if (!sizeBytes || sizeBytes < 1) {
+      return "File";
+    }
+    if (sizeBytes < 1024) {
+      return `${sizeBytes} B`;
+    }
+    if (sizeBytes < 1024 * 1024) {
+      return `${(sizeBytes / 1024).toFixed(1)} KB`;
+    }
+    return `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
   closeBasicQuestionsDrawer(): void {
@@ -527,6 +638,7 @@ export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
       showResultsImmediately: false,
       allowRetakes: value.allowRetakes ?? false,
       questionIds,
+      assessmentKind: "HOME_WORK" as const,
     };
     const savedExam = existingExamId
       ? await this.subjectsData.updateBasicEducationExam(
@@ -577,7 +689,7 @@ export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
     try {
       const [curriculum, exams, questions] = await Promise.all([
         this.subjectsData.getSubjectCurriculum(context.subjectId),
-        this.subjectsData.listBasicEducationExams(context.stageId, context.gradeId, context.subjectId),
+        this.subjectsData.listBasicEducationExams(context.stageId, context.gradeId, context.subjectId, "HOME_WORK"),
         this.subjectsData.listBasicEducationExamLinkedQuestions(context.stageId, context.gradeId, context.subjectId, examId),
       ]);
       const exam = exams.find((item) => item.id === examId);
@@ -746,6 +858,11 @@ export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
       answerCount: question.answers.length,
       weight: question.weight,
       tags: question.tags ?? [],
+      mediaUrl: question.mediaUrl,
+      mediaOriginalName: question.mediaOriginalName || question.mediaFileName,
+      mediaContentType: question.mediaContentType,
+      mediaSizeBytes: question.mediaSizeBytes,
+      questionSource: question.questionSource,
     };
   }
 

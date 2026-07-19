@@ -392,17 +392,19 @@
             <div>
               <div class="owner-plan-label">Max Students</div>
               <input appInput type="number" formControlName="maxStudents" class="owner-plan-control">
-              <p class="owner-plan-help">Set to -1 for unlimited</p>
+              <p class="owner-plan-help">Set to 0 for unlimited</p>
             </div>
             @if (!isTeacherAudience()) {
               <div>
                 <div class="owner-plan-label">Max Teachers</div>
                 <input appInput type="number" formControlName="maxTeachers" class="owner-plan-control">
+                <p class="owner-plan-help">Set to 0 for unlimited</p>
               </div>
             }
             <div>
               <div class="owner-plan-label">Max Storage (GB)</div>
               <input appInput type="number" formControlName="maxStorage" class="owner-plan-control">
+              <p class="owner-plan-help">Set to 0 for unlimited</p>
             </div>
             @if (!isTeacherAudience()) {
               <div>

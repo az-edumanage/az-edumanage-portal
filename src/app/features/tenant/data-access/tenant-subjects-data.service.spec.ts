@@ -161,6 +161,20 @@ describe('TenantSubjectsDataService', () => {
     await expect(promise).resolves.toEqual([examResponse()]);
   });
 
+  it('requests home work separately from basic-education exams', async () => {
+    const promise = service.listBasicEducationExams('stage-1', 'grade-1', 'subject-1', 'HOME_WORK');
+    await Promise.resolve();
+
+    const request = httpTesting.expectOne((req) => (
+      req.url.endsWith('/tenant/platform-settings/exams/basic-education/stage-1/grades/grade-1/subjects/subject-1')
+      && req.params.get('assessmentKind') === 'HOME_WORK'
+    ));
+    expect(request.request.method).toBe('GET');
+    request.flush([examResponse({ assessmentKind: 'HOME_WORK' })]);
+
+    await expect(promise).resolves.toEqual([examResponse({ assessmentKind: 'HOME_WORK' })]);
+  });
+
   it('loads linked questions for a saved basic-education exam', async () => {
     const promise = service.listBasicEducationExamLinkedQuestions('stage-1', 'grade-1', 'subject-1', 'exam-1');
     await Promise.resolve();

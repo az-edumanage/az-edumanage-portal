@@ -185,14 +185,19 @@
             @for (question of examQuestionRows(); track question.id) {
               <article class="home-work-question-row">
                 <div class="home-work-question-icon">
-                  <mat-icon>quiz</mat-icon>
+                  <mat-icon>{{ isUploadedQuestionFile(question) ? "draft" : "quiz" }}</mat-icon>
                 </div>
                 <div class="min-w-0">
                   <p class="home-work-question-title">{{ question.question }}</p>
                   <p class="home-work-question-meta">
-                    {{ questionTypeLabel(question.type) }} •
-                    {{ question.curriculumItem }} •
-                    {{ question.answerCount }} answers
+                    @if (isUploadedQuestionFile(question)) {
+                      Uploaded file • {{ questionFileSize(question.mediaSizeBytes) }} •
+                      {{ question.curriculumItem }}
+                    } @else {
+                      {{ questionTypeLabel(question.type) }} •
+                      {{ question.curriculumItem }} •
+                      {{ question.answerCount }} answers
+                    }
                   </p>
                 </div>
                 <button
@@ -413,8 +418,10 @@
           <label class="question-option-card upload-option">
             <input
               type="file"
+              multiple
               accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,image/*"
               (change)="onQuestionFileSelected($event)"
+              [disabled]="uploadingQuestionFiles()"
             />
             <span class="question-option-icon">
               <mat-icon>upload_file</mat-icon>
@@ -422,7 +429,13 @@
             <span>
               <span class="question-option-title">Upload file</span>
               <span class="question-option-description">
-                {{ uploadFileName() || "Attach a question file." }}
+                @if (uploadingQuestionFiles()) {
+                  Uploading {{ uploadFileNames().length }} files...
+                } @else if (uploadFileNames().length > 0) {
+                  {{ uploadFileNames().length }} files selected
+                } @else {
+                  Select one or more question files.
+                }
               </span>
             </span>
           </label>
