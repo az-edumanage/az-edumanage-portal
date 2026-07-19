@@ -19,7 +19,7 @@ describe('TenantSubjectDetailsComponent', () => {
       gradeName: 'Grade 10',
       assignedGroupsCount: 1,
       assignedTeachersCount: 1,
-      totalStudentsCount: 0,
+      totalStudentsCount: 7,
       createdAt: '2026-01-01T00:00:00Z',
       updatedAt: '2026-01-01T00:00:00Z',
       groups: [{ id: 'group-1', name: 'Group A', studentsCount: 7, teacherName: 'Sarah Nabil' }],
@@ -66,6 +66,7 @@ describe('TenantSubjectDetailsComponent', () => {
     expect(text).toContain('Mathematics');
     expect(text).toContain('Assigned Groups');
     expect(text).toContain('Total Students');
+    expect(text).toContain('7');
     expect(text).toContain('Assigned Teachers');
     expect(text).toContain('Subject Metadata');
     expect(text).toContain('Subject Name');

@@ -161,6 +161,20 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
       } as const;
       return skillsByNode[nodeId as keyof typeof skillsByNode] ?? [];
     }),
+    createCurriculumSkill: vi.fn().mockResolvedValue({
+      id: 'skill-created',
+      name: 'New skill',
+      description: null,
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    }),
+    createCurriculumSkillForCategory: vi.fn().mockResolvedValue({
+      id: 'skill-created',
+      name: 'New skill',
+      description: null,
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    }),
     listCurriculumQuestions: vi.fn().mockResolvedValue([
       {
         id: 'question-1',
@@ -690,6 +704,39 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
     );
   });
 
+  it('adds and selects a skill from a subject-wide exam question route', async () => {
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'url', 'get').mockReturnValue(
+      '/tenant/exams/basic-education/stage-1/grades/grade-1/create/new/subjects/subject-1/curriculum/addQuestion',
+    );
+
+    paramMap$.next(convertToParamMap({
+      stageId: 'stage-1',
+      gradeId: 'grade-1',
+      id: 'subject-1',
+    }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+
+    fixture.componentInstance.setSkillSearchQuery('New skill');
+    await fixture.componentInstance.addSkillFromSearch();
+    fixture.detectChanges();
+
+    expect(data.createCurriculumSkill).toHaveBeenCalledWith('subject-1', 'term-1', {
+      name: 'New skill',
+      description: null,
+    });
+    expect(fixture.componentInstance.questionForm.controls.skillId.value).toBe('skill-created');
+    expect(fixture.componentInstance.selectedSkillLabel()).toBe('New skill');
+    expect(fixture.componentInstance.skills()).toContainEqual(expect.objectContaining({
+      id: 'skill-created',
+      name: 'New skill',
+    }));
+    expect(fixture.componentInstance.skillInlineError()).toBeNull();
+  });
+
   it('renders session home work breadcrumb for group-scoped add question routes', async () => {
     const router = TestBed.inject(Router);
     const route = TestBed.inject(ActivatedRoute);
@@ -990,6 +1037,112 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
         subjectId: 'subject-1',
         examId: 'exam-1',
       },
+    });
+  });
+
+  it('attaches all bulk questions to the group homework before returning to its questions section', async () => {
+    const router = TestBed.inject(Router);
+    const route = TestBed.inject(ActivatedRoute);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    vi.spyOn(router, 'url', 'get').mockReturnValue(
+      '/tenant/groups/group-1/exam/basic-education/stage-1/grades/grade-1/subjects/subject-1/curriculum/addQuestion?freshCreate=true&returnTo=%2Ftenant%2Fgroups%2Fgroup-1%2Fsessions%2Fsession-1&examId=exam-1',
+    );
+    const routeParams = {
+      groupId: 'group-1',
+      stageId: 'stage-1',
+      gradeId: 'grade-1',
+      id: 'subject-1',
+    };
+    const queryParams = {
+      freshCreate: 'true',
+      returnTo: '/tenant/groups/group-1/sessions/session-1',
+      returnTab: 'exams',
+      examDate: '2026-07-09',
+      examStartTime: '14:00',
+      subjectId: 'subject-1',
+      examId: 'exam-1',
+    };
+    Object.defineProperty(route.snapshot, 'paramMap', {
+      value: convertToParamMap(routeParams),
+      configurable: true,
+    });
+    Object.defineProperty(route.snapshot, 'queryParams', {
+      value: queryParams,
+      configurable: true,
+    });
+    Object.defineProperty(route.snapshot, 'queryParamMap', {
+      value: convertToParamMap(queryParams),
+      configurable: true,
+    });
+    data.createBasicEducationExamQuestion
+      .mockResolvedValueOnce({
+        id: 'bulk-question-1',
+        question: 'First bulk question?',
+        type: 'MULTIPLE_CHOICE',
+        answer: null,
+        description: null,
+        bloomId: null,
+        difficultyId: null,
+        skillId: null,
+        weight: null,
+        answers: [],
+        tags: [],
+        questionSource: null,
+        answerExplanation: null,
+        curriculumNodeId: null,
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      })
+      .mockResolvedValueOnce({
+        id: 'bulk-question-2',
+        question: 'Second bulk question?',
+        type: 'MULTIPLE_CHOICE',
+        answer: null,
+        description: null,
+        bloomId: null,
+        difficultyId: null,
+        skillId: null,
+        weight: null,
+        answers: [],
+        tags: [],
+        questionSource: null,
+        answerExplanation: null,
+        curriculumNodeId: null,
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      });
+    paramMap$.next(convertToParamMap(routeParams));
+    await fixture.whenStable();
+
+    const component = fixture.componentInstance;
+    component.selectQuestionType('Multiple Choice');
+    component.selectMultipleChoiceMode('multiple');
+    component.setBulkQuestionsText([
+      'Q : First bulk question?',
+      '-\tcorrect, First answer',
+      '-\tSecond answer',
+      '',
+      'Q : Second bulk question?',
+      '-\tcorrect, Third answer',
+      '-\tFourth answer',
+    ].join('\n'));
+    await component.saveBulkQuestions();
+
+    expect(data.updateBasicEducationExam).toHaveBeenCalledTimes(1);
+    expect(data.updateBasicEducationExam).toHaveBeenCalledWith(
+      'stage-1',
+      'grade-1',
+      'subject-1',
+      'exam-1',
+      expect.objectContaining({
+        questionIds: ['bulk-question-1', 'bulk-question-2'],
+      }),
+    );
+    expect(sessionStorage.getItem(
+      'tenant.exam-draft.questions.basic.stage-1.grade-1.subject-1.group.group-1.exam.exam-1.session.tenant_groups_group-1_sessions_session-1',
+    )).toBe(JSON.stringify(['bulk-question-1', 'bulk-question-2']));
+    expect(navigateSpy).toHaveBeenCalledWith(['/tenant/groups', 'group-1', 'exam'], {
+      queryParams,
     });
   });
 
@@ -1678,6 +1831,80 @@ describe('TenantSubjectCurriculumQuestionCreateComponent', () => {
 
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:question-media');
     expect(component.questionMediaOption()).toBeNull();
+  });
+
+  it('attaches an image pasted into the question editor', () => {
+    const createObjectURL = vi.fn().mockReturnValue('blob:pasted-question-image');
+    Object.defineProperty(URL, 'createObjectURL', { value: createObjectURL, configurable: true });
+    Object.defineProperty(URL, 'revokeObjectURL', { value: vi.fn(), configurable: true });
+    const component = fixture.componentInstance;
+    const image = new File(['clipboard-image'], 'image.png', { type: 'image/png' });
+    const preventDefault = vi.fn();
+
+    component.selectQuestionType('Multiple Choice');
+    component.selectMultipleChoiceMode('single');
+    fixture.detectChanges();
+
+    const editor = fixture.nativeElement.querySelector('#question') as HTMLTextAreaElement;
+    editor.dispatchEvent(Object.assign(new Event('paste', { bubbles: true, cancelable: true }), {
+      clipboardData: {
+        items: [{ kind: 'file', type: 'image/png', getAsFile: () => image }],
+      },
+      preventDefault,
+    }));
+    fixture.detectChanges();
+
+    expect(preventDefault).toHaveBeenCalled();
+    expect(createObjectURL).toHaveBeenCalledWith(image);
+    expect(component.questionMediaOption()).toEqual(expect.objectContaining({
+      name: 'image.png',
+      type: 'image/png',
+      kind: 'image',
+      file: image,
+      previewUrl: 'blob:pasted-question-image',
+    }));
+    expect(fixture.nativeElement.querySelector('img[alt="image.png"]')).toBeTruthy();
+  });
+
+  it('opens the question image in a full-size preview and closes it with Escape', () => {
+    Object.defineProperty(URL, 'createObjectURL', { value: vi.fn().mockReturnValue('blob:question-preview'), configurable: true });
+    Object.defineProperty(URL, 'revokeObjectURL', { value: vi.fn(), configurable: true });
+    const component = fixture.componentInstance;
+    const image = new File(['image-data'], 'diagram.png', { type: 'image/png' });
+    const input = document.createElement('input');
+    Object.defineProperty(input, 'files', { value: [image], configurable: true });
+
+    component.selectQuestionType('Multiple Choice');
+    component.selectMultipleChoiceMode('single');
+    component.onQuestionMediaSelected({ target: input } as unknown as Event);
+    fixture.detectChanges();
+
+    const previewButton = fixture.nativeElement.querySelector('[aria-label="Preview question image"]') as HTMLButtonElement;
+    previewButton.click();
+    fixture.detectChanges();
+
+    expect(component.showQuestionImagePreview()).toBe(true);
+    expect(fixture.nativeElement.querySelector('[role="dialog"] img[alt="diagram.png"]')).toBeTruthy();
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    fixture.detectChanges();
+
+    expect(component.showQuestionImagePreview()).toBe(false);
+    expect(fixture.nativeElement.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it('leaves plain-text paste handling to the question editor', () => {
+    const preventDefault = vi.fn();
+
+    fixture.componentInstance.onQuestionEditorPaste({
+      clipboardData: {
+        items: [{ kind: 'string', type: 'text/plain', getAsFile: () => null }],
+      },
+      preventDefault,
+    } as unknown as ClipboardEvent);
+
+    expect(preventDefault).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.questionMediaOption()).toBeNull();
   });
 
   it('opens the MathLive editor for a single multiple choice question and inserts LaTeX', () => {

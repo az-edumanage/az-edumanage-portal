@@ -95,10 +95,12 @@
             <mat-icon>how_to_reg</mat-icon>
             <span>Attendance</span>
           </a>
-          <a [routerLink]="[groupListRoute, groupId, 'exam']" [queryParams]="sessionExamQueryParams(selectedSession)">
-            <mat-icon>assignment</mat-icon>
-            <span>Home Work</span>
-          </a>
+          @if (homeWorkEnabled()) {
+            <a [routerLink]="[groupListRoute, groupId, 'exam']" [queryParams]="sessionExamQueryParams(selectedSession)">
+              <mat-icon>assignment</mat-icon>
+              <span>Home Work</span>
+            </a>
+          }
           <a [routerLink]="[groupListRoute, groupId, 'broadcast']">
             <mat-icon>mail</mat-icon>
             <span>Broadcast</span>
@@ -266,11 +268,13 @@
           <span>Lessons</span>
           <strong>{{ lessons().length + sessionLibraryContent().length }}</strong>
         </button>
-        <button type="button" [class]="contentTabClass('exams')" [attr.aria-pressed]="activeContentTab() === 'exams'" (click)="setContentTab('exams')">
-          <mat-icon>assignment</mat-icon>
-          <span>Home Work</span>
-          <strong>{{ assignedSessionExams().length }}</strong>
-        </button>
+        @if (homeWorkEnabled()) {
+          <button type="button" [class]="contentTabClass('exams')" [attr.aria-pressed]="activeContentTab() === 'exams'" (click)="setContentTab('exams')">
+            <mat-icon>assignment</mat-icon>
+            <span>Home Work</span>
+            <strong>{{ assignedSessionExams().length }}</strong>
+          </button>
+        }
       </nav>
 
       @if (activeContentTab() === 'students') {
@@ -669,7 +673,7 @@
       </div>
       }
 
-      @if (activeContentTab() === 'exams') {
+      @if (homeWorkEnabled() && activeContentTab() === 'exams') {
       <div class="tenant-group-session-table-card">
         <div class="tenant-group-session-table-head">
           <div>

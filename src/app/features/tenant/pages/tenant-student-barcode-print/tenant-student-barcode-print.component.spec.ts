@@ -12,6 +12,7 @@ describe('TenantStudentBarcodePrintComponent', () => {
   const student: StudentDetails = {
     id: 'student-1',
     name: 'Ahmed Ali',
+    studentUsername: 'ahmed.student',
     email: 'ahmed@example.com',
     grade: 'Basic Education',
     status: 'Active',
@@ -20,6 +21,7 @@ describe('TenantStudentBarcodePrintComponent', () => {
     barcodeNumber: '000000000123',
     gender: 'Male',
     birthDate: 'Jan 10, 2008',
+    parentUsername: 'parent.ali',
     parentName: 'Parent Ali',
     parentPhone: '+201000000001',
     address: 'Cairo',

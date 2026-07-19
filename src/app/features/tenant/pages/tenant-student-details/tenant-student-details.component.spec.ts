@@ -12,6 +12,7 @@ describe('TenantStudentDetailsComponent', () => {
   const student: StudentDetails = {
     id: 'student-1',
     name: 'Ahmed Ali',
+    studentUsername: 'ahmed.student',
     email: 'ahmed@example.com',
     grade: 'Basic Education',
     status: 'Active',
@@ -20,6 +21,7 @@ describe('TenantStudentDetailsComponent', () => {
     barcodeNumber: '000000000123',
     gender: 'Male',
     birthDate: 'Jan 10, 2008',
+    parentUsername: 'parent.ali',
     parentName: 'Parent Ali',
     parentPhone: '+201000000001',
     address: 'Cairo',
@@ -188,6 +190,8 @@ describe('TenantStudentDetailsComponent', () => {
     const text = fixture.nativeElement.textContent;
 
     expect(text).toContain('Ahmed Ali');
+    expect(text).toContain('Student Username');
+    expect(text).toContain('ahmed.student');
     expect(text).toContain('ahmed@example.com');
     expect(text).toContain('+201000000000');
     expect(text).toContain('000000000123');
@@ -199,6 +203,8 @@ describe('TenantStudentDetailsComponent', () => {
     expect(text).toContain('Enrolled');
     expect(text).toContain('Jun 2026');
     expect(text).toContain('Parent Details');
+    expect(text).toContain('Parent Username');
+    expect(text).toContain('parent.ali');
     expect(text).toContain('Parent Ali');
     expect(text).toContain('+201000000001');
     expect(text).toContain('Cairo');

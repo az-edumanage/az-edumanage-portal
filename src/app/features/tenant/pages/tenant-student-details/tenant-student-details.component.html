@@ -169,6 +169,10 @@
         </header>
         <dl class="student-contact-list">
           <div>
+            <dt><mat-icon aria-hidden="true">account_circle</mat-icon>Student Username</dt>
+            <dd>{{ currentStudent.studentUsername || 'Not set' }}</dd>
+          </div>
+          <div>
             <dt><mat-icon aria-hidden="true">phone</mat-icon>Phone</dt>
             <dd>{{ currentStudent.phone || 'Not set' }}</dd>
           </div>
@@ -197,6 +201,10 @@
           <h2>Parent Details</h2>
         </header>
         <dl class="student-contact-list">
+          <div>
+            <dt>Parent Username</dt>
+            <dd>{{ currentStudent.parentUsername || 'Not set' }}</dd>
+          </div>
           <div>
             <dt>Parent Name</dt>
             <dd>{{ currentStudent.parentName || 'Not set' }}</dd>

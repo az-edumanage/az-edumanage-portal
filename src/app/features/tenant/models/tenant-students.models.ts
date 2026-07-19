@@ -13,10 +13,12 @@ export interface Student {
 }
 
 export interface StudentDetails extends Student {
+  studentUsername: string;
   phone: string;
   barcodeNumber: string;
   gender: string;
   birthDate: string;
+  parentUsername: string;
   parentName: string;
   parentPhone: string;
   address: string;
@@ -88,6 +90,12 @@ export interface StudentAttendanceSummary {
   unavailableReason?: string | null;
 }
 
+export interface StudentCapacity {
+  currentStudents: number;
+  maxStudents: number | null;
+  canCreate: boolean;
+}
+
 export interface StudentAttendanceCard {
   key: StudentAttendanceFilter;
   label: 'Total students' | 'Total absence' | 'Total present';
@@ -101,6 +109,7 @@ export interface StudentAttendanceCard {
 export interface TenantStudentBackendRecord {
   id: string;
   fullName: string;
+  studentUsername?: string | null;
   email: string | null;
   phone?: string | null;
   barcodeNumber?: string | null;
@@ -108,6 +117,7 @@ export interface TenantStudentBackendRecord {
   gender?: string | null;
   birthDate?: string | null;
   parentAppUserId?: string | null;
+  parentUsername?: string | null;
   parentName?: string | null;
   parentPhone?: string | null;
   address?: string | null;

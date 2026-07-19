@@ -79,6 +79,7 @@ export interface TenantBasicEducationExam {
   title: string;
   instructions: string | null;
   status: string;
+  assessmentKind?: 'EXAM' | 'HOME_WORK';
   shuffleQuestions: boolean;
   showResultsImmediately: boolean;
   allowRetakes: boolean;
@@ -94,6 +95,7 @@ export interface TenantBasicEducationExamPayload {
   showResultsImmediately: boolean;
   allowRetakes: boolean;
   questionIds: string[];
+  assessmentKind?: 'EXAM' | 'HOME_WORK';
 }
 
 export interface TenantBasicEducationExamStatusPayload {
@@ -396,10 +398,15 @@ export class TenantSubjectsDataService {
     stageId: string,
     gradeId: string,
     subjectId: string,
+    assessmentKind: 'EXAM' | 'HOME_WORK' = 'EXAM',
   ): Promise<TenantBasicEducationExam[]> {
     await this.authApi.ensureLoggedIn();
+    const params = assessmentKind === 'EXAM'
+      ? undefined
+      : new HttpParams().set('assessmentKind', assessmentKind);
     const response = await firstValueFrom(this.http.get<TenantBasicEducationExam[]>(
       `${this.platformSettingsUrl}/exams/basic-education/${stageId}/grades/${gradeId}/subjects/${subjectId}`,
+      { params },
     ));
     return response ?? [];
   }
@@ -431,6 +438,7 @@ export class TenantSubjectsDataService {
         showResultsImmediately: payload.showResultsImmediately,
         allowRetakes: payload.allowRetakes,
         questionIds: payload.questionIds,
+        ...(payload.assessmentKind ? { assessmentKind: payload.assessmentKind } : {}),
       },
     ));
   }
@@ -479,6 +487,7 @@ export class TenantSubjectsDataService {
         showResultsImmediately: payload.showResultsImmediately,
         allowRetakes: payload.allowRetakes,
         questionIds: payload.questionIds,
+        ...(payload.assessmentKind ? { assessmentKind: payload.assessmentKind } : {}),
       },
     ));
   }
@@ -500,6 +509,7 @@ export class TenantSubjectsDataService {
         showResultsImmediately: payload.showResultsImmediately,
         allowRetakes: payload.allowRetakes,
         questionIds: payload.questionIds,
+        ...(payload.assessmentKind ? { assessmentKind: payload.assessmentKind } : {}),
       },
     ));
   }
@@ -521,6 +531,7 @@ export class TenantSubjectsDataService {
         showResultsImmediately: payload.showResultsImmediately,
         allowRetakes: payload.allowRetakes,
         questionIds: payload.questionIds,
+        ...(payload.assessmentKind ? { assessmentKind: payload.assessmentKind } : {}),
       },
     ));
   }

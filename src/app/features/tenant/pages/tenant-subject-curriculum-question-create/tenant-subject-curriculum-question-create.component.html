@@ -228,6 +228,7 @@
                   rows="5"
                   [value]="questionForm.controls.question.value"
                   (input)="setQuestionValue($any($event.target).value)"
+                  (paste)="onQuestionEditorPaste($event)"
                   [placeholder]="label('enterQuestion')"
                   class="min-h-36 w-full resize-y border-0 bg-transparent px-4 py-3 text-base font-medium leading-7 text-slate-900 outline-none placeholder:text-slate-500 dark:text-slate-100 dark:placeholder:text-slate-400"
                 ></textarea>
@@ -240,7 +241,15 @@
                   <div class="flex items-start gap-3 p-3">
                     <div class="flex h-16 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white text-indigo-600 ring-1 ring-indigo-100 dark:bg-slate-900 dark:text-indigo-300 dark:ring-indigo-900/60">
                       @if (media.kind === 'image') {
-                        <img [src]="media.previewUrl" [alt]="media.name" class="h-full w-full object-cover">
+                        <button
+                          type="button"
+                          (click)="openQuestionImagePreview()"
+                          class="h-full w-full cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+                          [title]="label('previewQuestionImage')"
+                          [attr.aria-label]="label('previewQuestionImage')"
+                        >
+                          <img [src]="media.previewUrl" [alt]="media.name" class="h-full w-full object-cover">
+                        </button>
                       } @else if (media.kind === 'video') {
                         <video [src]="media.previewUrl" class="h-full w-full object-cover" muted playsinline></video>
                       } @else if (media.kind === 'audio') {
@@ -774,6 +783,35 @@
         </div>
       </aside>
     </form>
+
+    @if (showQuestionImagePreview() && questionMediaOption(); as media) {
+      <div
+        class="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/80 p-4 sm:p-8"
+        [dir]="pageDirection()"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="question-image-preview-title"
+        (click)="closeQuestionImagePreview()"
+      >
+        <div class="flex max-h-full w-full max-w-6xl flex-col overflow-hidden rounded-xl bg-white shadow-xl dark:bg-slate-900" (click)="$event.stopPropagation()">
+          <div class="flex items-center justify-between gap-4 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+            <h3 id="question-image-preview-title" class="truncate text-sm font-bold text-slate-900 dark:text-white">{{ media.name }}</h3>
+            <button
+              type="button"
+              (click)="closeQuestionImagePreview()"
+              class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:hover:bg-slate-800 dark:hover:text-white"
+              [title]="label('closeQuestionImagePreview')"
+              [attr.aria-label]="label('closeQuestionImagePreview')"
+            >
+              <mat-icon class="text-base">close</mat-icon>
+            </button>
+          </div>
+          <div class="flex min-h-0 flex-1 items-center justify-center overflow-auto bg-slate-100 p-3 dark:bg-slate-950 sm:p-5">
+            <img [src]="media.previewUrl" [alt]="media.name" class="max-h-[calc(100vh-9rem)] max-w-full object-contain">
+          </div>
+        </div>
+      </div>
+    }
 
     @if (showBulkQuestionOverlay()) {
       <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4" [dir]="pageDirection()" role="dialog" aria-modal="true" aria-labelledby="bulk-question-title">

@@ -121,6 +121,8 @@ type QuestionCreateLabelKey =
   | 'openMathEditor'
   | 'uploadMediaOption'
   | 'removeMediaOption'
+  | 'previewQuestionImage'
+  | 'closeQuestionImagePreview'
   | 'answer'
   | 'answers'
   | 'selectTrueFalse'
@@ -253,6 +255,8 @@ const QUESTION_CREATE_LABELS: Record<QuestionCreateLabelKey, { en: string; ar: s
   openMathEditor: { en: 'Open MathLive editor', ar: 'فتح محرر MathLive' },
   uploadMediaOption: { en: 'Upload media option', ar: 'رفع ملف للسؤال' },
   removeMediaOption: { en: 'Remove media option', ar: 'حذف ملف السؤال' },
+  previewQuestionImage: { en: 'Preview question image', ar: 'عرض صورة السؤال' },
+  closeQuestionImagePreview: { en: 'Close image preview', ar: 'إغلاق معاينة الصورة' },
   answer: { en: 'Answer', ar: 'الإجابة' },
   answers: { en: 'Answers', ar: 'الإجابات' },
   selectTrueFalse: { en: 'Select whether the question statement is true or false.', ar: 'حدد هل عبارة السؤال صحيحة أم خاطئة.' },
@@ -380,6 +384,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   readonly bulkQuestionError = signal<string | null>(null);
   readonly bulkQuestionSaving = signal(false);
   readonly questionMediaOption = signal<QuestionMediaOption | null>(null);
+  readonly showQuestionImagePreview = signal(false);
   readonly questionContentError = signal<string | null>(null);
   readonly trueFalseAnswer = signal<boolean | null>(null);
   readonly trueFalseAnswerError = signal<string | null>(null);
@@ -689,6 +694,11 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     this.bloomTaxonomySelectorOpen.set(false);
     this.skillSelectorOpen.set(false);
     this.questionSourceSelectorOpen.set(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  closeQuestionImagePreviewOnEscape(): void {
+    this.closeQuestionImagePreview();
   }
 
   ngOnInit(): void {
@@ -1113,7 +1123,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
       return;
     }
     const subject = this.subject();
-    const nodeId = this.selectedNodeId();
+    const nodeId = this.skillCreationNodeId();
     if (!subject || !nodeId) {
       this.skillInlineError.set(this.label('missingCurriculumContext'));
       return;
@@ -1227,6 +1237,24 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
       return;
     }
 
+    this.setQuestionMediaFile(file);
+    input.value = '';
+  }
+
+  onQuestionEditorPaste(event: ClipboardEvent): void {
+    const imageFile = Array.from(event.clipboardData?.items ?? [])
+      .find((item) => item.kind === 'file' && item.type.startsWith('image/'))
+      ?.getAsFile();
+    if (!imageFile) {
+      return;
+    }
+
+    event.preventDefault();
+    this.setQuestionMediaFile(imageFile);
+  }
+
+  private setQuestionMediaFile(file: File): void {
+    this.closeQuestionImagePreview();
     this.revokeQuestionMediaPreview();
     const previewUrl = URL.createObjectURL(file);
     this.questionMediaOption.set({
@@ -1243,7 +1271,6 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
       mediaSizeBytes: file.size,
     });
     this.questionContentError.set(null);
-    input.value = '';
   }
 
   openMathEditor(target: 'question' | 'answer' | 'bulk' = 'question'): void {
@@ -1326,8 +1353,19 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   }
 
   removeQuestionMedia(): void {
+    this.closeQuestionImagePreview();
     this.revokeQuestionMediaPreview();
     this.questionMediaOption.set(null);
+  }
+
+  openQuestionImagePreview(): void {
+    if (this.questionMediaOption()?.kind === 'image') {
+      this.showQuestionImagePreview.set(true);
+    }
+  }
+
+  closeQuestionImagePreview(): void {
+    this.showQuestionImagePreview.set(false);
   }
 
   formatFileSize(size: number): string {
@@ -1393,6 +1431,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     this.bulkQuestionSaving.set(true);
     this.bulkQuestionError.set(null);
     try {
+      const savedQuestionIds: string[] = [];
       for (const item of questions) {
         const savedQuestion = await this.createQuestionForCurrentContext(subject.id, nodeId ?? '', {
           question: item.question,
@@ -1407,6 +1446,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
           ...this.applicationTagPayloadPart(),
           ...this.emptyMediaPayload(),
         });
+        savedQuestionIds.push(savedQuestion.id);
         this.rememberExamQuestion(savedQuestion.id);
         for (const answer of item.answers) {
           await this.createQuestionAnswerForCurrentContext(subject.id, nodeId ?? '', savedQuestion.id, {
@@ -1416,6 +1456,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
           });
         }
       }
+      await this.attachQuestionsToEditingExam(savedQuestionIds);
       this.navigateAfterQuestionSave();
     } catch (error) {
       this.bulkQuestionError.set(this.data.toUserMessage(error, this.label('unableToSaveQuestions')));
@@ -1711,6 +1752,20 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     return [node.id, ...node.children.flatMap((child) => this.collectCurriculumNodeIds(child))];
   }
 
+  private skillCreationNodeId(): string | null {
+    const selectedNodeId = this.selectedNodeId();
+    if (selectedNodeId) {
+      return selectedNodeId;
+    }
+
+    const root = this.curriculumRoot();
+    if (!root) {
+      return null;
+    }
+
+    return this.collectCurriculumNodeIds(root).find((nodeId) => nodeId !== 'curriculum') ?? null;
+  }
+
   private rememberExamQuestion(questionId: string): void {
     if (!this.isExamQuestionRoute()) {
       return;
@@ -1731,6 +1786,10 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   }
 
   private async attachQuestionToEditingExam(questionId: string): Promise<void> {
+    await this.attachQuestionsToEditingExam([questionId]);
+  }
+
+  private async attachQuestionsToEditingExam(questionIds: string[]): Promise<void> {
     if (!this.isExamQuestionRoute()) {
       return;
     }
@@ -1738,7 +1797,8 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     const stageId = this.routeStageId();
     const gradeId = this.routeGradeId();
     const examId = this.route.snapshot?.queryParamMap?.get('examId') ?? null;
-    if (!subject || !stageId || !gradeId || !examId || !questionId) {
+    const validQuestionIds = questionIds.filter((questionId) => !!questionId);
+    if (!subject || !stageId || !gradeId || !examId || validQuestionIds.length === 0) {
       return;
     }
 
@@ -1755,12 +1815,19 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
         mergedIds.push(storedId);
       }
     }
-    if (!mergedIds.includes(questionId)) {
-      mergedIds.push(questionId);
+    for (const questionId of validQuestionIds) {
+      if (!mergedIds.includes(questionId)) {
+        mergedIds.push(questionId);
+      }
     }
     sessionStorage.setItem(key, JSON.stringify(mergedIds));
 
-    const exams = await this.data.listBasicEducationExams(stageId, gradeId, subject.id);
+    const exams = await this.data.listBasicEducationExams(
+      stageId,
+      gradeId,
+      subject.id,
+      isGroupHomeWorkQuestion ? 'HOME_WORK' : 'EXAM',
+    );
     const exam = exams.find((item) => item.id === examId);
     if (!exam) {
       return;
@@ -1773,6 +1840,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
       showResultsImmediately: exam.showResultsImmediately,
       allowRetakes: exam.allowRetakes,
       questionIds: mergedIds,
+      ...(isGroupHomeWorkQuestion ? { assessmentKind: 'HOME_WORK' as const } : {}),
     });
   }
 

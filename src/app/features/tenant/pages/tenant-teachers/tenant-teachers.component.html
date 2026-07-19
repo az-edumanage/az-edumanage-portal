@@ -575,14 +575,18 @@
               <div class="tenant-teachers-password-head">
                 <div>
                   <h3 id="teacher-capacity-dialog-title" class="tenant-teachers-card-name">Teacher limit reached</h3>
-                  <p class="tenant-teachers-card-email">Teacher tenant</p>
+                  <p class="tenant-teachers-card-email">{{ capacity().tenantType === 'TEACHER' ? 'Teacher tenant' : 'Current subscription plan' }}</p>
                 </div>
                 <button type="button" (click)="closeCapacityDialog()" class="tenant-teachers-icon-btn" title="Close">
                   <mat-icon class="text-sm">close</mat-icon>
                 </button>
               </div>
               <p class="tenant-teachers-delete-text">
-                This tenant type can have one teacher only. Delete the current teacher before adding another one.
+                @if (capacity().tenantType === 'TEACHER') {
+                  This tenant type can have one teacher only. Delete the current teacher before adding another one.
+                } @else {
+                  Your plan allows up to {{ capacity().maxTeachers }} teachers. Remove a teacher or upgrade the plan before adding another one.
+                }
               </p>
               <div class="tenant-teachers-password-actions">
                 <button type="button" (click)="closeCapacityDialog()" class="tenant-teachers-filter-apply tenant-teachers-delete-close">

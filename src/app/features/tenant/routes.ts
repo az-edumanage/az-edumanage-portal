@@ -79,6 +79,7 @@ import { StudentExamReportComponent } from '../student/pages/student-exam-report
 import { passwordChangeRequiredChildGuard, passwordChangeRequiredGuard } from '../../core/guards/role.guard';
 import { tenantAccessStateGuard, tenantOperationalAccessGuard } from '../../core/guards/tenant-operational-access.guard';
 import { tenantPermissionGuard } from '../../core/guards/tenant-permission.guard';
+import { tenantModuleAccessGuard } from '../../core/guards/tenant-module.guard';
 
 export const TENANT_ROUTES: Routes = [
   {
@@ -113,7 +114,7 @@ export const TENANT_ROUTES: Routes = [
   {
     path: '',
     canActivate: [passwordChangeRequiredGuard],
-    canActivateChild: [passwordChangeRequiredChildGuard, tenantOperationalAccessGuard, tenantPermissionGuard],
+    canActivateChild: [passwordChangeRequiredChildGuard, tenantOperationalAccessGuard, tenantModuleAccessGuard, tenantPermissionGuard],
     children: [
       { path: 'overview', component: TenantDashboardComponent },
       { path: 'platform-user-guide', component: TenantPlatformGuideComponent },

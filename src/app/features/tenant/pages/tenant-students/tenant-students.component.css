@@ -15,9 +15,20 @@
 :host .generated-link { border: 1px solid rgb(167 243 208); border-radius: .5rem; background: rgb(236 253 245); padding: 1rem; }:host .generated-link > div:first-child { display: flex; flex-direction: column; margin-bottom: .75rem; }:host .generated-link span { color: rgb(71 85 105); font-size: .75rem; }:host .generated-link > div:last-child { display: flex; gap: .5rem; }:host .generated-link input { min-width: 0; flex: 1; height: 2.5rem; border: 1px solid rgb(110 231 183); border-radius: .5rem; background: white; padding: 0 .75rem; font-size: .75rem; }:host .generated-link button { display: inline-flex; align-items: center; gap: .35rem; border-radius: .5rem; background: rgb(4 120 87); padding: 0 .75rem; color: white; font-size: .75rem; font-weight: 700; }
 :host .registration-link-error { display: flex; align-items: center; gap: .5rem; border: 1px solid rgb(254 202 202); border-radius: .5rem; background: rgb(254 242 242); padding: .75rem; color: rgb(185 28 28); font-size: .8125rem; }
 :host .registration-link-list h4 { margin: 0 0 .75rem; font-size: .8125rem; font-weight: 800; }:host .registration-link-list > p { color: rgb(100 116 139); font-size: .8125rem; }
-:host .registration-link-row { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .75rem; border-top: 1px solid rgb(226 232 240); padding: .875rem 0; }:host .registration-link-row > div { display: flex; min-width: 0; flex-direction: column; }:host .registration-link-row strong { font-size: .8125rem; }:host .registration-link-row button { color: rgb(185 28 28); font-size: .75rem; font-weight: 700; }:host .registration-link-status { border-radius: 999px; background: rgb(226 232 240); padding: .2rem .5rem; color: rgb(71 85 105); font-size: .6875rem; font-weight: 800; }:host .registration-link-status-active { background: rgb(209 250 229); color: rgb(4 120 87); }
+:host .registration-link-row { display: flex; flex-direction: column; gap: .75rem; border-top: 1px solid rgb(226 232 240); padding: 1rem 0; }
+:host .registration-link-row-heading { display: flex; min-width: 0; align-items: center; gap: .75rem; }
+:host .registration-link-row-heading > div { display: flex; min-width: 0; flex-direction: column; }
+:host .registration-link-row strong { font-size: .8125rem; }
+:host .registration-link-status { border-radius: 999px; background: rgb(226 232 240); padding: .2rem .5rem; color: rgb(71 85 105); font-size: .6875rem; font-weight: 800; }
+:host .registration-link-status-active { background: rgb(209 250 229); color: rgb(4 120 87); }
+:host .registration-link-url { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: .5rem; }
+:host .registration-link-url input { min-width: 0; height: 2.5rem; border: 1px solid rgb(203 213 225); border-radius: .5rem; background: rgb(248 250 252); padding: 0 .75rem; color: rgb(51 65 85); font-size: .75rem; }
+:host .registration-link-url button { display: inline-flex; height: 2.5rem; align-items: center; gap: .35rem; border-radius: .5rem; padding: 0 .75rem; font-size: .75rem; font-weight: 700; }
+:host .registration-link-copy { border: 1px solid rgb(203 213 225); color: rgb(51 65 85); }
+:host .registration-link-revoke { color: rgb(185 28 28); }
+:host .registration-link-unavailable { margin: 0; color: rgb(100 116 139); font-size: .75rem; }
 :host .registration-link-modal > footer { display: flex; justify-content: flex-end; border-top: 1px solid rgb(226 232 240); padding: 1rem 1.25rem; }:host .registration-link-modal > footer button { height: 2.5rem; border: 1px solid rgb(203 213 225); border-radius: .5rem; padding: 0 1rem; color: rgb(51 65 85); font-size: .8125rem; font-weight: 700; }
-@media (max-width: 640px) { :host .registration-link-create > div,:host .generated-link > div:last-child { flex-direction: column; }:host .registration-link-create button,:host .generated-link button { height: 2.625rem; justify-content: center; }:host .registration-link-row { grid-template-columns: auto 1fr; }:host .registration-link-row > button { grid-column: 2; justify-self: start; } }
+@media (max-width: 640px) { :host .registration-link-create > div,:host .generated-link > div:last-child { flex-direction: column; }:host .registration-link-create button,:host .generated-link button { height: 2.625rem; justify-content: center; }:host .registration-link-url { grid-template-columns: 1fr 1fr; }:host .registration-link-url input { grid-column: 1 / -1; } }
 
 :host .tenant-students-summary-grid {
   display: grid;

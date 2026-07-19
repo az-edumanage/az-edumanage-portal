@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './core/layout/main-layout/main-layout.component';
 import { passwordChangeRequiredGuard, roleGuard } from './core/guards/role.guard';
 import { authActivateGuard, authGuard } from './core/guards/auth.guard';
+import { workspaceFeatureModuleGuard, workspaceModuleGuard } from './core/guards/tenant-module.guard';
+import { TENANT_MODULES } from './core/auth/tenant-module-entitlements';
 
 export const routes: Routes = [
   {
@@ -97,21 +99,27 @@ export const routes: Routes = [
       {
         path: 'teacher',
         canMatch: [authGuard, roleGuard],
+        canActivateChild: [workspaceFeatureModuleGuard],
         data: { role: 'teacher' },
         loadChildren: () =>
           import('./features/teacher/routes').then((m) => m.TEACHER_ROUTES),
       },
       {
         path: 'student',
-        canMatch: [authGuard, roleGuard],
-        data: { role: 'student' },
+        canMatch: [authGuard, roleGuard, workspaceModuleGuard],
+        canActivateChild: [workspaceFeatureModuleGuard],
+        data: { role: 'student', requiredModule: TENANT_MODULES.studentsManagement },
         loadChildren: () =>
           import('./features/student/routes').then((m) => m.STUDENT_ROUTES),
       },
       {
         path: 'parent',
-        canMatch: [authGuard, roleGuard],
-        data: { role: 'parent' },
+        canMatch: [authGuard, roleGuard, workspaceModuleGuard],
+        canActivateChild: [workspaceFeatureModuleGuard],
+        data: {
+          role: 'parent',
+          requiredModules: [TENANT_MODULES.studentsManagement, TENANT_MODULES.parentPortal],
+        },
         loadChildren: () =>
           import('./features/parent/routes').then((m) => m.PARENT_ROUTES),
       },

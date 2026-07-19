@@ -10,6 +10,7 @@ import { AuthIdentityService } from '../../auth/auth-identity.service';
 import { AuthApiService } from '../../auth/auth-api.service';
 import { TenantImpersonationService } from '../../auth/tenant-impersonation.service';
 import { TenantHostContextService } from '../../auth/tenant-host-context.service';
+import { TENANT_MODULES } from '../../auth/tenant-module-entitlements';
 
 const educationRoutes = ['/tenant/educational-stages', '/tenant/grades', '/tenant/subjects'];
 const universityEducationRoutes = ['/tenant/universities', '/tenant/colleges', '/tenant/university-subjects'];
@@ -18,6 +19,7 @@ describe('SidebarComponent', () => {
   let currentRole: ReturnType<typeof signal<WorkspaceRole>>;
   let grantedPermissions: Set<string>;
   let isTenantHost: ReturnType<typeof signal<boolean>>;
+  let enabledModules: Set<string>;
 
   beforeEach(() => {
     currentRole = signal<WorkspaceRole>('tenant');
@@ -39,6 +41,7 @@ describe('SidebarComponent', () => {
       'tenant.users.view',
       'tenant.roles.view',
     ]);
+    enabledModules = new Set(Object.values(TENANT_MODULES));
 
     TestBed.configureTestingModule({
       imports: [SidebarComponent],
@@ -63,6 +66,8 @@ describe('SidebarComponent', () => {
             primaryRole: signal('WEB_USER'),
             clearIdentity: vi.fn(),
             hasPermission: (permission: string) => grantedPermissions.has(permission),
+            hasModule: (moduleCode: string) => enabledModules.has(moduleCode),
+            hasAllModules: (moduleCodes: readonly string[]) => moduleCodes.every((moduleCode) => enabledModules.has(moduleCode)),
           },
         },
         { provide: AuthApiService, useValue: { logout: vi.fn().mockResolvedValue(undefined) } },
@@ -185,6 +190,32 @@ describe('SidebarComponent', () => {
       ['sidebar.item.homeWorkEvaluation', '/teacher/evaluation/home-work'],
       ['sidebar.item.sessionAssessment', '/teacher/evaluation/session-assessment'],
     ]);
+  });
+
+  it('hides tenant features that are not included in the active plan', () => {
+    enabledModules = new Set([TENANT_MODULES.studentsManagement]);
+
+    const fixture = TestBed.createComponent(SidebarComponent);
+    const routes = allRoutes(fixture.componentInstance.menuSections());
+
+    expect(routes).toContain('/tenant/students');
+    expect(routes).not.toContain('/tenant/parents');
+    expect(routes).not.toContain('/tenant/exams');
+    expect(routes).not.toContain('/tenant/questions-bank');
+    expect(routes).not.toContain('/tenant/reports');
+    expect(routes).not.toContain('/tenant/lms-settings');
+  });
+
+  it('hides Parent and Attendance when Students Management is unavailable', () => {
+    enabledModules = new Set([TENANT_MODULES.parentPortal]);
+
+    const fixture = TestBed.createComponent(SidebarComponent);
+    const routes = allRoutes(fixture.componentInstance.menuSections());
+
+    expect(routes).not.toContain('/tenant/students');
+    expect(routes).not.toContain('/tenant/parents');
+    expect(routes).not.toContain('/tenant/attendance');
+    expect(routes).toContain('/tenant/schedule');
   });
 
   it('uses grouped student evaluation routes under Evaluation', () => {
