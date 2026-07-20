@@ -61,6 +61,7 @@ describe('TENANT_ROUTES', () => {
     expect(childPaths).toContain('groups/:groupId/exam/basic-education/:stageId/grades/:gradeId/subjects/:id/curriculum/:nodeId/addQuestion');
     expect(childPaths).toContain('settings');
     expect(childPaths).toContain('lms-settings');
+    expect(childPaths).toContain('lms-settings/:page');
     expect(childPaths).toContain('web-settings');
     expect(childPaths).toContain('questions-bank');
     expect(childPaths).toContain('questions-bank/basic-education');

@@ -36,10 +36,15 @@ export class OwnerTenantsListComponent implements OnInit {
   readonly activePlanDropdown = this.tenantsFacade.activePlanDropdown;
   readonly pendingPlanChange = this.tenantsFacade.pendingPlanChange;
   readonly pendingManualSettlement = this.tenantsFacade.pendingManualSettlement;
+  readonly pendingPasswordChange = this.tenantsFacade.pendingPasswordChange;
   readonly pendingLifecycleStatusTenantIds = this.tenantsFacade.pendingLifecycleStatusTenantIds;
   readonly lifecycleStatusSubmissionError = this.tenantsFacade.lifecycleStatusSubmissionError;
   readonly manualSettlementSubmitting = this.tenantsFacade.manualSettlementSubmitting;
   readonly manualSettlementError = this.tenantsFacade.manualSettlementError;
+  readonly passwordChangeSubmitting = this.tenantsFacade.passwordChangeSubmitting;
+  readonly passwordChangeError = this.tenantsFacade.passwordChangeError;
+  readonly passwordChangeNotification = this.tenantsFacade.passwordChangeNotification;
+  readonly showPassword = signal(false);
   readonly copyNotification = this.tenantsFacade.copyNotification;
   readonly isRtl = this.i18nService.isRtl;
   readonly impersonationError = signal<string | null>(null);
@@ -83,6 +88,10 @@ export class OwnerTenantsListComponent implements OnInit {
     evidenceRef: [''],
     evidenceNote: [''],
     note: [''],
+  });
+  readonly passwordForm = this.fb.group({
+    newPassword: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(120)]],
+    confirmPassword: ['', [Validators.required]],
   });
 
   constructor() {
@@ -261,6 +270,38 @@ export class OwnerTenantsListComponent implements OnInit {
   hasManualSettlementFieldError(fieldName: keyof typeof this.manualSettlementForm.controls): boolean {
     const control = this.manualSettlementForm.controls[fieldName];
     return !!control && control.invalid && (control.touched || control.dirty);
+  }
+
+  openPasswordChange(tenant: Tenant): void {
+    this.passwordForm.reset({ newPassword: '', confirmPassword: '' });
+    this.showPassword.set(false);
+    this.tenantsFacade.requestPasswordChange(tenant);
+  }
+
+  closePasswordChange(): void {
+    this.tenantsFacade.cancelPasswordChange();
+  }
+
+  async submitPasswordChange(): Promise<void> {
+    if (this.passwordForm.invalid || this.passwordsDoNotMatch()) {
+      this.passwordForm.markAllAsTouched();
+      return;
+    }
+
+    const value = this.passwordForm.getRawValue();
+    const changed = await this.tenantsFacade.submitPasswordChange(
+      value.newPassword ?? '',
+      value.confirmPassword ?? '',
+    );
+    if (changed) {
+      this.passwordForm.reset({ newPassword: '', confirmPassword: '' });
+      setTimeout(() => this.tenantsFacade.clearPasswordChangeNotification(), 4000);
+    }
+  }
+
+  passwordsDoNotMatch(): boolean {
+    const value = this.passwordForm.getRawValue();
+    return !!value.confirmPassword && value.newPassword !== value.confirmPassword;
   }
 
   copyToClipboard(text: string): void {

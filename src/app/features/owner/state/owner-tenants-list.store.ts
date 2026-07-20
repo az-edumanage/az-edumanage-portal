@@ -22,10 +22,14 @@ export class OwnerTenantsListStore {
   readonly pendingStatusChange = signal<{ tenant: Tenant; status: TenantStatus } | null>(null);
   readonly pendingPlanChange = signal<{ tenant: Tenant; plan: string } | null>(null);
   readonly pendingManualSettlement = signal<Tenant | null>(null);
+  readonly pendingPasswordChange = signal<Tenant | null>(null);
   readonly pendingLifecycleStatusTenantIds = signal<Set<string>>(new Set());
   readonly lifecycleStatusSubmissionError = signal<string | null>(null);
   readonly manualSettlementSubmitting = signal(false);
   readonly manualSettlementError = signal<string | null>(null);
+  readonly passwordChangeSubmitting = signal(false);
+  readonly passwordChangeError = signal<string | null>(null);
+  readonly passwordChangeNotification = signal<string | null>(null);
   readonly copyNotification = signal<string | null>(null);
 
   readonly selectedStatuses = signal<Set<string>>(new Set());
@@ -247,6 +251,44 @@ export class OwnerTenantsListStore {
     }
   }
 
+  requestPasswordChange(tenant: Tenant): void {
+    this.passwordChangeError.set(null);
+    this.pendingPasswordChange.set(tenant);
+  }
+
+  cancelPasswordChange(): void {
+    if (this.passwordChangeSubmitting()) {
+      return;
+    }
+    this.passwordChangeError.set(null);
+    this.pendingPasswordChange.set(null);
+  }
+
+  async submitPasswordChange(newPassword: string, confirmPassword: string): Promise<boolean> {
+    const tenant = this.pendingPasswordChange();
+    if (!tenant || this.passwordChangeSubmitting()) {
+      return false;
+    }
+
+    this.passwordChangeSubmitting.set(true);
+    this.passwordChangeError.set(null);
+    try {
+      const result = await this.data.changeTenantPassword(tenant.id, newPassword, confirmPassword);
+      this.pendingPasswordChange.set(null);
+      this.passwordChangeNotification.set(`Password changed for ${tenant.name} (${result.username}).`);
+      return true;
+    } catch (error) {
+      this.passwordChangeError.set(this.toPasswordChangeErrorMessage(error));
+      return false;
+    } finally {
+      this.passwordChangeSubmitting.set(false);
+    }
+  }
+
+  clearPasswordChangeNotification(): void {
+    this.passwordChangeNotification.set(null);
+  }
+
   private toOwnerFacingErrorMessage(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
       const message = typeof error.error?.message === 'string' ? error.error.message.trim() : '';
@@ -277,5 +319,25 @@ export class OwnerTenantsListStore {
     }
 
     return 'Tenant lifecycle status could not be updated. Please try again.';
+  }
+
+  private toPasswordChangeErrorMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      const message = typeof error.error?.message === 'string' ? error.error.message.trim() : '';
+      const firstDetail =
+        Array.isArray(error.error?.details) && typeof error.error.details[0] === 'string'
+          ? error.error.details[0].trim()
+          : '';
+      if (message.toLowerCase() === 'validation failed' && firstDetail) {
+        return firstDetail;
+      }
+      if (message) {
+        return message;
+      }
+      if (firstDetail) {
+        return firstDetail;
+      }
+    }
+    return 'Tenant password could not be changed. Please try again.';
   }
 }

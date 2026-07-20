@@ -70,6 +70,25 @@ describe('OwnerTenantsDataService', () => {
     expect(tenant.tenantOperationalStatus).toBe('disabled');
   });
 
+  it('changes the tenant dashboard password through the owner endpoint', async () => {
+    const passwordPromise = service.changeTenantPassword('tenant-1', 'NewPassword123', 'NewPassword123');
+    await Promise.resolve();
+
+    const request = httpTesting.expectOne(`${environment.apiBaseUrl}/owner/tenants/tenant-1/password`);
+    expect(request.request.method).toBe('PATCH');
+    expect(request.request.body).toEqual({
+      newPassword: 'NewPassword123',
+      confirmPassword: 'NewPassword123',
+    });
+    request.flush({ tenantId: 'tenant-1', username: 'bright-admin', passwordChanged: true });
+
+    await expect(passwordPromise).resolves.toEqual({
+      tenantId: 'tenant-1',
+      username: 'bright-admin',
+      passwordChanged: true,
+    });
+  });
+
   it('maps tenant list rows when backend includes managed location fields', async () => {
     const loadPromise = service.loadFromBackend();
     await Promise.resolve();
