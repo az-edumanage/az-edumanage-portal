@@ -13,10 +13,14 @@ export class OwnerTenantsListFacade {
   readonly pendingStatusChange = this.store.pendingStatusChange;
   readonly pendingPlanChange = this.store.pendingPlanChange;
   readonly pendingManualSettlement = this.store.pendingManualSettlement;
+  readonly pendingPasswordChange = this.store.pendingPasswordChange;
   readonly pendingLifecycleStatusTenantIds = this.store.pendingLifecycleStatusTenantIds;
   readonly lifecycleStatusSubmissionError = this.store.lifecycleStatusSubmissionError;
   readonly manualSettlementSubmitting = this.store.manualSettlementSubmitting;
   readonly manualSettlementError = this.store.manualSettlementError;
+  readonly passwordChangeSubmitting = this.store.passwordChangeSubmitting;
+  readonly passwordChangeError = this.store.passwordChangeError;
+  readonly passwordChangeNotification = this.store.passwordChangeNotification;
   readonly copyNotification = this.store.copyNotification;
 
   readonly selectedStatuses = this.store.selectedStatuses;
@@ -92,5 +96,21 @@ export class OwnerTenantsListFacade {
 
   submitManualSettlement(payload: ManualSettlementRequest): Promise<boolean> {
     return this.store.submitManualSettlement(payload);
+  }
+
+  requestPasswordChange(tenant: Tenant): void {
+    this.store.requestPasswordChange(tenant);
+  }
+
+  cancelPasswordChange(): void {
+    this.store.cancelPasswordChange();
+  }
+
+  submitPasswordChange(newPassword: string, confirmPassword: string): Promise<boolean> {
+    return this.store.submitPasswordChange(newPassword, confirmPassword);
+  }
+
+  clearPasswordChangeNotification(): void {
+    this.store.clearPasswordChangeNotification();
   }
 }

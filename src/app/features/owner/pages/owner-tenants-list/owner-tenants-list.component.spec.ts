@@ -43,10 +43,14 @@ describe('OwnerTenantsListComponent', () => {
     activePlanDropdown: signal<string | null>(null),
     pendingPlanChange: signal(null),
     pendingManualSettlement: signal<typeof mockTenant | null>(null),
+    pendingPasswordChange: signal<typeof mockTenant | null>(null),
     pendingLifecycleStatusTenantIds: signal(new Set<string>()),
     lifecycleStatusSubmissionError: signal<string | null>(null),
     manualSettlementSubmitting: signal(false),
     manualSettlementError: signal<string | null>(null),
+    passwordChangeSubmitting: signal(false),
+    passwordChangeError: signal<string | null>(null),
+    passwordChangeNotification: signal<string | null>(null),
     copyNotification: signal<string | null>(null),
     selectedStatuses: signal(new Set<string>()),
     selectedPlans: signal(new Set<string>()),
@@ -69,6 +73,10 @@ describe('OwnerTenantsListComponent', () => {
     requestManualSettlement: vi.fn(),
     cancelManualSettlement: vi.fn(),
     submitManualSettlement: vi.fn().mockResolvedValue(true),
+    requestPasswordChange: vi.fn(),
+    cancelPasswordChange: vi.fn(),
+    submitPasswordChange: vi.fn().mockResolvedValue(true),
+    clearPasswordChangeNotification: vi.fn(),
   };
 
   const mockI18n = {
@@ -145,6 +153,31 @@ describe('OwnerTenantsListComponent', () => {
 
     const action = fixture.nativeElement.querySelector('[data-testid="manual-settlement-action-tenant-1"]');
     expect(action).not.toBeNull();
+  });
+
+  it('opens the tenant password dialog from the row action', () => {
+    const fixture = TestBed.createComponent(OwnerTenantsListComponent);
+    fixture.detectChanges();
+
+    const action = fixture.nativeElement.querySelector('[data-testid="password-action-tenant-1"]') as HTMLButtonElement;
+    action.click();
+
+    expect(mockFacade.requestPasswordChange).toHaveBeenCalledWith(mockTenant);
+  });
+
+  it('submits a confirmed tenant dashboard password', async () => {
+    const fixture = TestBed.createComponent(OwnerTenantsListComponent);
+    fixture.detectChanges();
+    mockFacade.pendingPasswordChange.set(mockTenant);
+    fixture.componentInstance.passwordForm.setValue({
+      newPassword: 'NewPassword123',
+      confirmPassword: 'NewPassword123',
+    });
+
+    await fixture.componentInstance.submitPasswordChange();
+
+    expect(mockFacade.submitPasswordChange).toHaveBeenCalledWith('NewPassword123', 'NewPassword123');
+    mockFacade.pendingPasswordChange.set(null);
   });
 
   it('does not show manual settlement action when the tenant is not eligible', () => {

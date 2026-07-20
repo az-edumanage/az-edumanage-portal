@@ -90,6 +90,12 @@ interface BackendLifecycleStatusChangeResponse {
   };
 }
 
+export interface TenantPasswordChangeResponse {
+  tenantId: string;
+  username: string;
+  passwordChanged: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class OwnerTenantsDataService {
   private readonly http = inject(HttpClient);
@@ -157,6 +163,20 @@ export class OwnerTenantsDataService {
     );
 
     return result;
+  }
+
+  async changeTenantPassword(
+    tenantId: string,
+    newPassword: string,
+    confirmPassword: string,
+  ): Promise<TenantPasswordChangeResponse> {
+    await this.authApi.ensureLoggedIn();
+    return firstValueFrom(
+      this.http.patch<TenantPasswordChangeResponse>(
+        `${environment.apiBaseUrl}/owner/tenants/${encodeURIComponent(tenantId)}/password`,
+        { newPassword, confirmPassword },
+      ),
+    );
   }
 
   addTrialTenant(payload: {
