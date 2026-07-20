@@ -48,6 +48,9 @@ describe('OwnerTenantsListComponent', () => {
     lifecycleStatusSubmissionError: signal<string | null>(null),
     manualSettlementSubmitting: signal(false),
     manualSettlementError: signal<string | null>(null),
+    planChangeSubmitting: signal(false),
+    planChangeError: signal<string | null>(null),
+    planChangeNotification: signal<string | null>(null),
     passwordChangeSubmitting: signal(false),
     passwordChangeError: signal<string | null>(null),
     passwordChangeNotification: signal<string | null>(null),
@@ -56,7 +59,7 @@ describe('OwnerTenantsListComponent', () => {
     selectedPlans: signal(new Set<string>()),
     selectedHealths: signal(new Set<string>()),
     statuses: signal(['Pending', 'Active', 'Suspended', 'Disabled', 'Blocked']),
-    plans: ['Starter', 'Professional'],
+    plans: signal(['Starter', 'Professional']),
     healths: ['Healthy', 'Degraded', 'Down'],
     activeFilterCount: signal(0),
     filteredTenants: signal([mockTenant]),
@@ -67,8 +70,31 @@ describe('OwnerTenantsListComponent', () => {
     cancelStatusChange: vi.fn(),
     isLifecycleStatusPending: (tenantId: string) => mockFacade.pendingLifecycleStatusTenantIds().has(tenantId),
     requestPlanChange: vi.fn(),
-    confirmPlanChange: vi.fn(),
+    availablePlansForTenant: vi.fn().mockReturnValue([
+      {
+        id: 'plan-professional',
+        name: 'Professional',
+        audienceType: 'center',
+        status: 'Active',
+        monthlyPrice: 500,
+        yearlyPrice: 5000,
+        currency: 'EGP',
+        trialPlan: false,
+      },
+      {
+        id: 'plan-enterprise',
+        name: 'Enterprise',
+        audienceType: 'center',
+        status: 'Active',
+        monthlyPrice: 1000,
+        yearlyPrice: 10000,
+        currency: 'EGP',
+        trialPlan: false,
+      },
+    ]),
+    confirmPlanChange: vi.fn().mockResolvedValue(true),
     cancelPlanChange: vi.fn(),
+    clearPlanChangeNotification: vi.fn(),
     canManualSettle: () => true,
     requestManualSettlement: vi.fn(),
     cancelManualSettlement: vi.fn(),
@@ -95,6 +121,7 @@ describe('OwnerTenantsListComponent', () => {
 
   const mockTenantsData = {
     loadFromBackend: () => Promise.resolve(),
+    loadPlanOptions: () => Promise.resolve(),
   };
 
   const mockTenantImpersonationService = {
@@ -163,6 +190,25 @@ describe('OwnerTenantsListComponent', () => {
     action.click();
 
     expect(mockFacade.requestPasswordChange).toHaveBeenCalledWith(mockTenant);
+  });
+
+  it('lists only matching tenant plans and selects a new plan', () => {
+    mockFacade.activePlanDropdown.set('tenant-1');
+    const fixture = TestBed.createComponent(OwnerTenantsListComponent);
+    fixture.detectChanges();
+
+    const option = fixture.nativeElement.querySelector(
+      '[data-testid="plan-option-tenant-1-plan-enterprise"]',
+    ) as HTMLButtonElement;
+    expect(option).not.toBeNull();
+
+    option.click();
+    expect(mockFacade.availablePlansForTenant).toHaveBeenCalledWith(mockTenant);
+    expect(mockFacade.requestPlanChange).toHaveBeenCalledWith(
+      mockTenant,
+      expect.objectContaining({ id: 'plan-enterprise', audienceType: 'center' }),
+    );
+    mockFacade.activePlanDropdown.set(null);
   });
 
   it('submits a confirmed tenant dashboard password', async () => {

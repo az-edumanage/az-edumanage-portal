@@ -348,15 +348,21 @@
 
                       <div class="relative">
                         <button 
+                          type="button"
                           (click)="activePlanDropdown.set(activePlanDropdown() === tenant.id ? null : tenant.id)"
                           class="owner-tenants-icon-btn p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/30 rounded transition-colors" 
-                          title="Upgrade Plan"
+                          title="Change plan"
+                          [attr.aria-expanded]="activePlanDropdown() === tenant.id"
+                          [attr.aria-controls]="'tenant-plan-menu-' + tenant.id"
+                          [attr.data-testid]="'plan-action-' + tenant.id"
                         >
                           <mat-icon class="text-lg">upgrade</mat-icon>
                         </button>
 
                         @if (activePlanDropdown() === tenant.id) {
-                          <div class="owner-tenants-plan-dropdown absolute right-0 z-30 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl overflow-hidden animate-in fade-in duration-200"
+                          <div
+                            [id]="'tenant-plan-menu-' + tenant.id"
+                            class="owner-tenants-plan-dropdown absolute right-0 z-30 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden animate-in fade-in duration-200"
                             [class.top-full]="i < 3"
                             [class.mt-2]="i < 3"
                             [class.slide-in-from-top-2]="i < 3"
@@ -365,29 +371,46 @@
                             [class.slide-in-from-bottom-2]="i >= 3"
                           >
                             <div class="p-3 border-b border-slate-200 dark:border-slate-700">
-                              <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Select New Plan</h4>
+                              <h4 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Select new plan</h4>
+                              <p class="mt-1 text-xs text-slate-500">Plans for {{ tenant.tenantType === 'teacher' ? 'teachers' : 'centers' }}</p>
                             </div>
-                            <div class="p-2 space-y-1">
-                              @for (plan of plans; track plan) {
+                            <div class="max-h-72 overflow-y-auto p-2 space-y-1">
+                              @for (plan of availablePlansForTenant(tenant); track plan.id) {
                                 <button 
+                                  type="button"
                                   (click)="requestPlanChange(tenant, plan); activePlanDropdown.set(null)"
-                                  class="w-full flex flex-col items-start gap-0.5 px-3 py-2 text-xs font-medium rounded-md transition-colors text-left"
-                                  [class.bg-indigo-600/10]="tenant.plan === plan"
-                                  [class.text-indigo-600]="tenant.plan === plan"
-                                  [class.dark:bg-indigo-900/30]="tenant.plan === plan"
-                                  [class.text-slate-700]="tenant.plan !== plan"
-                                  [class.dark:text-slate-300]="tenant.plan !== plan"
-                                  [class.hover:bg-slate-50]="tenant.plan !== plan"
-                                  [class.dark:hover:bg-slate-700]="tenant.plan !== plan"
+                                  class="w-full flex flex-col items-stretch gap-1 px-3 py-2.5 text-xs font-medium rounded-md transition-colors text-left disabled:cursor-not-allowed disabled:opacity-50"
+                                  [class.bg-indigo-600/10]="tenant.plan === plan.name"
+                                  [class.text-indigo-600]="tenant.plan === plan.name"
+                                  [class.dark:bg-indigo-900/30]="tenant.plan === plan.name"
+                                  [class.text-slate-700]="tenant.plan !== plan.name"
+                                  [class.dark:text-slate-300]="tenant.plan !== plan.name"
+                                  [class.hover:bg-slate-50]="tenant.plan !== plan.name && plan.status === 'Active'"
+                                  [class.dark:hover:bg-slate-700]="tenant.plan !== plan.name && plan.status === 'Active'"
+                                  [disabled]="tenant.plan === plan.name || plan.status !== 'Active'"
+                                  [attr.data-testid]="'plan-option-' + tenant.id + '-' + plan.id"
                                 >
-                                  <div class="flex items-center gap-2">
-                                    <mat-icon class="text-sm">{{ plan === 'Enterprise' ? 'rocket_launch' : plan === 'Professional' ? 'auto_awesome' : 'star_outline' }}</mat-icon>
-                                    <span>{{ plan }}</span>
+                                  <div class="flex items-center justify-between gap-2">
+                                    <span class="flex min-w-0 items-center gap-2">
+                                      <mat-icon class="text-base">{{ plan.trialPlan ? 'hourglass_top' : 'workspace_premium' }}</mat-icon>
+                                      <span class="truncate">{{ plan.trialPlan ? 'Free Trial' : plan.name }}</span>
+                                    </span>
+                                    <span class="rounded-full px-2 py-0.5 text-[10px]"
+                                      [class.bg-amber-100]="plan.trialPlan"
+                                      [class.text-amber-700]="plan.trialPlan"
+                                      [class.bg-emerald-100]="!plan.trialPlan"
+                                      [class.text-emerald-700]="!plan.trialPlan"
+                                    >{{ plan.trialPlan ? 'Trial' : 'Production' }}</span>
                                   </div>
-                                  <span class="text-[10px] opacity-70 font-normal">
-                                    {{ plan === 'Enterprise' ? 'Custom limits & support' : plan === 'Professional' ? 'Advanced features for teams' : 'Basic features for individuals' }}
+                                  <span class="flex items-center justify-between gap-2 text-[11px] font-normal text-slate-500 dark:text-slate-400">
+                                    <span>{{ plan.currency }} {{ plan.monthlyPrice | number:'1.0-2' }} / month</span>
+                                    <span>{{ plan.status }}</span>
                                   </span>
                                 </button>
+                              } @empty {
+                                <div class="px-3 py-5 text-center text-xs text-slate-500">
+                                  No plans match this tenant type.
+                                </div>
                               }
                             </div>
                           </div>
@@ -466,15 +489,15 @@
 
       <!-- Plan Change Confirmation Modal -->
       @if (pendingPlanChange()) {
-        <div class="owner-tenants-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div class="owner-tenants-modal bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+        <div class="owner-tenants-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200" role="presentation">
+          <section class="owner-tenants-modal bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" aria-labelledby="tenant-plan-change-title">
             <div class="owner-tenants-modal-content p-6 text-center">
               <div class="owner-tenants-modal-icon owner-tenants-modal-icon-plan w-16 h-16 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4">
                 <mat-icon class="text-3xl">upgrade</mat-icon>
               </div>
-              <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Confirm Plan Upgrade</h3>
+              <h3 id="tenant-plan-change-title" class="text-xl font-bold text-slate-900 dark:text-white mb-2">Change tenant plan</h3>
               <p class="text-slate-500 dark:text-slate-500">
-                Are you sure you want to upgrade the plan for 
+                Apply the selected plan to
                 <span class="font-semibold text-slate-900 dark:text-white">{{ pendingPlanChange()?.tenant?.name }}</span>?
               </p>
               <div class="owner-tenants-plan-summary mt-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-4">
@@ -485,25 +508,37 @@
                 <mat-icon class="text-slate-300">arrow_forward</mat-icon>
                 <div class="text-center">
                   <div class="text-[10px] uppercase font-bold text-indigo-600">New Plan</div>
-                  <div class="font-semibold text-indigo-600 dark:text-indigo-400">{{ pendingPlanChange()?.plan }}</div>
+                  <div class="font-semibold text-indigo-600 dark:text-indigo-400">{{ pendingPlanChange()?.plan?.trialPlan ? 'Free Trial' : pendingPlanChange()?.plan?.name }}</div>
                 </div>
               </div>
+              @if (pendingPlanChange()?.tenant?.subscriptionType === 'trial' && !pendingPlanChange()?.plan?.trialPlan) {
+                <p class="mt-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+                  This tenant will move from Trial to Production immediately.
+                </p>
+              }
+              @if (planChangeError()) {
+                <p class="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300" role="alert">
+                  {{ planChangeError() }}
+                </p>
+              }
             </div>
             <div class="owner-tenants-modal-actions p-4 bg-slate-50 dark:bg-slate-800/50 flex gap-3">
               <button 
                 (click)="cancelPlanChange()"
                 class="owner-tenants-modal-btn-cancel flex-1 px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-colors"
+                [disabled]="planChangeSubmitting()"
               >
                 Cancel
               </button>
               <button 
                 (click)="confirmPlanChange()"
                 class="owner-tenants-modal-btn-primary flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-colors shadow-lg shadow-indigo-500/20"
+                [disabled]="planChangeSubmitting()"
               >
-                Confirm Upgrade
+                {{ planChangeSubmitting() ? 'Changing...' : 'Change plan' }}
               </button>
             </div>
-          </div>
+          </section>
         </div>
       }
 
@@ -773,6 +808,14 @@
           <div class="owner-tenants-toast-content flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-lg">
             <mat-icon class="text-sm text-emerald-400">check_circle</mat-icon>
             <span>{{ passwordChangeNotification() }}</span>
+          </div>
+        </div>
+      }
+      @if (planChangeNotification()) {
+        <div class="owner-tenants-toast fixed bottom-24 left-1/2 z-[110] -translate-x-1/2 animate-in fade-in slide-in-from-bottom-4 duration-300" role="status" aria-live="polite">
+          <div class="owner-tenants-toast-content flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-lg">
+            <mat-icon class="text-sm text-emerald-400">check_circle</mat-icon>
+            <span>{{ planChangeNotification() }}</span>
           </div>
         </div>
       }

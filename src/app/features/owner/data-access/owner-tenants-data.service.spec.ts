@@ -89,6 +89,73 @@ describe('OwnerTenantsDataService', () => {
     });
   });
 
+  it('loads assignable owner plans with audience and lifecycle metadata', async () => {
+    const plansPromise = service.loadPlanOptions();
+    await Promise.resolve();
+
+    const request = httpTesting.expectOne(`${environment.apiBaseUrl}/plan-catalog/plans`);
+    expect(request.request.method).toBe('GET');
+    request.flush([
+      {
+        id: 'plan-center',
+        name: 'Center Standard',
+        audienceType: 'center',
+        status: 'Active',
+        monthlyPrice: 500,
+        yearlyPrice: 5000,
+        currency: 'EGP',
+      },
+      {
+        id: 'plan-trial',
+        name: 'SYSTEM_FREE_TRIAL',
+        audienceType: 'teacher',
+        status: 'Active',
+        monthlyPrice: 0,
+        yearlyPrice: 0,
+        currency: 'EGP',
+      },
+    ]);
+
+    await plansPromise;
+    expect(service.planOptions()).toEqual([
+      expect.objectContaining({ id: 'plan-center', audienceType: 'center', trialPlan: false }),
+      expect.objectContaining({ id: 'plan-trial', audienceType: 'teacher', trialPlan: true }),
+    ]);
+  });
+
+  it('changes the persisted tenant plan and maps trial to production response state', async () => {
+    service.tenants.set([]);
+    const changePromise = service.changeTenantPlan('tenant-1', 'plan-production');
+    await Promise.resolve();
+
+    const request = httpTesting.expectOne(`${environment.apiBaseUrl}/owner/tenants/tenant-1/plan`);
+    expect(request.request.method).toBe('PATCH');
+    expect(request.request.body).toEqual({ planId: 'plan-production' });
+    request.flush({
+      id: 'tenant-1',
+      centerName: 'Bright Center',
+      tenantType: 'CENTER',
+      subdomain: 'bright-center',
+      domain: 'bright-center.example.com',
+      contactName: 'Owner Name',
+      contactEmail: 'owner@example.com',
+      contactPhone: '01000000000',
+      planName: 'Professional',
+      isTrial: false,
+      subscriptionState: 'production',
+      subscriptionType: 'production',
+      providerPaymentStatus: 'pending',
+      tenantOperationalStatus: 'active',
+      settlementStatus: 'unpaid',
+      ownerDisplayStatus: 'active',
+      createdAt: '2026-05-24T10:30:00Z',
+    });
+
+    const updated = await changePromise;
+    expect(updated.plan).toBe('Professional');
+    expect(updated.subscriptionType).toBe('production');
+  });
+
   it('maps tenant list rows when backend includes managed location fields', async () => {
     const loadPromise = service.loadFromBackend();
     await Promise.resolve();

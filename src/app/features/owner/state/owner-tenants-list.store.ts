@@ -3,6 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { OwnerTenantsDataService } from '../data-access/owner-tenants-data.service';
 import {
   ManualSettlementRequest,
+  OwnerTenantAssignablePlan,
   TENANT_STATUS_OPTIONS,
   Tenant,
   TenantStatus,
@@ -20,13 +21,16 @@ export class OwnerTenantsListStore {
   readonly activeStatusDropdown = signal<string | null>(null);
   readonly activePlanDropdown = signal<string | null>(null);
   readonly pendingStatusChange = signal<{ tenant: Tenant; status: TenantStatus } | null>(null);
-  readonly pendingPlanChange = signal<{ tenant: Tenant; plan: string } | null>(null);
+  readonly pendingPlanChange = signal<{ tenant: Tenant; plan: OwnerTenantAssignablePlan } | null>(null);
   readonly pendingManualSettlement = signal<Tenant | null>(null);
   readonly pendingPasswordChange = signal<Tenant | null>(null);
   readonly pendingLifecycleStatusTenantIds = signal<Set<string>>(new Set());
   readonly lifecycleStatusSubmissionError = signal<string | null>(null);
   readonly manualSettlementSubmitting = signal(false);
   readonly manualSettlementError = signal<string | null>(null);
+  readonly planChangeSubmitting = signal(false);
+  readonly planChangeError = signal<string | null>(null);
+  readonly planChangeNotification = signal<string | null>(null);
   readonly passwordChangeSubmitting = signal(false);
   readonly passwordChangeError = signal<string | null>(null);
   readonly passwordChangeNotification = signal<string | null>(null);
@@ -37,7 +41,10 @@ export class OwnerTenantsListStore {
   readonly selectedHealths = signal<Set<string>>(new Set());
 
   readonly statuses = computed(() => TENANT_STATUS_OPTIONS);
-  readonly plans = ['Starter', 'Professional', 'Enterprise'];
+  readonly plans = computed(() => Array.from(new Set([
+    ...this.data.planOptions().map((plan) => plan.name),
+    ...this.data.tenants().map((tenant) => tenant.plan),
+  ])).sort((left, right) => left.localeCompare(right)));
   readonly healths = ['Healthy', 'Degraded', 'Down'];
 
   readonly activeFilterCount = computed(
@@ -181,25 +188,58 @@ export class OwnerTenantsListStore {
     return this.pendingLifecycleStatusTenantIds().has(tenantId);
   }
 
-  requestPlanChange(tenant: Tenant, newPlan: string): void {
-    if (tenant.plan === newPlan) {
+  availablePlansForTenant(tenant: Tenant): OwnerTenantAssignablePlan[] {
+    return this.data.planOptions()
+      .filter((plan) => plan.audienceType === tenant.tenantType)
+      .sort((left, right) => {
+        if (left.trialPlan !== right.trialPlan) {
+          return left.trialPlan ? 1 : -1;
+        }
+        return left.name.localeCompare(right.name);
+      });
+  }
+
+  requestPlanChange(tenant: Tenant, newPlan: OwnerTenantAssignablePlan): void {
+    if (tenant.plan === newPlan.name || newPlan.status !== 'Active') {
       return;
     }
+    this.planChangeError.set(null);
     this.pendingPlanChange.set({ tenant, plan: newPlan });
   }
 
-  confirmPlanChange(): void {
+  async confirmPlanChange(): Promise<boolean> {
     const pending = this.pendingPlanChange();
-    if (!pending) {
-      return;
+    if (!pending || this.planChangeSubmitting()) {
+      return false;
     }
 
-    this.data.updateTenantPlan(pending.tenant.id, pending.plan);
-    this.pendingPlanChange.set(null);
+    this.planChangeSubmitting.set(true);
+    this.planChangeError.set(null);
+    try {
+      const updatedTenant = await this.data.changeTenantPlan(pending.tenant.id, pending.plan.id);
+      this.pendingPlanChange.set(null);
+      this.planChangeNotification.set(
+        `${updatedTenant.name} now uses ${updatedTenant.plan} as a ${updatedTenant.subscriptionType} tenant.`,
+      );
+      return true;
+    } catch (error) {
+      this.planChangeError.set(this.toPlanChangeErrorMessage(error));
+      return false;
+    } finally {
+      this.planChangeSubmitting.set(false);
+    }
   }
 
   cancelPlanChange(): void {
+    if (this.planChangeSubmitting()) {
+      return;
+    }
+    this.planChangeError.set(null);
     this.pendingPlanChange.set(null);
+  }
+
+  clearPlanChangeNotification(): void {
+    this.planChangeNotification.set(null);
   }
 
   canManualSettle(tenant: Tenant): boolean {
@@ -339,5 +379,15 @@ export class OwnerTenantsListStore {
       }
     }
     return 'Tenant password could not be changed. Please try again.';
+  }
+
+  private toPlanChangeErrorMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      const message = typeof error.error?.message === 'string' ? error.error.message.trim() : '';
+      if (message) {
+        return message;
+      }
+    }
+    return 'Tenant plan could not be changed. Please try again.';
   }
 }
