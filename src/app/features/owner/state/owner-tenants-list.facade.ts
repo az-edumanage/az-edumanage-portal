@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { OwnerTenantsListStore } from './owner-tenants-list.store';
-import { ManualSettlementRequest, Tenant } from '../models/owner-tenants.models';
+import { ManualSettlementRequest, OwnerTenantAssignablePlan, Tenant } from '../models/owner-tenants.models';
 
 @Injectable({ providedIn: 'root' })
 export class OwnerTenantsListFacade {
@@ -18,6 +18,9 @@ export class OwnerTenantsListFacade {
   readonly lifecycleStatusSubmissionError = this.store.lifecycleStatusSubmissionError;
   readonly manualSettlementSubmitting = this.store.manualSettlementSubmitting;
   readonly manualSettlementError = this.store.manualSettlementError;
+  readonly planChangeSubmitting = this.store.planChangeSubmitting;
+  readonly planChangeError = this.store.planChangeError;
+  readonly planChangeNotification = this.store.planChangeNotification;
   readonly passwordChangeSubmitting = this.store.passwordChangeSubmitting;
   readonly passwordChangeError = this.store.passwordChangeError;
   readonly passwordChangeNotification = this.store.passwordChangeNotification;
@@ -70,16 +73,24 @@ export class OwnerTenantsListFacade {
     return this.store.isLifecycleStatusPending(tenantId);
   }
 
-  requestPlanChange(tenant: Tenant, newPlan: string): void {
+  availablePlansForTenant(tenant: Tenant): OwnerTenantAssignablePlan[] {
+    return this.store.availablePlansForTenant(tenant);
+  }
+
+  requestPlanChange(tenant: Tenant, newPlan: OwnerTenantAssignablePlan): void {
     this.store.requestPlanChange(tenant, newPlan);
   }
 
-  confirmPlanChange(): void {
-    this.store.confirmPlanChange();
+  confirmPlanChange(): Promise<boolean> {
+    return this.store.confirmPlanChange();
   }
 
   cancelPlanChange(): void {
     this.store.cancelPlanChange();
+  }
+
+  clearPlanChangeNotification(): void {
+    this.store.clearPlanChangeNotification();
   }
 
   canManualSettle(tenant: Tenant): boolean {

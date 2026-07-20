@@ -7,6 +7,7 @@ import {
   ManualSettlementSummary,
   ManualTenantLifecycleStatusChangeRequest,
   OwnerDisplayStatus,
+  OwnerTenantAssignablePlan,
   ProviderPaymentStatus,
   SettlementStatus,
   SubscriptionState,
@@ -43,6 +44,16 @@ interface BackendTenantResponse {
   settlementStatus?: string | null;
   ownerDisplayStatus?: string | null;
   createdAt: string;
+}
+
+interface BackendPlanResponse {
+  id: string;
+  name: string;
+  audienceType?: 'center' | 'teacher' | null;
+  status: 'Active' | 'Archived' | 'Draft';
+  monthlyPrice: number;
+  yearlyPrice: number;
+  currency: 'USD' | 'EUR' | 'EGP';
 }
 
 interface BackendManualSettlementResponse {
@@ -102,6 +113,7 @@ export class OwnerTenantsDataService {
   private readonly authApi = inject(AuthApiService);
 
   readonly tenants = signal<Tenant[]>([]);
+  readonly planOptions = signal<OwnerTenantAssignablePlan[]>([]);
 
   async loadFromBackend(): Promise<void> {
     await this.authApi.ensureLoggedIn();
@@ -113,10 +125,37 @@ export class OwnerTenantsDataService {
     this.tenants.set(mapped);
   }
 
-  updateTenantPlan(tenantId: string, plan: string): void {
-    this.tenants.update((all) =>
-      all.map((tenant) => (tenant.id === tenantId ? { ...tenant, plan } : tenant)),
+  async loadPlanOptions(): Promise<void> {
+    await this.authApi.ensureLoggedIn();
+    const rows = await firstValueFrom(
+      this.http.get<BackendPlanResponse[]>(`${environment.apiBaseUrl}/plan-catalog/plans`),
     );
+
+    this.planOptions.set((rows ?? []).map((row) => ({
+      id: row.id,
+      name: row.name,
+      audienceType: row.audienceType === 'teacher' ? 'teacher' : 'center',
+      status: row.status,
+      monthlyPrice: row.monthlyPrice,
+      yearlyPrice: row.yearlyPrice,
+      currency: row.currency,
+      trialPlan: row.name.trim().toUpperCase() === 'SYSTEM_FREE_TRIAL',
+    })));
+  }
+
+  async changeTenantPlan(tenantId: string, planId: string): Promise<Tenant> {
+    await this.authApi.ensureLoggedIn();
+    const row = await firstValueFrom(
+      this.http.patch<BackendTenantResponse>(
+        `${environment.apiBaseUrl}/owner/tenants/${encodeURIComponent(tenantId)}/plan`,
+        { planId },
+      ),
+    );
+    const updatedTenant = this.mapTenant(row);
+    this.tenants.update((all) =>
+      all.map((tenant) => (tenant.id === tenantId ? updatedTenant : tenant)),
+    );
+    return updatedTenant;
   }
 
   async recordManualSettlement(tenantId: string, payload: ManualSettlementRequest): Promise<ManualSettlementResult> {

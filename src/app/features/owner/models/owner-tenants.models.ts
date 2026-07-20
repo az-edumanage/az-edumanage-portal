@@ -44,6 +44,17 @@ export interface Tenant {
   createdBy: TenantCreatedBy;
 }
 
+export interface OwnerTenantAssignablePlan {
+  id: string;
+  name: string;
+  audienceType: TenantType;
+  status: 'Active' | 'Archived' | 'Draft';
+  monthlyPrice: number;
+  yearlyPrice: number;
+  currency: 'USD' | 'EUR' | 'EGP';
+  trialPlan: boolean;
+}
+
 export interface ManualSettlementRequest {
   paymentTransactionRef: string | null;
   manualInvoiceRef: string;

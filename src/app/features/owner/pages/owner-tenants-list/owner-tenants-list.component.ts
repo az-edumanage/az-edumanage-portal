@@ -7,7 +7,12 @@ import { DashboardService } from '../../../../core/services/dashboard.service';
 import { I18nService } from '../../../../core/services/i18n.service';
 import { UiPagerButtonComponent } from '../../../../shared/ui';
 import { OwnerTenantsListFacade } from '../../state/owner-tenants-list.facade';
-import { ManualSettlementRequest, Tenant, TenantSubscriptionType } from '../../models/owner-tenants.models';
+import {
+  ManualSettlementRequest,
+  OwnerTenantAssignablePlan,
+  Tenant,
+  TenantSubscriptionType,
+} from '../../models/owner-tenants.models';
 import { OwnerTenantStatusesDataService } from '../../data-access/owner-tenant-statuses-data.service';
 import { OwnerTenantsDataService } from '../../data-access/owner-tenants-data.service';
 import { TenantImpersonationService } from '../../../../core/auth/tenant-impersonation.service';
@@ -41,6 +46,9 @@ export class OwnerTenantsListComponent implements OnInit {
   readonly lifecycleStatusSubmissionError = this.tenantsFacade.lifecycleStatusSubmissionError;
   readonly manualSettlementSubmitting = this.tenantsFacade.manualSettlementSubmitting;
   readonly manualSettlementError = this.tenantsFacade.manualSettlementError;
+  readonly planChangeSubmitting = this.tenantsFacade.planChangeSubmitting;
+  readonly planChangeError = this.tenantsFacade.planChangeError;
+  readonly planChangeNotification = this.tenantsFacade.planChangeNotification;
   readonly passwordChangeSubmitting = this.tenantsFacade.passwordChangeSubmitting;
   readonly passwordChangeError = this.tenantsFacade.passwordChangeError;
   readonly passwordChangeNotification = this.tenantsFacade.passwordChangeNotification;
@@ -76,7 +84,7 @@ export class OwnerTenantsListComponent implements OnInit {
   readonly shownEnd = computed(() => Math.min(this.currentPageDisplay() * this.pageSize(), this.totalItems()));
   readonly filtersSearchQuery = signal('');
   readonly filteredStatuses = computed(() => this.filterPanelOptions(this.statuses()));
-  readonly filteredPlans = computed(() => this.filterPanelOptions(this.plans));
+  readonly filteredPlans = computed(() => this.filterPanelOptions(this.plans()));
   readonly filteredHealths = computed(() => this.filterPanelOptions(this.healths));
   readonly manualSettlementForm = this.fb.group({
     paymentTransactionRef: [''],
@@ -105,7 +113,10 @@ export class OwnerTenantsListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    void this.tenantsData.loadFromBackend().catch(() => undefined);
+    void Promise.all([
+      this.tenantsData.loadFromBackend(),
+      this.tenantsData.loadPlanOptions(),
+    ]).catch(() => undefined);
   }
 
   getStatusColor(status: string): string {
@@ -195,12 +206,19 @@ export class OwnerTenantsListComponent implements OnInit {
     return this.tenantsFacade.isLifecycleStatusPending(tenantId);
   }
 
-  requestPlanChange(tenant: Tenant, newPlan: string): void {
+  availablePlansForTenant(tenant: Tenant): OwnerTenantAssignablePlan[] {
+    return this.tenantsFacade.availablePlansForTenant(tenant);
+  }
+
+  requestPlanChange(tenant: Tenant, newPlan: OwnerTenantAssignablePlan): void {
     this.tenantsFacade.requestPlanChange(tenant, newPlan);
   }
 
-  confirmPlanChange(): void {
-    this.tenantsFacade.confirmPlanChange();
+  async confirmPlanChange(): Promise<void> {
+    const changed = await this.tenantsFacade.confirmPlanChange();
+    if (changed) {
+      window.setTimeout(() => this.tenantsFacade.clearPlanChangeNotification(), 4000);
+    }
   }
 
   cancelPlanChange(): void {

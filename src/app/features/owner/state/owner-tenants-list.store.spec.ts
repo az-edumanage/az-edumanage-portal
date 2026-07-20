@@ -11,7 +11,8 @@ describe('OwnerTenantsListStore', () => {
   let store: OwnerTenantsListStore;
   let dataService: {
     tenants: WritableSignal<Tenant[]>;
-    updateTenantPlan: (...args: unknown[]) => void;
+    planOptions: WritableSignal<import('../models/owner-tenants.models').OwnerTenantAssignablePlan[]>;
+    changeTenantPlan: ReturnType<typeof vi.fn>;
     recordManualSettlement: ReturnType<typeof vi.fn>;
     changeTenantLifecycleStatus: ReturnType<typeof vi.fn>;
   };
@@ -40,7 +41,19 @@ describe('OwnerTenantsListStore', () => {
           createdBy: 'system',
         },
       ]),
-      updateTenantPlan: () => {},
+      planOptions: signal([
+        {
+          id: 'plan-enterprise',
+          name: 'Enterprise',
+          audienceType: 'center',
+          status: 'Active',
+          monthlyPrice: 1000,
+          yearlyPrice: 10000,
+          currency: 'EGP',
+          trialPlan: false,
+        },
+      ]),
+      changeTenantPlan: vi.fn(),
       recordManualSettlement: vi.fn(),
       changeTenantLifecycleStatus: vi.fn(),
     };
@@ -71,6 +84,36 @@ describe('OwnerTenantsListStore', () => {
     expect(store.pendingStatusChange()).not.toBeNull();
     expect(store.pendingStatusChange()?.tenant.id).toBe(target.id);
     expect(store.pendingStatusChange()?.status).toBe('Suspended');
+  });
+
+  it('persists the selected plan and promotes a trial tenant to production', async () => {
+    const trialTenant: Tenant = {
+      ...store.filteredTenants()[0],
+      plan: 'SYSTEM_FREE_TRIAL',
+      subscriptionState: 'trial',
+      subscriptionType: 'trial',
+    };
+    dataService.tenants.set([trialTenant]);
+    const productionPlan = dataService.planOptions()[0];
+    dataService.changeTenantPlan.mockImplementation(async () => {
+      const updated = {
+        ...trialTenant,
+        plan: productionPlan.name,
+        subscriptionState: 'production' as const,
+        subscriptionType: 'production' as const,
+      };
+      dataService.tenants.set([updated]);
+      return updated;
+    });
+
+    store.requestPlanChange(trialTenant, productionPlan);
+    const success = await store.confirmPlanChange();
+
+    expect(success).toBe(true);
+    expect(dataService.changeTenantPlan).toHaveBeenCalledWith('tenant-1', 'plan-enterprise');
+    expect(store.filteredTenants()[0].plan).toBe('Enterprise');
+    expect(store.filteredTenants()[0].subscriptionType).toBe('production');
+    expect(store.pendingPlanChange()).toBeNull();
   });
 
   it('clears pendingStatusChange after confirm', async () => {
