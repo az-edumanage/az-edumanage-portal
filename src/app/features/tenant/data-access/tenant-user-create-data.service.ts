@@ -4,7 +4,7 @@ import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 import { environment } from '../../../../environments/environment';
-import type { TenantAccessUserSummary, TenantRoleSummary, TenantUserWriteRequest } from '../models/tenant-access-management.models';
+import type { TenantAccessUserSummary, TenantLearnerWriteRequest, TenantRoleSummary, TenantUserWriteRequest } from '../models/tenant-access-management.models';
 import {
   TenantUserCreateForm,
   TenantUserRoleOption,
@@ -50,6 +50,22 @@ export class TenantUserCreateDataService {
     );
   }
 
+  createLearner(payload: TenantUserCreateForm): Observable<TenantAccessUserSummary> {
+    return this.http.post<TenantAccessUserSummary>(
+      `${environment.apiBaseUrl}/tenant/lms/learners`,
+      this.toLearnerCreateRequest(payload),
+    );
+  }
+
+  uploadUserAvatar(file: File): Observable<{ url: string; fileName: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ url: string; fileName: string }>(
+      `${environment.apiBaseUrl}/tenant/users/avatar`,
+      formData,
+    );
+  }
+
   updateUser(userId: string, payload: TenantUserCreateForm): Observable<TenantAccessUserSummary> {
     return this.http.put<TenantAccessUserSummary>(
       `${environment.apiBaseUrl}/tenant/users/${userId}`,
@@ -69,6 +85,7 @@ export class TenantUserCreateDataService {
       fullName: payload.fullName.trim(),
       email: payload.email.trim(),
       username: payload.username.trim(),
+      avatarUrl: payload.avatarUrl?.trim() || null,
       roleId: payload.roleId,
       enabled: payload.enabled,
       sendInvite: payload.sendInvite,
@@ -81,10 +98,22 @@ export class TenantUserCreateDataService {
       fullName: payload.fullName.trim(),
       email: payload.email.trim(),
       username: payload.username.trim(),
+      avatarUrl: payload.avatarUrl?.trim() || null,
       roleId: payload.roleId,
       enabled: payload.enabled,
       sendInvite: payload.sendInvite,
       password: null,
+    };
+  }
+
+  private toLearnerCreateRequest(payload: TenantUserCreateForm): TenantLearnerWriteRequest {
+    return {
+      fullName: payload.fullName.trim(),
+      email: payload.email.trim() || null,
+      username: payload.username.trim(),
+      avatarUrl: payload.avatarUrl?.trim() || null,
+      enabled: payload.enabled,
+      password: payload.password,
     };
   }
 }

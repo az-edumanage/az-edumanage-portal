@@ -3,12 +3,14 @@ export type TenantUserStatus = 'Active' | 'Inactive' | 'Pending';
 
 export interface TenantUser {
   id: string;
+  userType: 'APP_USER' | 'WEB_USER' | 'LEARNER';
   name: string;
   email: string;
   role: string;
   roleId?: string | null;
   permissions?: string[];
   status: TenantUserStatus;
+  registrationDate: string | null;
   lastLogin: string;
   avatar?: string;
 }

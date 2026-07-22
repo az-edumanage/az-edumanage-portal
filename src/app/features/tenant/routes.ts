@@ -250,6 +250,7 @@ export const TENANT_ROUTES: Routes = [
       { path: 'lms-settings', component: TenantLmsSettingsComponent, data: { requiredPermission: 'tenant.settings.manage' } },
       { path: 'lms-settings/:group/:page/new', component: TenantLmsSettingsComponent, data: { requiredPermission: 'tenant.settings.manage', courseMode: 'create' } },
       { path: 'lms-settings/:group/:page/:courseId/edit', component: TenantLmsSettingsComponent, data: { requiredPermission: 'tenant.settings.manage', courseMode: 'edit' } },
+      { path: 'lms-settings/:group/:page/:courseId/preview', component: TenantLmsSettingsComponent, data: { requiredPermission: 'tenant.settings.manage', courseMode: 'preview' } },
       { path: 'lms-settings/:group/:page', component: TenantLmsSettingsComponent, data: { requiredPermission: 'tenant.settings.manage' } },
       { path: 'lms-settings/:page', component: TenantLmsSettingsComponent, data: { requiredPermission: 'tenant.settings.manage' } },
     ],

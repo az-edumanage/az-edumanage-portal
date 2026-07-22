@@ -3,6 +3,7 @@ import {
   Component,
   OnInit,
   computed,
+  effect,
   inject,
   signal,
 } from "@angular/core";
@@ -11,6 +12,7 @@ import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Va
 import { MatIconModule } from "@angular/material/icon";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { toSignal } from "@angular/core/rxjs-interop";
+import { firstValueFrom } from "rxjs";
 import { environment } from "../../../../../environments/environment";
 import { AuthIdentityService } from "../../../../core/auth/auth-identity.service";
 import {
@@ -28,7 +30,11 @@ import {
   TenantLmsSettingsView,
 } from "../../data-access/tenant-lms-settings-data.service";
 import { TenantGradesDataService } from "../../data-access/tenant-grades-data.service";
+import { TenantUserCreateDataService } from "../../data-access/tenant-user-create-data.service";
+import { TenantUsersDataService } from "../../data-access/tenant-users-data.service";
 import { Grade } from "../../models/tenant-grades.models";
+import { TenantUserRoleOption } from "../../models/tenant-user-create.models";
+import { TenantUser } from "../../models/tenant-users.models";
 
 function createCourseContentId(): string {
   const cryptoApi = globalThis.crypto;
@@ -96,6 +102,20 @@ const DEFAULT_NAVIGATION: ReadonlyArray<{
   { key: "pricesPackages", label: "الأسعار", route: "/pricing", enabled: true },
   { key: "testYourself", label: "اختبر نفسك", route: "/quiz", enabled: true },
 ];
+
+type CourseProgressStatus = "not-started" | "in-progress" | "completed" | "expired";
+
+interface CourseEnrollmentRow {
+  userId: string;
+  userName: string;
+  email: string;
+  role: string;
+  progressStatus: CourseProgressStatus;
+  enrollmentDate: string;
+  completionDate: string | null;
+  expirationDate: string;
+  progress: number;
+}
 
 const DEFAULT_HERO: TenantLmsHeroSettings = {
   badge: "◆ خبرة 18 سنة في تدريس الرياضيات",
@@ -192,49 +212,6 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
   imports: [CommonModule, MatIconModule, ReactiveFormsModule, RouterLink],
   template: `
     <section class="lms-page">
-      <header class="lms-header">
-        <div>
-          <p class="lms-breadcrumb">
-            Settings <mat-icon>chevron_right</mat-icon> LMS website
-          </p>
-          <h1>LMS website</h1>
-          <p class="lms-intro">
-            Manage the public learning site for
-            {{ settings()?.tenantName || "your tenant" }}.
-          </p>
-        </div>
-        @if (settings()) {
-          <div class="lms-header-actions">
-            <a
-              class="lms-button lms-button-secondary"
-              [href]="previewUrl()"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <mat-icon>open_in_new</mat-icon>
-              View website
-            </a>
-            @if (activePage() === 'contentCourses' && !isCourseEditor()) {
-              <a class="lms-button lms-button-primary" [routerLink]="['/tenant/lms-settings/content/courses/new']">
-                <mat-icon>add</mat-icon>
-                Create new course
-              </a>
-            } @else {
-            <button
-              class="lms-button lms-button-primary"
-              [type]="activePage() === 'contentCourses' ? 'button' : 'submit'"
-              [attr.form]="activePage() === 'contentCourses' ? null : 'lms-settings-form'"
-              [disabled]="activePage() === 'contentCourses' ? courseSaving() || courseForm.invalid : saving() || !settings()?.lmsEnabled || form.invalid"
-              (click)="activePage() === 'contentCourses' ? saveManagedCourse() : null"
-            >
-              <mat-icon>{{ (activePage() === 'contentCourses' ? courseSaving() : saving()) ? "sync" : "save" }}</mat-icon>
-              {{ (activePage() === 'contentCourses' ? courseSaving() : saving()) ? "Saving..." : (activePage() === 'contentCourses' ? "Save course" : "Save changes") }}
-            </button>
-            }
-          </div>
-        }
-      </header>
-
       @if (loading()) {
         <section class="lms-loading" aria-live="polite">
           <span class="lms-skeleton lms-skeleton-title"></span>
@@ -251,31 +228,6 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
           <button type="button" (click)="load()">Try again</button>
         </section>
       } @else if (settings()) {
-        <section
-          class="lms-plan-status"
-          [class.lms-plan-status-locked]="!settings()?.lmsEnabled"
-        >
-          <div class="lms-plan-icon">
-            <mat-icon>{{
-              settings()?.lmsEnabled ? "check_circle" : "lock"
-            }}</mat-icon>
-          </div>
-          <div>
-            <strong>{{
-              settings()?.lmsEnabled
-                ? "LMS module active"
-                : "LMS module unavailable"
-            }}</strong>
-            <p>
-              {{
-                settings()?.lmsEnabled
-                  ? "Website publishing and template controls are available for this tenant."
-                  : "Add the LMS module to the tenant plan to configure and publish a website."
-              }}
-            </p>
-          </div>
-        </section>
-
         <form
           id="lms-settings-form"
           class="lms-workspace"
@@ -339,6 +291,7 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
                 <div id="lms-content-pages" class="lms-subpage-nav" aria-label="LMS content">
                   <a [routerLink]="['/tenant/lms-settings', 'content']" [class.is-current]="activePage() === 'content'" [attr.aria-current]="activePage() === 'content' ? 'page' : null"><span>Website copy</span></a>
                   <a [routerLink]="['/tenant/lms-settings', 'content', 'courses']" [class.is-current]="activePage() === 'contentCourses'" [attr.aria-current]="activePage() === 'contentCourses' ? 'page' : null"><span>Courses</span><span class="lms-nav-count">{{ managedCourses().length }}</span></a>
+                  <a [routerLink]="['/tenant/lms-settings', 'content', 'learners']" [class.is-current]="activePage() === 'contentUsers'" [attr.aria-current]="activePage() === 'contentUsers' ? 'page' : null"><span>Learners</span><span class="lms-nav-count">{{ contentLearners().length }}</span></a>
                 </div>
               }
             </div>
@@ -346,7 +299,7 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
 
           <div class="lms-settings-content">
             @if (activePage() === "publishing") {
-            <section class="lms-section">
+            <section class="lms-section lms-publishing-overview">
               <div class="lms-section-heading">
                 <div>
                   <h2>Publishing</h2>
@@ -378,28 +331,55 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
                   type="button"
                   class="lms-button lms-button-secondary"
                   [disabled]="
-                    saving() || !settings()?.lmsEnabled || form.invalid
+                    saving() ||
+                    !settings()?.lmsEnabled ||
+                    (!form.controls.websiteEnabled.value && form.invalid)
                   "
-                  (click)="createWebsiteDomain()"
+                  (click)="
+                    form.controls.websiteEnabled.value
+                      ? openWebsite()
+                      : createWebsiteDomain()
+                  "
                 >
-                  <mat-icon>{{ saving() ? "sync" : "add_link" }}</mat-icon>
+                  <mat-icon>{{
+                    saving()
+                      ? "sync"
+                      : form.controls.websiteEnabled.value
+                        ? "open_in_new"
+                        : "add_link"
+                  }}</mat-icon>
                   {{
                     form.controls.websiteEnabled.value
-                      ? "Update domain"
+                      ? "Open website"
                       : "Create domain"
                   }}
                 </button>
               </div>
-              <div class="lms-publishing-summary">
-                <span class="lms-section-row-icon"><mat-icon>view_sidebar</mat-icon></span>
+              <div class="lms-publishing-pages-heading">
                 <div>
-                  <strong>Homepage sections</strong>
-                  <p>{{ enabledSectionCount() }} of {{ sectionDefinitions.length }} sections are visible.</p>
+                  <h3>Homepage sections</h3>
+                  <p>Select a section to edit its content and visibility.</p>
                 </div>
-                <a
-                  class="lms-button lms-button-secondary"
-                  [routerLink]="['/tenant/lms-settings', sectionDefinitions[0].key]"
-                >Manage sections <mat-icon>arrow_forward</mat-icon></a>
+                <span>{{ enabledSectionCount() }} of {{ sectionDefinitions.length }} visible</span>
+              </div>
+              <div class="lms-publishing-page-grid">
+                @for (section of sectionDefinitions; track section.key) {
+                  <a
+                    class="lms-publishing-page-card"
+                    [routerLink]="['/tenant/lms-settings', section.key]"
+                    [attr.aria-label]="'Edit ' + section.label + '. ' + (sectionEnabled(section.key) ? 'Visible' : 'Hidden')"
+                  >
+                    <span class="lms-publishing-page-icon"><mat-icon>{{ section.icon }}</mat-icon></span>
+                    <span class="lms-publishing-page-copy">
+                      <strong>{{ section.label }}</strong>
+                      <small>{{ section.description }}</small>
+                    </span>
+                    <span class="lms-publishing-page-state" [class.is-active]="sectionEnabled(section.key)">
+                      {{ sectionEnabled(section.key) ? "Visible" : "Hidden" }}
+                    </span>
+                    <mat-icon class="lms-publishing-page-arrow">arrow_forward</mat-icon>
+                  </a>
+                }
               </div>
             </section>
             } @else if (activePage() === "navbar") {
@@ -860,7 +840,7 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
             }
 
             @if (activePage() === "contentCourses") {
-              @if (!isCourseEditor()) {
+              @if (courseMode() === "list") {
               <section class="lms-section lms-section-page lms-course-index">
                 <div class="lms-section-heading lms-course-index-heading">
                   <div class="lms-section-title"><span class="lms-section-row-icon"><mat-icon>video_library</mat-icon></span><div><p class="lms-section-parent">Content / Courses</p><h2>Courses</h2><p>Search, filter, and manage the courses available in this tenant LMS.</p></div></div>
@@ -883,7 +863,7 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
                     <table class="lms-course-table">
                       <thead><tr><th>Course</th><th>Grade</th><th>Content</th><th>Price</th><th>Status</th><th>Updated</th><th><span class="lms-visually-hidden">Actions</span></th></tr></thead>
                       <tbody>
-                        @for (course of filteredManagedCourses(); track course.id) {
+                        @for (course of pagedManagedCourses(); track course.id) {
                           <tr>
                             <td><div class="lms-course-cell">@if (course.thumbnailUrl) { <img [src]="resolveAssetUrl(course.thumbnailUrl)" alt="" /> } @else { <span><mat-icon>play_lesson</mat-icon></span> }<div><strong>{{ course.title }}</strong><small>/courses/{{ course.slug }}</small></div></div></td>
                             <td>{{ course.gradeName }}</td>
@@ -891,15 +871,89 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
                             <td>{{ course.price }} {{ course.currency }}</td>
                             <td><span class="lms-course-status" [class.is-published]="course.published"><span></span>{{ course.published ? 'Published' : 'Draft' }}</span></td>
                             <td>{{ course.updatedAt | date:'mediumDate' }}</td>
-                            <td><a class="lms-table-action" [routerLink]="['/tenant/lms-settings/content/courses', course.id, 'edit']" [attr.aria-label]="'Edit ' + course.title"><mat-icon>edit</mat-icon>Edit</a></td>
+                            <td class="lms-course-actions-cell">
+                              <div class="lms-course-row-actions">
+                                <span class="lms-course-actions-more" aria-hidden="true"><mat-icon>more_horiz</mat-icon></span>
+                                <div class="lms-course-actions" [attr.aria-label]="'Actions for ' + course.title">
+                                  <button type="button" class="lms-row-action is-danger" (click)="openCourseDeleteDialog(course)" [disabled]="courseSaving()" [attr.aria-label]="'Delete ' + course.title" [title]="'Delete ' + course.title"><mat-icon>delete_outline</mat-icon></button>
+                                  <a class="lms-row-action" [routerLink]="['/tenant/lms-settings/content/courses', course.id, 'edit']" [attr.aria-label]="'Edit ' + course.title" [title]="'Edit ' + course.title"><mat-icon>edit</mat-icon></a>
+                                  <button type="button" class="lms-row-action" (click)="cloneManagedCourse(course)" [disabled]="courseSaving()" [attr.aria-label]="'Clone ' + course.title" [title]="'Clone ' + course.title"><mat-icon>content_copy</mat-icon></button>
+                                  <button type="button" class="lms-row-action" disabled [attr.aria-label]="'Report for ' + course.title + ' is not available yet'" title="Report is not available yet"><mat-icon>query_stats</mat-icon></button>
+                                  <a class="lms-row-action" [routerLink]="coursePreviewRoute(course)" [attr.aria-label]="'Preview ' + course.title" [title]="'Preview ' + course.title"><mat-icon>visibility</mat-icon></a>
+                                </div>
+                              </div>
+                            </td>
                           </tr>
                         }
                       </tbody>
                     </table>
                   </div>
-                  <div class="lms-course-results">Showing {{ filteredManagedCourses().length }} of {{ managedCourses().length }} courses</div>
+                  <div class="lms-report-pagination">
+                    <span>Showing {{ courseResultStart() }}-{{ courseResultEnd() }} of {{ filteredManagedCourses().length }} courses</span>
+                    <div><label class="lms-page-size">Rows<select [value]="coursePageSize()" (change)="setCoursePageSize($event)"><option [value]="5">5</option><option [value]="10">10</option><option [value]="20">20</option></select></label><button type="button" class="lms-page-button lms-page-icon-button" (click)="goToCoursePage(coursePage() - 1)" [disabled]="coursePage() === 1" title="Previous page" aria-label="Previous course page"><mat-icon>chevron_left</mat-icon></button><span class="lms-page-summary">Page {{ coursePage() }} of {{ coursePageCount() }}</span><button type="button" class="lms-page-button lms-page-icon-button" (click)="goToCoursePage(coursePage() + 1)" [disabled]="coursePage() === coursePageCount()" title="Next page" aria-label="Next course page"><mat-icon>chevron_right</mat-icon></button></div>
+                  </div>
                 } @else {
                   <div class="lms-course-empty"><mat-icon>{{ managedCourses().length ? 'search_off' : 'library_books' }}</mat-icon><strong>{{ managedCourses().length ? 'No courses match these filters' : 'Create your first course' }}</strong><p>{{ managedCourses().length ? 'Try another search term, status, or grade.' : 'Add the course details, pricing, and optional curriculum content.' }}</p>@if (!managedCourses().length) { <a class="lms-button lms-button-primary" [routerLink]="['/tenant/lms-settings/content/courses/new']"><mat-icon>add</mat-icon>Create new course</a> }</div>
+                }
+              </section>
+              } @else if (courseMode() === "preview") {
+              <section class="lms-section lms-section-page lms-course-report">
+                <div class="lms-section-heading lms-course-index-heading">
+                  <div class="lms-section-title"><span class="lms-section-row-icon"><mat-icon>visibility</mat-icon></span><div><p class="lms-section-parent">Content / Courses / Preview</p><h2>{{ selectedPreviewCourse()?.title || 'Course preview' }}</h2><p>Review enrolled users, progress status, and enrollment dates for this course.</p></div></div>
+                  @if (selectedPreviewCourse(); as course) {
+                    <a class="lms-button lms-button-primary" [routerLink]="['/tenant/lms-settings/content/courses', course.id, 'edit']"><mat-icon>edit</mat-icon>Edit course</a>
+                  }
+                </div>
+
+                @if (courseError()) { <div class="lms-inline-alert is-error lms-index-alert" role="alert"><mat-icon>error_outline</mat-icon>{{ courseError() }}</div> }
+
+                <div class="lms-report-actions">
+                  <a class="lms-button lms-button-secondary" [routerLink]="['/tenant/lms-settings/content/courses']"><mat-icon>arrow_back</mat-icon>Back to courses</a>
+                  <a class="lms-enroll-link" role="button" tabindex="0" (click)="openEnrollDrawer()" (keydown.enter)="openEnrollDrawer()" (keydown.space)="$event.preventDefault(); openEnrollDrawer()"><mat-icon>person_add</mat-icon><span>Enroll Learner</span></a>
+                </div>
+
+                <div class="lms-course-toolbar lms-report-toolbar" role="search">
+                  <label class="lms-course-search"><mat-icon>search</mat-icon><span class="lms-visually-hidden">Search enrollments</span><input type="search" placeholder="Search by user, email, or role" [value]="enrollmentSearch()" (input)="setEnrollmentSearch($event)" /></label>
+                  <label><span class="lms-visually-hidden">Filter by role</span><select class="tenant-lms-input" [value]="enrollmentRoleFilter()" (change)="setEnrollmentRoleFilter($event)"><option value="all">All roles</option>@for (role of enrollmentRoleOptions(); track role) { <option [value]="role">{{ role }}</option> }</select></label>
+                  <label><span class="lms-visually-hidden">Filter by progress</span><select class="tenant-lms-input" [value]="enrollmentProgressFilter()" (change)="setEnrollmentProgressFilter($event)"><option value="all">All progress</option><option value="not-started">Not started</option><option value="in-progress">In progress</option><option value="completed">Completed</option><option value="expired">Expired</option></select></label>
+                </div>
+
+                @if (coursesLoading()) {
+                  <div class="lms-course-loading"><span class="lms-skeleton"></span><span class="lms-skeleton lms-skeleton-short"></span></div>
+                } @else if (pagedCourseEnrollmentRows().length) {
+                  <div class="lms-course-table-wrap">
+                    <table class="lms-course-table lms-report-table">
+                      <thead><tr><th>Users</th><th>Role</th><th>Progress status</th><th>Enrollment date</th><th>Completion date</th><th>Expiration date</th><th>Actinos</th></tr></thead>
+                      <tbody>
+                        @for (row of pagedCourseEnrollmentRows(); track row.userId) {
+                          <tr>
+                            <td><div class="lms-user-cell"><span>{{ row.userName.charAt(0) }}</span><div><strong>{{ row.userName }}</strong><small>{{ row.email }}</small></div></div></td>
+                            <td>{{ row.role }}</td>
+                            <td><span class="lms-progress-pill" [class.is-completed]="row.progressStatus === 'completed'" [class.is-in-progress]="row.progressStatus === 'in-progress'" [class.is-not-started]="row.progressStatus === 'not-started'" [class.is-expired]="row.progressStatus === 'expired'"><mat-icon>{{ progressStatusIcon(row.progressStatus) }}</mat-icon>{{ progressStatusLabel(row.progressStatus) }}<small>{{ row.progress }}%</small></span></td>
+                            <td>{{ row.enrollmentDate | date:'mediumDate' }}</td>
+                            <td>{{ row.completionDate ? (row.completionDate | date:'mediumDate') : '—' }}</td>
+                            <td>{{ row.expirationDate | date:'mediumDate' }}</td>
+                            <td class="lms-course-actions-cell">
+                              <div class="lms-course-row-actions">
+                                <span class="lms-course-actions-more" aria-hidden="true"><mat-icon>more_horiz</mat-icon></span>
+                                <div class="lms-course-actions" [attr.aria-label]="'Actions for ' + row.userName">
+                                  <button type="button" class="lms-row-action" (click)="resetUserCourseProgress(row.userId)" [attr.aria-label]="'Reset progress for ' + row.userName" [title]="'Reset progress for ' + row.userName"><mat-icon>restart_alt</mat-icon></button>
+                                  <button type="button" class="lms-row-action" [attr.aria-label]="'Preview ' + row.userName" [title]="'Preview ' + row.userName"><mat-icon>visibility</mat-icon></button>
+                                  <button type="button" class="lms-row-action is-danger" (click)="removeUserFromCourse(row.userId)" [attr.aria-label]="'Remove ' + row.userName" [title]="'Remove ' + row.userName"><mat-icon>person_remove</mat-icon></button>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="lms-report-pagination">
+                    <span>Showing {{ enrollmentResultStart() }}-{{ enrollmentResultEnd() }} of {{ filteredCourseEnrollmentRows().length }} users</span>
+                    <div><label class="lms-page-size">Rows<select [value]="enrollmentPageSize()" (change)="setEnrollmentPageSize($event)"><option [value]="5">5</option><option [value]="10">10</option><option [value]="20">20</option></select></label><button type="button" class="lms-page-button lms-page-icon-button" (click)="goToEnrollmentPage(enrollmentPage() - 1)" [disabled]="enrollmentPage() === 1" title="Previous page" aria-label="Previous enrollment page"><mat-icon>chevron_left</mat-icon></button><span class="lms-page-summary">Page {{ enrollmentPage() }} of {{ enrollmentPageCount() }}</span><button type="button" class="lms-page-button lms-page-icon-button" (click)="goToEnrollmentPage(enrollmentPage() + 1)" [disabled]="enrollmentPage() === enrollmentPageCount()" title="Next page" aria-label="Next enrollment page"><mat-icon>chevron_right</mat-icon></button></div>
+                  </div>
+                } @else {
+                  <div class="lms-course-empty"><mat-icon>person_search</mat-icon><strong>No users match these filters</strong><p>Use search, role, and progress filters to narrow this course enrollment list.</p></div>
                 }
               </section>
               } @else {
@@ -1045,6 +1099,119 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
             </section>
             }
 
+            @if (activePage() === "contentUsers") {
+              @if (isLearnerCreator()) {
+              <section class="lms-section lms-section-page lms-learner-editor">
+                <div class="lms-section-heading lms-course-index-heading">
+                  <div class="lms-section-title">
+                    <span class="lms-section-row-icon"><mat-icon>person_add</mat-icon></span>
+                    <div>
+                      <p class="lms-section-parent">Content / Learners</p>
+                      <h2>Add learner</h2>
+                      <p>Create a learner profile and sign-in credentials for LMS access.</p>
+                    </div>
+                  </div>
+                  <a class="lms-button lms-button-secondary" [routerLink]="['/tenant/lms-settings/content/learners']"><mat-icon>arrow_back</mat-icon>Back to learners</a>
+                </div>
+
+                @if (contentUsersError()) { <div class="lms-inline-alert is-error lms-index-alert" role="alert"><mat-icon>error_outline</mat-icon>{{ contentUsersError() }}</div> }
+
+                <div class="lms-learner-form-shell" [formGroup]="learnerForm">
+                  <label class="lms-learner-avatar" [class.has-image]="learnerForm.controls.avatarUrl.value" [class.is-uploading]="learnerAvatarUploading()">
+                    <input type="file" accept="image/*" (change)="uploadLearnerAvatar($event)" [disabled]="learnerAvatarUploading() || learnerSaving()" />
+                    @if (learnerForm.controls.avatarUrl.value) {
+                      <img [src]="resolveAssetUrl(learnerForm.controls.avatarUrl.value)" alt="" />
+                    } @else {
+                      <mat-icon>person</mat-icon>
+                    }
+                    <span class="lms-learner-avatar-overlay"><mat-icon>{{ learnerAvatarUploading() ? 'sync' : 'photo_camera' }}</mat-icon>{{ learnerAvatarUploading() ? 'Uploading…' : 'Upload image' }}</span>
+                  </label>
+                  <div class="lms-learner-fields">
+                    <label><span>First name <small>*</small></span><input class="tenant-lms-input" formControlName="firstName" autocomplete="given-name" /></label>
+                    <label><span>Last name <small>*</small></span><input class="tenant-lms-input" formControlName="lastName" autocomplete="family-name" /></label>
+                    <label><span>Email</span><input class="tenant-lms-input" formControlName="email" type="email" autocomplete="email" /></label>
+                    <label><span>Bio</span><textarea class="tenant-lms-input" formControlName="bio" rows="6"></textarea></label>
+                    <div class="lms-learner-divider"></div>
+                    <h3>Sign in credentials</h3>
+                    <label><span>Username <small>*</small></span><input class="tenant-lms-input" formControlName="username" autocomplete="username" /></label>
+                    <label><span>Password <small>*</small></span><input class="tenant-lms-input" formControlName="password" type="password" autocomplete="new-password" placeholder="Type new password" /></label>
+                    <p class="lms-learner-password-help">Passwords are required to be at least 8 characters long, and contain at least one uppercase letter, one lowercase letter and one number.</p>
+                    <div class="lms-learner-divider"></div>
+                    <h3>Learner status</h3>
+                    <label><span>Status <small>*</small></span><select class="tenant-lms-input" formControlName="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
+                  </div>
+                </div>
+              </section>
+              } @else {
+              <section class="lms-section lms-section-page lms-course-report">
+                <div class="lms-section-heading lms-course-index-heading">
+                  <div class="lms-section-title">
+                    <span class="lms-section-row-icon"><mat-icon>group</mat-icon></span>
+                    <div>
+                      <p class="lms-section-parent">Content / Learners</p>
+                      <h2>Learners</h2>
+                      <p>Review the learners available for LMS enrollment and course access.</p>
+                    </div>
+                  </div>
+                  <div class="lms-split-button" aria-label="Add learner actions">
+                    <a class="lms-split-button-main" [routerLink]="['/tenant/lms-settings/content/learners/new']">Add learner</a>
+                    <button type="button" class="lms-split-button-toggle" aria-label="Open add learner options" [attr.aria-expanded]="addUserMenuOpen()" aria-controls="lms-add-user-menu" (click)="toggleAddUserMenu()"><mat-icon>{{ addUserMenuOpen() ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</mat-icon></button>
+                    @if (addUserMenuOpen()) {
+                      <div id="lms-add-user-menu" class="lms-split-menu" role="menu">
+                        <button type="button" role="menuitem" (click)="importLearners()"><mat-icon>upload_file</mat-icon><span><strong>Import learners</strong><small>Upload learner list</small></span></button>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                @if (contentUsersError()) { <div class="lms-inline-alert is-error lms-index-alert" role="alert"><mat-icon>error_outline</mat-icon>{{ contentUsersError() }}</div> }
+
+                <div class="lms-course-toolbar lms-report-toolbar" role="search">
+                  <label class="lms-course-search"><mat-icon>search</mat-icon><span class="lms-visually-hidden">Search learners</span><input type="search" placeholder="Search by name, email, or role" [value]="contentUserSearch()" (input)="setContentUserSearch($event)" /></label>
+                  <label><span class="lms-visually-hidden">Filter by role</span><select class="tenant-lms-input" [value]="contentUserRoleFilter()" (change)="setContentUserRoleFilter($event)"><option value="all">All roles</option>@for (role of contentUserRoleOptions(); track role) { <option [value]="role">{{ role }}</option> }</select></label>
+                  <label><span class="lms-visually-hidden">Filter by status</span><select class="tenant-lms-input" [value]="contentUserStatusFilter()" (change)="setContentUserStatusFilter($event)"><option value="all">All statuses</option><option value="Active">Active</option><option value="Inactive">Inactive</option><option value="Pending">Pending</option></select></label>
+                </div>
+
+                @if (contentUsersLoading()) {
+                  <div class="lms-course-loading"><span class="lms-skeleton"></span><span class="lms-skeleton lms-skeleton-short"></span></div>
+                } @else if (filteredContentUsers().length) {
+                  <div class="lms-course-table-wrap">
+                    <table class="lms-course-table lms-content-users-table">
+                      <thead><tr><th>Learner</th><th>Status</th><th>Registration</th><th>Last login</th><th><span class="lms-visually-hidden">Actions</span></th></tr></thead>
+                      <tbody>
+                        @for (user of pagedContentUsers(); track user.id) {
+                          <tr>
+                            <td><div class="lms-user-cell">@if (user.avatar) { <img [src]="user.avatar" [alt]="user.name" /> } @else { <span>{{ user.name.charAt(0) }}</span> }<div><strong>{{ user.name }}</strong><small>{{ user.email }}</small></div></div></td>
+                            <td><span class="lms-user-status" [class.is-active]="user.status === 'Active'" [class.is-pending]="user.status === 'Pending'" [class.is-inactive]="user.status === 'Inactive'">{{ user.status }}</span></td>
+                            <td><span class="lms-user-registration">{{ user.registrationDate ? (user.registrationDate | date:'mediumDate') : '—' }}</span></td>
+                            <td>{{ user.lastLogin }}</td>
+                            <td class="lms-course-actions-cell">
+                              <div class="lms-course-row-actions">
+                                <span class="lms-course-actions-more" aria-hidden="true"><mat-icon>more_horiz</mat-icon></span>
+                                <div class="lms-course-actions" [attr.aria-label]="'Actions for ' + user.name">
+                                  <button type="button" class="lms-row-action is-danger" [attr.aria-label]="'Delete ' + user.name" [title]="'Delete ' + user.name"><mat-icon>delete_outline</mat-icon></button>
+                                  <a class="lms-row-action" [routerLink]="['/tenant/users', user.id, 'edit']" [attr.aria-label]="'Edit ' + user.name" [title]="'Edit ' + user.name"><mat-icon>edit</mat-icon></a>
+                                  <button type="button" class="lms-row-action" [attr.aria-label]="'Report for ' + user.name" [title]="'Report for ' + user.name"><mat-icon>query_stats</mat-icon></button>
+                                  <button type="button" class="lms-row-action" [attr.aria-label]="'Preview ' + user.name" [title]="'Preview ' + user.name"><mat-icon>visibility</mat-icon></button>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="lms-report-pagination">
+                    <span>Showing {{ contentUserResultStart() }}-{{ contentUserResultEnd() }} of {{ filteredContentUsers().length }} learners</span>
+                    <div><label class="lms-page-size">Rows<select [value]="contentUserPageSize()" (change)="setContentUserPageSize($event)"><option [value]="5">5</option><option [value]="10">10</option><option [value]="20">20</option></select></label><button type="button" class="lms-page-button lms-page-icon-button" (click)="goToContentUserPage(contentUserPage() - 1)" [disabled]="contentUserPage() === 1" title="Previous page" aria-label="Previous learner page"><mat-icon>chevron_left</mat-icon></button><span class="lms-page-summary">Page {{ contentUserPage() }} of {{ contentUserPageCount() }}</span><button type="button" class="lms-page-button lms-page-icon-button" (click)="goToContentUserPage(contentUserPage() + 1)" [disabled]="contentUserPage() === contentUserPageCount()" title="Next page" aria-label="Next learner page"><mat-icon>chevron_right</mat-icon></button></div>
+                  </div>
+                } @else {
+                  <div class="lms-course-empty"><mat-icon>person_search</mat-icon><strong>{{ contentLearners().length ? 'No learners match these filters' : 'No learners found' }}</strong><p>{{ contentLearners().length ? 'Try another search term, role, or status.' : 'Add learners from this page, then enroll them in LMS courses.' }}</p>@if (!contentLearners().length) { <a class="lms-button lms-button-primary" [routerLink]="['/tenant/lms-settings/content/learners/new']"><mat-icon>person_add</mat-icon>Add learner</a> }</div>
+                }
+              </section>
+              }
+            }
+
             @if (activePage() === "content") {
             <section class="lms-section">
               <div class="lms-section-heading">
@@ -1142,25 +1309,112 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
               </div>
             }
 
-            <footer class="lms-form-footer">
-              <div>
-                <strong>Ready to publish?</strong
-                ><span
-                  >Your selected template and content will be applied
-                  together.</span
+            @if (isLearnerCreator()) {
+              <footer class="lms-form-footer lms-learner-save-footer">
+                <div class="lms-footer-actions">
+                  <button
+                    class="lms-button lms-button-primary"
+                    type="button"
+                    [disabled]="learnerSaving() || learnerAvatarUploading()"
+                    (click)="saveLearner()"
+                  >
+                    {{ learnerSaving() ? "Saving..." : "Save" }}
+                  </button>
+                  <a class="lms-button lms-button-secondary" [routerLink]="['/tenant/lms-settings/content/learners']">Cancel</a>
+                </div>
+              </footer>
+            } @else if (activePage() === "contentCourses" && isCourseEditor()) {
+              <footer class="lms-form-footer">
+                <div>
+                  <strong>Ready to save?</strong>
+                  <span>Save the course details, pricing, and learning content.</span>
+                </div>
+                <button
+                  class="lms-button lms-button-primary"
+                  type="button"
+                  [disabled]="courseSaving() || courseForm.invalid"
+                  (click)="saveManagedCourse()"
                 >
-              </div>
-              <button
-                class="lms-button lms-button-primary"
-                type="submit"
-                [disabled]="saving() || !settings()?.lmsEnabled || form.invalid"
-              >
-                <mat-icon>{{ saving() ? "sync" : "save" }}</mat-icon
-                >{{ saving() ? "Saving..." : "Save changes" }}
-              </button>
-            </footer>
+                  <mat-icon>{{ courseSaving() ? "sync" : "save" }}</mat-icon>
+                  {{ courseSaving() ? "Saving..." : "Save course" }}
+                </button>
+              </footer>
+            } @else if (activePage() !== "contentCourses" && activePage() !== "contentUsers" && activePage() !== "publishing") {
+              <footer class="lms-form-footer">
+                <div>
+                  <strong>Ready to publish?</strong>
+                  <span>Your selected template and content will be applied together.</span>
+                </div>
+                <button
+                  class="lms-button lms-button-primary"
+                  type="submit"
+                  [disabled]="saving() || !settings()?.lmsEnabled || form.invalid"
+                >
+                  <mat-icon>{{ saving() ? "sync" : "save" }}</mat-icon>
+                  {{ saving() ? "Saving..." : "Save changes" }}
+                </button>
+              </footer>
+            }
           </div>
         </form>
+      }
+      @if (enrollDrawerOpen()) {
+        <div class="lms-drawer-backdrop" role="presentation" (click)="closeEnrollDrawer()">
+          <aside class="lms-enroll-drawer" role="dialog" aria-modal="true" aria-labelledby="lms-enroll-title" (click)="$event.stopPropagation()">
+            <div class="lms-drawer-head">
+              <div>
+                <p class="lms-section-parent">Course enrollment</p>
+                <h3 id="lms-enroll-title">Enroll Learner</h3>
+              </div>
+              <button type="button" class="lms-icon-button" (click)="closeEnrollDrawer()" aria-label="Close enrollment drawer"><mat-icon>close</mat-icon></button>
+            </div>
+            <div class="lms-drawer-controls">
+              <label class="lms-course-search"><mat-icon>search</mat-icon><span class="lms-visually-hidden">Search existing users</span><input type="search" placeholder="Search existing users" [value]="userDrawerSearch()" (input)="setUserDrawerSearch($event)" /></label>
+              <label><span class="lms-visually-hidden">Filter drawer users by role</span><select class="tenant-lms-input" [value]="userDrawerRoleFilter()" (change)="setUserDrawerRoleFilter($event)"><option value="all">All roles</option>@for (role of drawerRoleOptions(); track role) { <option [value]="role">{{ role }}</option> }</select></label>
+            </div>
+            <label class="lms-check-all"><input type="checkbox" [checked]="allDrawerUsersEnrolled()" (change)="toggleAllDrawerUsers($event)" /><span>Check all users</span></label>
+            <section class="lms-drawer-users" aria-label="Users">
+              <h4>Users</h4>
+              @if (filteredDrawerUsers().length) {
+                @for (user of filteredDrawerUsers(); track user.id) {
+                  <article class="lms-drawer-user" [class.is-selected]="isUserEnrolled(user.id)">
+                    <div class="lms-user-cell"><span>{{ user.name.charAt(0) }}</span><div><strong>{{ user.name }}</strong><small>{{ user.email }} · {{ user.role }}</small></div></div>
+                    <button type="button" class="lms-row-action" (click)="addUserToCourse(user)" [disabled]="isUserEnrolled(user.id)" [attr.aria-label]="'Add ' + user.name"><mat-icon>{{ isUserEnrolled(user.id) ? 'check' : 'person_add' }}</mat-icon></button>
+                  </article>
+                }
+              } @else {
+                <div class="lms-drawer-empty"><mat-icon>person_search</mat-icon><strong>No users found</strong><p>Try a different search or role filter.</p></div>
+              }
+            </section>
+          </aside>
+        </div>
+      }
+      @if (pendingDeleteCourse(); as course) {
+        <div class="lms-confirm-backdrop" role="presentation" (click)="closeCourseDeleteDialog()">
+          <section
+            class="lms-confirm-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="lms-delete-course-title"
+            aria-describedby="lms-delete-course-description"
+            (click)="$event.stopPropagation()"
+          >
+            <div class="lms-confirm-icon"><mat-icon>delete_outline</mat-icon></div>
+            <div class="lms-confirm-copy">
+              <h3 id="lms-delete-course-title">Delete course?</h3>
+              <p id="lms-delete-course-description">
+                This will permanently remove <strong>{{ course.title }}</strong> and its saved content from the tenant LMS.
+              </p>
+            </div>
+            <div class="lms-confirm-actions">
+              <button type="button" class="lms-button lms-button-secondary" (click)="closeCourseDeleteDialog()" [disabled]="courseSaving()">Cancel</button>
+              <button type="button" class="lms-button lms-confirm-delete" (click)="confirmDeleteManagedCourseFromList()" [disabled]="courseSaving()">
+                <mat-icon>{{ courseSaving() ? "sync" : "delete" }}</mat-icon>
+                {{ courseSaving() ? "Deleting..." : "Delete course" }}
+              </button>
+            </div>
+          </section>
+        </div>
       }
     </section>
   `,
@@ -1174,58 +1428,19 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
       .lms-page {
         max-width: 86rem;
         margin: 0 auto;
-        padding-bottom: 3rem;
+        min-height: 100%;
       }
 
-      .lms-header,
-      .lms-header-actions,
-      .lms-plan-status,
+      :host-context(.lms-workspace-shell) .lms-page {
+        max-width: none;
+      }
+
       .lms-section-heading,
       .lms-domain-row,
       .lms-form-footer,
       .lms-notice {
         display: flex;
         align-items: center;
-      }
-
-      .lms-header {
-        min-height: 6.5rem;
-        justify-content: space-between;
-        gap: 2rem;
-        padding-bottom: 1.5rem;
-        border-bottom: 1px solid rgb(226 232 240);
-      }
-
-      .lms-breadcrumb {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-        margin: 0 0 0.4rem;
-        color: rgb(100 116 139);
-        font-size: 0.75rem;
-        font-weight: 600;
-      }
-
-      .lms-breadcrumb mat-icon {
-        width: 1rem;
-        height: 1rem;
-        font-size: 1rem;
-      }
-      h1 {
-        margin: 0;
-        font-size: 1.75rem;
-        line-height: 2.15rem;
-        font-weight: 750;
-        letter-spacing: -0.025em;
-      }
-      .lms-intro {
-        margin: 0.4rem 0 0;
-        color: rgb(71 85 105);
-        font-size: 0.875rem;
-      }
-      .lms-header-actions {
-        flex-shrink: 0;
-        gap: 0.75rem;
       }
 
       .lms-button {
@@ -1259,6 +1474,114 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
       .lms-button-primary:hover:not(:disabled) {
         background: rgb(67 56 202);
       }
+      .lms-split-button {
+        position: relative;
+        display: inline-flex;
+        align-items: stretch;
+        border-radius: 0.625rem;
+        background: rgb(79 70 229);
+        color: white;
+      }
+      .lms-split-button-main,
+      .lms-split-button-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        font-size: 0.875rem;
+        font-weight: 800;
+        line-height: 1.25rem;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 180ms ease;
+      }
+      .lms-split-button-main {
+        min-height: 2.5rem;
+        padding: 0.625rem 1.15rem;
+        border-radius: 0.625rem 0 0 0.625rem;
+      }
+      .lms-split-button-toggle {
+        width: 2.5rem;
+        border-left: 1px solid rgb(255 255 255 / .28);
+        border-radius: 0 0.625rem 0.625rem 0;
+      }
+      .lms-split-button-toggle mat-icon {
+        width: 1.15rem;
+        height: 1.15rem;
+        font-size: 1.15rem;
+      }
+      .lms-split-button:hover {
+        background: rgb(67 56 202);
+      }
+      .lms-split-button-main:focus-visible,
+      .lms-split-button-toggle:focus-visible {
+        outline: 3px solid rgb(99 102 241 / .3);
+        outline-offset: -3px;
+      }
+      .lms-split-menu {
+        position: absolute;
+        top: calc(100% + .5rem);
+        right: 0;
+        z-index: 40;
+        display: grid;
+        min-width: 15rem;
+        overflow: hidden;
+        border: 1px solid rgb(226 232 240);
+        border-radius: .75rem;
+        background: white;
+        box-shadow: 0 12px 24px rgb(15 23 42 / .12);
+        color: rgb(15 23 42);
+      }
+      .lms-split-menu a,
+      .lms-split-menu button {
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+        width: 100%;
+        border: 0;
+        padding: .75rem .85rem;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        text-align: left;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .lms-split-menu a + a,
+      .lms-split-menu a + button,
+      .lms-split-menu button + a,
+      .lms-split-menu button + button {
+        border-top: 1px solid rgb(241 245 249);
+      }
+      .lms-split-menu a:hover,
+      .lms-split-menu button:hover {
+        background: rgb(248 250 252);
+      }
+      .lms-split-menu a:focus-visible,
+      .lms-split-menu button:focus-visible {
+        outline: 3px solid rgb(99 102 241 / .25);
+        outline-offset: -3px;
+      }
+      .lms-split-menu mat-icon {
+        width: 1.1rem;
+        height: 1.1rem;
+        color: rgb(79 70 229);
+        font-size: 1.1rem;
+      }
+      .lms-split-menu span {
+        display: grid;
+        gap: .1rem;
+      }
+      .lms-split-menu strong {
+        font-size: .76rem;
+      }
+      .lms-split-menu small {
+        color: rgb(100 116 139);
+        font-size: .66rem;
+      }
       .lms-button-secondary {
         border: 1px solid rgb(203 213 225);
         background: white;
@@ -1272,6 +1595,7 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
       .lms-button:focus-visible,
       .lms-section-nav a:focus-visible,
       .lms-nav-trigger:focus-visible,
+      .lms-publishing-page-card:focus-visible,
       .lms-template:focus-visible {
         outline: 3px solid rgb(129 140 248 / 0.38);
         outline-offset: 2px;
@@ -1281,57 +1605,26 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
         opacity: 0.5;
       }
 
-      .lms-plan-status {
-        gap: 0.875rem;
-        margin: 1.5rem 0;
-        padding: 0.875rem 1rem;
-        border: 1px solid rgb(167 243 208);
-        border-radius: 0.75rem;
-        background: rgb(236 253 245);
-        color: rgb(6 78 59);
-      }
-
-      .lms-plan-status-locked {
-        border-color: rgb(253 230 138);
-        background: rgb(255 251 235);
-        color: rgb(120 53 15);
-      }
-      .lms-plan-icon {
-        display: grid;
-        place-items: center;
-      }
-      .lms-plan-icon mat-icon {
-        font-size: 1.375rem;
-        width: 1.375rem;
-        height: 1.375rem;
-      }
-      .lms-plan-status strong {
-        display: block;
-        font-size: 0.875rem;
-      }
-      .lms-plan-status p {
-        margin: 0.125rem 0 0;
-        font-size: 0.8125rem;
-        color: currentColor;
-        opacity: 0.82;
-      }
-
       .lms-workspace {
         display: grid;
         grid-template-columns: 13rem minmax(0, 1fr);
-        gap: 2.5rem;
+        min-height: 100%;
+        gap: 0;
         align-items: start;
       }
 
       .lms-section-nav {
         position: sticky;
-        top: 1.5rem;
+        top: 0;
         display: grid;
+        align-content: start;
         gap: 0.25rem;
-        padding-right: 1.25rem;
+        min-height: calc(100dvh - 8rem);
+        max-height: calc(100dvh - 8rem);
+        padding: 1.5rem 1.25rem 1.5rem 0;
         border-right: 1px solid rgb(226 232 240);
-        max-height: calc(100vh - 3rem);
         overflow-y: auto;
+        overscroll-behavior: contain;
       }
 
       .lms-nav-group {
@@ -1432,6 +1725,7 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
         min-width: 0;
         display: grid;
         gap: 1.5rem;
+        padding: 1.5rem 0 3rem 2rem;
       }
       .lms-section {
         scroll-margin-top: 1.5rem;
@@ -1514,34 +1808,123 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
         font-size: 0.75rem;
       }
 
-      .lms-publishing-summary,
       .lms-section-control,
       .lms-section-title,
       .lms-section-help {
         display: flex;
         align-items: center;
       }
-      .lms-publishing-summary {
-        gap: 0.75rem;
-        padding: 1.25rem 1.5rem;
-        border-top: 1px solid rgb(226 232 240);
-      }
-      .lms-publishing-summary > div {
-        min-width: 0;
-      }
-      .lms-publishing-summary strong,
       .lms-section-control strong {
         font-size: 0.8125rem;
       }
-      .lms-publishing-summary p,
       .lms-section-control p,
       .lms-section-help p {
         margin: 0.2rem 0 0;
         color: rgb(71 85 105);
         font-size: 0.75rem;
       }
-      .lms-publishing-summary .lms-button {
-        margin-left: auto;
+      .lms-publishing-pages-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.25rem 1.5rem 0.875rem;
+        border-top: 1px solid rgb(226 232 240);
+      }
+      .lms-publishing-pages-heading h3 {
+        margin: 0;
+        font-size: 0.9375rem;
+        line-height: 1.25rem;
+      }
+      .lms-publishing-pages-heading p {
+        margin: 0.2rem 0 0;
+        color: rgb(71 85 105);
+        font-size: 0.75rem;
+      }
+      .lms-publishing-pages-heading > span {
+        flex: 0 0 auto;
+        color: rgb(71 85 105);
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+      .lms-publishing-page-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+        gap: 0.75rem;
+        padding: 0 1.5rem 1.5rem;
+      }
+      .lms-publishing-page-card {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto auto;
+        align-items: center;
+        gap: 0.75rem;
+        min-height: 5rem;
+        padding: 0.875rem;
+        border: 1px solid rgb(226 232 240);
+        border-radius: 0.75rem;
+        background: rgb(248 250 252);
+        color: rgb(30 41 59);
+        text-decoration: none;
+        transition:
+          border-color 180ms ease,
+          background-color 180ms ease,
+          transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .lms-publishing-page-card:hover {
+        border-color: rgb(165 180 252);
+        background: rgb(238 242 255);
+        transform: translateY(-1px);
+      }
+      .lms-publishing-page-icon {
+        display: grid;
+        place-items: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 0.625rem;
+        background: white;
+        color: rgb(79 70 229);
+      }
+      .lms-publishing-page-icon mat-icon,
+      .lms-publishing-page-arrow {
+        width: 1.125rem;
+        height: 1.125rem;
+        font-size: 1.125rem;
+      }
+      .lms-publishing-page-copy {
+        min-width: 0;
+        display: grid;
+        gap: 0.15rem;
+      }
+      .lms-publishing-page-copy strong {
+        overflow: hidden;
+        font-size: 0.8125rem;
+        line-height: 1.125rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .lms-publishing-page-copy small {
+        overflow: hidden;
+        color: rgb(71 85 105);
+        font-size: 0.6875rem;
+        line-height: 1rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .lms-publishing-page-state {
+        border-radius: 999px;
+        padding: 0.2rem 0.45rem;
+        background: rgb(226 232 240);
+        color: rgb(71 85 105);
+        font-size: 0.625rem;
+        font-weight: 700;
+      }
+      .lms-publishing-page-state.is-active {
+        background: rgb(220 252 231);
+        color: rgb(21 128 61);
+      }
+      .lms-publishing-page-arrow {
+        color: rgb(100 116 139);
       }
       .lms-section-title {
         min-width: 0;
@@ -1881,10 +2264,11 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
       .lms-course-search input { width: 100%; border: 0; outline: 0; color: rgb(15 23 42); font: inherit; font-size: .8rem; }
       .lms-course-search input::placeholder { color: rgb(71 85 105); }
       .lms-course-table-wrap { width: 100%; overflow-x: auto; }
-      .lms-course-table { width: 100%; min-width: 58rem; border-collapse: collapse; color: rgb(51 65 85); font-size: .75rem; text-align: left; }
+      .lms-course-table { width: 100%; min-width: 62rem; border-collapse: collapse; color: rgb(51 65 85); font-size: .75rem; text-align: left; }
       .lms-course-table th { background: rgb(248 250 252); padding: .75rem 1rem; color: rgb(71 85 105); font-size: .68rem; font-weight: 750; }
       .lms-course-table td { border-top: 1px solid rgb(226 232 240); padding: .85rem 1rem; vertical-align: middle; }
-      .lms-course-table tbody tr:hover { background: rgb(248 250 252 / .7); }
+      .lms-course-table tbody tr { transition: background-color .16s ease, box-shadow .16s ease; }
+      .lms-course-table tbody tr:hover, .lms-course-table tbody tr:focus-within { background: rgb(226 232 240 / .78); box-shadow: inset 0 0 0 1px rgb(203 213 225); }
       .lms-course-cell { display: flex; align-items: center; gap: .7rem; min-width: 15rem; }
       .lms-course-cell > img, .lms-course-cell > span { width: 3.25rem; height: 2.2rem; flex: 0 0 auto; border-radius: .45rem; object-fit: cover; }
       .lms-course-cell > span { display: grid; place-items: center; background: rgb(238 242 255); color: rgb(79 70 229); }
@@ -1895,9 +2279,107 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
       .lms-course-status { display: inline-flex; align-items: center; gap: .35rem; border-radius: 999px; background: rgb(241 245 249); padding: .3rem .55rem; color: rgb(71 85 105); font-size: .67rem; font-weight: 750; }
       .lms-course-status > span { width: .4rem; height: .4rem; border-radius: 50%; background: rgb(148 163 184); }
       .lms-course-status.is-published { background: rgb(236 253 245); color: rgb(4 120 87); }.lms-course-status.is-published > span { background: rgb(16 185 129); }
-      .lms-table-action { display: inline-flex; align-items: center; gap: .3rem; border-radius: .5rem; padding: .45rem .55rem; color: rgb(67 56 202); font-weight: 750; text-decoration: none; }
-      .lms-table-action:hover { background: rgb(238 242 255); }.lms-table-action:focus-visible { outline: 3px solid rgb(99 102 241 / .28); outline-offset: 1px; }
-      .lms-table-action mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
+      .lms-course-actions-cell { width: 12rem; }
+      .lms-course-row-actions { position: relative; display: flex; justify-content: flex-end; min-height: 2rem; }
+      .lms-course-actions-more, .lms-course-actions { display: inline-flex; align-items: center; justify-content: center; }
+      .lms-course-actions-more { width: 2rem; height: 2rem; border-radius: .5rem; color: rgb(71 85 105); transition: opacity .16s ease, transform .16s ease; }
+      .lms-course-actions-more mat-icon { width: 1.15rem; height: 1.15rem; font-size: 1.15rem; }
+      .lms-course-actions { position: absolute; right: 0; top: 50%; gap: .25rem; transform: translateY(-50%) translateX(.3rem); opacity: 0; pointer-events: none; transition: opacity .16s ease, transform .16s ease; }
+      .lms-course-table tbody tr:hover .lms-course-actions, .lms-course-table tbody tr:focus-within .lms-course-actions { transform: translateY(-50%); opacity: 1; pointer-events: auto; }
+      .lms-course-table tbody tr:hover .lms-course-actions-more, .lms-course-table tbody tr:focus-within .lms-course-actions-more { opacity: 0; transform: translateX(-.25rem); }
+      .lms-row-action { display: inline-grid; place-items: center; width: 2rem; height: 2rem; border: 1px solid rgb(203 213 225); border-radius: .5rem; background: white; color: rgb(51 65 85); text-decoration: none; cursor: pointer; transition: border-color .16s ease, background-color .16s ease, color .16s ease; }
+      .lms-row-action:hover { border-color: rgb(99 102 241); background: rgb(238 242 255); color: rgb(67 56 202); }
+      .lms-row-action:focus-visible { outline: 3px solid rgb(99 102 241 / .28); outline-offset: 1px; }
+      .lms-row-action.is-danger:hover { border-color: rgb(252 165 165); background: rgb(254 242 242); color: rgb(185 28 28); }
+      .lms-row-action:disabled { border-color: rgb(226 232 240); background: rgb(248 250 252); color: rgb(148 163 184); cursor: not-allowed; }
+      .lms-row-action mat-icon { width: 1rem; height: 1rem; font-size: 1rem; }
+      .lms-confirm-backdrop { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; background: rgb(15 23 42 / .42); padding: 1.25rem; }
+      .lms-confirm-dialog { width: min(28rem, 100%); display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1rem; border: 1px solid rgb(254 202 202); border-radius: .875rem; background: white; padding: 1.25rem; box-shadow: 0 18px 48px rgb(15 23 42 / .18); }
+      .lms-confirm-icon { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: .75rem; background: rgb(254 242 242); color: rgb(185 28 28); }
+      .lms-confirm-icon mat-icon { width: 1.25rem; height: 1.25rem; font-size: 1.25rem; }
+      .lms-confirm-copy { min-width: 0; }
+      .lms-confirm-copy h3 { margin: .1rem 0 .35rem; color: rgb(15 23 42); font-size: 1rem; }
+      .lms-confirm-copy p { margin: 0; color: rgb(71 85 105); font-size: .8rem; line-height: 1.55; }
+      .lms-confirm-copy strong { color: rgb(15 23 42); }
+      .lms-confirm-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: .65rem; padding-top: .25rem; }
+      .lms-confirm-delete { border: 1px solid rgb(220 38 38); background: rgb(220 38 38); color: white; }
+      .lms-confirm-delete:hover:not(:disabled) { background: rgb(185 28 28); border-color: rgb(185 28 28); }
+      .lms-course-report { overflow: hidden; }
+      .lms-report-actions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.25rem; border-top: 1px solid rgb(226 232 240); }
+      .lms-enroll-link { display: inline-flex; align-items: center; gap: .4rem; border: 0; background: transparent; color: rgb(67 56 202); font-size: .78rem; font-weight: 800; text-decoration: none; cursor: pointer; }
+      .lms-enroll-link:hover { color: rgb(49 46 129); text-decoration: underline; text-underline-offset: .2rem; }
+      .lms-enroll-link:focus-visible { outline: 3px solid rgb(99 102 241 / .28); outline-offset: .25rem; border-radius: .5rem; }
+      .lms-enroll-link mat-icon { width: 1.05rem; height: 1.05rem; font-size: 1.05rem; }
+      .lms-report-toolbar { border-top: 1px solid rgb(226 232 240); }
+      .lms-report-table { min-width: 72rem; }
+      .lms-content-users-table { min-width: 58rem; }
+      .lms-learner-editor { overflow: hidden; margin-bottom: 5.5rem; }
+      .lms-learner-form-shell { display: grid; grid-template-columns: 8.5rem minmax(18rem, 30rem); gap: 2rem; align-items: start; padding: 1.35rem 1.5rem 1.6rem; }
+      .lms-learner-avatar { position: relative; display: grid; place-items: center; width: 7rem; height: 7rem; margin-top: 1.65rem; overflow: hidden; border-radius: 1.15rem; background: rgb(241 245 249); color: rgb(148 163 184); cursor: pointer; }
+      .lms-learner-avatar input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+      .lms-learner-avatar img { width: 100%; height: 100%; object-fit: cover; }
+      .lms-learner-avatar mat-icon { width: 4.75rem; height: 4.75rem; font-size: 4.75rem; }
+      .lms-learner-avatar-overlay { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: .3rem; background: rgb(15 23 42 / .62); color: white; font-size: .68rem; font-weight: 800; opacity: 0; transition: opacity .16s ease; }
+      .lms-learner-avatar:hover .lms-learner-avatar-overlay, .lms-learner-avatar:focus-within .lms-learner-avatar-overlay, .lms-learner-avatar.is-uploading .lms-learner-avatar-overlay { opacity: 1; }
+      .lms-learner-avatar-overlay mat-icon { width: 1.35rem; height: 1.35rem; font-size: 1.35rem; }
+      .lms-learner-fields { display: grid; gap: .95rem; }
+      .lms-learner-fields label { display: grid; gap: .45rem; color: rgb(15 23 42); font-size: .78rem; font-weight: 800; }
+      .lms-learner-fields label > span small { color: rgb(220 38 38); font-size: .78rem; }
+      .lms-learner-fields textarea.tenant-lms-input { min-height: 9rem; resize: vertical; }
+      .lms-learner-divider { height: 1px; margin: .35rem 0 .2rem; background: rgb(226 232 240); }
+      .lms-learner-fields h3 { margin: .25rem 0 0; color: rgb(15 23 42); font-size: .92rem; }
+      .lms-learner-password-help { margin: -.35rem 0 .15rem; color: rgb(51 65 85); font-size: .7rem; font-style: italic; line-height: 1.55; }
+      .lms-footer-actions { display: flex; align-items: center; justify-content: flex-end; gap: .6rem; }
+      .lms-learner-save-footer .lms-footer-actions { display: flex; align-items: center; justify-content: flex-start; gap: .5rem; }
+      .lms-learner-save-footer .lms-button { min-width: 5.6rem; justify-content: center; }
+      .lms-user-cell { display: flex; align-items: center; gap: .65rem; min-width: 13rem; }
+      .lms-user-cell > span, .lms-user-cell > img { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; flex: 0 0 auto; border-radius: 50%; background: rgb(238 242 255); color: rgb(67 56 202); font-size: .8rem; font-weight: 850; text-transform: uppercase; }
+      .lms-user-cell > img { object-fit: cover; }
+      .lms-user-cell > div { min-width: 0; display: grid; gap: .12rem; }
+      .lms-user-cell strong, .lms-user-cell small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .lms-user-cell strong { color: rgb(15 23 42); font-size: .78rem; }
+      .lms-user-cell small { color: rgb(100 116 139); font-size: .66rem; }
+      .lms-user-role, .lms-user-status, .lms-user-registration { display: inline-flex; align-items: center; border-radius: 999px; padding: .28rem .55rem; font-size: .66rem; font-weight: 800; white-space: nowrap; }
+      .lms-user-role { background: rgb(238 242 255); color: rgb(67 56 202); }
+      .lms-user-status { background: rgb(241 245 249); color: rgb(71 85 105); }
+      .lms-user-status.is-active { background: rgb(220 252 231); color: rgb(22 101 52); }
+      .lms-user-status.is-pending { background: rgb(254 243 199); color: rgb(146 64 14); }
+      .lms-user-status.is-inactive { background: rgb(241 245 249); color: rgb(71 85 105); }
+      .lms-user-registration { background: rgb(240 253 250); color: rgb(15 118 110); }
+      .lms-progress-pill { display: inline-flex; align-items: center; gap: .35rem; border-radius: 999px; background: rgb(241 245 249); padding: .3rem .55rem; color: rgb(51 65 85); font-size: .67rem; font-weight: 780; white-space: nowrap; }
+      .lms-progress-pill mat-icon { width: .95rem; height: .95rem; font-size: .95rem; }
+      .lms-progress-pill small { margin-left: .1rem; color: inherit; font-size: .62rem; opacity: .78; }
+      .lms-progress-pill.is-completed { background: rgb(220 252 231); color: rgb(22 101 52); }
+      .lms-progress-pill.is-in-progress { background: rgb(224 231 255); color: rgb(55 48 163); }
+      .lms-progress-pill.is-not-started { background: rgb(241 245 249); color: rgb(71 85 105); }
+      .lms-progress-pill.is-expired { background: rgb(254 242 242); color: rgb(153 27 27); }
+      .lms-report-pagination { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-top: 1px solid rgb(226 232 240); padding: .85rem 1.25rem; color: rgb(71 85 105); font-size: .72rem; }
+      .lms-report-pagination > div { display: flex; align-items: center; gap: .6rem; }
+      .lms-page-button { border: 1px solid rgb(203 213 225); border-radius: .5rem; background: white; padding: .45rem .7rem; color: rgb(51 65 85); font: inherit; font-size: .7rem; font-weight: 750; cursor: pointer; }
+      .lms-page-button:hover:not(:disabled) { border-color: rgb(99 102 241); color: rgb(67 56 202); }
+      .lms-page-button:disabled { color: rgb(148 163 184); cursor: not-allowed; }
+      .lms-page-size { display: inline-flex; align-items: center; gap: .45rem; color: rgb(100 116 139); font-size: .72rem; font-weight: 800; }
+      .lms-page-size select { height: 2rem; border: 1px solid rgb(203 213 225); border-radius: .5rem; background: rgb(248 250 252); padding: 0 .5rem; color: rgb(51 65 85); font: inherit; font-size: .7rem; font-weight: 800; outline: none; }
+      .lms-page-size select:focus { border-color: rgb(99 102 241); box-shadow: 0 0 0 3px rgb(99 102 241 / .16); }
+      .lms-page-icon-button { display: inline-grid; place-items: center; width: 2rem; height: 2rem; padding: 0; }
+      .lms-page-icon-button mat-icon { width: 1.05rem; height: 1.05rem; font-size: 1.05rem; }
+      .lms-page-summary { color: rgb(51 65 85); font-size: .72rem; font-weight: 800; white-space: nowrap; }
+      .lms-drawer-backdrop { position: fixed; inset: 0; z-index: 65; display: flex; justify-content: flex-end; background: rgb(15 23 42 / .32); }
+      .lms-enroll-drawer { width: min(30rem, 100%); height: 100%; display: grid; grid-template-rows: auto auto auto minmax(0, 1fr); border-left: 1px solid rgb(226 232 240); background: white; box-shadow: -18px 0 42px rgb(15 23 42 / .18); }
+      .lms-drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.25rem; border-bottom: 1px solid rgb(226 232 240); }
+      .lms-drawer-head h3 { margin: .1rem 0 0; color: rgb(15 23 42); font-size: 1rem; }
+      .lms-drawer-controls { display: grid; grid-template-columns: minmax(0, 1fr) 10rem; gap: .65rem; padding: 1rem 1.25rem; border-bottom: 1px solid rgb(226 232 240); }
+      .lms-check-all { display: flex; align-items: center; gap: .45rem; padding: .8rem 1.25rem; color: rgb(51 65 85); font-size: .75rem; font-weight: 750; }
+      .lms-check-all input { width: 1rem; height: 1rem; accent-color: rgb(79 70 229); }
+      .lms-drawer-users { min-height: 0; overflow-y: auto; padding: .25rem 1.25rem 1.25rem; }
+      .lms-drawer-users h4 { margin: .5rem 0 .75rem; color: rgb(15 23 42); font-size: .78rem; }
+      .lms-drawer-user { display: flex; align-items: center; justify-content: space-between; gap: .9rem; border: 1px solid rgb(226 232 240); border-radius: .75rem; background: white; padding: .75rem; }
+      .lms-drawer-user + .lms-drawer-user { margin-top: .55rem; }
+      .lms-drawer-user.is-selected { border-color: rgb(199 210 254); background: rgb(238 242 255 / .65); }
+      .lms-drawer-empty { min-height: 14rem; display: grid; place-content: center; justify-items: center; gap: .35rem; color: rgb(100 116 139); text-align: center; font-size: .75rem; }
+      .lms-drawer-empty mat-icon { color: rgb(79 70 229); }
+      .lms-drawer-empty strong { color: rgb(15 23 42); }
+      .lms-drawer-empty p { margin: 0; }
       .lms-course-results { border-top: 1px solid rgb(226 232 240); padding: .75rem 1.25rem; color: rgb(71 85 105); font-size: .7rem; }
       .lms-course-empty { min-height: 20rem; display: grid; place-content: center; justify-items: center; gap: .45rem; padding: 2rem; text-align: center; }
       .lms-course-empty > mat-icon { width: 2rem; height: 2rem; color: rgb(79 70 229); font-size: 2rem; }.lms-course-empty strong { color: rgb(15 23 42); font-size: .9rem; }.lms-course-empty p { max-width: 30rem; margin: 0 0 .6rem; color: rgb(71 85 105); font-size: .75rem; }
@@ -2130,6 +2612,20 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
         border-radius: 0.875rem;
         background: rgb(248 250 252);
       }
+      .lms-learner-save-footer {
+        position: fixed;
+        right: 2rem;
+        bottom: 0;
+        left: 22rem;
+        z-index: 60;
+        justify-content: flex-start;
+        min-height: 4.5rem;
+        border-width: 1px 1px 0;
+        border-radius: .875rem .875rem 0 0;
+        border-color: rgb(226 232 240);
+        background: white;
+        box-shadow: none;
+      }
       .lms-form-footer > div {
         display: grid;
         gap: 0.15rem;
@@ -2181,10 +2677,6 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
       :host-context(.dark) {
         color: white;
       }
-      :host-context(.dark) .lms-header {
-        border-color: rgb(30 41 59);
-      }
-      :host-context(.dark) .lms-intro,
       :host-context(.dark) .lms-section-heading p,
       :host-context(.dark) .lms-template-copy small,
       :host-context(.dark) .lms-domain-copy > span,
@@ -2243,9 +2735,27 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
         border-color: rgb(51 65 85);
         background: rgb(15 23 42);
       }
-      :host-context(.dark) .lms-publishing-summary,
+      :host-context(.dark) .lms-publishing-pages-heading,
       :host-context(.dark) .lms-section-help {
         border-color: rgb(30 41 59);
+      }
+      :host-context(.dark) .lms-publishing-page-card {
+        border-color: rgb(30 41 59);
+        background: rgb(15 23 42);
+        color: rgb(226 232 240);
+      }
+      :host-context(.dark) .lms-publishing-page-card:hover {
+        border-color: rgb(67 56 202);
+        background: rgb(30 27 75);
+      }
+      :host-context(.dark) .lms-publishing-page-icon {
+        background: rgb(30 41 59);
+        color: rgb(199 210 254);
+      }
+      :host-context(.dark) .lms-publishing-page-copy small,
+      :host-context(.dark) .lms-publishing-pages-heading p,
+      :host-context(.dark) .lms-publishing-pages-heading > span {
+        color: rgb(148 163 184);
       }
       :host-context(.dark) .lms-section-help {
         background: rgb(30 41 59);
@@ -2259,6 +2769,9 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
           grid-template-columns: 1fr;
           gap: 1rem;
         }
+        .lms-settings-content {
+          padding: 0 0 3rem;
+        }
         .lms-section-nav {
           position: sticky;
           top: 0;
@@ -2268,6 +2781,7 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
           gap: 0.375rem;
           overflow-x: auto;
           overflow-y: hidden;
+          min-height: auto;
           max-height: none;
           padding: 0.5rem;
           border: 1px solid rgb(226 232 240);
@@ -2303,35 +2817,24 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
         .lms-course-list { position: static; grid-auto-flow: column; grid-auto-columns: minmax(13rem, 1fr); overflow-x: auto; overflow-y: hidden; max-height: none; border-right: 0; border-bottom: 1px solid rgb(226 232 240); }
         .lms-course-list-head { display: none; }
         .lms-course-toolbar { grid-template-columns: minmax(14rem, 1fr) 10rem 12rem; }
+        .lms-learner-save-footer { right: 0; left: 0; border-radius: 0; border-width: 1px 0 0; }
       }
 
       @media (max-width: 48rem) {
-        .lms-header {
-          align-items: flex-start;
-          flex-direction: column;
-          gap: 1rem;
-        }
-        .lms-header-actions {
-          width: 100%;
-        }
-        .lms-header-actions .lms-button {
-          flex: 1;
-        }
-        .lms-plan-status {
-          align-items: flex-start;
-        }
         .lms-section-heading,
         .lms-domain-row,
-        .lms-publishing-summary,
+        .lms-publishing-pages-heading,
         .lms-form-footer {
           align-items: flex-start;
           flex-direction: column;
         }
         .lms-domain-row .lms-button,
-        .lms-publishing-summary .lms-button,
         .lms-form-footer .lms-button {
           width: 100%;
           margin-left: 0;
+        }
+        .lms-publishing-page-grid {
+          grid-template-columns: 1fr;
         }
         .lms-template-grid,
         .lms-fields,
@@ -2369,6 +2872,13 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
         .lms-two-column-editor { grid-template-columns: 1fr; }
         .lms-course-form { padding: .75rem; }
         .lms-course-toolbar { grid-template-columns: 1fr; padding: 1rem; }
+        .lms-learner-form-shell { grid-template-columns: 1fr; gap: 1rem; padding: 1rem; }
+        .lms-learner-avatar { width: 5rem; height: 5rem; margin-top: 0; }
+        .lms-learner-avatar mat-icon { width: 3.5rem; height: 3.5rem; font-size: 3.5rem; }
+        .lms-footer-actions { width: 100%; flex-direction: column-reverse; }
+        .lms-footer-actions .lms-button { width: 100%; }
+        .lms-learner-save-footer .lms-footer-actions { width: auto; flex-direction: row; }
+        .lms-learner-save-footer .lms-footer-actions .lms-button { width: auto; }
         .lms-lesson-list, .lms-media-list { margin-left: 0; }
         .lms-curriculum-row { align-items: flex-start; flex-wrap: wrap; }
         .lms-tree-branch { display: none; }
@@ -2397,6 +2907,8 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
 export class TenantLmsSettingsComponent implements OnInit {
   private readonly data = inject(TenantLmsSettingsDataService);
   private readonly gradesData = inject(TenantGradesDataService);
+  private readonly userCreateData = inject(TenantUserCreateDataService);
+  private readonly usersData = inject(TenantUsersDataService);
   private readonly fb = inject(FormBuilder);
   private readonly identity = inject(AuthIdentityService);
   private readonly route = inject(ActivatedRoute);
@@ -2425,7 +2937,7 @@ export class TenantLmsSettingsComponent implements OnInit {
   readonly uploadingCourseIndex = signal<number | null>(null);
   readonly courseImageUploadErrors = signal<Record<number, string>>({});
   readonly settings = signal<TenantLmsSettingsView | null>(null);
-  readonly publishingExpanded = signal(true);
+  readonly publishingExpanded = signal(false);
   readonly contentExpanded = signal(true);
   readonly coursesLoading = signal(false);
   readonly courseSaving = signal(false);
@@ -2433,17 +2945,44 @@ export class TenantLmsSettingsComponent implements OnInit {
   readonly courseError = signal<string | null>(null);
   readonly courseMessage = signal<string | null>(null);
   readonly managedCourses = signal<TenantLmsCourse[]>([]);
+  readonly pendingDeleteCourse = signal<TenantLmsCourse | null>(null);
   readonly tenantGrades = signal<Grade[]>([]);
+  readonly tenantUsers = signal<TenantUser[]>([]);
+  readonly contentUsersLoading = signal(false);
+  readonly contentUsersError = signal<string | null>(null);
+  readonly contentUsersLoaded = signal(false);
+  readonly learnerSaving = signal(false);
+  readonly learnerAvatarUploading = signal(false);
+  readonly learnerRoles = signal<TenantUserRoleOption[]>([]);
+  readonly enrolledUserIds = signal<string[]>([]);
+  readonly enrollDrawerOpen = signal(false);
+  readonly addUserMenuOpen = signal(false);
+  readonly contentUserSearch = signal("");
+  readonly contentUserRoleFilter = signal("all");
+  readonly contentUserStatusFilter = signal<"all" | TenantUser["status"]>("all");
+  readonly contentUserPage = signal(1);
+  readonly contentUserPageSize = signal(10);
+  readonly enrollmentSearch = signal("");
+  readonly enrollmentRoleFilter = signal("all");
+  readonly enrollmentProgressFilter = signal<"all" | CourseProgressStatus>("all");
+  readonly enrollmentPage = signal(1);
+  readonly enrollmentPageSize = signal(10);
+  readonly enrollmentProgressOverrides = signal<Record<string, Partial<Pick<CourseEnrollmentRow, "progressStatus" | "progress" | "completionDate">>>>({});
+  readonly userDrawerSearch = signal("");
+  readonly userDrawerRoleFilter = signal("all");
   readonly editingCourseId = signal<string | null>(null);
   readonly courseSearch = signal("");
   readonly courseStatusFilter = signal<"all" | "published" | "draft">("all");
   readonly courseGradeFilter = signal("all");
+  readonly coursePage = signal(1);
+  readonly coursePageSize = signal(10);
   readonly sectionDefinitions = LMS_SECTION_DEFINITIONS;
   readonly sections = signal<Record<string, boolean>>({});
   readonly activePage = computed(() => {
     const group = this.routeParamMap().get("group");
     const page = this.routeParamMap().get("page") ?? "publishing";
     if (group === "content" && page === "courses") return "contentCourses";
+    if (group === "content" && (page === "learners" || page === "users")) return "contentUsers";
     if (page === "publishing" || page === "appearance" || page === "content") {
       return page;
     }
@@ -2451,8 +2990,24 @@ export class TenantLmsSettingsComponent implements OnInit {
       ? page
       : "publishing";
   });
-  readonly courseMode = computed<"list" | "create" | "edit">(() => this.routeData()["courseMode"] ?? "list");
-  readonly isCourseEditor = computed(() => this.activePage() === "contentCourses" && this.courseMode() !== "list");
+  readonly courseMode = computed<"list" | "create" | "edit" | "preview">(() => this.routeData()["courseMode"] ?? "list");
+  readonly selectedCourseId = computed(() => this.routeParamMap().get("courseId"));
+  readonly selectedPreviewCourse = computed(() => this.managedCourses().find((course) => course.id === this.selectedCourseId()) ?? null);
+  readonly isCourseEditor = computed(() => this.activePage() === "contentCourses" && (this.courseMode() === "create" || this.courseMode() === "edit"));
+  readonly isLearnerCreator = computed(() => this.activePage() === "contentUsers" && this.courseMode() === "create");
+  readonly contentLearners = computed(() => this.tenantUsers().filter((user) => user.userType === "LEARNER"));
+  readonly filteredContentUsers = computed(() => {
+    const query = this.contentUserSearch().trim().toLocaleLowerCase();
+    const role = this.contentUserRoleFilter();
+    const status = this.contentUserStatusFilter();
+    return this.contentLearners().filter((user) => {
+      const matchesQuery = !query || [user.name, user.email, user.role].some((value) => value.toLocaleLowerCase().includes(query));
+      const matchesRole = role === "all" || user.role === role;
+      const matchesStatus = status === "all" || user.status === status;
+      return matchesQuery && matchesRole && matchesStatus;
+    });
+  });
+  readonly contentUserRoleOptions = computed(() => Array.from(new Set(this.contentLearners().map((user) => user.role))).sort());
   readonly filteredManagedCourses = computed(() => {
     const query = this.courseSearch().trim().toLocaleLowerCase();
     const status = this.courseStatusFilter();
@@ -2464,16 +3019,75 @@ export class TenantLmsSettingsComponent implements OnInit {
       return matchesQuery && matchesStatus && matchesGrade;
     });
   });
+  readonly pagedContentUsers = computed(() => {
+    const start = (this.contentUserPage() - 1) * this.contentUserPageSize();
+    return this.filteredContentUsers().slice(start, start + this.contentUserPageSize());
+  });
+  readonly contentUserPageCount = computed(() => Math.max(1, Math.ceil(this.filteredContentUsers().length / this.contentUserPageSize())));
+  readonly contentUserResultStart = computed(() => this.filteredContentUsers().length ? (this.contentUserPage() - 1) * this.contentUserPageSize() + 1 : 0);
+  readonly contentUserResultEnd = computed(() => Math.min(this.contentUserPage() * this.contentUserPageSize(), this.filteredContentUsers().length));
+  readonly pagedManagedCourses = computed(() => {
+    const start = (this.coursePage() - 1) * this.coursePageSize();
+    return this.filteredManagedCourses().slice(start, start + this.coursePageSize());
+  });
+  readonly coursePageCount = computed(() => Math.max(1, Math.ceil(this.filteredManagedCourses().length / this.coursePageSize())));
+  readonly courseResultStart = computed(() => this.filteredManagedCourses().length ? (this.coursePage() - 1) * this.coursePageSize() + 1 : 0);
+  readonly courseResultEnd = computed(() => Math.min(this.coursePage() * this.coursePageSize(), this.filteredManagedCourses().length));
+  readonly courseEnrollmentRows = computed<CourseEnrollmentRow[]>(() => {
+    const users = this.contentLearners().filter((user) => this.enrolledUserIds().includes(user.id));
+    const overrides = this.enrollmentProgressOverrides();
+    return users.map((user, index) => ({ ...this.toCourseEnrollmentRow(user, index), ...overrides[user.id] }));
+  });
+  readonly enrollmentRoleOptions = computed(() => Array.from(new Set(this.courseEnrollmentRows().map((row) => row.role))).sort());
+  readonly drawerRoleOptions = computed(() => Array.from(new Set(this.contentLearners().map((user) => user.role))).sort());
+  readonly filteredCourseEnrollmentRows = computed(() => {
+    const query = this.enrollmentSearch().trim().toLocaleLowerCase();
+    const role = this.enrollmentRoleFilter();
+    const progress = this.enrollmentProgressFilter();
+    return this.courseEnrollmentRows().filter((row) => {
+      const matchesQuery = !query || [row.userName, row.email, row.role].some((value) => value.toLocaleLowerCase().includes(query));
+      const matchesRole = role === "all" || row.role === role;
+      const matchesProgress = progress === "all" || row.progressStatus === progress;
+      return matchesQuery && matchesRole && matchesProgress;
+    });
+  });
+  readonly pagedCourseEnrollmentRows = computed(() => {
+    const start = (this.enrollmentPage() - 1) * this.enrollmentPageSize();
+    return this.filteredCourseEnrollmentRows().slice(start, start + this.enrollmentPageSize());
+  });
+  readonly enrollmentPageCount = computed(() => Math.max(1, Math.ceil(this.filteredCourseEnrollmentRows().length / this.enrollmentPageSize())));
+  readonly enrollmentResultStart = computed(() => this.filteredCourseEnrollmentRows().length ? (this.enrollmentPage() - 1) * this.enrollmentPageSize() + 1 : 0);
+  readonly enrollmentResultEnd = computed(() => Math.min(this.enrollmentPage() * this.enrollmentPageSize(), this.filteredCourseEnrollmentRows().length));
+  readonly filteredDrawerUsers = computed(() => {
+    const query = this.userDrawerSearch().trim().toLocaleLowerCase();
+    const role = this.userDrawerRoleFilter();
+    return this.contentLearners().filter((user) => {
+      const matchesQuery = !query || [user.name, user.email, user.role].some((value) => value.toLocaleLowerCase().includes(query));
+      const matchesRole = role === "all" || user.role === role;
+      return matchesQuery && matchesRole;
+    });
+  });
+  readonly allDrawerUsersEnrolled = computed(() => {
+    const users = this.filteredDrawerUsers();
+    const selected = new Set(this.enrolledUserIds());
+    return users.length > 0 && users.every((user) => selected.has(user.id));
+  });
   readonly selectedSection = computed(() =>
     this.sectionDefinitions.find((section) => section.key === this.activePage()) ?? null,
   );
   readonly isPublishingGroupActive = computed(
-    () => this.activePage() !== "appearance" && this.activePage() !== "content" && this.activePage() !== "contentCourses",
+    () => this.activePage() !== "appearance" && this.activePage() !== "content" && this.activePage() !== "contentCourses" && this.activePage() !== "contentUsers",
   );
-  readonly isContentGroupActive = computed(() => this.activePage() === "content" || this.activePage() === "contentCourses");
+  readonly isContentGroupActive = computed(() => this.activePage() === "content" || this.activePage() === "contentCourses" || this.activePage() === "contentUsers");
   readonly enabledSectionCount = computed(() =>
     this.sectionDefinitions.filter((section) => this.sectionEnabled(section.key)).length,
   );
+  private readonly contentUsersRouteLoader = effect(() => {
+    if (!this.settings() || this.activePage() !== "contentUsers" || this.contentUsersLoaded() || this.contentUsersLoading()) {
+      return;
+    }
+    void this.loadContentUsers();
+  });
 
   readonly hasLmsFromIdentity = computed(
     () =>
@@ -2575,6 +3189,18 @@ export class TenantLmsSettingsComponent implements OnInit {
     curriculum: this.fb.array<FormGroup<any>>([]),
   });
 
+  readonly learnerForm = this.fb.nonNullable.group({
+    avatarUrl: [""],
+    firstName: ["", Validators.required],
+    lastName: ["", Validators.required],
+    email: ["", Validators.email],
+    bio: [""],
+    username: ["", Validators.required],
+    password: ["", [Validators.required, Validators.minLength(8), Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/)]],
+    status: ["active", Validators.required],
+    roleId: [""],
+  });
+
   private readonly heroImageUrlValue = toSignal(
     this.form.controls.hero.controls.imageUrl.valueChanges,
     { initialValue: this.form.controls.hero.controls.imageUrl.value },
@@ -2641,6 +3267,7 @@ export class TenantLmsSettingsComponent implements OnInit {
       const [courses, grades] = await Promise.all([this.data.listManagedCourses(), this.gradesData.listGrades()]);
       this.managedCourses.set(courses);
       this.tenantGrades.set(grades);
+      this.ensureCoursePageInRange();
       if (this.courseMode() === "create") {
         this.startNewCourse();
       } else if (this.courseMode() === "edit") {
@@ -2648,10 +3275,94 @@ export class TenantLmsSettingsComponent implements OnInit {
         const selectedCourse = courses.find((course) => course.id === courseId);
         if (selectedCourse) this.editManagedCourse(selectedCourse);
         else this.courseError.set("This course could not be found.");
+      } else if (this.courseMode() === "preview") {
+        const courseId = this.routeParamMap().get("courseId");
+        if (!courses.some((course) => course.id === courseId)) {
+          this.courseError.set("This course could not be found.");
+        }
+        await this.loadCoursePreviewUsers();
       }
     } catch (error) {
       this.courseError.set(this.gradesData.toUserMessage(error, "Unable to load courses and tenant grades."));
     } finally { this.coursesLoading.set(false); }
+  }
+
+  private async loadCoursePreviewUsers(): Promise<void> {
+    try {
+      await this.usersData.loadLearners();
+      const users = this.usersData.users();
+      this.tenantUsers.set(users);
+      this.contentUsersLoaded.set(true);
+      if (!this.enrolledUserIds().length) {
+        const learners = users.filter((user) => user.userType === "LEARNER");
+        this.enrolledUserIds.set(learners.slice(0, Math.min(learners.length, 12)).map((user) => user.id));
+      }
+      this.ensureEnrollmentPageInRange();
+    } catch {
+      this.tenantUsers.set([]);
+      this.enrolledUserIds.set([]);
+      this.courseError.set("Unable to load existing users for course enrollment.");
+    }
+  }
+
+  private async loadContentUsers(): Promise<void> {
+    this.contentUsersLoading.set(true);
+    this.contentUsersError.set(null);
+    try {
+      await this.usersData.loadLearners();
+      this.tenantUsers.set(this.usersData.users());
+      this.contentUsersLoaded.set(true);
+      this.ensureContentUserPageInRange();
+    } catch {
+      this.tenantUsers.set([]);
+      this.contentUsersLoaded.set(false);
+      this.contentUsersError.set("Unable to load tenant users right now.");
+    } finally {
+      this.contentUsersLoading.set(false);
+    }
+  }
+
+  async saveLearner(): Promise<void> {
+    if (this.learnerForm.invalid || this.learnerSaving()) {
+      this.learnerForm.markAllAsTouched();
+      this.contentUsersError.set(this.learnerValidationMessage());
+      return;
+    }
+    this.learnerSaving.set(true);
+    this.contentUsersError.set(null);
+    try {
+      const raw = this.learnerForm.getRawValue();
+      await firstValueFrom(this.userCreateData.createLearner({
+        fullName: `${raw.firstName.trim()} ${raw.lastName.trim()}`.trim(),
+        email: raw.email.trim(),
+        username: raw.username.trim(),
+        avatarUrl: raw.avatarUrl.trim() || null,
+        roleId: "",
+        enabled: raw.status === "active",
+        sendInvite: false,
+        password: raw.password,
+      }));
+      this.learnerForm.reset({ avatarUrl: "", firstName: "", lastName: "", email: "", bio: "", username: "", password: "", status: "active", roleId: this.learnerRoles()[0]?.id ?? "" });
+      this.contentUsersLoaded.set(false);
+      await this.loadContentUsers();
+      await this.router.navigate(["/tenant/lms-settings/content/learners"]);
+    } catch (error: any) {
+      this.contentUsersError.set(error?.error?.message || "Unable to save this learner.");
+    } finally {
+      this.learnerSaving.set(false);
+    }
+  }
+
+  private learnerValidationMessage(): string {
+    const controls = this.learnerForm.controls;
+    if (controls.firstName.invalid) return "First name is required.";
+    if (controls.lastName.invalid) return "Last name is required.";
+    if (controls.email.invalid) return "Enter a valid email address or leave it empty.";
+    if (controls.username.invalid) return "Username is required.";
+    if (controls.password.hasError("required")) return "Password is required.";
+    if (controls.password.invalid) return "Password must be at least 8 characters and include uppercase, lowercase, and a number.";
+    if (controls.status.invalid) return "Choose learner status.";
+    return "Complete the required learner details before saving.";
   }
 
   startNewCourse(): void {
@@ -2660,12 +3371,152 @@ export class TenantLmsSettingsComponent implements OnInit {
     this.learningOutcomeControls().clear(); this.featureControls().clear(); this.curriculumControls().clear();
   }
 
-  setCourseSearch(event: Event): void { this.courseSearch.set((event.target as HTMLInputElement).value); }
-  setCourseStatusFilter(event: Event): void { this.courseStatusFilter.set((event.target as HTMLSelectElement).value as "all" | "published" | "draft"); }
-  setCourseGradeFilter(event: Event): void { this.courseGradeFilter.set((event.target as HTMLSelectElement).value); }
+  setCourseSearch(event: Event): void { this.courseSearch.set((event.target as HTMLInputElement).value); this.coursePage.set(1); }
+  setCourseStatusFilter(event: Event): void { this.courseStatusFilter.set((event.target as HTMLSelectElement).value as "all" | "published" | "draft"); this.coursePage.set(1); }
+  setCourseGradeFilter(event: Event): void { this.courseGradeFilter.set((event.target as HTMLSelectElement).value); this.coursePage.set(1); }
+  setContentUserSearch(event: Event): void { this.contentUserSearch.set((event.target as HTMLInputElement).value); this.contentUserPage.set(1); }
+  setContentUserRoleFilter(event: Event): void { this.contentUserRoleFilter.set((event.target as HTMLSelectElement).value); this.contentUserPage.set(1); }
+  setContentUserStatusFilter(event: Event): void { this.contentUserStatusFilter.set((event.target as HTMLSelectElement).value as "all" | TenantUser["status"]); this.contentUserPage.set(1); }
+  toggleAddUserMenu(): void { this.addUserMenuOpen.update((open) => !open); }
+  closeAddUserMenu(): void { this.addUserMenuOpen.set(false); }
+  importLearners(): void { this.closeAddUserMenu(); }
+  setEnrollmentSearch(event: Event): void { this.enrollmentSearch.set((event.target as HTMLInputElement).value); this.enrollmentPage.set(1); }
+  setEnrollmentRoleFilter(event: Event): void { this.enrollmentRoleFilter.set((event.target as HTMLSelectElement).value); this.enrollmentPage.set(1); }
+  setEnrollmentProgressFilter(event: Event): void { this.enrollmentProgressFilter.set((event.target as HTMLSelectElement).value as "all" | CourseProgressStatus); this.enrollmentPage.set(1); }
+  setUserDrawerSearch(event: Event): void { this.userDrawerSearch.set((event.target as HTMLInputElement).value); }
+  setUserDrawerRoleFilter(event: Event): void { this.userDrawerRoleFilter.set((event.target as HTMLSelectElement).value); }
+  goToEnrollmentPage(page: number): void {
+    this.enrollmentPage.set(Math.min(Math.max(page, 1), this.enrollmentPageCount()));
+  }
+  goToCoursePage(page: number): void {
+    this.coursePage.set(Math.min(Math.max(page, 1), this.coursePageCount()));
+  }
+  goToContentUserPage(page: number): void {
+    this.contentUserPage.set(Math.min(Math.max(page, 1), this.contentUserPageCount()));
+  }
+  setCoursePageSize(event: Event): void {
+    this.coursePageSize.set(this.toValidPageSize((event.target as HTMLSelectElement).value));
+    this.coursePage.set(1);
+  }
+  setContentUserPageSize(event: Event): void {
+    this.contentUserPageSize.set(this.toValidPageSize((event.target as HTMLSelectElement).value));
+    this.contentUserPage.set(1);
+  }
+  setEnrollmentPageSize(event: Event): void {
+    this.enrollmentPageSize.set(this.toValidPageSize((event.target as HTMLSelectElement).value));
+    this.enrollmentPage.set(1);
+  }
+  openEnrollDrawer(): void { this.enrollDrawerOpen.set(true); }
+  closeEnrollDrawer(): void { this.enrollDrawerOpen.set(false); }
+  isUserEnrolled(userId: string): boolean { return this.enrolledUserIds().includes(userId); }
+  addUserToCourse(user: TenantUser): void {
+    if (this.isUserEnrolled(user.id)) return;
+    this.enrolledUserIds.update((ids) => [...ids, user.id]);
+    this.ensureEnrollmentPageInRange();
+  }
+  toggleAllDrawerUsers(event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    const drawerIds = this.filteredDrawerUsers().map((user) => user.id);
+    if (checked) {
+      const next = new Set(this.enrolledUserIds());
+      drawerIds.forEach((id) => next.add(id));
+      this.enrolledUserIds.set(Array.from(next));
+    } else {
+      const drawerSet = new Set(drawerIds);
+      this.enrolledUserIds.update((ids) => ids.filter((id) => !drawerSet.has(id)));
+    }
+    this.ensureEnrollmentPageInRange();
+  }
+  removeUserFromCourse(userId: string): void {
+    this.enrolledUserIds.update((ids) => ids.filter((id) => id !== userId));
+    this.enrollmentProgressOverrides.update((overrides) => {
+      const { [userId]: _removed, ...remaining } = overrides;
+      return remaining;
+    });
+    this.ensureEnrollmentPageInRange();
+  }
+  resetUserCourseProgress(userId: string): void {
+    this.enrollmentProgressOverrides.update((overrides) => ({
+      ...overrides,
+      [userId]: { progressStatus: "not-started", progress: 0, completionDate: null },
+    }));
+    this.ensureEnrollmentPageInRange();
+  }
+  progressStatusLabel(status: CourseProgressStatus): string {
+    switch (status) {
+      case "completed": return "Completed";
+      case "expired": return "Expired";
+      case "in-progress": return "In progress";
+      default: return "Not started";
+    }
+  }
+  progressStatusIcon(status: CourseProgressStatus): string {
+    switch (status) {
+      case "completed": return "check_circle";
+      case "expired": return "schedule";
+      case "in-progress": return "trending_up";
+      default: return "radio_button_unchecked";
+    }
+  }
   courseLessonCount(course: TenantLmsCourse): number {
     const countNodes = (nodes: TenantLmsCourseCurriculumNode[]): number => nodes.reduce((total, node) => total + (node.children.length ? countNodes(node.children) : 1), 0);
     return countNodes(course.curriculum);
+  }
+
+  coursePreviewRoute(course: TenantLmsCourse): string[] {
+    return ["/tenant/lms-settings/content/courses", course.id, "preview"];
+  }
+
+  private toCourseEnrollmentRow(user: TenantUser, index: number): CourseEnrollmentRow {
+    const statuses: CourseProgressStatus[] = ["in-progress", "completed", "not-started", "expired"];
+    const status = statuses[index % statuses.length];
+    const enrolledAt = new Date(2026, 6, 1 + (index % 18));
+    const expiresAt = new Date(enrolledAt);
+    expiresAt.setMonth(expiresAt.getMonth() + 3);
+    const completedAt = status === "completed" ? new Date(enrolledAt.getTime() + 1000 * 60 * 60 * 24 * (7 + (index % 10))) : null;
+    const progress = status === "completed" ? 100 : status === "in-progress" ? 35 + ((index * 13) % 55) : status === "expired" ? 18 : 0;
+    return {
+      userId: user.id,
+      userName: user.name,
+      email: user.email,
+      role: user.role,
+      progressStatus: status,
+      enrollmentDate: enrolledAt.toISOString(),
+      completionDate: completedAt?.toISOString() ?? null,
+      expirationDate: expiresAt.toISOString(),
+      progress,
+    };
+  }
+
+  private ensureEnrollmentPageInRange(): void {
+    this.enrollmentPage.set(Math.min(this.enrollmentPage(), this.enrollmentPageCount()));
+  }
+
+  private ensureCoursePageInRange(): void {
+    this.coursePage.set(Math.min(this.coursePage(), this.coursePageCount()));
+  }
+
+  private ensureContentUserPageInRange(): void {
+    this.contentUserPage.set(Math.min(this.contentUserPage(), this.contentUserPageCount()));
+  }
+
+  private toValidPageSize(value: string): number {
+    const pageSize = Number(value);
+    return [5, 10, 20].includes(pageSize) ? pageSize : 10;
+  }
+
+  coursePublicUrl(course: TenantLmsCourse): string {
+    const baseUrl = this.previewUrl();
+    if (baseUrl === "#") {
+      return "#";
+    }
+    try {
+      const url = new URL(baseUrl);
+      url.pathname = `/courses/${course.slug}`;
+      return url.toString();
+    } catch {
+      return `${baseUrl.replace(/\/$/, "")}/courses/${course.slug}`;
+    }
   }
 
   editManagedCourse(course: TenantLmsCourse): void {
@@ -2691,6 +3542,24 @@ export class TenantLmsSettingsComponent implements OnInit {
   removeCurriculumLesson(sectionIndex: number, lessonIndex: number): void { this.childControls(sectionIndex).removeAt(lessonIndex); }
   addLessonMedia(sectionIndex: number, lessonIndex: number): void { this.mediaControls(sectionIndex, lessonIndex).push(this.createMediaGroup({ id: createCourseContentId(), type: "VIDEO", title: "", url: "", fileName: "", contentType: "", durationLabel: "" })); }
   removeLessonMedia(sectionIndex: number, lessonIndex: number, mediaIndex: number): void { this.mediaControls(sectionIndex, lessonIndex).removeAt(mediaIndex); }
+
+  async uploadLearnerAvatar(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.learnerAvatarUploading.set(true);
+    this.contentUsersError.set(null);
+    try {
+      const uploaded = await firstValueFrom(this.userCreateData.uploadUserAvatar(file));
+      this.learnerForm.controls.avatarUrl.setValue(uploaded.url);
+      this.learnerForm.controls.avatarUrl.markAsDirty();
+    } catch {
+      this.contentUsersError.set("The learner image could not be uploaded.");
+    } finally {
+      this.learnerAvatarUploading.set(false);
+      input.value = "";
+    }
+  }
 
   async uploadCourseAsset(event: Event, target: "thumbnail" | "preview"): Promise<void> {
     const input = event.target as HTMLInputElement; const file = input.files?.[0]; if (!file) return;
@@ -2725,9 +3594,105 @@ export class TenantLmsSettingsComponent implements OnInit {
   async deleteManagedCourse(): Promise<void> {
     const id = this.editingCourseId(); if (!id || !globalThis.confirm?.("Delete this course and all of its saved content?")) return;
     this.courseSaving.set(true); this.courseError.set(null);
-    try { await this.data.deleteManagedCourse(id); this.managedCourses.update((courses) => courses.filter((course) => course.id !== id)); this.startNewCourse(); await this.router.navigate(["/tenant/lms-settings/content/courses"]); }
+    try { await this.data.deleteManagedCourse(id); this.managedCourses.update((courses) => courses.filter((course) => course.id !== id)); this.ensureCoursePageInRange(); this.startNewCourse(); await this.router.navigate(["/tenant/lms-settings/content/courses"]); }
     catch { this.courseError.set("Unable to delete this course."); }
     finally { this.courseSaving.set(false); }
+  }
+
+  openCourseDeleteDialog(course: TenantLmsCourse): void {
+    if (this.courseSaving()) {
+      return;
+    }
+    this.pendingDeleteCourse.set(course);
+  }
+
+  closeCourseDeleteDialog(): void {
+    if (this.courseSaving()) {
+      return;
+    }
+    this.pendingDeleteCourse.set(null);
+  }
+
+  async confirmDeleteManagedCourseFromList(): Promise<void> {
+    const course = this.pendingDeleteCourse();
+    if (!course || this.courseSaving()) {
+      return;
+    }
+    this.courseSaving.set(true);
+    this.courseError.set(null);
+    this.courseMessage.set(null);
+    try {
+      await this.data.deleteManagedCourse(course.id);
+      this.managedCourses.update((courses) => courses.filter((item) => item.id !== course.id));
+      this.ensureCoursePageInRange();
+      this.pendingDeleteCourse.set(null);
+      this.courseMessage.set("Course deleted successfully.");
+    } catch {
+      this.courseError.set("Unable to delete this course.");
+    } finally {
+      this.courseSaving.set(false);
+    }
+  }
+
+  async cloneManagedCourse(course: TenantLmsCourse): Promise<void> {
+    if (this.courseSaving()) {
+      return;
+    }
+    this.courseSaving.set(true);
+    this.courseError.set(null);
+    this.courseMessage.set(null);
+    try {
+      const payload: SaveManagedCourseRequest = {
+        gradeId: course.gradeId,
+        slug: this.nextCourseCloneSlug(course.slug),
+        title: `${course.title} copy`,
+        subtitle: course.subtitle,
+        description: course.description,
+        thumbnailUrl: course.thumbnailUrl,
+        previewMediaUrl: course.previewMediaUrl,
+        previewMediaType: course.previewMediaType,
+        price: course.price,
+        oldPrice: course.oldPrice,
+        currency: course.currency,
+        durationLabel: course.durationLabel,
+        studentsLabel: course.studentsLabel,
+        ratingLabel: course.ratingLabel,
+        published: false,
+        learningOutcomes: [...course.learningOutcomes],
+        features: [...course.features],
+        curriculum: this.cloneCourseCurriculum(course.curriculum),
+      };
+      const cloned = await this.data.createManagedCourse(payload);
+      this.managedCourses.update((courses) => [cloned, ...courses]);
+      this.coursePage.set(1);
+      this.courseMessage.set("Course cloned as a draft.");
+    } catch {
+      this.courseError.set("Unable to clone this course.");
+    } finally {
+      this.courseSaving.set(false);
+    }
+  }
+
+  private nextCourseCloneSlug(slug: string): string {
+    const base = `${slug.replace(/-copy(?:-\d+)?$/, "")}-copy`;
+    const existing = new Set(this.managedCourses().map((course) => course.slug));
+    if (!existing.has(base)) {
+      return base;
+    }
+    let index = 2;
+    while (existing.has(`${base}-${index}`)) {
+      index += 1;
+    }
+    return `${base}-${index}`;
+  }
+
+  private cloneCourseCurriculum(nodes: TenantLmsCourseCurriculumNode[]): TenantLmsCourseCurriculumNode[] {
+    return nodes.map((node) => ({
+      ...node,
+      id: createCourseContentId(),
+      media: node.media.map((media) => ({ ...media, id: createCourseContentId() })),
+      children: this.cloneCourseCurriculum(node.children),
+    }));
   }
 
   private createCurriculumGroup(node: TenantLmsCourseCurriculumNode): FormGroup<any> {
@@ -2985,6 +3950,14 @@ export class TenantLmsSettingsComponent implements OnInit {
     }
     this.form.controls.websiteEnabled.setValue(true);
     await this.save("LMS website domain is active.");
+  }
+
+  openWebsite(): void {
+    const url = this.previewUrl();
+    if (url === "#") {
+      return;
+    }
+    window.open(url, "_blank", "noopener");
   }
 
   previewUrl(): string {

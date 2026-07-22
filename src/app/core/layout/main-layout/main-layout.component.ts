@@ -27,9 +27,12 @@ export class MainLayoutComponent {
   collapsed = this.dashboardService.sidebarCollapsed;
   language = this.i18nService.language;
   readonly actionPickerOpen = signal(false);
+  readonly isLmsWorkspace = signal(false);
+  private sidebarStateBeforeLms: boolean | null = null;
 
   constructor() {
     this.dashboardService.syncRoleFromUrl(this.router.url);
+    this.syncLmsWorkspace(this.router.url);
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd),
@@ -37,6 +40,7 @@ export class MainLayoutComponent {
       )
       .subscribe((event) => {
         this.dashboardService.syncRoleFromUrl(event.urlAfterRedirects);
+        this.syncLmsWorkspace(event.urlAfterRedirects);
         this.actionPickerOpen.set(false);
       });
   }
@@ -60,6 +64,21 @@ export class MainLayoutComponent {
 
   closeActionPicker(): void {
     this.actionPickerOpen.set(false);
+  }
+
+  private syncLmsWorkspace(url: string): void {
+    const path = url.split('?')[0]?.split('#')[0] ?? '';
+    const isLmsRoute = path === '/tenant/lms-settings' || path.startsWith('/tenant/lms-settings/');
+
+    if (isLmsRoute && !this.isLmsWorkspace()) {
+      this.sidebarStateBeforeLms = this.collapsed();
+      this.collapsed.set(true);
+    } else if (!isLmsRoute && this.isLmsWorkspace() && this.sidebarStateBeforeLms !== null) {
+      this.collapsed.set(this.sidebarStateBeforeLms);
+      this.sidebarStateBeforeLms = null;
+    }
+
+    this.isLmsWorkspace.set(isLmsRoute);
   }
 
   private isTextEntryTarget(target: EventTarget | null): boolean {

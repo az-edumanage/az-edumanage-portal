@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, computed, inject, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { DashboardService, UserRole } from '../../services/dashboard.service';
@@ -34,6 +34,7 @@ export class TopbarComponent implements OnInit, OnDestroy {
   notificationsLoading = this.notificationsService.isLoading;
   notificationsOpen = signal(false);
   roles: UserRole[] = ['owner', 'tenant', 'teacher'];
+  readonly workspaceTitle = input<string | null>(null);
 
   readonly showWorkspaceSwitcher = computed(() => {
     const currentWorkspace = this.dashboardService.currentRole();
@@ -130,6 +131,9 @@ export class TopbarComponent implements OnInit, OnDestroy {
   }
 
   pageTitle() {
+    if (this.workspaceTitle()) {
+      return this.workspaceTitle();
+    }
     const role = this.currentRole();
     if (role === 'owner') {
       return this.t('topbar.pageTitle.owner');

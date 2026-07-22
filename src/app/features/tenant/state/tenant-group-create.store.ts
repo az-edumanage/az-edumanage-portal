@@ -24,6 +24,7 @@ export class TenantGroupCreateStore {
   readonly isEditMode = computed(() => !!this.groupId());
   readonly selectedDays = signal<string[]>([]);
   readonly educationCategory = signal<TenantGroupEducationCategory>('BASIC_EDUCATION');
+  readonly academicSelectionRevision = signal(0);
 
   readonly owners = signal<TenantGroupSelectorOption[]>([]);
   readonly allTeachers = signal<TenantGroupSelectorOption[]>([]);
@@ -116,6 +117,7 @@ export class TenantGroupCreateStore {
 
   setEducationCategory(category: TenantGroupEducationCategory): void {
     this.educationCategory.set(category);
+    this.bumpAcademicSelectionRevision();
   }
 
   setCreateOptions(options: {
@@ -148,6 +150,7 @@ export class TenantGroupCreateStore {
     this.universities.set(this.allUniversities());
     this.colleges.set(this.allColleges());
     this.subjects.set([]);
+    this.bumpAcademicSelectionRevision();
   }
 
   setTeacherAcademicOptions(options: {
@@ -162,14 +165,20 @@ export class TenantGroupCreateStore {
     this.universities.set(options.universities);
     this.colleges.set(options.colleges);
     this.subjects.set(options.subjects);
+    this.bumpAcademicSelectionRevision();
   }
 
   setSubjects(subjects: TenantGroupSelectorOption[]): void {
     this.subjects.set(subjects);
+    this.bumpAcademicSelectionRevision();
   }
 
   setTeachers(teachers: TenantGroupSelectorOption[]): void {
     this.teachers.set(teachers);
+  }
+
+  bumpAcademicSelectionRevision(): void {
+    this.academicSelectionRevision.update((value) => value + 1);
   }
 
   setOwnedByDropdownOpen(value: boolean): void {
