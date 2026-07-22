@@ -9,17 +9,19 @@ import { MainLayoutComponent } from './main-layout.component';
 describe('MainLayoutComponent action shortcut', () => {
   let routerEvents: Subject<NavigationEnd>;
   let routerStub: { url: string; events: Subject<NavigationEnd> };
+  let sidebarCollapsed: ReturnType<typeof signal<boolean>>;
 
   beforeEach(() => {
     routerEvents = new Subject<NavigationEnd>();
     routerStub = { url: '/tenant/overview', events: routerEvents };
+    sidebarCollapsed = signal(false);
     TestBed.configureTestingModule({
       imports: [MainLayoutComponent],
       providers: [
         {
           provide: DashboardService,
           useValue: {
-            sidebarCollapsed: signal(false),
+            sidebarCollapsed,
             syncRoleFromUrl: vi.fn(),
           },
         },
@@ -63,5 +65,24 @@ describe('MainLayoutComponent action shortcut', () => {
     routerEvents.next(new NavigationEnd(1, '/tenant/overview', '/tenant/students'));
 
     expect(fixture.componentInstance.actionPickerOpen()).toBe(false);
+  });
+
+  it('collapses the main sidebar when the LMS workspace opens', () => {
+    const fixture = TestBed.createComponent(MainLayoutComponent);
+
+    routerEvents.next(new NavigationEnd(1, '/tenant/lms-settings', '/tenant/lms-settings/publishing'));
+
+    expect(fixture.componentInstance.isLmsWorkspace()).toBe(true);
+    expect(sidebarCollapsed()).toBe(true);
+  });
+
+  it('restores the previous sidebar state after leaving the LMS workspace', () => {
+    const fixture = TestBed.createComponent(MainLayoutComponent);
+
+    routerEvents.next(new NavigationEnd(1, '/tenant/lms-settings', '/tenant/lms-settings/content'));
+    routerEvents.next(new NavigationEnd(2, '/tenant/overview', '/tenant/overview'));
+
+    expect(fixture.componentInstance.isLmsWorkspace()).toBe(false);
+    expect(sidebarCollapsed()).toBe(false);
   });
 });

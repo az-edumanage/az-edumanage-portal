@@ -33,6 +33,13 @@
       flex: 0 0 auto;
     }
 
+    .sidebar-brand-mark {
+      width: 2.5rem;
+      height: 2.5rem;
+      margin-inline: auto;
+      object-fit: contain;
+    }
+
     .sidebar-accordion-active {
       background: rgb(99 102 241 / 0.1);
       color: rgb(255 255 255);

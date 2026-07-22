@@ -206,6 +206,108 @@ describe('TenantGroupCreateFacade', () => {
     expect(facade.filteredSubjects().map((subject) => subject.name)).toEqual(['Physics']);
   });
 
+  it('filters Grade / Level options when Educational Stage changes', () => {
+    store.setCreateOptions({
+      ...createOptionsResponse,
+      stages: [
+        { id: 'stage-1', name: 'Secondary' },
+        { id: 'stage-2', name: 'Preparatory' },
+      ],
+      grades: [
+        { id: 'grade-1', name: 'Grade 12', parentId: 'stage-1' },
+        { id: 'grade-2', name: 'Grade 9', parentId: 'stage-2' },
+      ],
+    });
+
+    facade.selectStage('Secondary');
+
+    expect(facade.filteredGrades().map((grade) => grade.name)).toEqual(['Grade 12']);
+
+    facade.selectStage('Preparatory');
+
+    expect(facade.filteredGrades().map((grade) => grade.name)).toEqual(['Grade 9']);
+  });
+
+  it('loads assigned teachers using the selected grade subject when subject names repeat', () => {
+    store.setCreateOptions({
+      ...createOptionsResponse,
+      stages: [
+        { id: 'stage-1', name: 'Secondary' },
+        { id: 'stage-2', name: 'Preparatory' },
+      ],
+      grades: [
+        { id: 'grade-1', name: 'Grade 12', parentId: 'stage-1' },
+        { id: 'grade-2', name: 'Grade 9', parentId: 'stage-2' },
+      ],
+    });
+    store.setSubjects([
+      { id: 'subject-2', name: 'English', stageId: 'stage-2', gradeId: 'grade-2' },
+      { id: 'subject-1', name: 'English', stageId: 'stage-1', gradeId: 'grade-1' },
+    ]);
+    assignedTeachersResponse = [{ id: 'teacher-1', name: 'Sarah Nabil' }];
+    facade.groupForm.patchValue({
+      educationCategory: 'BASIC_EDUCATION',
+      stage: 'Secondary',
+      grade: 'Grade 12',
+    });
+    store.bumpAcademicSelectionRevision();
+
+    facade.selectSubject('English');
+
+    expect(assignedTeacherCalls.at(-1)).toEqual({
+      educationCategory: 'BASIC_EDUCATION',
+      stageId: 'stage-1',
+      gradeId: 'grade-1',
+      subjectId: 'subject-1',
+      universityId: undefined,
+      collegeId: undefined,
+      universitySubjectId: undefined,
+    });
+    expect(facade.filteredTeachers().map((teacher) => teacher.name)).toEqual(['Sarah Nabil']);
+  });
+
+  it('keeps a duplicate-name subject selected after loading teacher classification', () => {
+    store.setCreateOptions({
+      ...createOptionsResponse,
+      stages: [
+        { id: 'stage-1', name: 'Secondary' },
+        { id: 'stage-2', name: 'Preparatory' },
+      ],
+      grades: [
+        { id: 'grade-1', name: 'Grade 12', parentId: 'stage-1' },
+        { id: 'grade-2', name: 'Grade 9', parentId: 'stage-2' },
+      ],
+    });
+    teacherClassificationResponse = {
+      stages: [
+        { id: 'stage-1', name: 'Secondary' },
+        { id: 'stage-2', name: 'Preparatory' },
+      ],
+      grades: [
+        { id: 'grade-1', name: 'Grade 12', parentId: 'stage-1' },
+        { id: 'grade-2', name: 'Grade 9', parentId: 'stage-2' },
+      ],
+      universities: [],
+      colleges: [],
+      subjects: [
+        { id: 'subject-2', name: 'English', stageId: 'stage-2', gradeId: 'grade-2' },
+        { id: 'subject-1', name: 'English', stageId: 'stage-1', gradeId: 'grade-1' },
+      ],
+    };
+    facade.groupForm.patchValue({
+      educationCategory: 'BASIC_EDUCATION',
+      stage: 'Secondary',
+      grade: 'Grade 12',
+      subject: 'English',
+    });
+    store.bumpAcademicSelectionRevision();
+
+    facade.selectTeacher('Sarah Nabil');
+
+    expect(facade.groupForm.get('subject')?.value).toBe('English');
+    expect(facade.filteredSubjects().map((subject) => subject.id)).toEqual(['subject-1']);
+  });
+
   it('filters Assigned Teacher from a completed Basic Education classification', () => {
     store.setSubjects([{ id: 'subject-1', name: 'Physics', stageId: 'stage-1', gradeId: 'grade-1' }]);
     assignedTeachersResponse = [{ id: 'teacher-1', name: 'Sarah Nabil' }];

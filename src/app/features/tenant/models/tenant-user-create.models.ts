@@ -21,6 +21,7 @@ export interface TenantUserCreateForm {
   fullName: string;
   email: string;
   username: string;
+  avatarUrl?: string | null;
   roleId: string;
   enabled: boolean;
   sendInvite: boolean;

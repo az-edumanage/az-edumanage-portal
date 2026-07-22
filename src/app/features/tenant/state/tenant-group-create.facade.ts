@@ -129,8 +129,9 @@ export class TenantGroupCreateFacade {
   });
 
   readonly filteredGrades = computed(() => {
+    this.store.academicSelectionRevision();
     const query = this.gradeSearchQuery().toLowerCase();
-    const stage = this.selectedOption(this.stages(), this.groupForm.get('stage')?.value ?? '');
+    const stage = this.selectedStage();
     const grades = this.grades().filter((grade) => !stage || grade.parentId === stage.id);
     if (!query) return grades;
     return grades.filter(
@@ -155,20 +156,22 @@ export class TenantGroupCreateFacade {
   });
 
   readonly filteredColleges = computed(() => {
+    this.store.academicSelectionRevision();
     const query = this.collegeSearchQuery().toLowerCase();
-    const university = this.selectedOption(this.universities(), this.groupForm.get('university')?.value ?? '');
+    const university = this.selectedUniversity();
     const colleges = this.colleges().filter((college) => !university || college.parentId === university.id);
     if (!query) return colleges;
     return colleges.filter((item) => item.name.toLowerCase().includes(query));
   });
 
   readonly filteredSubjects = computed(() => {
+    this.store.academicSelectionRevision();
     const query = this.subjectSearchQuery().toLowerCase();
     const category = this.educationCategory();
-    const stage = this.selectedOption(this.stages(), this.groupForm.get('stage')?.value ?? '');
-    const grade = this.selectedOption(this.grades(), this.groupForm.get('grade')?.value ?? '');
-    const university = this.selectedOption(this.universities(), this.groupForm.get('university')?.value ?? '');
-    const college = this.selectedOption(this.colleges(), this.groupForm.get('college')?.value ?? '');
+    const stage = this.selectedStage();
+    const grade = this.selectedGrade();
+    const university = this.selectedUniversity();
+    const college = this.selectedCollege();
     const subjects = this.subjects().filter((subject) => {
       if (category === 'BASIC_EDUCATION') {
         return (!stage || subject.stageId === stage.id) && (!grade || subject.gradeId === grade.id || subject.parentId === grade.id);
@@ -292,15 +295,11 @@ export class TenantGroupCreateFacade {
   }
 
   private isBasicClassificationComplete(): boolean {
-    return !!this.selectedOption(this.stages(), this.groupForm.get('stage')?.value ?? '')
-      && !!this.selectedOption(this.grades(), this.groupForm.get('grade')?.value ?? '')
-      && !!this.selectedOption(this.subjects(), this.groupForm.get('subject')?.value ?? '');
+    return !!this.selectedStage() && !!this.selectedGrade() && !!this.selectedSubject();
   }
 
   private isUniversityClassificationComplete(): boolean {
-    return !!this.selectedOption(this.universities(), this.groupForm.get('university')?.value ?? '')
-      && !!this.selectedOption(this.colleges(), this.groupForm.get('college')?.value ?? '')
-      && !!this.selectedOption(this.subjects(), this.groupForm.get('subject')?.value ?? '');
+    return !!this.selectedUniversity() && !!this.selectedCollege() && !!this.selectedSubject();
   }
 
   private isClassificationComplete(): boolean {
@@ -432,6 +431,9 @@ export class TenantGroupCreateFacade {
   }
 
   onTimeTypeChange(isFixed: boolean): void {
+    if (this.groupForm.get('isFixedTime')?.value !== isFixed) {
+      this.groupForm.get('isFixedTime')?.setValue(isFixed, { emitEvent: false });
+    }
     const daySchedules = this.groupForm.get('daySchedules') as FormGroup;
 
     if (!isFixed) {
@@ -508,6 +510,7 @@ export class TenantGroupCreateFacade {
 
   selectStage(value: string): void {
     this.groupForm.patchValue({ stage: value, grade: '', subject: '' });
+    this.store.bumpAcademicSelectionRevision();
     this.store.setStageDropdownOpen(false);
     this.store.setSubjects([]);
     this.loadAssignedTeachersIfClassificationComplete();
@@ -525,8 +528,8 @@ export class TenantGroupCreateFacade {
   subjectCreateQueryParams(): Record<string, string> {
     const params: Record<string, string> = { returnUrl: '/tenant/groups/create' };
     if (this.educationCategory() === 'BASIC_EDUCATION') {
-      const stage = this.selectedOption(this.stages(), this.groupForm.get('stage')?.value ?? '');
-      const grade = this.selectedOption(this.grades(), this.groupForm.get('grade')?.value ?? '');
+      const stage = this.selectedStage();
+      const grade = this.selectedGrade();
       if (stage) {
         params['stageId'] = stage.id;
       }
@@ -539,6 +542,7 @@ export class TenantGroupCreateFacade {
 
   selectGrade(value: string): void {
     this.groupForm.patchValue({ grade: value, subject: '' });
+    this.store.bumpAcademicSelectionRevision();
     this.store.setGradeDropdownOpen(false);
     this.store.setSubjects([]);
     if (!this.hasSelectedTeacher()) {
@@ -559,7 +563,7 @@ export class TenantGroupCreateFacade {
   collegeCreateQueryParams(): Record<string, string> {
     const params: Record<string, string> = { returnUrl: '/tenant/groups/create' };
     if (this.educationCategory() === 'UNIVERSITY_EDUCATION') {
-      const university = this.selectedOption(this.universities(), this.groupForm.get('university')?.value ?? '');
+      const university = this.selectedUniversity();
       if (university) {
         params['universityId'] = university.id;
       }
@@ -569,6 +573,7 @@ export class TenantGroupCreateFacade {
 
   selectUniversity(value: string): void {
     this.groupForm.patchValue({ university: value, college: '', subject: '' });
+    this.store.bumpAcademicSelectionRevision();
     this.store.setUniversityDropdownOpen(false);
     this.store.setSubjects([]);
     this.loadAssignedTeachersIfClassificationComplete();
@@ -585,6 +590,7 @@ export class TenantGroupCreateFacade {
 
   selectCollege(value: string): void {
     this.groupForm.patchValue({ college: value, subject: '' });
+    this.store.bumpAcademicSelectionRevision();
     this.store.setCollegeDropdownOpen(false);
     this.store.setSubjects([]);
     if (!this.hasSelectedTeacher()) {
@@ -604,6 +610,7 @@ export class TenantGroupCreateFacade {
 
   selectSubject(value: string): void {
     this.groupForm.patchValue({ subject: value });
+    this.store.bumpAcademicSelectionRevision();
     this.store.setSubjectDropdownOpen(false);
     this.loadAssignedTeachersIfClassificationComplete();
   }
@@ -891,10 +898,10 @@ export class TenantGroupCreateFacade {
 
   private loadSubjects(): void {
     const category = this.educationCategory();
-    const stage = this.selectedOption(this.stages(), this.groupForm.get('stage')?.value ?? '');
-    const grade = this.selectedOption(this.grades(), this.groupForm.get('grade')?.value ?? '');
-    const university = this.selectedOption(this.universities(), this.groupForm.get('university')?.value ?? '');
-    const college = this.selectedOption(this.colleges(), this.groupForm.get('college')?.value ?? '');
+    const stage = this.selectedStage();
+    const grade = this.selectedGrade();
+    const university = this.selectedUniversity();
+    const college = this.selectedCollege();
     if (category === 'BASIC_EDUCATION' && (!stage || !grade)) return;
     if (category === 'UNIVERSITY_EDUCATION' && (!university || !college)) return;
     this.data
@@ -925,8 +932,8 @@ export class TenantGroupCreateFacade {
     const name = typeof data['name'] === 'string' ? data['name'] : '';
     const stageId = typeof data['stageId'] === 'string' ? data['stageId'] : '';
     const gradeId = typeof data['gradeId'] === 'string' ? data['gradeId'] : '';
-    const currentStage = this.selectedOption(this.stages(), this.groupForm.get('stage')?.value ?? '');
-    const currentGrade = this.selectedOption(this.grades(), this.groupForm.get('grade')?.value ?? '');
+    const currentStage = this.selectedStage();
+    const currentGrade = this.selectedGrade();
 
     this.taskService.removeTask(this.pendingCreatedSubjectTaskId);
     if (!id || !name || currentStage?.id !== stageId || currentGrade?.id !== gradeId) {
@@ -944,11 +951,11 @@ export class TenantGroupCreateFacade {
 
   private loadAssignedTeachers(): void {
     const category = this.educationCategory();
-    const stage = this.selectedOption(this.stages(), this.groupForm.get('stage')?.value ?? '');
-    const grade = this.selectedOption(this.grades(), this.groupForm.get('grade')?.value ?? '');
-    const subject = this.selectedOption(this.subjects(), this.groupForm.get('subject')?.value ?? '');
-    const university = this.selectedOption(this.universities(), this.groupForm.get('university')?.value ?? '');
-    const college = this.selectedOption(this.colleges(), this.groupForm.get('college')?.value ?? '');
+    const stage = this.selectedStage();
+    const grade = this.selectedGrade();
+    const subject = this.selectedSubject();
+    const university = this.selectedUniversity();
+    const college = this.selectedCollege();
     if (!subject) return;
     this.data
       .loadAssignedTeachers({
@@ -1245,9 +1252,9 @@ export class TenantGroupCreateFacade {
       const stage = this.groupForm.get('stage')?.value ?? '';
       const grade = this.groupForm.get('grade')?.value ?? '';
       const subject = this.groupForm.get('subject')?.value ?? '';
-      const nextStage = this.selectedOption(this.stages(), stage);
-      const nextGrade = nextStage ? this.selectedOption(this.grades(), grade) : null;
-      const nextSubject = nextStage && nextGrade ? this.selectedOption(this.subjects(), subject) : null;
+      const nextStage = this.selectedStage();
+      const nextGrade = nextStage ? this.selectedGrade() : null;
+      const nextSubject = nextStage && nextGrade ? this.selectedSubject() : null;
       const validStage = !!nextStage;
       const validGrade = !!nextStage && !!nextGrade && nextGrade.parentId === nextStage.id;
       const validSubject = !!nextStage
@@ -1260,15 +1267,16 @@ export class TenantGroupCreateFacade {
         grade: validGrade ? grade : '',
         subject: validSubject ? subject : '',
       });
+      this.store.bumpAcademicSelectionRevision();
       return;
     }
 
     const university = this.groupForm.get('university')?.value ?? '';
     const college = this.groupForm.get('college')?.value ?? '';
     const subject = this.groupForm.get('subject')?.value ?? '';
-    const nextUniversity = this.selectedOption(this.universities(), university);
-    const nextCollege = nextUniversity ? this.selectedOption(this.colleges(), college) : null;
-    const nextSubject = nextUniversity && nextCollege ? this.selectedOption(this.subjects(), subject) : null;
+    const nextUniversity = this.selectedUniversity();
+    const nextCollege = nextUniversity ? this.selectedCollege() : null;
+    const nextSubject = nextUniversity && nextCollege ? this.selectedSubject() : null;
     const validUniversity = !!nextUniversity;
     const validCollege = !!nextUniversity && !!nextCollege && nextCollege.parentId === nextUniversity.id;
     const validSubject = !!nextUniversity
@@ -1281,6 +1289,7 @@ export class TenantGroupCreateFacade {
       college: validCollege ? college : '',
       subject: validSubject ? subject : '',
     });
+    this.store.bumpAcademicSelectionRevision();
   }
 
   private applyEducationCategory(category: TenantGroupEducationCategory): void {
@@ -1302,11 +1311,11 @@ export class TenantGroupCreateFacade {
 
   private toApiPayload(payload: TenantGroupPayload): TenantGroupCreateApiPayload {
     const category = payload.educationCategory;
-    const stage = this.selectedOption(this.stages(), payload.stage);
-    const grade = this.selectedOption(this.grades(), payload.grade);
-    const university = this.selectedOption(this.universities(), payload.university);
-    const college = this.selectedOption(this.colleges(), payload.college);
-    const subject = this.selectedOption(this.subjects(), payload.subject);
+    const stage = this.selectedStage();
+    const grade = this.selectedGrade();
+    const university = this.selectedUniversity();
+    const college = this.selectedCollege();
+    const subject = this.selectedSubject();
     const teacher = this.selectedOption(this.teachers(), payload.teacher);
     const ownerId = this.resolveOwnerId(payload.ownedBy, teacher);
     const room = this.selectedOption(this.store.allRooms(), payload.room);
@@ -1359,6 +1368,47 @@ export class TenantGroupCreateFacade {
         },
       ]),
     );
+  }
+
+  private selectedStage(): TenantGroupSelectorOption | null {
+    return this.selectedOption(this.stages(), this.groupForm.get('stage')?.value ?? '');
+  }
+
+  private selectedGrade(): TenantGroupSelectorOption | null {
+    const stage = this.selectedStage();
+    const name = this.groupForm.get('grade')?.value ?? '';
+    const options = stage ? this.grades().filter((grade) => grade.parentId === stage.id) : this.grades();
+    return this.selectedOption(options, name);
+  }
+
+  private selectedUniversity(): TenantGroupSelectorOption | null {
+    return this.selectedOption(this.universities(), this.groupForm.get('university')?.value ?? '');
+  }
+
+  private selectedCollege(): TenantGroupSelectorOption | null {
+    const university = this.selectedUniversity();
+    const name = this.groupForm.get('college')?.value ?? '';
+    const options = university ? this.colleges().filter((college) => college.parentId === university.id) : this.colleges();
+    return this.selectedOption(options, name);
+  }
+
+  private selectedSubject(): TenantGroupSelectorOption | null {
+    const name = this.groupForm.get('subject')?.value ?? '';
+    if (this.educationCategory() === 'BASIC_EDUCATION') {
+      const stage = this.selectedStage();
+      const grade = this.selectedGrade();
+      const options = this.subjects().filter((subject) =>
+        (!stage || subject.stageId === stage.id) && (!grade || subject.gradeId === grade.id || subject.parentId === grade.id),
+      );
+      return this.selectedOption(options, name);
+    }
+
+    const university = this.selectedUniversity();
+    const college = this.selectedCollege();
+    const options = this.subjects().filter((subject) =>
+      (!university || subject.universityId === university.id) && (!college || subject.collegeId === college.id || subject.parentId === college.id),
+    );
+    return this.selectedOption(options, name);
   }
 
   private selectedOption(options: TenantGroupSelectorOption[], name: string): TenantGroupSelectorOption | null {
