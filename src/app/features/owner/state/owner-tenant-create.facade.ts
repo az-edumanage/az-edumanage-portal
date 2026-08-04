@@ -409,7 +409,7 @@ export class OwnerTenantCreateFacade {
   }
 
   private completeProvisioningSuccess(): void {
-    this.submitStatus.set({ success: true, message: 'Tenant provisioning verified successfully.' });
+    this.submitStatus.set({ success: true, message: 'Tenant was created. Provisioning is running in the background.' });
     this.isSuccess = true;
     this.taskService.removeTask(this.taskId);
     this.showSuccessModal.set(true);
