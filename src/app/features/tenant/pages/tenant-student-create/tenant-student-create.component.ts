@@ -37,10 +37,12 @@ export class TenantStudentCreateComponent implements OnInit, OnDestroy {
   readonly addParentSaving = this.facade.addParentSaving;
   readonly addParentError = this.facade.addParentError;
   readonly addParentForm = this.facade.addParentForm;
+  readonly createdCredentials = this.facade.createdCredentials;
   readonly openEducationDropdown = signal<StudentEducationDropdown | null>(null);
   readonly genderPanelOpen = signal(false);
   readonly parentPanelOpen = signal(false);
   readonly showPassword = signal(false);
+  readonly showParentPassword = signal(false);
   readonly showNewParentPassword = signal(false);
   readonly resetConfirmOpen = signal(false);
 
@@ -122,6 +124,14 @@ export class TenantStudentCreateComponent implements OnInit, OnDestroy {
 
   submitAddParent(): void {
     this.facade.submitAddParent();
+  }
+
+  closeCreatedCredentials(): void {
+    this.facade.closeCreatedCredentials();
+  }
+
+  openCreatedActivationCard(): void {
+    this.facade.openCreatedActivationCard();
   }
 
   selectGender(gender: 'Male' | 'Female'): void {

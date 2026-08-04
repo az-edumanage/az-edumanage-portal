@@ -83,6 +83,7 @@ export interface TenantLmsAboutTeacherSettings {
 
 export interface TenantLmsCourseItem {
   courseId: string;
+  gradeId: string;
   imageUrl: string;
   imageAlt: string;
   symbol: string;
@@ -107,7 +108,19 @@ export interface TenantLmsCoursesSettings {
 
 export type TenantLmsCourseMediaType = 'VIDEO' | 'PDF' | 'IMAGE' | 'AUDIO' | 'FILE' | 'LINK';
 export interface TenantLmsCourseMedia { id: string; type: TenantLmsCourseMediaType; title: string; url: string; fileName: string; contentType: string; durationLabel: string; }
-export interface TenantLmsCourseCurriculumNode { id: string; title: string; description: string; freePreview: boolean; media: TenantLmsCourseMedia[]; children: TenantLmsCourseCurriculumNode[]; }
+export interface TenantLmsCourseCurriculumNode {
+  id: string;
+  title: string;
+  description: string;
+  freePreview: boolean;
+  unitType?: string;
+  externalVideo?: Record<string, unknown> | null;
+  blocks?: Array<Record<string, unknown>>;
+  settings?: Record<string, unknown>;
+  upload?: Record<string, unknown> | null;
+  media: TenantLmsCourseMedia[];
+  children: TenantLmsCourseCurriculumNode[];
+}
 export interface TenantLmsCourse {
   id: string; gradeId: string; gradeName: string; slug: string; title: string;
   subtitle: string | null; description: string | null; thumbnailUrl: string | null;
@@ -118,6 +131,9 @@ export interface TenantLmsCourse {
   createdAt: string; updatedAt: string;
 }
 export type SaveTenantLmsCourseRequest = Omit<TenantLmsCourse, 'id' | 'gradeName' | 'createdAt' | 'updatedAt'>;
+export interface SaveTenantLmsCourseContentRequest {
+  curriculum: TenantLmsCourseCurriculumNode[];
+}
 
 export interface TenantLmsSettingsView {
   tenantId: string;
@@ -221,8 +237,16 @@ export class TenantLmsSettingsDataService {
     return firstValueFrom(this.http.post<TenantLmsCourse>(`${environment.apiBaseUrl}/tenant/lms-courses`, payload));
   }
 
+  createManagedCourseContentDraft(payload: SaveTenantLmsCourseRequest): Promise<TenantLmsCourse> {
+    return firstValueFrom(this.http.post<TenantLmsCourse>(`${environment.apiBaseUrl}/tenant/lms-courses/content`, payload));
+  }
+
   updateManagedCourse(courseId: string, payload: SaveTenantLmsCourseRequest): Promise<TenantLmsCourse> {
     return firstValueFrom(this.http.put<TenantLmsCourse>(`${environment.apiBaseUrl}/tenant/lms-courses/${courseId}`, payload));
+  }
+
+  updateManagedCourseContent(courseId: string, payload: SaveTenantLmsCourseContentRequest): Promise<TenantLmsCourse> {
+    return firstValueFrom(this.http.put<TenantLmsCourse>(`${environment.apiBaseUrl}/tenant/lms-courses/${courseId}/content`, payload));
   }
 
   deleteManagedCourse(courseId: string): Promise<void> {

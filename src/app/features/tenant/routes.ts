@@ -5,6 +5,7 @@ import { TenantStudentRegistrationsPendingComponent } from './pages/tenant-stude
 import { TenantStudentCreateComponent } from './pages/tenant-student-create/tenant-student-create.component';
 import { TenantStudentDetailsComponent } from './pages/tenant-student-details/tenant-student-details.component';
 import { TenantStudentBarcodePrintComponent } from './pages/tenant-student-barcode-print/tenant-student-barcode-print.component';
+import { TenantStudentActivationCardComponent } from './pages/tenant-student-activation-card/tenant-student-activation-card.component';
 import { TenantParentsComponent } from './pages/tenant-parents/tenant-parents.component';
 import { TenantTeachersComponent } from './pages/tenant-teachers/tenant-teachers.component';
 import { TenantTeacherCreateComponent } from './pages/tenant-teacher-create/tenant-teacher-create.component';
@@ -123,6 +124,7 @@ export const TENANT_ROUTES: Routes = [
       { path: 'students/pending', component: TenantStudentRegistrationsPendingComponent, data: { requiredPermission: 'tenant.students.manage' } },
       { path: 'students/create', component: TenantStudentCreateComponent, data: { requiredPermission: 'tenant.students.manage' } },
       { path: 'students/:id/barcode/print', component: TenantStudentBarcodePrintComponent },
+      { path: 'students/:id/activation-card', component: TenantStudentActivationCardComponent, data: { requiredPermission: 'tenant.students.view' } },
       { path: 'students/:id/edit', component: TenantStudentCreateComponent, data: { requiredPermission: 'tenant.students.manage' } },
       { path: 'students/:id', component: TenantStudentDetailsComponent },
       { path: 'parents', component: TenantParentsComponent, data: { requiredPermission: 'tenant.students.view' } },

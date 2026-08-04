@@ -261,6 +261,11 @@ export class TenantStudentsComponent {
     void this.router.navigate(['/tenant/students', studentId]);
   }
 
+  openStudentActivationCard(event: Event, studentId: string): void {
+    event.stopPropagation();
+    void this.router.navigate(['/tenant/students', studentId, 'activation-card']);
+  }
+
   openStudentEdit(event: Event, studentId: string): void {
     event.stopPropagation();
     void this.router.navigate(['/tenant/students', studentId, 'edit']);

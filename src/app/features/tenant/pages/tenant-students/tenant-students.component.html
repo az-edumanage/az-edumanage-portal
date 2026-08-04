@@ -222,6 +222,9 @@
                     {{ student.name.charAt(0) }}
                   </div>
                   <div class="flex gap-2">
+                    <button type="button" (click)="openStudentActivationCard($event, student.id)" class="p-1.5 text-slate-500 hover:text-emerald-700 transition-colors" title="Info">
+                      <mat-icon class="text-sm">info</mat-icon>
+                    </button>
                     <button type="button" (click)="openPasswordModal($event, student.id)" class="p-1.5 text-slate-500 hover:text-sky-700 transition-colors" title="Change Password">
                       <mat-icon class="text-sm">password</mat-icon>
                     </button>
@@ -319,6 +322,9 @@
                         <div class="tenant-students-actions flex items-center justify-end gap-2">
                           <a [routerLink]="['/tenant/students', student.id]" (click)="$event.stopPropagation()" class="p-2 text-indigo-600 hover:bg-indigo-600/10 dark:hover:bg-indigo-900/20 rounded-lg transition-colors" title="View Details">
                             <mat-icon class="text-sm block">visibility</mat-icon>
+                          </a>
+                          <a [routerLink]="['/tenant/students', student.id, 'activation-card']" (click)="$event.stopPropagation()" class="p-2 text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors" title="Info">
+                            <mat-icon class="text-sm block">info</mat-icon>
                           </a>
                           <button type="button" (click)="openPasswordModal($event, student.id)" class="p-2 text-slate-500 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-colors" title="Change Password">
                             <mat-icon class="text-sm block">password</mat-icon>

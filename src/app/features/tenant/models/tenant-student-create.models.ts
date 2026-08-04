@@ -7,6 +7,7 @@ export interface TenantStudentCreatePayload {
   phone: string | null;
   username: string;
   password: string;
+  parentPassword?: string;
   birthDate: string;
   gender: TenantStudentGender;
   parentAppUserId: string;

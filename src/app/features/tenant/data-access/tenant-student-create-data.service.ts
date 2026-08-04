@@ -20,6 +20,7 @@ export class TenantStudentCreateDataService {
       phone: '',
       username: '',
       password: '',
+      parentPassword: '',
       birthDate: '',
       gender: 'Male',
       parentAppUserId: '',
@@ -38,11 +39,10 @@ export class TenantStudentCreateDataService {
       .pipe(catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load student form data')));
   }
 
-  enrollStudent(payload: TenantStudentCreatePayload): Observable<void> {
+  enrollStudent(payload: TenantStudentCreatePayload): Observable<TenantStudentCreateResponse> {
     return this.http
       .post<TenantStudentCreateResponse>(this.studentsUrl, this.normalizePayload(payload))
       .pipe(
-        map(() => void 0),
         catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to enroll student')),
       );
   }
@@ -88,21 +88,25 @@ export class TenantStudentCreateDataService {
       );
   }
 
-  private normalizePayload(payload: TenantStudentCreatePayload): TenantStudentCreatePayload {
+  private normalizePayload(payload: TenantStudentCreatePayload): Omit<TenantStudentCreatePayload, 'parentPassword'> {
+    const {
+      parentPassword: _parentPassword,
+      ...studentPayload
+    } = payload;
     return {
-      ...payload,
-      email: this.normalizeOptional(payload.email),
-      phone: this.normalizeOptional(payload.phone),
-      username: payload.username.trim(),
-      parentAppUserId: payload.parentAppUserId?.trim() ?? '',
-      stageIds: payload.educationCategory === 'BASIC_EDUCATION' ? payload.stageIds : [],
-      gradeIds: payload.educationCategory === 'BASIC_EDUCATION' ? payload.gradeIds : [],
-      universityIds: payload.educationCategory === 'UNIVERSITY_EDUCATION' ? payload.universityIds : [],
-      collegeIds: payload.educationCategory === 'UNIVERSITY_EDUCATION' ? payload.collegeIds : [],
+      ...studentPayload,
+      email: this.normalizeOptional(studentPayload.email),
+      phone: this.normalizeOptional(studentPayload.phone),
+      username: studentPayload.username.trim(),
+      parentAppUserId: studentPayload.parentAppUserId?.trim() ?? '',
+      stageIds: studentPayload.educationCategory === 'BASIC_EDUCATION' ? studentPayload.stageIds : [],
+      gradeIds: studentPayload.educationCategory === 'BASIC_EDUCATION' ? studentPayload.gradeIds : [],
+      universityIds: studentPayload.educationCategory === 'UNIVERSITY_EDUCATION' ? studentPayload.universityIds : [],
+      collegeIds: studentPayload.educationCategory === 'UNIVERSITY_EDUCATION' ? studentPayload.collegeIds : [],
     };
   }
 
-  private normalizeUpdatePayload(payload: TenantStudentCreatePayload): Omit<TenantStudentCreatePayload, 'username' | 'password'> {
+  private normalizeUpdatePayload(payload: TenantStudentCreatePayload): Omit<TenantStudentCreatePayload, 'username' | 'password' | 'parentPassword'> {
     const normalized = this.normalizePayload(payload);
     const {
       username: _username,
