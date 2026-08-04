@@ -19,6 +19,9 @@ export interface StudentDetails extends Student {
   gender: string;
   birthDate: string;
   parentUsername: string;
+  parentAppUserId?: string | null;
+  studentLoginPassword?: string | null;
+  parentLoginPassword?: string | null;
   parentName: string;
   parentPhone: string;
   address: string;
@@ -118,6 +121,8 @@ export interface TenantStudentBackendRecord {
   birthDate?: string | null;
   parentAppUserId?: string | null;
   parentUsername?: string | null;
+  studentLoginPassword?: string | null;
+  parentLoginPassword?: string | null;
   parentName?: string | null;
   parentPhone?: string | null;
   address?: string | null;

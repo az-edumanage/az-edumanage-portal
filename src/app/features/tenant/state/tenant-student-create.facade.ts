@@ -1,7 +1,7 @@
 import { computed, Injectable, inject, signal } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, map, switchMap } from 'rxjs';
 import { TaskService } from '../../../core/services/task.service';
 import { TenantStudentCreateDataService } from '../data-access/tenant-student-create-data.service';
 import { TenantStudentsDataService } from '../data-access/tenant-students-data.service';
@@ -37,6 +37,13 @@ export class TenantStudentCreateFacade {
   readonly addParentModalOpen = signal(false);
   readonly addParentSaving = signal(false);
   readonly addParentError = signal<string | null>(null);
+  readonly createdCredentials = signal<{
+    studentId: string;
+    studentUsername: string;
+    studentPassword: string;
+    parentUsername: string;
+    parentPassword: string;
+  } | null>(null);
   readonly addParentForm = this.fb.group({
     fullName: ['', [Validators.required, Validators.minLength(3)]],
     phone: [''],
@@ -62,6 +69,7 @@ export class TenantStudentCreateFacade {
     phone: [''],
     username: ['', Validators.required],
     password: ['', [Validators.required, Validators.minLength(8)]],
+    parentPassword: ['', [Validators.required, Validators.minLength(8)]],
     birthDate: ['', Validators.required],
     gender: ['Male', Validators.required],
     parentAppUserId: ['', Validators.required],
@@ -82,6 +90,7 @@ export class TenantStudentCreateFacade {
     this.editingStudentId = studentId;
     this.store.isEditMode.set(Boolean(this.editingStudentId));
     this.store.setError(null);
+    this.createdCredentials.set(null);
     this.bindDependentSelectors();
     this.configureAccountControls();
     this.loadLookups();
@@ -134,20 +143,57 @@ export class TenantStudentCreateFacade {
     this.store.setError(null);
     const payload = this.studentForm.getRawValue() as TenantStudentCreatePayload;
 
-    const request = this.editingStudentId
-      ? this.data.updateStudent(this.editingStudentId, payload)
-      : this.data.enrollStudent(payload);
+    const selectedParent = this.selectedParent();
+    const parentUserId = payload.parentAppUserId?.trim() ?? '';
+    const parentPassword = payload.parentPassword?.trim() ?? '';
 
-    request
-      .pipe(finalize(() => this.store.setSubmitting(false)))
+    if (this.editingStudentId) {
+      this.data.updateStudent(this.editingStudentId, payload)
+        .pipe(finalize(() => this.store.setSubmitting(false)))
+        .subscribe({
+          next: () => {
+            this.isSuccess = true;
+            this.taskService.removeTask(this.taskId);
+            this.router.navigate(['/tenant/students']);
+          },
+          error: (error: Error) => this.store.setError(error.message),
+        });
+      return;
+    }
+
+    this.data.enrollStudent(payload)
+      .pipe(
+        switchMap((createdStudent) => this.studentsData.changeParentPassword(parentUserId, parentPassword).pipe(map(() => createdStudent))),
+        finalize(() => this.store.setSubmitting(false)),
+      )
       .subscribe({
-        next: () => {
+        next: (createdStudent) => {
           this.isSuccess = true;
           this.taskService.removeTask(this.taskId);
-          this.router.navigate(['/tenant/students']);
+          this.createdCredentials.set({
+            studentId: createdStudent.id,
+            studentUsername: payload.username,
+            studentPassword: payload.password,
+            parentUsername: selectedParent?.name ?? selectedParent?.phone ?? 'Parent account',
+            parentPassword,
+          });
         },
         error: (error: Error) => this.store.setError(error.message),
       });
+  }
+
+  closeCreatedCredentials(): void {
+    this.createdCredentials.set(null);
+    this.router.navigate(['/tenant/students']);
+  }
+
+  openCreatedActivationCard(): void {
+    const credentials = this.createdCredentials();
+    if (!credentials) {
+      return;
+    }
+    this.createdCredentials.set(null);
+    this.router.navigate(['/tenant/students', credentials.studentId, 'activation-card']);
   }
 
   private loadLookups(): void {
@@ -191,16 +237,21 @@ export class TenantStudentCreateFacade {
     if (this.editingStudentId) {
       this.studentForm.controls.username.clearValidators();
       this.studentForm.controls.password.clearValidators();
+      this.studentForm.controls.parentPassword.clearValidators();
       this.studentForm.controls.username.disable({ emitEvent: false });
       this.studentForm.controls.password.disable({ emitEvent: false });
+      this.studentForm.controls.parentPassword.disable({ emitEvent: false });
     } else {
       this.studentForm.controls.username.enable({ emitEvent: false });
       this.studentForm.controls.password.enable({ emitEvent: false });
+      this.studentForm.controls.parentPassword.enable({ emitEvent: false });
       this.studentForm.controls.username.setValidators([Validators.required]);
       this.studentForm.controls.password.setValidators([Validators.required, Validators.minLength(8)]);
+      this.studentForm.controls.parentPassword.setValidators([Validators.required, Validators.minLength(8)]);
     }
     this.studentForm.controls.username.updateValueAndValidity({ emitEvent: false });
     this.studentForm.controls.password.updateValueAndValidity({ emitEvent: false });
+    this.studentForm.controls.parentPassword.updateValueAndValidity({ emitEvent: false });
     this.studentForm.controls.parentAppUserId.updateValueAndValidity({ emitEvent: false });
   }
 
@@ -251,6 +302,7 @@ export class TenantStudentCreateFacade {
       next: (parent) => {
         this.parents.update((parents) => [parent, ...parents.filter((item) => (item.appUserId ?? item.id) !== (parent.appUserId ?? parent.id))]);
         this.selectParent(parent);
+        this.studentForm.controls.parentPassword.setValue(value.password ?? '');
         this.addParentModalOpen.set(false);
       },
       error: (error: Error) => this.addParentError.set(error.message),

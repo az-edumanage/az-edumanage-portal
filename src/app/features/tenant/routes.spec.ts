@@ -22,6 +22,7 @@ import { TenantUniversitiesComponent } from './pages/tenant-universities/tenant-
 import { TenantPlatformSettingsComponent } from './pages/tenant-platform-settings/tenant-platform-settings.component';
 import { TenantLmsSettingsComponent } from './pages/tenant-lms-settings/tenant-lms-settings.component';
 import { TenantStudentBarcodePrintComponent } from './pages/tenant-student-barcode-print/tenant-student-barcode-print.component';
+import { TenantStudentActivationCardComponent } from './pages/tenant-student-activation-card/tenant-student-activation-card.component';
 import { TenantSubjectsComponent } from './pages/tenant-subjects/tenant-subjects.component';
 
 describe('TENANT_ROUTES', () => {
@@ -41,6 +42,7 @@ describe('TENANT_ROUTES', () => {
     expect(childPaths).toContain('students');
     expect(childPaths).toContain('students/:id');
     expect(childPaths).toContain('students/:id/barcode/print');
+    expect(childPaths).toContain('students/:id/activation-card');
     expect(childPaths).toContain('educational-stages');
     expect(childPaths).toContain('subjects');
     expect(childPaths).toContain('subjects/create');
@@ -227,6 +229,14 @@ describe('TENANT_ROUTES', () => {
     const printRoute = tenantShell?.children?.find((child) => child.path === 'students/:id/barcode/print');
 
     expect(printRoute?.component).toBe(TenantStudentBarcodePrintComponent);
+  });
+
+  it('routes student activation card to the dedicated printable page', () => {
+    const tenantShell = TENANT_ROUTES.find((route) => route.path === '');
+    const activationRoute = tenantShell?.children?.find((child) => child.path === 'students/:id/activation-card');
+
+    expect(activationRoute?.component).toBe(TenantStudentActivationCardComponent);
+    expect(activationRoute?.data).toEqual({ requiredPermission: 'tenant.students.view' });
   });
 
   it.each([
