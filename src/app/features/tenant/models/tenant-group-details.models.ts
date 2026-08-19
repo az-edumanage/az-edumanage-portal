@@ -12,6 +12,7 @@ export interface GroupStudent {
   attendanceTime?: string | null;
   attendanceState?: 'Present' | 'Absent' | null;
   attendanceSource?: 'Manual' | 'Auto' | null;
+  paymentStatus?: 'PAID' | 'UNPAID' | string | null;
 }
 
 export interface GroupDaySchedule {
@@ -220,6 +221,7 @@ export interface GroupDetails {
   fees: number;
   status: 'Active' | 'Inactive';
   pricePerStudent?: number;
+  centerCommissionPerStudent?: number;
   avgAttendanceRate?: number | null;
   absenceRate?: number | null;
   attendanceAvailable?: boolean;
@@ -309,6 +311,7 @@ export interface TenantGroupStudentResponse {
   attendanceTime?: string | null;
   attendanceState?: 'Present' | 'Absent' | null;
   attendanceSource?: 'Manual' | 'Auto' | null;
+  paymentStatus?: 'PAID' | 'UNPAID' | string | null;
 }
 
 export interface TenantGroupDetailsResponse {
@@ -327,6 +330,7 @@ export interface TenantGroupDetailsResponse {
   capacity: number | null;
   enrolled: number;
   pricePerStudent: number;
+  centerCommissionPerStudent: number;
   status: 'Active' | 'Inactive';
   avgAttendanceRate: number | null;
   absenceRate: number | null;

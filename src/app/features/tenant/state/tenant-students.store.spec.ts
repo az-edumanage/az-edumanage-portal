@@ -16,6 +16,7 @@ describe('TenantStudentsStore', () => {
       id: 'student-1',
       name: 'Ahmed Ali',
       email: 'ahmed@example.com',
+      phone: '01007381133',
       grade: 'Grade 12',
       gradeId: 'grade-12',
       stage: 'Secondary Stage',
@@ -27,6 +28,7 @@ describe('TenantStudentsStore', () => {
       id: 'student-2',
       name: 'Sara Mohamed',
       email: 'sara@example.com',
+      phone: '01112223334',
       grade: 'Grade 11',
       gradeId: 'grade-11',
       stage: 'Secondary Stage',
@@ -38,6 +40,7 @@ describe('TenantStudentsStore', () => {
       id: 'student-3',
       name: 'Omar Hassan',
       email: 'omar@example.com',
+      phone: '01234567890',
       grade: 'Grade 10',
       gradeId: 'grade-10',
       stage: 'Preparatory Stage',
@@ -88,6 +91,14 @@ describe('TenantStudentsStore', () => {
     const filtered = store.filteredStudents();
     expect(filtered.length).toBe(1);
     expect(filtered[0].name).toBe('Sara Mohamed');
+  });
+
+  it('searches loaded records by student phone number', () => {
+    store.searchQuery.set('01007381133');
+
+    const filtered = store.filteredStudents();
+    expect(filtered.length).toBe(1);
+    expect(filtered[0].name).toBe('Ahmed Ali');
   });
 
   it('supports sort by newest enrollment date', () => {

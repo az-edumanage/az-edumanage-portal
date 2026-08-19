@@ -23,6 +23,7 @@ import { TenantPlatformSettingsComponent } from './pages/tenant-platform-setting
 import { TenantLmsSettingsComponent } from './pages/tenant-lms-settings/tenant-lms-settings.component';
 import { TenantStudentBarcodePrintComponent } from './pages/tenant-student-barcode-print/tenant-student-barcode-print.component';
 import { TenantStudentActivationCardComponent } from './pages/tenant-student-activation-card/tenant-student-activation-card.component';
+import { TenantGroupAccountsInfoComponent } from './pages/tenant-group-accounts-info/tenant-group-accounts-info.component';
 import { TenantSubjectsComponent } from './pages/tenant-subjects/tenant-subjects.component';
 
 describe('TENANT_ROUTES', () => {
@@ -59,8 +60,9 @@ describe('TENANT_ROUTES', () => {
     expect(childPaths).toContain('university-subjects/:id/edit');
     expect(childPaths).toContain('university-subjects/:id');
     expect(childPaths).toContain('groups/create');
-    expect(childPaths).toContain('groups/:groupId/exam/basic-education/:stageId/grades/:gradeId/subjects/:id/curriculum/addQuestion');
-    expect(childPaths).toContain('groups/:groupId/exam/basic-education/:stageId/grades/:gradeId/subjects/:id/curriculum/:nodeId/addQuestion');
+    expect(childPaths).toContain('groups/:id/accounts-info');
+    expect(childPaths).toContain('groups/:groupId/home-work/basic-education/:stageId/grades/:gradeId/subjects/:id/curriculum/addQuestion');
+    expect(childPaths).toContain('groups/:groupId/home-work/basic-education/:stageId/grades/:gradeId/subjects/:id/curriculum/:nodeId/addQuestion');
     expect(childPaths).toContain('settings');
     expect(childPaths).toContain('lms-settings');
     expect(childPaths).toContain('lms-settings/:page');
@@ -161,8 +163,9 @@ describe('TENANT_ROUTES', () => {
     const basicEducationExamSubjectCurriculumDetailsRoute = tenantShell?.children?.find((child) => child.path === 'exams/basic-education/:stageId/grades/:gradeId/create/new/subjects/:id/curriculum/:nodeId');
     const basicEducationExamSubjectAddQuestionRoute = tenantShell?.children?.find((child) => child.path === 'exams/basic-education/:stageId/grades/:gradeId/create/new/subjects/:id/curriculum/addQuestion');
     const basicEducationExamSubjectEditQuestionRoute = tenantShell?.children?.find((child) => child.path === 'exams/basic-education/:stageId/grades/:gradeId/create/new/subjects/:id/curriculum/editQuestion/:questionId');
-    const groupHomeWorkSubjectAddQuestionRoute = tenantShell?.children?.find((child) => child.path === 'groups/:groupId/exam/basic-education/:stageId/grades/:gradeId/subjects/:id/curriculum/addQuestion');
-    const groupHomeWorkSubjectNodeAddQuestionRoute = tenantShell?.children?.find((child) => child.path === 'groups/:groupId/exam/basic-education/:stageId/grades/:gradeId/subjects/:id/curriculum/:nodeId/addQuestion');
+    const groupHomeWorkCreateRoute = tenantShell?.children?.find((child) => child.path === 'groups/:id/home-work');
+    const groupHomeWorkSubjectAddQuestionRoute = tenantShell?.children?.find((child) => child.path === 'groups/:groupId/home-work/basic-education/:stageId/grades/:gradeId/subjects/:id/curriculum/addQuestion');
+    const groupHomeWorkSubjectNodeAddQuestionRoute = tenantShell?.children?.find((child) => child.path === 'groups/:groupId/home-work/basic-education/:stageId/grades/:gradeId/subjects/:id/curriculum/:nodeId/addQuestion');
     const universityEducationRoute = tenantShell?.children?.find((child) => child.path === 'exams/university-education');
     const universityEducationCollegesRoute = tenantShell?.children?.find((child) => child.path === 'exams/university-education/:universityId');
     const universityEducationSubjectsRoute = tenantShell?.children?.find((child) => child.path === 'exams/university-education/:universityId/colleges/:collegeId');
@@ -182,6 +185,7 @@ describe('TENANT_ROUTES', () => {
     expect(basicEducationExamSubjectCurriculumDetailsRoute?.component).toBe(TenantSubjectCurriculumDetailsComponent);
     expect(basicEducationExamSubjectAddQuestionRoute?.component).toBe(TenantSubjectCurriculumQuestionCreateComponent);
     expect(basicEducationExamSubjectEditQuestionRoute?.component).toBe(TenantSubjectCurriculumQuestionCreateComponent);
+    expect(groupHomeWorkCreateRoute?.data).toEqual({ mode: 'homeWork' });
     expect(groupHomeWorkSubjectAddQuestionRoute?.component).toBe(TenantSubjectCurriculumQuestionCreateComponent);
     expect(groupHomeWorkSubjectNodeAddQuestionRoute?.component).toBe(TenantSubjectCurriculumQuestionCreateComponent);
     expect(universityEducationRoute?.component).toBe(TenantUniversitiesComponent);
@@ -237,6 +241,14 @@ describe('TENANT_ROUTES', () => {
 
     expect(activationRoute?.component).toBe(TenantStudentActivationCardComponent);
     expect(activationRoute?.data).toEqual({ requiredPermission: 'tenant.students.view' });
+  });
+
+  it('routes group accounts info to the dedicated printable cards page', () => {
+    const tenantShell = TENANT_ROUTES.find((route) => route.path === '');
+    const accountsRoute = tenantShell?.children?.find((child) => child.path === 'groups/:id/accounts-info');
+
+    expect(accountsRoute?.component).toBe(TenantGroupAccountsInfoComponent);
+    expect(accountsRoute?.data).toEqual({ requiredPermission: 'tenant.students.view' });
   });
 
   it.each([

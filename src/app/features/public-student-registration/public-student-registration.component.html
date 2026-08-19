@@ -42,39 +42,8 @@
               <input formControlName="fullName" autocomplete="name">
             </label>
             <label class="field">
-              <span>{{ isArabic() ? 'البريد الإلكتروني' : 'Email' }}</span>
-              <input type="email" formControlName="email" autocomplete="email">
-            </label>
-            <label class="field">
               <span>{{ isArabic() ? 'رقم الهاتف' : 'Phone number' }}</span>
               <input formControlName="phone" autocomplete="tel">
-            </label>
-            <label class="field">
-              <span>{{ isArabic() ? 'النوع' : 'Gender' }} *</span>
-              <select formControlName="gender">
-                <option value="">{{ isArabic() ? 'اختر النوع' : 'Select gender' }}</option>
-                <option value="Male">{{ isArabic() ? 'ذكر' : 'Male' }}</option>
-                <option value="Female">{{ isArabic() ? 'أنثى' : 'Female' }}</option>
-              </select>
-            </label>
-            <label class="field">
-              <span>{{ isArabic() ? 'تاريخ الميلاد' : 'Date of birth' }} *</span>
-              <input type="date" formControlName="birthDate">
-            </label>
-          </div>
-        </fieldset>
-
-        <fieldset>
-          <legend>{{ isArabic() ? 'بيانات الدخول' : 'Account access' }}</legend>
-          <div class="form-grid">
-            <label class="field">
-              <span>{{ isArabic() ? 'اسم المستخدم' : 'User name' }} *</span>
-              <input formControlName="username" autocomplete="username">
-            </label>
-            <label class="field">
-              <span>{{ isArabic() ? 'كلمة المرور' : 'Password' }} *</span>
-              <input type="password" formControlName="password" autocomplete="new-password">
-              <small>{{ isArabic() ? '8 أحرف على الأقل' : 'At least 8 characters' }}</small>
             </label>
           </div>
         </fieldset>

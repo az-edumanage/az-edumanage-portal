@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { firstValueFrom } from 'rxjs';
@@ -9,7 +10,7 @@ import { StudentExamCompletion } from '../../models/student-dashboard.models';
 @Component({
   selector: 'app-student-exam-report',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatIconModule],
+  imports: [CommonModule, FormsModule, RouterLink, MatIconModule],
   template: `
     <section class="page exam-attempt-page">
       @if (loading()) {
@@ -85,8 +86,23 @@ import { StudentExamCompletion } from '../../models/student-dashboard.models';
               <span class="summary-label">Question review</span>
               <h2>Answers and feedback</h2>
             </div>
-            <span>{{ formatNumber(reportData.score ?? 0) }} of {{ formatNumber(reportData.maxScore ?? totalQuestionWeight()) }} points</span>
+            <div class="report-section-actions">
+              <span>{{ formatNumber(reportData.score ?? 0) }} of {{ formatNumber(reportData.maxScore ?? totalQuestionWeight()) }} points</span>
+              @if (canEvaluateHomeWork()) {
+                <button type="button" class="button primary" (click)="saveEvaluation()" [disabled]="evaluating()">
+                  <mat-icon>{{ evaluating() ? 'hourglass_top' : 'grading' }}</mat-icon>
+                  {{ evaluating() ? 'Saving' : 'Save evaluation' }}
+                </button>
+              }
+            </div>
           </div>
+
+          @if (evaluationMessage()) {
+            <div class="state">{{ evaluationMessage() }}</div>
+          }
+          @if (evaluationError()) {
+            <div class="state error">{{ evaluationError() }}</div>
+          }
 
           @for (item of reportData.questions; track item.questionId; let index = $index) {
             <article
@@ -126,6 +142,31 @@ import { StudentExamCompletion } from '../../models/student-dashboard.models';
                 <div class="report-feedback">
                   <span>Feedback</span>
                   <p dir="auto">{{ item.feedback }}</p>
+                </div>
+              }
+
+              @if (canEvaluateHomeWork()) {
+                <div class="report-evaluation-form">
+                  <label>
+                    <span>Degree</span>
+                    <input
+                      type="number"
+                      min="0"
+                      [max]="item.maxScore"
+                      step="0.5"
+                      [ngModel]="evaluationScores()[item.questionId] ?? item.score"
+                      (ngModelChange)="setEvaluationScore(item.questionId, $event)"
+                    />
+                    <small>/ {{ formatNumber(item.maxScore) }}</small>
+                  </label>
+                  <label>
+                    <span>Teacher feedback</span>
+                    <textarea
+                      rows="3"
+                      [ngModel]="evaluationFeedback()[item.questionId] ?? item.feedback ?? ''"
+                      (ngModelChange)="setEvaluationFeedback(item.questionId, $event)"
+                    ></textarea>
+                  </label>
                 </div>
               }
 
@@ -217,6 +258,11 @@ export class StudentExamReportComponent implements OnInit {
     }
     return Math.round(((report.score ?? 0) / maxScore) * 100);
   });
+  readonly evaluationScores = signal<Record<string, number>>({});
+  readonly evaluationFeedback = signal<Record<string, string>>({});
+  readonly evaluating = signal(false);
+  readonly evaluationError = signal<string | null>(null);
+  readonly evaluationMessage = signal<string | null>(null);
 
   ngOnInit(): void {
     void this.load();
@@ -233,7 +279,9 @@ export class StudentExamReportComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     try {
-      this.report.set(await firstValueFrom(this.loadReport(groupId, assignmentId, attemptId)));
+      const report = await firstValueFrom(this.loadReport(groupId, assignmentId, attemptId));
+      this.report.set(report);
+      this.hydrateEvaluationForm(report);
     } catch (error) {
       this.error.set(error instanceof Error ? error.message : 'Unable to load exam report');
     } finally {
@@ -252,6 +300,62 @@ export class StudentExamReportComponent implements OnInit {
       return this.data.parentExamAttemptReport(groupId, assignmentId, attemptId);
     }
     return this.data.examAttemptReport(groupId, assignmentId, attemptId);
+  }
+
+  canEvaluateHomeWork(): boolean {
+    return this.isTenantHomeWorkEvaluationReportRoute();
+  }
+
+  setEvaluationScore(questionId: string, value: string | number): void {
+    const score = Number(value);
+    this.evaluationScores.update((scores) => ({
+      ...scores,
+      [questionId]: Number.isFinite(score) ? score : 0,
+    }));
+  }
+
+  setEvaluationFeedback(questionId: string, value: string): void {
+    this.evaluationFeedback.update((feedback) => ({ ...feedback, [questionId]: value ?? '' }));
+  }
+
+  async saveEvaluation(): Promise<void> {
+    const groupId = this.route.snapshot.paramMap.get('groupId');
+    const assignmentId = this.route.snapshot.paramMap.get('assignmentId');
+    const attemptId = this.route.snapshot.paramMap.get('attemptId');
+    const report = this.report();
+    if (!groupId || !assignmentId || !attemptId || !report || this.evaluating()) {
+      return;
+    }
+
+    this.evaluating.set(true);
+    this.evaluationError.set(null);
+    this.evaluationMessage.set(null);
+    try {
+      const scores = this.evaluationScores();
+      const feedback = this.evaluationFeedback();
+      const updated = await firstValueFrom(this.data.tenantEvaluateExamAttempt(
+        groupId,
+        assignmentId,
+        attemptId,
+        report.questions.map((question) => ({
+          questionId: question.questionId,
+          score: scores[question.questionId] ?? question.score ?? 0,
+          feedback: feedback[question.questionId] ?? question.feedback ?? '',
+        })),
+      ));
+      this.report.set(updated);
+      this.hydrateEvaluationForm(updated);
+      this.evaluationMessage.set('Evaluation saved.');
+    } catch (error) {
+      this.evaluationError.set(error instanceof Error ? error.message : 'Unable to save evaluation');
+    } finally {
+      this.evaluating.set(false);
+    }
+  }
+
+  private hydrateEvaluationForm(report: StudentExamCompletion): void {
+    this.evaluationScores.set(Object.fromEntries(report.questions.map((question) => [question.questionId, question.score ?? 0])));
+    this.evaluationFeedback.set(Object.fromEntries(report.questions.map((question) => [question.questionId, question.feedback ?? ''])));
   }
 
   timeFromInstant(value: string): string {

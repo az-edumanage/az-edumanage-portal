@@ -1,0 +1,163 @@
+<div class="activation-shell group-accounts-info">
+  <div class="activation-toolbar">
+    <div>
+      <nav class="activation-breadcrumb" aria-label="Group accounts breadcrumb">
+        <a routerLink="/tenant/groups">Groups</a>
+        <mat-icon aria-hidden="true">chevron_right</mat-icon>
+        @if (group(); as currentGroup) {
+          <a [routerLink]="['/tenant/groups', currentGroup.id]">{{ currentGroup.name }}</a>
+        } @else {
+          <span>Group</span>
+        }
+        <mat-icon aria-hidden="true">chevron_right</mat-icon>
+        <span>Accounts info</span>
+      </nav>
+      <h2>Accounts info</h2>
+      <p>Printable account cards for every student enrolled in this group.</p>
+    </div>
+    <div class="activation-actions">
+      @if (group(); as currentGroup) {
+        <a [routerLink]="['/tenant/groups', currentGroup.id]">
+          <mat-icon aria-hidden="true">arrow_back</mat-icon>
+          Back
+        </a>
+      }
+      <button type="button" (click)="printCards()" [disabled]="!cards().length || !allPasswordsReady()">
+        <mat-icon aria-hidden="true">print</mat-icon>
+        Print cards
+      </button>
+    </div>
+  </div>
+
+  @if (errorMessage()) {
+    <section class="activation-state" aria-live="polite">
+      <mat-icon aria-hidden="true">error_outline</mat-icon>
+      <h3>{{ errorMessage() }}</h3>
+      <a routerLink="/tenant/groups">Back to groups</a>
+    </section>
+  } @else if (isLoading()) {
+    <section class="activation-state" aria-live="polite">
+      <mat-icon aria-hidden="true">sync</mat-icon>
+      <h3>Loading accounts info</h3>
+      <p>Preparing printable cards for enrolled students.</p>
+    </section>
+  } @else if (!cards().length) {
+    <section class="activation-state" aria-live="polite">
+      <mat-icon aria-hidden="true">groups</mat-icon>
+      <h3>No enrolled students</h3>
+      <p>This group does not have student accounts to print yet.</p>
+    </section>
+  } @else {
+    <div class="group-accounts-info__status" aria-live="polite">
+      {{ cards().length }} students ready for account cards.
+    </div>
+
+    @for (card of cards(); track card.student.id) {
+      <p class="activation-sync-status" aria-live="polite">
+        {{ card.student.name }}: {{ card.passwordMessage }}
+      </p>
+      <main class="activation-page" dir="rtl" aria-label="بطاقة تفعيل الطالب">
+        <header class="activation-head">
+          <img class="activation-brand-logo" src="/az-edumanage-logo.svg" alt="AZ-Edumanage">
+          <div class="activation-title">
+            <strong>منصة {{ tenantName() }}</strong>
+            <span>بطاقة تفعيل الحساب</span>
+          </div>
+        </header>
+
+        <div class="activation-cardname">STUDENT ACTIVATION CARD · AZ-EDUMANAGE</div>
+
+        <section class="activation-section">
+          <h3><span>1</span> بطاقة دخول السنتر</h3>
+          <div class="activation-box">
+            <div class="activation-box-main">
+              <dl class="activation-fields">
+                <div><dt>اسم الطالب</dt><dd>{{ card.student.name || 'غير محدد' }}</dd></div>
+                <div><dt>رقم التليفون</dt><dd class="lat">{{ card.student.phone || 'غير محدد' }}</dd></div>
+                <div><dt>المرحلة والصف</dt><dd>{{ educationLabel(card.student) }}</dd></div>
+                <div>
+                  <dt>المجموعات</dt>
+                  <dd class="activation-groups">
+                    @if (groupRows(card.student).length) {
+                      @for (group of groupRows(card.student); track group) {
+                        <span>{{ group }}</span>
+                      }
+                    } @else {
+                      <span>لا توجد مجموعات مسجلة</span>
+                    }
+                  </dd>
+                </div>
+              </dl>
+            </div>
+            <aside class="activation-box-media">
+              @if (card.barcodeSvg) {
+                <div class="activation-barcode" [innerHTML]="card.barcodeSvg"></div>
+                <strong class="lat">{{ card.student.barcodeNumber }}</strong>
+              } @else {
+                <div class="activation-code-fallback">{{ card.student.barcodeNumber || 'No barcode' }}</div>
+              }
+              <p>امسح الباركود لتسجيل الحضور<br>يمكن طباعته ولصقه على كارت أو مذكرة الطالب</p>
+            </aside>
+          </div>
+        </section>
+
+        <section class="activation-section">
+          <h3><span>2</span> بيانات الدخول لبوابة الطالب</h3>
+          <p class="activation-section-desc">من خلال بوابة الطالب يتعرّف على الحصص ومواعيدها والواجبات والامتحانات، ويتابع المدفوعات ويتواصل مع المدرّس.</p>
+          <div class="activation-box">
+            <div class="activation-box-main">
+              <div class="activation-credential">
+                <small>اسم المستخدم (Username)</small>
+                <strong class="lat">{{ card.student.studentUsername || card.student.email || 'غير محدد' }}</strong>
+              </div>
+              <div class="activation-credential">
+                <small>كلمة المرور (Password)</small>
+                <strong class="lat">{{ card.studentLoginPassword || 'Saving...' }}</strong>
+              </div>
+            </div>
+            <aside class="activation-box-media">
+              @if (studentQrDataUrl()) {
+                <img class="activation-qr-img" [src]="studentQrDataUrl()" alt="Student portal QR code">
+              }
+              <div class="activation-subdomain lat">{{ studentPortalUrl() }}</div>
+              <p>امسح الكود للدخول مباشرةً</p>
+            </aside>
+          </div>
+        </section>
+
+        <section class="activation-section">
+          <h3><span>3</span> بيانات الدخول لبوابة ولي الأمر</h3>
+          <p class="activation-section-desc">من خلال بوابة ولي الأمر يتابع مواعيد حصص ابنه وحضوره ودرجاته في الواجبات والامتحانات ويتابع المدفوعات.</p>
+          <div class="activation-box">
+            <div class="activation-box-main">
+              <div class="activation-credential">
+                <small>اسم المستخدم (Username)</small>
+                <strong class="lat">{{ card.student.parentUsername || card.student.parentPhone || 'غير محدد' }}</strong>
+              </div>
+              <div class="activation-credential">
+                <small>كلمة المرور (Password)</small>
+                <strong class="lat">{{ card.parentLoginPassword || 'Saving...' }}</strong>
+              </div>
+              <dl class="activation-parent">
+                <div><dt>ولي الأمر</dt><dd>{{ card.student.parentName || 'غير محدد' }}</dd></div>
+                <div><dt>رقم ولي الأمر</dt><dd class="lat">{{ card.student.parentPhone || 'غير محدد' }}</dd></div>
+              </dl>
+            </div>
+            <aside class="activation-box-media">
+              @if (parentQrDataUrl()) {
+                <img class="activation-qr-img" [src]="parentQrDataUrl()" alt="Parent portal QR code">
+              }
+              <div class="activation-subdomain lat">{{ parentPortalUrl() }}</div>
+              <p>امسح الكود للدخول مباشرةً</p>
+            </aside>
+          </div>
+        </section>
+
+        <footer class="activation-foot">
+          <span>احتفظ بهذه البطاقة، بياناتك سرية ولا تشاركها مع أحد.</span>
+          <span class="lat">MANAGE · TEACH · SCALE</span>
+        </footer>
+      </main>
+    }
+  }
+</div>

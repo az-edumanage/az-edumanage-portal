@@ -1,0 +1,21 @@
+@if (toasts().length) {
+  <section class="notification-toast-host" aria-label="Notification alerts" aria-live="polite">
+    @for (toast of toasts(); track toast.id) {
+      <article class="notification-toast-card">
+        <button type="button" class="notification-toast-content" (click)="openToast(toast)">
+          <span class="notification-toast-icon" aria-hidden="true">
+            <mat-icon>notifications</mat-icon>
+          </span>
+          <span class="notification-toast-copy">
+            <span class="notification-toast-title">{{ toast.title }}</span>
+            <span class="notification-toast-body">{{ toast.body }}</span>
+            <span class="notification-toast-time">{{ toast.createdAt | date: 'MMM d, h:mm a' }}</span>
+          </span>
+        </button>
+        <button type="button" class="notification-toast-close" (click)="dismissToast($event, toast)" aria-label="Dismiss notification">
+          <mat-icon>close</mat-icon>
+        </button>
+      </article>
+    }
+  </section>
+}

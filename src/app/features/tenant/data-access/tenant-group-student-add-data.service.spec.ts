@@ -27,6 +27,7 @@ describe('TenantGroupStudentAddDataService', () => {
           id: 'student-1',
           name: 'Ahmed Ali',
           email: 'ahmed@example.com',
+          phone: '01007381133',
           grade: 'Grade 12',
         },
       ]);
@@ -42,6 +43,7 @@ describe('TenantGroupStudentAddDataService', () => {
           id: 'student-1',
           name: 'Ahmed Ali',
           email: 'ahmed@example.com',
+          phone: '01007381133',
           grade: 'Grade 12',
         },
       ],
@@ -66,13 +68,14 @@ describe('TenantGroupStudentAddDataService', () => {
     actual.unsubscribe();
   });
 
-  it('filters loaded candidates locally by name, email, or id', () => {
+  it('filters loaded candidates locally by name, email, phone, or id', () => {
     const students = [
-      { id: 'student-1', name: 'Ahmed Ali', email: 'ahmed@example.com', grade: 'Grade 12' },
-      { id: 'student-2', name: 'Sara Mohamed', email: 'sara@example.com', grade: 'Grade 12' },
+      { id: 'student-1', name: 'Ahmed Ali', email: 'ahmed@example.com', phone: '01007381133', grade: 'Grade 12' },
+      { id: 'student-2', name: 'Sara Mohamed', email: 'sara@example.com', phone: '01122334455', grade: 'Grade 12' },
     ];
 
     expect(service.searchStudents('sara', students)).toEqual([students[1]]);
+    expect(service.searchStudents('01007381133', students)).toEqual([students[0]]);
     expect(service.searchStudents('student-1', students)).toEqual([students[0]]);
     expect(service.searchStudents('', students)).toEqual(students);
   });

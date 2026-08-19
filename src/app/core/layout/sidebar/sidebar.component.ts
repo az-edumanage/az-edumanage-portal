@@ -10,6 +10,7 @@ import { AuthApiService } from '../../auth/auth-api.service';
 import { TenantImpersonationService } from '../../auth/tenant-impersonation.service';
 import { TenantHostContextService } from '../../auth/tenant-host-context.service';
 import { StudentRegistrationDataService } from '../../../features/tenant/data-access/student-registration-data.service';
+import { TenantUiSettingsService } from '../../../features/tenant/data-access/tenant-ui-settings.service';
 import { TENANT_MODULES, type TenantModuleCode } from '../../auth/tenant-module-entitlements';
 
 interface MenuItem {
@@ -43,6 +44,7 @@ export class SidebarComponent {
   private readonly tenantImpersonationService = inject(TenantImpersonationService);
   private readonly tenantHostContext = inject(TenantHostContextService);
   private readonly studentRegistrations = inject(StudentRegistrationDataService);
+  private readonly tenantUiSettings = inject(TenantUiSettingsService);
   private readonly router = inject(Router);
   
   collapsed = this.dashboardService.sidebarCollapsed;
@@ -55,6 +57,9 @@ export class SidebarComponent {
   constructor() {
     if (this.currentRole() === 'tenant' && this.authIdentityService.hasModule(TENANT_MODULES.studentsManagement)) {
       this.studentRegistrations.startCountPolling();
+    }
+    if (this.currentRole() === 'tenant') {
+      void this.tenantUiSettings.loadSettings().catch(() => undefined);
     }
   }
 
@@ -252,7 +257,7 @@ export class SidebarComponent {
                   { labelKey: 'sidebar.item.subjects', icon: 'menu_book', route: '/tenant/subjects', permission: 'tenant.basicEducation.view' },
                 ],
               },
-              {
+              ...(this.tenantUiSettings.showUniversityEducationSidebar() ? [{
                 labelKey: 'sidebar.item.universityEducation',
                 icon: 'account_balance',
                 children: [
@@ -260,7 +265,7 @@ export class SidebarComponent {
                   { labelKey: 'sidebar.item.colleges', icon: 'school', route: '/tenant/colleges', permission: 'tenant.universityEducation.view' },
                   { labelKey: 'sidebar.item.universitySubjects', icon: 'menu_book', route: '/tenant/university-subjects', permission: 'tenant.universityEducation.view' },
                 ],
-              },
+              }] : []),
             ]
           },
           {

@@ -59,17 +59,17 @@ describe('TenantExamsComponent', () => {
     fixture.detectChanges();
   });
 
-  it('renders the two education exam track cards', () => {
+  it('renders the basic education exam track card only', () => {
     const text = fixture.nativeElement.textContent as string;
 
     expect(text).toContain('Exams');
     expect(text).toContain('Basic Education');
-    expect(text).toContain('University Education');
     expect(text).toContain('Education stages');
-    expect(text).toContain('Universities');
+    expect(text).not.toContain('University Education');
+    expect(text).not.toContain('Universities');
   });
 
-  it('renders real backend setup metrics and charts', () => {
+  it('renders real backend setup metrics without readiness or setup mix cards', () => {
     const text = fixture.nativeElement.textContent as string;
 
     expect(stagesData.listStages).toHaveBeenCalled();
@@ -78,12 +78,12 @@ describe('TenantExamsComponent', () => {
     expect(universitiesData.listUniversities).toHaveBeenCalled();
     expect(collegesData.listColleges).toHaveBeenCalled();
     expect(universitySubjectsData.listSubjects).toHaveBeenCalled();
-    expect(text).toContain('Exam scopes');
+    expect(text).not.toContain('Exam scopes');
     expect(text).toContain('Subject banks');
     expect(text).toContain('Assigned groups');
     expect(text).toContain('Students covered');
-    expect(text).toContain('Track readiness');
-    expect(text).toContain('Setup data mix');
+    expect(text).not.toContain('Track readiness');
+    expect(text).not.toContain('Setup data mix');
     expect(text).toContain('3');
     expect(text).toContain('2');
     expect(text).toContain('5');
@@ -96,9 +96,9 @@ describe('TenantExamsComponent', () => {
     expect(links).toContain('/tenant/exams/basic-education');
   });
 
-  it('links university education to the existing universities route under exams', () => {
+  it('does not show the university education route card', () => {
     const links = Array.from(fixture.nativeElement.querySelectorAll('a')).map((anchor) => (anchor as HTMLAnchorElement).pathname);
 
-    expect(links).toContain('/tenant/exams/university-education');
+    expect(links).not.toContain('/tenant/exams/university-education');
   });
 });

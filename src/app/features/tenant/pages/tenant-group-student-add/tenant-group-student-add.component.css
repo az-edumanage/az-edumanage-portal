@@ -1,3 +1,62 @@
 
-    :host { display: block; }
-  
+:host { display: block; }
+
+:host .tenant-group-student-add-table {
+  text-align: left;
+}
+
+:host .tenant-group-student-add-table thead th {
+  text-align: left;
+}
+
+:host .tenant-group-student-add-table thead th.tenant-group-student-add-actions-header {
+  text-align: right;
+}
+
+:host .tenant-group-student-add-clickable-row:focus-visible {
+  outline: 2px solid rgb(79 70 229 / 0.55);
+  outline-offset: -2px;
+}
+
+:host .tenant-group-student-add-row-selected {
+  background: rgb(238 242 255);
+}
+
+:host .tenant-group-student-add-select-selected {
+  background: rgb(79 70 229);
+  color: white;
+}
+
+:host .tenant-group-student-add-select-selected:hover {
+  background: rgb(67 56 202);
+  color: white;
+}
+
+:host-context(.dark) .tenant-group-student-add-row-selected {
+  background: rgb(49 46 129 / 0.35);
+}
+
+:host-context(.rtl) .tenant-group-student-add-table thead th:not(.tenant-group-student-add-actions-header),
+:host-context([dir='rtl']) .tenant-group-student-add-table thead th:not(.tenant-group-student-add-actions-header) {
+  text-align: right !important;
+}
+
+:host-context(.rtl) .tenant-group-student-add-student-header,
+:host-context([dir='rtl']) .tenant-group-student-add-student-header {
+  padding-right: 4.75rem !important;
+}
+
+:host-context(.rtl) .tenant-group-student-add-actions-header,
+:host-context([dir='rtl']) .tenant-group-student-add-actions-header {
+  text-align: left !important;
+}
+
+:host-context(.rtl) .tenant-group-student-add-table tbody td:not(.tenant-group-student-add-actions-cell),
+:host-context([dir='rtl']) .tenant-group-student-add-table tbody td:not(.tenant-group-student-add-actions-cell) {
+  text-align: right !important;
+}
+
+:host-context(.rtl) .tenant-group-student-add-student-cell,
+:host-context([dir='rtl']) .tenant-group-student-add-student-cell {
+  justify-content: flex-start;
+}

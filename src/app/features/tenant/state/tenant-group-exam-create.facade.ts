@@ -77,6 +77,8 @@ export class TenantGroupExamCreateFacade {
       : context.returnTab === 'students' || context.returnTab === 'lessons' || context.returnTab === 'exams'
         ? context.returnTab
         : null;
+    this.examForm.controls.startTime.clearValidators();
+    this.examForm.controls.startTime.updateValueAndValidity({ emitEvent: false });
     this.assignmentId = context.assignmentId?.trim() || null;
     this.selectedExamId = context.selectedExamId?.trim() || null;
     this.persistDraftTask = !this.isSessionHomeWorkContext(context);
@@ -348,7 +350,9 @@ export class TenantGroupExamCreateFacade {
       this.router.navigateByUrl(this.withReturnTab(this.returnTo));
       return;
     }
-    this.router.navigate([this.scope === 'teacher' ? '/teacher/groups' : '/tenant/groups', this.groupId()]);
+    this.router.navigate([this.scope === 'teacher' ? '/teacher/groups' : '/tenant/groups', this.groupId()], {
+      queryParams: { tab: 'exams' },
+    });
   }
 
   private withReturnTab(returnTo: string): string {

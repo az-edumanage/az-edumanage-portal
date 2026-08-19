@@ -109,8 +109,53 @@
 
 .tenant-exams-evaluation__stats {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
   gap: 1rem;
+}
+
+.tenant-exams-evaluation__tabs {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+}
+
+.tenant-exams-evaluation__tabs button {
+  min-height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0 0.875rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #475569;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 850;
+}
+
+.tenant-exams-evaluation__tabs button.active {
+  background: #ffffff;
+  color: #4f46e5;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+}
+
+.tenant-exams-evaluation__tabs button:hover,
+.tenant-exams-evaluation__tabs button:focus-visible {
+  color: #4f46e5;
+  outline: none;
+}
+
+.tenant-exams-evaluation__tabs mat-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  font-size: 1.125rem;
 }
 
 .tenant-exams-evaluation__stats article,
@@ -204,6 +249,178 @@
 
 .tenant-exams-evaluation__table-wrap {
   overflow-x: auto;
+}
+
+.tenant-exams-evaluation__manual-layout {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.tenant-exams-evaluation__manual-layout .tenant-exams-evaluation__table-wrap {
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+}
+
+.tenant-exams-evaluation__clickable-row {
+  cursor: pointer;
+}
+
+.tenant-exams-evaluation__clickable-row:hover,
+.tenant-exams-evaluation__clickable-row:focus-visible,
+.tenant-exams-evaluation__clickable-row.active {
+  background: #eef2ff;
+  outline: none;
+}
+
+.tenant-exams-evaluation__manual-panel {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+}
+
+.tenant-exams-evaluation__manual-panel {
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
+}
+
+.tenant-exams-evaluation__manual-panel header,
+.tenant-exams-evaluation__answer-preview {
+  grid-column: 1;
+}
+
+.tenant-exams-evaluation__manual-question,
+.tenant-exams-evaluation__notice,
+.tenant-exams-evaluation__manual-form {
+  grid-column: 2;
+}
+
+.tenant-exams-evaluation__manual-panel header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tenant-exams-evaluation__manual-panel h3 {
+  margin: 0;
+  color: #020617;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.tenant-exams-evaluation__manual-panel p {
+  margin: 0.25rem 0 0;
+  color: #64748b;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.tenant-exams-evaluation__answer-preview {
+  min-height: 24rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+}
+
+.tenant-exams-evaluation__answer-preview iframe,
+.tenant-exams-evaluation__answer-preview img {
+  display: block;
+  width: 100%;
+  height: 24rem;
+  border: 0;
+}
+
+.tenant-exams-evaluation__answer-preview img {
+  height: auto;
+  max-height: 24rem;
+  object-fit: contain;
+}
+
+.tenant-exams-evaluation__manual-question {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.tenant-exams-evaluation__manual-question span,
+.tenant-exams-evaluation__manual-form span {
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 850;
+}
+
+.tenant-exams-evaluation__manual-question p {
+  color: #0f172a;
+}
+
+.tenant-exams-evaluation__manual-form {
+  display: grid;
+  gap: 0.875rem;
+}
+
+.tenant-exams-evaluation__manual-form label {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.tenant-exams-evaluation__manual-form input,
+.tenant-exams-evaluation__manual-form textarea {
+  width: 100%;
+  border: 1px solid #dbe4f0;
+  border-radius: 0.625rem;
+  background: #ffffff;
+  color: #0f172a;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.tenant-exams-evaluation__manual-form input {
+  min-height: 2.5rem;
+  padding: 0 0.75rem;
+}
+
+.tenant-exams-evaluation__manual-form textarea {
+  resize: vertical;
+  padding: 0.75rem;
+}
+
+.tenant-exams-evaluation__manual-form input:focus,
+.tenant-exams-evaluation__manual-form textarea:focus {
+  border-color: #4f46e5;
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(79 70 229 / 0.12);
+}
+
+.tenant-exams-evaluation__manual-form small {
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
+.tenant-exams-evaluation__notice {
+  padding: 0.75rem;
+  border: 1px solid #bbf7d0;
+  border-radius: 0.625rem;
+  background: #f0fdf4;
+  color: #166534;
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+.tenant-exams-evaluation__notice--error {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #be123c;
 }
 
 .tenant-exams-evaluation table {
@@ -378,5 +595,29 @@
 
   .tenant-exams-evaluation__search {
     width: 100%;
+  }
+
+  .tenant-exams-evaluation__tabs {
+    width: 100%;
+  }
+
+  .tenant-exams-evaluation__tabs button {
+    flex: 1;
+  }
+
+  .tenant-exams-evaluation__manual-layout {
+    padding: 0.75rem;
+  }
+
+  .tenant-exams-evaluation__manual-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .tenant-exams-evaluation__manual-panel header,
+  .tenant-exams-evaluation__answer-preview,
+  .tenant-exams-evaluation__manual-question,
+  .tenant-exams-evaluation__notice,
+  .tenant-exams-evaluation__manual-form {
+    grid-column: 1;
   }
 }

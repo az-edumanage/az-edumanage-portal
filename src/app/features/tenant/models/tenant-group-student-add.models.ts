@@ -2,6 +2,7 @@ export interface TenantGroupStudent {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   grade: string;
 }
 

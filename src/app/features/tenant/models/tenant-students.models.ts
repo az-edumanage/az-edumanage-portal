@@ -4,6 +4,7 @@ export interface Student {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   grade: string;
   gradeId?: string;
   stage?: string;

@@ -1,9 +1,9 @@
-<div class="max-w-4xl mx-auto space-y-6">
+<div class="max-w-6xl mx-auto space-y-6">
   <!-- Header -->
-  <div class="flex items-center justify-between">
-    <div class="space-y-1">
+  <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div class="min-w-0 flex-1 space-y-1">
       <div
-        class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider"
+        class="group-exam-breadcrumb"
       >
         <a
           [routerLink]="groupListRoute"
@@ -42,14 +42,14 @@
     <div class="flex gap-3">
       <button
         (click)="onCancel()"
-        class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+        class="min-w-28 px-5 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
       >
         Cancel
       </button>
       <button
         (click)="onSubmit()"
         [disabled]="examForm.invalid || isSubmitting()"
-        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+        class="min-w-44 justify-center px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
       >
         @if (isSubmitting()) {
           <mat-icon class="animate-spin text-sm">sync</mat-icon>
@@ -183,15 +183,37 @@
           } @else {
           <div class="home-work-question-list">
             @for (question of examQuestionRows(); track question.id) {
-              <article class="home-work-question-row">
+              <article
+                class="home-work-question-row"
+                [class.has-media]="!!question.mediaUrl"
+                [attr.tabindex]="question.mediaUrl ? 0 : null"
+                [attr.role]="question.mediaUrl ? 'button' : null"
+                [attr.aria-label]="question.mediaUrl ? 'Preview ' + (question.mediaOriginalName || question.question) : null"
+                (click)="question.mediaUrl ? openQuestionMediaPreview(question) : null"
+                (keydown.enter)="question.mediaUrl ? openQuestionMediaPreview(question) : null"
+                (keydown.space)="openQuestionMediaPreviewFromSpace($event, question)"
+              >
                 <div class="home-work-question-icon">
-                  <mat-icon>{{ isUploadedQuestionFile(question) ? "draft" : "quiz" }}</mat-icon>
+                  <mat-icon>
+                    {{
+                      question.mediaUrl
+                        ? questionMediaKind(question) === "image"
+                          ? "image"
+                          : questionMediaKind(question) === "video"
+                            ? "movie"
+                            : questionMediaKind(question) === "pdf"
+                              ? "picture_as_pdf"
+                              : "draft"
+                        : "quiz"
+                    }}
+                  </mat-icon>
                 </div>
                 <div class="min-w-0">
                   <p class="home-work-question-title">{{ question.question }}</p>
                   <p class="home-work-question-meta">
-                    @if (isUploadedQuestionFile(question)) {
-                      Uploaded file • {{ questionFileSize(question.mediaSizeBytes) }} •
+                    @if (question.mediaUrl) {
+                      {{ question.mediaOriginalName || "Attached file" }} •
+                      {{ questionFileSize(question.mediaSizeBytes) }} •
                       {{ question.curriculumItem }}
                     } @else {
                       {{ questionTypeLabel(question.type) }} •
@@ -204,7 +226,7 @@
                   type="button"
                   class="home-work-question-delete"
                   [disabled]="questionContextLoading()"
-                  (click)="removeHomeWorkQuestion(question)"
+                  (click)="removeHomeWorkQuestion(question); $event.stopPropagation()"
                   [attr.aria-label]="'Delete question ' + question.question"
                   title="Delete question"
                 >
@@ -419,7 +441,7 @@
             <input
               type="file"
               multiple
-              accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,image/*"
+              accept=".pdf,image/*,video/*"
               (change)="onQuestionFileSelected($event)"
               [disabled]="uploadingQuestionFiles()"
             />
@@ -701,4 +723,81 @@
       }
     </div>
   </aside>
+}
+
+@if (questionMediaPreview(); as media) {
+  <div
+    class="question-media-backdrop"
+    role="presentation"
+    (click)="closeQuestionMediaPreview()"
+  >
+    <section
+      class="question-media-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="question-media-preview-title"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="question-media-header">
+        <div class="min-w-0">
+          <h3 id="question-media-preview-title">{{ media.title }}</h3>
+          <p>{{ media.fileName }} • {{ media.sizeLabel }}</p>
+        </div>
+        <div class="question-media-actions">
+          <a
+            class="question-media-open"
+            [href]="media.url"
+            target="_blank"
+            rel="noopener"
+          >
+            <mat-icon>open_in_new</mat-icon>
+            Open
+          </a>
+          <button
+            type="button"
+            class="question-media-close"
+            aria-label="Close media preview"
+            (click)="closeQuestionMediaPreview()"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </header>
+
+      <div class="question-media-body">
+        @if (media.isLoading) {
+          <div class="question-media-loading">
+            <mat-icon>hourglass_empty</mat-icon>
+            <p>Loading preview...</p>
+          </div>
+        } @else if (media.errorMessage) {
+          <div class="question-media-fallback">
+            <mat-icon>draft</mat-icon>
+            <p>{{ media.errorMessage }}</p>
+            <a [href]="media.url" target="_blank" rel="noopener">Open file</a>
+          </div>
+        } @else if (media.kind === "image") {
+          <img [src]="media.previewUrl || media.url" [alt]="media.fileName" />
+        } @else if (media.kind === "video") {
+          <video [src]="media.previewUrl || media.url" controls preload="metadata"></video>
+        } @else if (media.kind === "pdf") {
+          @if (media.safeUrl; as safeUrl) {
+            <iframe [src]="safeUrl" [title]="media.fileName"></iframe>
+          } @else {
+            <div class="question-media-fallback">
+              <mat-icon>picture_as_pdf</mat-icon>
+              <p>Unable to preview this PDF.</p>
+              <a [href]="media.url" target="_blank" rel="noopener">Open file</a>
+            </div>
+          }
+        } @else {
+          <div class="question-media-fallback">
+            <mat-icon>draft</mat-icon>
+            <p>This file type cannot be previewed in the browser.</p>
+            <a [href]="media.url" target="_blank" rel="noopener">Open file</a>
+          </div>
+        }
+      </div>
+    </section>
+  </div>
 }

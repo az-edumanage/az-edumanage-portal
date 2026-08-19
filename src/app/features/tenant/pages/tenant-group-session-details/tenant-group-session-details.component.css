@@ -1850,6 +1850,28 @@ video.tenant-group-session-drawer-file-preview {
   color: #991b1b;
 }
 
+.tenant-group-session-table-status--payment-paid,
+.tenant-group-session-table-status--payment-unpaid {
+  cursor: default;
+}
+
+.tenant-group-session-table-status--payment-paid {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.tenant-group-session-table-status--payment-unpaid {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.tenant-group-session-table-status--payment-paid:hover,
+.tenant-group-session-table-status--payment-paid:focus-visible,
+.tenant-group-session-table-status--payment-unpaid:hover,
+.tenant-group-session-table-status--payment-unpaid:focus-visible {
+  box-shadow: none;
+}
+
 .tenant-group-session-student-row-actions {
   display: inline-flex;
   align-items: center;
@@ -2386,6 +2408,16 @@ video.tenant-group-session-drawer-file-preview {
 :host-context(.dark) .tenant-group-session-table-status--absent {
   background: #7f1d1d;
   color: #fecaca;
+}
+
+:host-context(.dark) .tenant-group-session-table-status--payment-paid {
+  background: #064e3b;
+  color: #bbf7d0;
+}
+
+:host-context(.dark) .tenant-group-session-table-status--payment-unpaid {
+  background: #78350f;
+  color: #fde68a;
 }
 
 :host-context(.dark) .tenant-group-session-stat-status--coming {

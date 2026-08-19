@@ -1,0 +1,33 @@
+Question format examples for Multiple Questions
+
+Use this file as a copy template. Paste one or more blocks into the Multiple Questions box.
+
+Multiple choice
+Q : What is the lesson title?
+- correct, Lesson 1
+- Lesson 2
+- Lesson 3
+
+Q : Which number is even?
+- 1
+- correct, 2
+- 3
+
+True / False
+q : Water boils at 100 degrees? , true
+q : The sun rises from the west? , false
+
+Short answer
+Q : What is the capital of Egypt?
+- correct, Cairo
+
+Essay
+Q : Explain the main idea of the lesson?
+- correct, Write the full essay answer here with as many words as needed.
+
+Rules
+- Questions start with Q : or q : and end with ?.
+- Arabic questions can start with س : and end with ؟.
+- Multiple choice, short answer, and essay answers start with -.
+- Correct answers start with correct, before the answer text.
+- True / False questions stay on one line and end with , true or , false.

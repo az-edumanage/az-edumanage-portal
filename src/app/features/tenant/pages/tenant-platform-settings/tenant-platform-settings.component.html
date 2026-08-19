@@ -530,6 +530,86 @@
                 <mat-icon class="mt-1 text-base text-slate-400 transition-colors group-hover:text-indigo-600">chevron_right</mat-icon>
               </span>
             </button>
+            <button
+              type="button"
+              (click)="openSidebarSettingsScreen()"
+              class="group rounded-xl border border-slate-200 bg-white p-5 text-left shadow-sm transition-all hover:border-indigo-200 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-900 dark:hover:bg-slate-800/60"
+            >
+              <span class="flex items-start justify-between gap-4">
+                <span class="flex min-w-0 items-start gap-3">
+                  <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white">
+                    <mat-icon class="text-lg">view_sidebar</mat-icon>
+                  </span>
+                  <span class="min-w-0">
+                    <span class="block text-base font-bold text-slate-900 dark:text-white">Sidebar</span>
+                    <span class="mt-1 block text-sm leading-6 text-slate-500 dark:text-slate-500">Control which education sections appear in the tenant sidebar.</span>
+                  </span>
+                </span>
+                <mat-icon class="mt-1 text-base text-slate-400 transition-colors group-hover:text-indigo-600">chevron_right</mat-icon>
+              </span>
+            </button>
+          </div>
+        </div>
+      } @else if (activeTab() === 'sidebar') {
+        <div class="space-y-5">
+          <div>
+            <button type="button" (click)="backToGeneral()" class="mb-2 inline-flex items-center gap-1 text-sm font-medium text-slate-500 transition-colors hover:text-indigo-600">
+              <mat-icon class="text-base">arrow_back</mat-icon>
+              General
+            </button>
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Sidebar</h3>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-500">Show or hide optional tenant sidebar sections.</p>
+          </div>
+
+          @if (sidebarSettingsLoadError()) {
+            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-300">
+              {{ sidebarSettingsLoadError() }}
+            </div>
+          }
+
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+            <div class="flex flex-col gap-4 border-b border-slate-200 p-5 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex min-w-0 items-start gap-3">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-600/10 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300">
+                  <mat-icon class="text-lg">account_balance</mat-icon>
+                </span>
+                <span class="min-w-0">
+                  <span class="block text-base font-bold text-slate-900 dark:text-white">University Education</span>
+                  <span class="mt-1 block text-sm leading-6 text-slate-500 dark:text-slate-500">Display the University Education tab and its sidebar links.</span>
+                </span>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                [attr.aria-checked]="showUniversityEducationSidebar()"
+                [disabled]="sidebarSettingsLoading() || sidebarSettingsSaving()"
+                (click)="setUniversityEducationSidebarVisibility(!showUniversityEducationSidebar())"
+                class="relative h-8 w-14 shrink-0 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                [class.bg-indigo-600]="showUniversityEducationSidebar()"
+                [class.bg-slate-300]="!showUniversityEducationSidebar()"
+                [class.dark:bg-slate-700]="!showUniversityEducationSidebar()"
+                aria-label="Toggle University Education sidebar visibility"
+              >
+                <span
+                  class="absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-transform"
+                  [class.translate-x-7]="showUniversityEducationSidebar()"
+                  [class.translate-x-1]="!showUniversityEducationSidebar()"
+                ></span>
+              </button>
+            </div>
+            <div class="px-5 py-4">
+              @if (sidebarSettingsLoading()) {
+                <p class="text-sm text-slate-500 dark:text-slate-500">Loading sidebar settings...</p>
+              } @else if (sidebarSettingsSaving()) {
+                <p class="text-sm text-slate-500 dark:text-slate-500">Saving sidebar settings...</p>
+              } @else if (sidebarSettingsSaveError()) {
+                <p class="text-sm text-red-600 dark:text-red-400">{{ sidebarSettingsSaveError() }}</p>
+              } @else {
+                <p class="text-sm text-slate-500 dark:text-slate-500">
+                  University Education is currently {{ showUniversityEducationSidebar() ? 'visible' : 'hidden' }} in the sidebar.
+                </p>
+              }
+            </div>
           </div>
         </div>
       } @else if (activeTab() === 'subscription-period') {

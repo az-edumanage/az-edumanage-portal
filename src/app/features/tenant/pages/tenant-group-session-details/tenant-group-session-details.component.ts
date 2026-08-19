@@ -475,6 +475,20 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     return student.barcodeNumber?.trim() || 'Unavailable';
   }
 
+  studentPhoneLabel(student: GroupStudent): string {
+    return student.phone?.trim() || 'Unavailable';
+  }
+
+  studentPaymentStatusLabel(student: GroupStudent): string {
+    return student.paymentStatus === 'UNPAID' ? 'Not Paid' : 'Paid';
+  }
+
+  studentPaymentStatusClass(student: GroupStudent): string {
+    return student.paymentStatus === 'UNPAID'
+      ? 'tenant-group-session-table-status tenant-group-session-table-status--payment-unpaid'
+      : 'tenant-group-session-table-status tenant-group-session-table-status--payment-paid';
+  }
+
   studentAttendanceTimeLabel(student: GroupStudent): string {
     if (this.studentStatusLabel(student) !== 'Present') {
       return 'Not recorded';
@@ -622,7 +636,7 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
 
   editSessionExam(session: SessionDetailsRow, exam: GroupExamRow, event?: Event): void {
     event?.stopPropagation();
-    void this.router.navigate([this.groupListRoute, this.groupId, 'exam'], {
+    void this.router.navigate([this.groupListRoute, this.groupId, 'home-work'], {
       queryParams: this.sessionExamEditQueryParams(session, exam),
     });
   }
@@ -2174,6 +2188,7 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
         !query ||
         student.name.toLowerCase().includes(query) ||
         student.email.toLowerCase().includes(query) ||
+        this.studentPhoneLabel(student).toLowerCase().includes(query) ||
         this.studentBarcodeLabel(student).toLowerCase().includes(query);
       const matchesStatus =
         statusFilter === 'all' ||

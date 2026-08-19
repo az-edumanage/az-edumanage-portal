@@ -13,6 +13,7 @@ import { TenantTeacherDetailsComponent } from './pages/tenant-teacher-details/te
 import { TenantGroupsComponent } from './pages/tenant-groups/tenant-groups.component';
 import { TenantGroupCreatePageComponent } from './pages/tenant-group-create/tenant-group-create-page.component';
 import { TenantGroupDetailsComponent } from './pages/tenant-group-details/tenant-group-details.component';
+import { TenantGroupAccountsInfoComponent } from './pages/tenant-group-accounts-info/tenant-group-accounts-info.component';
 import { TenantGroupLessonDetailsComponent } from './pages/tenant-group-lesson-details/tenant-group-lesson-details.component';
 import { TenantGroupSessionDetailsComponent } from './pages/tenant-group-session-details/tenant-group-session-details.component';
 import { TenantGroupStudentAssessmentComponent } from './pages/tenant-group-student-assessment/tenant-group-student-assessment.component';
@@ -139,13 +140,15 @@ export const TENANT_ROUTES: Routes = [
       { path: 'groups/:id/sessions/:sessionId/students/:studentId/assessment', component: TenantGroupStudentAssessmentComponent },
       { path: 'groups/:id/sessions/:sessionId', component: TenantGroupSessionDetailsComponent },
       { path: 'groups/:id/lessons/:lessonId', component: TenantGroupLessonDetailsComponent },
+      { path: 'groups/:id/accounts-info', component: TenantGroupAccountsInfoComponent, data: { requiredPermission: 'tenant.students.view' } },
       { path: 'groups/:id', component: TenantGroupDetailsComponent },
       { path: 'groups/:id/edit', component: TenantGroupCreatePageComponent },
       { path: 'groups/:id/enroll', component: TenantGroupStudentAddComponent },
       { path: 'groups/:id/attendance', component: TenantGroupAttendanceComponent },
-      { path: 'groups/:groupId/exam/basic-education/:stageId/grades/:gradeId/subjects/:id/curriculum/addQuestion', component: TenantSubjectCurriculumQuestionCreateComponent },
-      { path: 'groups/:groupId/exam/basic-education/:stageId/grades/:gradeId/subjects/:id/curriculum/:nodeId/addQuestion', component: TenantSubjectCurriculumQuestionCreateComponent },
+      { path: 'groups/:groupId/home-work/basic-education/:stageId/grades/:gradeId/subjects/:id/curriculum/addQuestion', component: TenantSubjectCurriculumQuestionCreateComponent },
+      { path: 'groups/:groupId/home-work/basic-education/:stageId/grades/:gradeId/subjects/:id/curriculum/:nodeId/addQuestion', component: TenantSubjectCurriculumQuestionCreateComponent },
       { path: 'groups/:id/exam', component: TenantGroupExamCreateComponent },
+      { path: 'groups/:id/home-work', component: TenantGroupExamCreateComponent, data: { mode: 'homeWork' } },
       { path: 'groups/:id/broadcast', component: TenantGroupBroadcastComponent },
       { path: 'rooms', component: TenantRoomsComponent, data: { requiredPermission: 'tenant.rooms.view' } },
       { path: 'rooms/create', component: TenantRoomCreateComponent, data: { requiredPermission: 'tenant.rooms.manage' } },

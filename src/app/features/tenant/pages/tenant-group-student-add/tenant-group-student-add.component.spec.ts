@@ -18,9 +18,9 @@ describe('TenantGroupStudentAddComponent', () => {
     isLoadingCandidates: ReturnType<typeof signal<boolean>>;
     candidateError: ReturnType<typeof signal<string | null>>;
     selectedStudent: ReturnType<typeof signal<unknown>>;
-    selectedStudents: ReturnType<typeof signal<{ id: string; name: string; email: string; grade: string }[]>>;
+    selectedStudents: ReturnType<typeof signal<{ id: string; name: string; email: string; phone?: string; grade: string }[]>>;
     hasSelectedStudents: ReturnType<typeof signal<boolean>>;
-    filteredStudents: ReturnType<typeof signal<{ id: string; name: string; email: string; grade: string }[]>>;
+    filteredStudents: ReturnType<typeof signal<{ id: string; name: string; email: string; phone?: string; grade: string }[]>>;
     enrollForm: FormGroup;
     initialize: ReturnType<typeof vi.fn>;
     onDestroy: ReturnType<typeof vi.fn>;
@@ -42,8 +42,8 @@ describe('TenantGroupStudentAddComponent', () => {
       selectedStudents: signal([]),
       hasSelectedStudents: signal(false),
       filteredStudents: signal([
-        { id: 'student-1', name: 'Ahmed Ali', email: 'ahmed@example.com', grade: 'Grade 12' },
-        { id: 'student-2', name: 'Sara Mohamed', email: 'sara@example.com', grade: 'Grade 12' },
+        { id: 'student-1', name: 'Ahmed Ali', email: 'ahmed@example.com', phone: '01007381133', grade: 'Grade 12' },
+        { id: 'student-2', name: 'Sara Mohamed', email: 'sara@example.com', phone: '01122334455', grade: 'Grade 12' },
       ]),
       enrollForm: fb.group({
         enrollDate: ['2026-06-02'],
@@ -84,14 +84,16 @@ describe('TenantGroupStudentAddComponent', () => {
     expect(facade.initialize).toHaveBeenCalledWith('group-123');
   });
 
-  it('keeps existing visible labels and row classes', () => {
+  it('renders the find student section as a selectable table', () => {
     const nativeElement = fixture.nativeElement as HTMLElement;
 
     expect(nativeElement.textContent).toContain('Enroll Student in Group');
     expect(nativeElement.textContent).toContain('Find Student');
     expect(nativeElement.textContent).toContain('Enrollment Options');
     expect(nativeElement.textContent).toContain('Confirm Enrollment');
-    expect(nativeElement.querySelector('button.w-full.flex.items-center.justify-between.p-3.rounded-lg')).not.toBeNull();
+    expect(nativeElement.querySelector('table')).not.toBeNull();
+    expect(nativeElement.textContent).toContain('Phone');
+    expect(nativeElement.textContent).toContain('01007381133');
   });
 
   it('keeps existing route links, option labels, and cancel action visible', () => {
@@ -114,44 +116,45 @@ describe('TenantGroupStudentAddComponent', () => {
   });
 
   it('paginates the find student results', () => {
-    facade.filteredStudents.set(Array.from({ length: 6 }, (_, index) => ({
+    facade.filteredStudents.set(Array.from({ length: 11 }, (_, index) => ({
       id: `student-${index + 1}`,
       name: `Student ${index + 1}`,
       email: `student${index + 1}@example.com`,
+      phone: `0100738113${index}`,
       grade: 'Grade 12',
     })));
 
     fixture.detectChanges();
 
     const nativeElement = fixture.nativeElement as HTMLElement;
-    expect(nativeElement.textContent).toContain('Showing 1-5 of 6 students');
+    expect(nativeElement.textContent).toContain('Showing 1-10 of 11 students');
     expect(nativeElement.textContent).toContain('Rows');
     expect(nativeElement.textContent).toContain('Page 1 of 2');
     expect(nativeElement.textContent).toContain('Student 1');
-    expect(nativeElement.textContent).not.toContain('Student 6');
+    expect(nativeElement.textContent).not.toContain('Student 11');
 
     const nextButton = nativeElement.querySelector('button[aria-label="Next student search page"]') as HTMLButtonElement;
     nextButton.click();
     fixture.detectChanges();
 
-    expect(nativeElement.textContent).toContain('Showing 6-6 of 6 students');
-    expect(nativeElement.textContent).toContain('Student 6');
+    expect(nativeElement.textContent).toContain('Showing 11-11 of 11 students');
+    expect(nativeElement.textContent).toContain('Student 11');
 
     const rowsSelect = nativeElement.querySelector('select') as HTMLSelectElement;
     rowsSelect.value = '10';
     rowsSelect.dispatchEvent(new Event('change'));
     fixture.detectChanges();
 
-    expect(nativeElement.textContent).toContain('Showing 1-6 of 6 students');
-    expect(nativeElement.textContent).toContain('Page 1 of 1');
+    expect(nativeElement.textContent).toContain('Showing 1-10 of 11 students');
+    expect(nativeElement.textContent).toContain('Page 1 of 2');
   });
 
   it('delegates search over loaded candidates', () => {
-    const input = fixture.nativeElement.querySelector('input[placeholder="Search by name, email or ID..."]') as HTMLInputElement;
-    input.value = 'sara';
+    const input = fixture.nativeElement.querySelector('input[placeholder="Search by name, email, phone or ID..."]') as HTMLInputElement;
+    input.value = '01007381133';
     input.dispatchEvent(new Event('input'));
 
-    expect(facade.onSearch).toHaveBeenCalledWith('sara');
+    expect(facade.onSearch).toHaveBeenCalledWith('01007381133');
   });
 
   it('blocks confirmation when no students are selected', () => {
@@ -166,8 +169,8 @@ describe('TenantGroupStudentAddComponent', () => {
   it('renders multiple selected students and submits through the facade', () => {
     facade.hasSelectedStudents.set(true);
     facade.selectedStudents.set([
-      { id: 'student-1', name: 'Ahmed Ali', email: 'ahmed@example.com', grade: 'Grade 12' },
-      { id: 'student-2', name: 'Sara Mohamed', email: 'sara@example.com', grade: 'Grade 12' },
+      { id: 'student-1', name: 'Ahmed Ali', email: 'ahmed@example.com', phone: '01007381133', grade: 'Grade 12' },
+      { id: 'student-2', name: 'Sara Mohamed', email: 'sara@example.com', phone: '01122334455', grade: 'Grade 12' },
     ]);
     fixture.detectChanges();
 
@@ -217,8 +220,8 @@ describe('TenantGroupStudentAddFacade', () => {
           useValue: {
             loadEligibleStudents: () =>
               of([
-                { id: 'student-1', name: 'Ahmed Ali', email: 'ahmed@example.com', grade: 'Grade 12' },
-                { id: 'student-2', name: 'Sara Mohamed', email: 'sara@example.com', grade: 'Grade 12' },
+                { id: 'student-1', name: 'Ahmed Ali', email: 'ahmed@example.com', phone: '01007381133', grade: 'Grade 12' },
+                { id: 'student-2', name: 'Sara Mohamed', email: 'sara@example.com', phone: '01122334455', grade: 'Grade 12' },
               ]),
             searchStudents: (query: string, students: { name: string }[]) =>
               students.filter((student) => student.name.toLowerCase().includes(query.toLowerCase())),

@@ -96,7 +96,7 @@
             <span>Attendance</span>
           </a>
           @if (homeWorkEnabled()) {
-            <a [routerLink]="[groupListRoute, groupId, 'exam']" [queryParams]="sessionExamQueryParams(selectedSession)">
+            <a [routerLink]="[groupListRoute, groupId, 'home-work']" [queryParams]="sessionExamQueryParams(selectedSession)">
               <mat-icon>assignment</mat-icon>
               <span>Home Work</span>
             </a>
@@ -316,7 +316,7 @@
               <input
                 type="search"
                 [value]="studentSearch()"
-                placeholder="Name, email, or barcode"
+                placeholder="Name, email, phone, or barcode"
                 (input)="onStudentSearch($any($event.target).value)"
               />
             </label>
@@ -351,7 +351,9 @@
               <thead>
                 <tr>
                   <th>Student</th>
+                  <th>Phone number</th>
                   <th>Barcode</th>
+                  <th>Paid Status</th>
                   <th>Status</th>
                   <th>Attendance time</th>
                   <th>Action</th>
@@ -369,8 +371,14 @@
                         </div>
                       </div>
                     </td>
+                    <td>{{ studentPhoneLabel(student) }}</td>
                     <td>
                       <code>{{ studentBarcodeLabel(student) }}</code>
+                    </td>
+                    <td>
+                      <span [class]="studentPaymentStatusClass(student)">
+                        {{ studentPaymentStatusLabel(student) }}
+                      </span>
                     </td>
                     <td>
                       <button
@@ -680,7 +688,7 @@
             <h3>Home Work</h3>
             <p>{{ assignedSessionExams().length }} assigned home work linked to this session</p>
           </div>
-          <a [routerLink]="[groupListRoute, groupId, 'exam']" [queryParams]="sessionExamQueryParams(selectedSession)">
+          <a [routerLink]="[groupListRoute, groupId, 'home-work']" [queryParams]="sessionExamQueryParams(selectedSession)">
             <mat-icon class="!h-4 !w-4 !text-base">assignment</mat-icon>
             Manage Home Work
           </a>
@@ -782,7 +790,7 @@
           <div class="tenant-group-session-table-empty">
             <mat-icon>assignment</mat-icon>
             <p>No home work is assigned to this session.</p>
-            <a [routerLink]="[groupListRoute, groupId, 'exam']" [queryParams]="sessionExamQueryParams(selectedSession)" class="tenant-group-session-empty-action">Manage Home Work</a>
+            <a [routerLink]="[groupListRoute, groupId, 'home-work']" [queryParams]="sessionExamQueryParams(selectedSession)" class="tenant-group-session-empty-action">Manage Home Work</a>
           </div>
         }
       </div>

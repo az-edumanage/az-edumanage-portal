@@ -38,6 +38,7 @@ export class TenantGroupStudentAddDataService {
       (student) =>
         student.name.toLowerCase().includes(normalized) ||
         student.email.toLowerCase().includes(normalized) ||
+        (student.phone ?? '').toLowerCase().includes(normalized) ||
         student.id.includes(normalized),
     );
   }

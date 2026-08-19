@@ -62,7 +62,8 @@ export class TenantStudentsStore {
       const matchesSearch =
         !query ||
         student.name.toLowerCase().includes(query) ||
-        student.email.toLowerCase().includes(query);
+        student.email.toLowerCase().includes(query) ||
+        (student.phone ?? '').toLowerCase().includes(query);
       const matchesStage = !stage || student.stageId === stage;
       const matchesGrade = !grade || student.gradeId === grade;
       const matchesStatus = !status || student.status === status;

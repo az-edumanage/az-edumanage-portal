@@ -741,7 +741,7 @@
                             </button>
                           }
                           @for (link of filteredLibraryLinks(); track link.id) {
-                            <a class="tenant-group-library-content-card" [href]="link.url" target="_blank" rel="noopener">
+                            <button type="button" class="tenant-group-library-content-card text-start" (click)="openLibraryLinkPreview(link)">
                               <span class="tenant-group-library-content-icon">
                                 <mat-icon>link</mat-icon>
                               </span>
@@ -750,7 +750,7 @@
                                 <h4>{{ link.title }}</h4>
                                 <span>{{ link.url }}</span>
                               </div>
-                            </a>
+                            </button>
                           }
                           @for (file of filteredLibraryFiles(); track file.id) {
                             <button type="button" class="tenant-group-library-content-card text-start" (click)="openLibraryFilePreview(file)">
@@ -1249,6 +1249,10 @@
                 <mat-icon>how_to_reg</mat-icon>
                 <span class="text-[10px] font-bold uppercase">Attendance</span>
               </a>
+              <a [routerLink]="groupChildRoute('accounts-info')" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
+                <mat-icon>badge</mat-icon>
+                <span class="text-[10px] font-bold">Accounts info</span>
+              </a>
               @if (examsEnabled()) {
                 <a [routerLink]="groupChildRoute('exam')" [queryParams]="{ freshCreate: true }" class="p-3 bg-white/10 hover:bg-white/20 rounded-lg flex flex-col items-center gap-2 transition-colors">
                   <mat-icon>assignment</mat-icon>
@@ -1495,8 +1499,8 @@
                 <p class="mt-1 text-sm font-extrabold text-slate-500 dark:text-slate-400">{{ preview.folderName }}</p>
               </div>
               <div class="flex shrink-0 gap-2">
-                @if (preview.url) {
-                  <a class="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-indigo-50 px-3 text-sm font-black text-indigo-700 transition hover:bg-indigo-600 hover:text-white focus-visible:bg-indigo-600 focus-visible:text-white focus-visible:outline-none dark:bg-indigo-950/50 dark:text-indigo-200" [href]="preview.url" target="_blank" rel="noopener">
+                @if (libraryPreviewOpenUrl(preview); as openUrl) {
+                  <a class="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-indigo-50 px-3 text-sm font-black text-indigo-700 transition hover:bg-indigo-600 hover:text-white focus-visible:bg-indigo-600 focus-visible:text-white focus-visible:outline-none dark:bg-indigo-950/50 dark:text-indigo-200" [href]="openUrl" target="_blank" rel="noopener">
                     <mat-icon class="!h-4 !w-4 !text-base">open_in_new</mat-icon>
                     Open
                   </a>
@@ -1508,7 +1512,41 @@
             </header>
 
             <div class="min-h-0 overflow-auto bg-slate-50 p-4 dark:bg-slate-950/60">
-              @if (libraryPreviewLoading()) {
+              @if (isWordContent(preview)) {
+                <div class="tenant-group-library-document-preview">
+                  @if (libraryPreviewLoading()) {
+                    <div class="grid min-h-[calc(100dvh-8rem)] place-items-center gap-2 rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400" aria-live="polite">
+                      <mat-icon class="animate-spin">sync</mat-icon>
+                      <p class="text-sm font-extrabold">Loading content...</p>
+                    </div>
+                  }
+                  @if (libraryPreviewError()) {
+                    <div class="grid min-h-[calc(100dvh-8rem)] place-items-center gap-2 rounded-xl border border-dashed border-rose-200 bg-rose-50 p-8 text-center text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-200">
+                      <mat-icon>error</mat-icon>
+                      <p class="text-sm font-extrabold">{{ libraryPreviewError() }}</p>
+                    </div>
+                  } @else {
+                    <div #libraryDocumentPreviewHost class="tenant-group-library-document-host" [class.is-loading]="libraryPreviewLoading()"></div>
+                  }
+                </div>
+              } @else if (isPresentationContent(preview)) {
+                <div class="tenant-group-library-presentation-preview">
+                  @if (libraryPreviewLoading()) {
+                    <div class="grid min-h-[calc(100dvh-8rem)] place-items-center gap-2 rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400" aria-live="polite">
+                      <mat-icon class="animate-spin">sync</mat-icon>
+                      <p class="text-sm font-extrabold">Loading content...</p>
+                    </div>
+                  }
+                  @if (libraryPreviewError()) {
+                    <div class="grid min-h-[calc(100dvh-8rem)] place-items-center gap-2 rounded-xl border border-dashed border-rose-200 bg-rose-50 p-8 text-center text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-200">
+                      <mat-icon>error</mat-icon>
+                      <p class="text-sm font-extrabold">{{ libraryPreviewError() }}</p>
+                    </div>
+                  } @else {
+                    <div #libraryPresentationPreviewHost class="tenant-group-library-presentation-host" [class.is-loading]="libraryPreviewLoading()"></div>
+                  }
+                </div>
+              } @else if (libraryPreviewLoading()) {
                 <div class="grid min-h-[calc(100dvh-8rem)] place-items-center gap-2 rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400" aria-live="polite">
                   <mat-icon class="animate-spin">sync</mat-icon>
                   <p class="text-sm font-extrabold">Loading content...</p>
@@ -1524,6 +1562,30 @@
                     <p class="max-w-[72ch] text-base font-bold leading-7 text-slate-950 dark:text-slate-100">{{ line }}</p>
                   }
                 </article>
+              } @else if (preview.contentType === 'LINK' && libraryPreviewSafeObjectUrl()) {
+                <iframe
+                  class="h-[calc(100dvh-7rem)] w-full rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
+                  [src]="libraryPreviewSafeObjectUrl()"
+                  [title]="preview.title"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowfullscreen
+                ></iframe>
+              } @else if (preview.contentType === 'LINK') {
+                <div class="grid min-h-[calc(100dvh-8rem)] place-items-center rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center dark:border-slate-700 dark:bg-slate-900">
+                  <div class="grid max-w-md gap-3 justify-items-center">
+                    <span class="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-200">
+                      <mat-icon>open_in_new</mat-icon>
+                    </span>
+                    <h4 class="text-base font-black text-slate-950 dark:text-white">{{ preview.title }}</h4>
+                    <p class="break-all text-sm font-bold text-slate-500 dark:text-slate-400">{{ preview.url }}</p>
+                    @if (preview.url) {
+                      <a class="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 text-sm font-black text-white transition hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-200 dark:focus-visible:ring-indigo-950/60" [href]="preview.url" target="_blank" rel="noopener">
+                        <mat-icon class="!h-4 !w-4 !text-base">open_in_new</mat-icon>
+                        Open link
+                      </a>
+                    }
+                  </div>
+                </div>
               } @else if (libraryPreviewObjectUrl() && isImageContent(preview)) {
                 <img class="max-h-[calc(100dvh-7rem)] min-h-full w-full rounded-xl border border-slate-200 bg-white object-contain dark:border-slate-800 dark:bg-slate-900" [src]="libraryPreviewObjectUrl()" [alt]="preview.title" />
               } @else if (libraryPreviewObjectUrl() && isVideoContent(preview)) {

@@ -77,6 +77,10 @@ export class TenantStudentRegistrationsPendingComponent {
       : [request.universityName, request.collegeName].filter(Boolean).join(' / ');
   }
 
+  requestDetails(request: PendingStudentRegistration): string {
+    return [request.gender, request.birthDate].filter(Boolean).join(' · ') || 'Not collected from public form';
+  }
+
   private async load(): Promise<void> {
     this.loading.set(true);
     try {

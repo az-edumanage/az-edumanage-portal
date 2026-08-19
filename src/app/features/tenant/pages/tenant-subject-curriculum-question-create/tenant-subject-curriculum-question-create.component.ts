@@ -141,6 +141,7 @@ type QuestionCreateLabelKey =
   | 'bulkShortAnswerHint'
   | 'bulkEssayHint'
   | 'bulkChoiceHint'
+  | 'downloadQuestionFormat'
   | 'closeMultipleQuestions'
   | 'save'
   | 'mathEditor'
@@ -275,6 +276,7 @@ const QUESTION_CREATE_LABELS: Record<QuestionCreateLabelKey, { en: string; ar: s
   bulkShortAnswerHint: { en: 'Each question starts with Q : or س : and ends with ? or ؟. Add one answer that starts with - then tab space. Mark it correct, and keep it to 5 words or fewer.', ar: 'يبدأ كل سؤال بـ Q : أو س : وينتهي بـ ? أو ؟. أضف إجابة واحدة تبدأ بـ - ثم مسافة Tab. اجعلها صحيحة وبحد أقصى 5 كلمات.' },
   bulkEssayHint: { en: 'Each question starts with Q : or س : and ends with ? or ؟. Add one answer that starts with - then tab space. Essay answers can use unlimited words.', ar: 'يبدأ كل سؤال بـ Q : أو س : وينتهي بـ ? أو ؟. أضف إجابة واحدة تبدأ بـ - ثم مسافة Tab. إجابات المقال بدون حد للكلمات.' },
   bulkChoiceHint: { en: 'Each question starts with Q : or س : and ends with ? or ؟. Each answer starts with - then tab space. Correct answers use correct or صح before a comma.', ar: 'يبدأ كل سؤال بـ Q : أو س : وينتهي بـ ? أو ؟. تبدأ كل إجابة بـ - ثم مسافة Tab. الإجابات الصحيحة تستخدم correct أو صح قبل الفاصلة.' },
+  downloadQuestionFormat: { en: 'Download format', ar: 'تحميل الصيغة' },
   closeMultipleQuestions: { en: 'Close multiple questions overlay', ar: 'إغلاق نافذة الأسئلة المتعددة' },
   save: { en: 'Save', ar: 'حفظ' },
   mathEditor: { en: 'MathLive Editor', ar: 'محرر MathLive' },
@@ -385,6 +387,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   readonly bulkQuestionSaving = signal(false);
   readonly questionMediaOption = signal<QuestionMediaOption | null>(null);
   readonly showQuestionImagePreview = signal(false);
+  readonly answerImagePreview = signal<TenantCurriculumQuestionAnswer | null>(null);
   readonly questionContentError = signal<string | null>(null);
   readonly trueFalseAnswer = signal<boolean | null>(null);
   readonly trueFalseAnswerError = signal<string | null>(null);
@@ -420,6 +423,8 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   readonly skillInlineError = signal<string | null>(null);
   readonly showAnswerModal = signal(false);
   readonly newAnswer = signal('');
+  readonly newAnswers = signal<string[]>(['', '', '', '']);
+  readonly activeNewAnswerIndex = signal(0);
   readonly newAnswerDescription = signal('');
   readonly newAnswerMediaOption = signal<QuestionMediaOption | null>(null);
   readonly newAnswerError = signal<string | null>(null);
@@ -699,6 +704,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   @HostListener('document:keydown.escape')
   closeQuestionImagePreviewOnEscape(): void {
     this.closeQuestionImagePreview();
+    this.closeAnswerImagePreview();
   }
 
   ngOnInit(): void {
@@ -771,7 +777,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   isGroupHomeWorkQuestionRoute(): boolean {
     return (
       this.router.url.startsWith('/tenant/groups/') &&
-      this.router.url.includes('/exam/basic-education/')
+      (this.router.url.includes('/home-work/basic-education/') || this.router.url.includes('/exam/basic-education/'))
     );
   }
 
@@ -994,7 +1000,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
   }
 
   openAnswerModal(): void {
-    this.newAnswer.set('');
+    this.resetNewAnswers();
     this.newAnswerDescription.set('');
     this.revokeAnswerMediaPreview();
     this.newAnswerMediaOption.set(null);
@@ -1008,7 +1014,7 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
       return;
     }
     this.showAnswerModal.set(false);
-    this.newAnswer.set('');
+    this.resetNewAnswers();
     this.newAnswerDescription.set('');
     this.revokeAnswerMediaPreview();
     this.newAnswerMediaOption.set(null);
@@ -1016,9 +1022,26 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     this.answerSavingError.set(null);
   }
 
-  setNewAnswer(value: string): void {
-    this.newAnswer.set(value);
+  setNewAnswer(value: string, index = 0): void {
+    this.newAnswers.update((answers) => {
+      const next = [...answers];
+      next[index] = value;
+      return next;
+    });
+    if (index === 0) {
+      this.newAnswer.set(value);
+    }
     this.newAnswerError.set(null);
+  }
+
+  setActiveNewAnswerIndex(index: number): void {
+    this.activeNewAnswerIndex.set(index);
+  }
+
+  resetNewAnswers(): void {
+    this.newAnswers.set(['', '', '', '']);
+    this.newAnswer.set('');
+    this.activeNewAnswerIndex.set(0);
   }
 
   setNewAnswerDescription(value: string): void {
@@ -1327,8 +1350,9 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     }
     const expression = `\\(${value}\\)`;
     if (this.mathEditorTarget() === 'answer') {
-      const currentAnswer = this.newAnswer().trim();
-      this.setNewAnswer(currentAnswer ? `${currentAnswer} ${expression}` : expression);
+      const answerIndex = this.activeNewAnswerIndex();
+      const currentAnswer = this.newAnswers()[answerIndex]?.trim() ?? '';
+      this.setNewAnswer(currentAnswer ? `${currentAnswer} ${expression}` : expression, answerIndex);
     } else if (this.mathEditorTarget() === 'answerDraft') {
       const answerId = this.mathEditorAnswerDraftId();
       if (!answerId) {
@@ -1366,6 +1390,16 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
 
   closeQuestionImagePreview(): void {
     this.showQuestionImagePreview.set(false);
+  }
+
+  openAnswerImagePreview(answer: TenantCurriculumQuestionAnswer): void {
+    if (answer.mediaUrl && this.answerMediaKind(answer) === 'image') {
+      this.answerImagePreview.set(answer);
+    }
+  }
+
+  closeAnswerImagePreview(): void {
+    this.answerImagePreview.set(null);
   }
 
   formatFileSize(size: number): string {
@@ -1469,18 +1503,19 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
     if (this.answerSaving()) {
       return;
     }
-    const answer = this.newAnswer().trim();
+    const answerRows = this.newAnswers().map((answer, index) => ({ answer: answer.trim(), index }));
     const hasAnswerMedia = !!this.newAnswerMediaOption();
-    this.newAnswerError.set(answer || hasAnswerMedia ? null : this.label('answerRequired'));
+    const answersToSave = answerRows.filter((row) => row.answer || (row.index === 0 && hasAnswerMedia));
+    this.newAnswerError.set(answersToSave.length ? null : this.label('answerRequired'));
     this.answerSavingError.set(null);
-    if (!answer && !hasAnswerMedia) {
+    if (!answersToSave.length) {
       return;
     }
-    if (this.isSingleAnswerQuestionType() && this.multipleChoiceAnswers().length) {
+    if (this.isSingleAnswerQuestionType() && (this.multipleChoiceAnswers().length || answersToSave.length > 1)) {
       this.newAnswerError.set(`${this.selectedQuestionTypeLabel()} ${this.label('oneAnswerOnly')}`);
       return;
     }
-    const shortAnswerError = this.isShortAnswer() ? this.validateShortAnswerText(answer) : null;
+    const shortAnswerError = this.isShortAnswer() ? this.validateShortAnswerText(answersToSave[0]?.answer ?? '') : null;
     if (shortAnswerError) {
       this.newAnswerError.set(shortAnswerError);
       return;
@@ -1504,23 +1539,28 @@ export class TenantSubjectCurriculumQuestionCreateComponent implements OnInit, O
       if (!subject || (!nodeId && !this.isExamQuestionRoute())) {
         throw new Error(this.label('missingCurriculumContext'));
       }
-      const savedAnswer = await this.createQuestionAnswerForCurrentContext(subject.id, nodeId ?? '', question.id, {
-        answer,
-        correct: this.isTrueFalse() ? answer.toLowerCase() === 'true' : this.isSingleAnswerQuestionType(),
-        description: this.newAnswerDescription(),
-        ...await this.resolveAnswerMediaPayload(),
-      });
-      this.multipleChoiceAnswers.update((answers) => [...answers, savedAnswer]);
-      this.answerDrafts.update((drafts) => ({
-        ...drafts,
+      const answerMediaPayload = hasAnswerMedia ? await this.resolveAnswerMediaPayload() : {};
+      const savedAnswers: TenantCurriculumQuestionAnswer[] = [];
+      for (const row of answersToSave) {
+        const savedAnswer = await this.createQuestionAnswerForCurrentContext(subject.id, nodeId ?? '', question.id, {
+          answer: row.answer,
+          correct: this.isTrueFalse() ? row.answer.toLowerCase() === 'true' : this.isSingleAnswerQuestionType(),
+          description: null,
+          ...(row.index === 0 ? answerMediaPayload : {}),
+        });
+        savedAnswers.push(savedAnswer);
+      }
+      this.multipleChoiceAnswers.update((answers) => [...answers, ...savedAnswers]);
+      this.answerDrafts.update((drafts) => savedAnswers.reduce((nextDrafts, savedAnswer) => ({
+        ...nextDrafts,
         [savedAnswer.id]: {
           answer: savedAnswer.answer,
           description: savedAnswer.description ?? '',
           correct: savedAnswer.correct,
         },
-      }));
+      }), drafts));
       this.showAnswerModal.set(false);
-      this.newAnswer.set('');
+      this.resetNewAnswers();
       this.newAnswerDescription.set('');
       this.revokeAnswerMediaPreview();
       this.newAnswerMediaOption.set(null);

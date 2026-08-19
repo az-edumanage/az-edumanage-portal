@@ -64,6 +64,7 @@ export interface TenantGroupPayload {
   duration: number;
   daySchedules: Record<string, { startTime: string; endTime: string; room?: string; roomId?: string | null }>;
   fees: number;
+  centerCommission: number;
   autoInvoice: boolean;
   allowSelfEnroll: boolean;
   hasSpecificDuration: boolean;
@@ -101,6 +102,7 @@ export interface TenantGroupTeacherClassificationOptions {
 export interface TenantGroupCreateApiPayload {
   name: string;
   pricePerStudent: number;
+  centerCommissionPerStudent: number;
   ownedByAppUserId: string;
   educationCategory: TenantGroupEducationCategory;
   stageId: string | null;

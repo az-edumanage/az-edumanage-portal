@@ -38,6 +38,7 @@ export const TEACHER_ROUTES: Routes = [
   { path: 'groups', component: TeacherGroupsComponent },
   { path: 'groups/:id/attendance', component: TenantGroupAttendanceComponent, data: { scope: 'teacher' } },
   { path: 'groups/:id/exam', component: TenantGroupExamCreateComponent, data: { scope: 'teacher' } },
+  { path: 'groups/:id/home-work', component: TenantGroupExamCreateComponent, data: { scope: 'teacher', mode: 'homeWork' } },
   { path: 'groups/:id/broadcast', component: TenantGroupBroadcastComponent, data: { scope: 'teacher' } },
   { path: 'groups/:id/sessions/:sessionId', component: TenantGroupSessionDetailsComponent, data: { scope: 'teacher' } },
   { path: 'groups/:id', component: TenantGroupDetailsComponent, data: { scope: 'teacher' } },

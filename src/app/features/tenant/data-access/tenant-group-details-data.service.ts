@@ -684,6 +684,7 @@ export class TenantGroupDetailsDataService {
         attendanceTime: student.attendanceTime ?? null,
         attendanceState: student.attendanceState ?? null,
         attendanceSource: student.attendanceSource ?? null,
+        paymentStatus: student.paymentStatus ?? null,
       })),
     };
   }

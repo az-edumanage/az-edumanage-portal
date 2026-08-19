@@ -39,7 +39,7 @@
                 <div class="student-cell"><span>{{ request.fullName.charAt(0) }}</span><div><strong>{{ request.fullName }}</strong><small>@{{ request.username }}</small></div></div>
               </td>
               <td><strong class="contact-primary">{{ request.email || request.phone || 'Not provided' }}</strong><small>{{ request.email && request.phone ? request.phone : '' }}</small></td>
-              <td><strong class="contact-primary">{{ educationLabel(request) }}</strong><small>{{ request.gender }} · {{ request.birthDate }}</small></td>
+              <td><strong class="contact-primary">{{ educationLabel(request) }}</strong><small>{{ requestDetails(request) }}</small></td>
               <td>{{ request.submittedAt | date:'medium' }}</td>
               <td>
                 <div class="row-actions">
