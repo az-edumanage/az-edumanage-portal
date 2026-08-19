@@ -138,6 +138,42 @@ export class TenantGroupCreatePageComponent implements OnInit, OnDestroy {
     return !this.groupForm.get('college')?.value;
   }
 
+  pricePerStudent(): number {
+    return this.nonNegativeNumber(this.groupForm.get('fees')?.value);
+  }
+
+  centerCommission(): number {
+    return this.nonNegativeNumber(this.groupForm.get('centerCommission')?.value);
+  }
+
+  teacherValuePerStudent(): number {
+    return Math.max(this.pricePerStudent() - this.centerCommission(), 0);
+  }
+
+  pricingCapacity(): number {
+    return this.nonNegativeNumber(this.groupForm.get('capacity')?.value);
+  }
+
+  totalPriceValue(): number {
+    return this.pricePerStudent() * this.pricingCapacity();
+  }
+
+  totalTeacherValue(): number {
+    return this.teacherValuePerStudent() * this.pricingCapacity();
+  }
+
+  totalCenterValue(): number {
+    return this.centerCommission() * this.pricingCapacity();
+  }
+
+  commissionExceedsPrice(): boolean {
+    return this.centerCommission() > this.pricePerStudent();
+  }
+
+  formatMoney(value: number): string {
+    return new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(value);
+  }
+
   subjectCreateQueryParams(): Record<string, string> {
     return this.facade.subjectCreateQueryParams();
   }
@@ -465,5 +501,10 @@ export class TenantGroupCreatePageComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     this.facade.onSubmit();
+  }
+
+  private nonNegativeNumber(value: unknown): number {
+    const numeric = Number(value ?? 0);
+    return Number.isFinite(numeric) && numeric > 0 ? numeric : 0;
   }
 }

@@ -19,7 +19,7 @@
           </button>
           <button 
             (click)="onSubmit()"
-            [disabled]="groupForm.invalid || isSubmitting() || isLoadingTeacherAvailability() || hasTeacherAvailabilityConflict() || isLoadingRoomAvailability() || hasRoomAvailabilityConflict()"
+            [disabled]="groupForm.invalid || commissionExceedsPrice() || isSubmitting() || isLoadingTeacherAvailability() || hasTeacherAvailabilityConflict() || isLoadingRoomAvailability() || hasRoomAvailabilityConflict()"
             class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
           >
             @if (isSubmitting()) {
@@ -91,6 +91,22 @@
                   class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                 >
               </div>
+              <div>
+                <label for="centerCommission" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Center Commission</label>
+                <input
+                  id="centerCommission"
+                  type="number"
+                  min="0"
+                  formControlName="centerCommission"
+                  placeholder="40"
+                  class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  [class.border-red-300]="commissionExceedsPrice()"
+                  [class.focus:ring-red-500]="commissionExceedsPrice()"
+                >
+                @if (commissionExceedsPrice()) {
+                  <p class="mt-1 text-xs font-medium text-red-600 dark:text-red-400">Commission cannot be greater than price per student.</p>
+                }
+              </div>
                <div class="relative">
                 <app-tenant-group-searchable-selector
                   triggerId="paymentMethodBtn"
@@ -110,6 +126,22 @@
                   (selected)="selectPaymentMethod($event)"
                   (footerClicked)="openAddPaymentMethodModal()"
                 />
+              </div>
+              <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
+                <div class="grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
+                  <div>
+                    <span class="block text-xs font-bold uppercase text-slate-500 dark:text-slate-400">Total price</span>
+                    <span class="mt-1 block font-bold text-slate-900 dark:text-white">{{ formatMoney(totalPriceValue()) }}</span>
+                  </div>
+                  <div>
+                    <span class="block text-xs font-bold uppercase text-slate-500 dark:text-slate-400">Teacher total</span>
+                    <span class="mt-1 block font-bold text-emerald-700 dark:text-emerald-300">{{ formatMoney(totalTeacherValue()) }}</span>
+                  </div>
+                  <div>
+                    <span class="block text-xs font-bold uppercase text-slate-500 dark:text-slate-400">Center total</span>
+                    <span class="mt-1 block font-bold text-indigo-700 dark:text-indigo-300">{{ formatMoney(totalCenterValue()) }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -409,7 +441,7 @@
           </button>
           <button 
             (click)="onSubmit()"
-            [disabled]="groupForm.invalid || isSubmitting() || isLoadingTeacherAvailability() || hasTeacherAvailabilityConflict() || isLoadingRoomAvailability() || hasRoomAvailabilityConflict()"
+            [disabled]="groupForm.invalid || commissionExceedsPrice() || isSubmitting() || isLoadingTeacherAvailability() || hasTeacherAvailabilityConflict() || isLoadingRoomAvailability() || hasRoomAvailabilityConflict()"
             class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
           >
             @if (isSubmitting()) {

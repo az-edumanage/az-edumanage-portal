@@ -7,6 +7,7 @@ import {
   StudentExamAttempt,
   StudentExamCompletion,
   StudentExamQuestionSubmission,
+  StudentExamQuestionEvaluation,
   StudentExamAttemptStart,
   StudentExam,
   StudentExamEvaluation,
@@ -142,6 +143,26 @@ export class StudentDashboardDataService {
     );
   }
 
+  uploadAnswerMedia(file: File): Observable<{
+    url: string;
+    fileName: string;
+    originalName: string;
+    contentType: string | null;
+    sizeBytes: number;
+  }> {
+    const body = new FormData();
+    body.append('file', file);
+    return this.http.post<{
+      url: string;
+      fileName: string;
+      originalName: string;
+      contentType: string | null;
+      sizeBytes: number;
+    }>(`${this.url}/answer-media`, body).pipe(
+      catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to upload answer file')),
+    );
+  }
+
   examAttemptReport(groupId: string, assignmentId: string, attemptId: string): Observable<StudentExamCompletion> {
     return this.http.get<StudentExamCompletion>(
       `${this.url}/groups/${groupId}/exams/${assignmentId}/attempts/${attemptId}/report`,
@@ -155,6 +176,20 @@ export class StudentDashboardDataService {
       `${this.tenantGroupsUrl}/${groupId}/exams/${assignmentId}/attempts/${attemptId}/report`,
     ).pipe(
       catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to load exam report')),
+    );
+  }
+
+  tenantEvaluateExamAttempt(
+    groupId: string,
+    assignmentId: string,
+    attemptId: string,
+    questions: StudentExamQuestionEvaluation[],
+  ): Observable<StudentExamCompletion> {
+    return this.http.patch<StudentExamCompletion>(
+      `${this.tenantGroupsUrl}/${groupId}/exams/${assignmentId}/attempts/${attemptId}/evaluation`,
+      { questions },
+    ).pipe(
+      catchError((error: HttpErrorResponse) => this.handleError(error, 'Unable to save evaluation')),
     );
   }
 

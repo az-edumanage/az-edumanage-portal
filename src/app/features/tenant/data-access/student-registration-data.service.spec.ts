@@ -29,8 +29,7 @@ describe('StudentRegistrationDataService', () => {
 
   it('submits a public registration without an authorization-specific endpoint', async () => {
     const payload = {
-      fullName: 'Student One', email: '', phone: '', username: 'student.one', password: 'Password1!',
-      gender: 'Male', birthDate: '2010-01-01', parentName: '', parentPhone: '',
+      fullName: 'Student One', phone: '', parentName: '', parentPhone: '',
       educationCategory: 'BASIC_EDUCATION', stageId: 'stage-1', gradeId: 'grade-1',
       universityId: null, collegeId: null,
     };

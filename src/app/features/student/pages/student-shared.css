@@ -541,6 +541,56 @@ td span {
   font-size: 18px;
 }
 
+.exam-question-media {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.exam-question-media img {
+  width: min(100%, 42rem);
+  max-height: 24rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  object-fit: contain;
+}
+
+.exam-question-media figcaption,
+.exam-answer-media small {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.exam-question-media figcaption mat-icon {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+}
+
+.exam-answer-media {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.exam-answer-media img {
+  width: min(100%, 18rem);
+  max-height: 11rem;
+  border: 1px solid #dbe4f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  object-fit: contain;
+}
+
+.answer-media-link {
+  margin-top: 8px;
+}
+
 .answer-list {
   display: grid;
   gap: 10px;
@@ -611,6 +661,59 @@ td span {
   border-color: #4f46e5;
   outline: 0;
   box-shadow: 0 0 0 3px rgb(79 70 229 / .12);
+}
+
+.answer-file-upload {
+  display: grid;
+  gap: 6px;
+}
+
+.answer-file-upload label {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 40px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid #dbe4f0;
+  border-radius: 10px;
+  background: #fff;
+  color: #0f172a;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.answer-file-upload label:hover,
+.answer-file-upload label:focus-within {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.answer-file-upload input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.answer-file-upload mat-icon {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+}
+
+.answer-file-upload small {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.answer-file-upload small.error {
+  color: #be123c;
 }
 
 .submit-bar {
@@ -1049,6 +1152,8 @@ td span {
 :host-context(.dark) .exam-instructions p,
 :host-context(.dark) .question-description,
 :host-context(.dark) .question-weight,
+:host-context(.dark) .exam-question-media figcaption,
+:host-context(.dark) .exam-answer-media small,
 :host-context(.dark) .answer-option small,
 :host-context(.dark) .submit-bar span,
 :host-context(.dark) .result-status,
@@ -1084,6 +1189,8 @@ td span {
 :host-context(.dark) .report-question,
 :host-context(.dark) .report-points div,
 :host-context(.dark) .answer-option,
+:host-context(.dark) .exam-question-media img,
+:host-context(.dark) .exam-answer-media img,
 :host-context(.dark) .written-answer textarea,
 :host-context(.dark) .search-field,
 :host-context(.dark) .question-jump,
@@ -1279,6 +1386,73 @@ td span {
   color: #86efac;
 }
 
+.report-section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.report-evaluation-form {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.32fr) minmax(260px, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.report-evaluation-form label {
+  display: grid;
+  gap: 0.4rem;
+  color: #334155;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.report-evaluation-form input,
+.report-evaluation-form textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #0f172a;
+  padding: 0.7rem 0.85rem;
+  font: inherit;
+  font-weight: 500;
+}
+
+.report-evaluation-form textarea {
+  resize: vertical;
+}
+
+.report-evaluation-form input:focus,
+.report-evaluation-form textarea:focus {
+  outline: 2px solid rgb(79 70 229 / 0.2);
+  border-color: #6366f1;
+}
+
+.report-evaluation-form small {
+  color: #64748b;
+  font-weight: 600;
+}
+
+:host-context(.dark) .report-evaluation-form {
+  border-color: #1e293b;
+}
+
+:host-context(.dark) .report-evaluation-form label {
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .report-evaluation-form input,
+:host-context(.dark) .report-evaluation-form textarea {
+  border-color: #334155;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
 @media (max-width: 700px) {
   .page-header {
     align-items: stretch;
@@ -1310,7 +1484,8 @@ td span {
   .report-head,
   .report-answers,
   .report-points,
-  .report-score-card {
+  .report-score-card,
+  .report-evaluation-form {
     grid-template-columns: 1fr;
   }
 

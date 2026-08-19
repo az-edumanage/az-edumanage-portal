@@ -32,12 +32,7 @@ export class PublicStudentRegistrationComponent {
 
   readonly form = this.fb.nonNullable.group({
     fullName: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(160)]],
-    email: ['', [Validators.email, Validators.maxLength(160)]],
     phone: ['', [Validators.maxLength(40)]],
-    username: ['', [Validators.required, Validators.maxLength(120)]],
-    password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(255)]],
-    gender: ['', Validators.required],
-    birthDate: ['', Validators.required],
     parentName: ['', Validators.maxLength(160)],
     parentPhone: ['', Validators.maxLength(40)],
     educationCategory: ['BASIC_EDUCATION', Validators.required],

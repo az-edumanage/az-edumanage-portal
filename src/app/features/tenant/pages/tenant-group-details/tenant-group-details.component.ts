@@ -13,6 +13,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { I18nService } from '../../../../core/services/i18n.service';
+import { environment } from '../../../../../environments/environment';
 import { AuthIdentityService } from '../../../../core/auth/auth-identity.service';
 import { TENANT_MODULES } from '../../../../core/auth/tenant-module-entitlements';
 import { GroupDetails, GroupExamRow, GroupLesson, GroupLessonContent, GroupStudent } from '../../models/tenant-group-details.models';
@@ -112,6 +113,11 @@ interface LibraryNoteContent {
   blocks?: LibraryNoteBlock[];
 }
 
+type PresentationPreviewer = {
+  preview(file: ArrayBuffer): Promise<unknown>;
+  destroy(): void;
+};
+
 @Component({
   selector: 'app-tenant-group-details',
   standalone: true,
@@ -132,6 +138,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   private readonly platformId = inject(PLATFORM_ID);
   private overviewAttendanceChartCanvas: ElementRef<HTMLCanvasElement> | null = null;
   private overviewAttendanceChart: Chart | null = null;
+  private libraryPresentationPreviewer: PresentationPreviewer | null = null;
 
   @ViewChild('overviewAttendanceChart')
   set overviewAttendanceChartRef(ref: ElementRef<HTMLCanvasElement> | undefined) {
@@ -140,6 +147,12 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
       this.renderOverviewAttendanceChart();
     }
   }
+
+  @ViewChild('libraryPresentationPreviewHost')
+  private libraryPresentationPreviewHost?: ElementRef<HTMLElement>;
+
+  @ViewChild('libraryDocumentPreviewHost')
+  private libraryDocumentPreviewHost?: ElementRef<HTMLElement>;
 
   readonly group = this.facade.group;
   readonly selectedStudent = this.facade.selectedStudent;
@@ -336,9 +349,6 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   readonly filteredGroupExams = computed(() => {
     const query = this.examSearchTerm().trim().toLowerCase();
     return this.groupExams().filter((exam) => {
-      if (!this.isScheduledGroupExam(exam)) {
-        return false;
-      }
       if (!query) {
         return true;
       }
@@ -346,7 +356,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
         exam.title,
         exam.status,
         exam.date,
-        exam.startTime ?? '',
+        exam.startTime ?? 'any time',
         `${exam.duration} min`,
         exam.questionCount == null ? '' : `${exam.questionCount} questions`,
         exam.instructions ?? '',
@@ -567,6 +577,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   ngOnDestroy(): void {
     this.destroyOverviewAttendanceChart();
     this.clearLibraryPreviewObjectUrl();
+    this.destroyLibraryPresentationPreviewer();
   }
 
   groupChildRoute(...segments: string[]): string[] {
@@ -943,7 +954,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   }
 
   examCountLabel(): string {
-    const total = this.groupExams().filter((exam) => this.isScheduledGroupExam(exam)).length;
+    const total = this.groupExams().length;
     const visible = this.filteredGroupExams().length;
     if (!total) {
       return 'No published exams';
@@ -955,7 +966,7 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   }
 
   examTimeLabel(exam: GroupExamRow): string {
-    return `${exam.date} at ${exam.startTime}`;
+    return exam.startTime?.trim() ? `${exam.date} at ${exam.startTime}` : `${exam.date} · Any time`;
   }
 
   examDurationLabel(exam: GroupExamRow): string {
@@ -1162,15 +1173,31 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
 
   openLibraryNotePreview(note: TenantCurriculumMaterialNote): void {
     this.clearLibraryPreviewObjectUrl();
+    this.destroyLibraryPresentationPreviewer();
+    this.clearLibraryDocumentPreviewHost();
     this.libraryPreviewContent.set(this.libraryNoteToContent(note));
     this.libraryPreviewNote.set(note);
     this.libraryPreviewError.set(null);
     this.libraryPreviewLoading.set(false);
   }
 
+  openLibraryLinkPreview(link: TenantCurriculumMaterialLink): void {
+    const content = this.libraryLinkToContent(link);
+    this.clearLibraryPreviewObjectUrl();
+    this.destroyLibraryPresentationPreviewer();
+    this.clearLibraryDocumentPreviewHost();
+    this.libraryPreviewContent.set(content);
+    this.libraryPreviewNote.set(null);
+    this.libraryPreviewError.set(null);
+    const embedUrl = this.youtubeEmbedUrl(link.url);
+    this.libraryPreviewSafeObjectUrl.set(embedUrl ? this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl) : null);
+    this.libraryPreviewLoading.set(false);
+  }
+
   openLibraryFilePreview(file: TenantCurriculumMaterialFile): void {
     const content = this.libraryFileToContent(file);
     this.clearLibraryPreviewObjectUrl();
+    this.destroyLibraryPresentationPreviewer();
     this.libraryPreviewContent.set(content);
     this.libraryPreviewNote.set(null);
     this.libraryPreviewError.set(null);
@@ -1187,10 +1214,23 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     this.libraryPreviewLoading.set(false);
     this.libraryPreviewError.set(null);
     this.clearLibraryPreviewObjectUrl();
+    this.destroyLibraryPresentationPreviewer();
+    this.clearLibraryDocumentPreviewHost();
   }
 
   canPreviewContent(content: GroupLessonContent): boolean {
-    return Boolean(content.url && (this.isImageContent(content) || this.isVideoContent(content) || this.isPdfContent(content)));
+    return Boolean(
+      content.url &&
+      (this.isImageContent(content) ||
+        this.isVideoContent(content) ||
+        this.isPdfContent(content) ||
+        this.isPresentationContent(content) ||
+        this.isWordContent(content)),
+    );
+  }
+
+  libraryPreviewOpenUrl(content: GroupLessonContent): string | null {
+    return this.resolveMediaUrl(content.url);
   }
 
   isImageContent(content: GroupLessonContent): boolean {
@@ -1208,6 +1248,18 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
   isPdfContent(content: GroupLessonContent): boolean {
     const type = content.fileContentType?.toLowerCase() ?? '';
     return type.includes('pdf') || content.title.toLowerCase().endsWith('.pdf');
+  }
+
+  isPresentationContent(content: GroupLessonContent): boolean {
+    const type = content.fileContentType?.toLowerCase() ?? '';
+    const title = content.title.toLowerCase();
+    return type.includes('presentation') || type.includes('powerpoint') || /\.(pptx?|odp)$/i.test(title);
+  }
+
+  isWordContent(content: GroupLessonContent): boolean {
+    const type = content.fileContentType?.toLowerCase() ?? '';
+    const title = content.title.toLowerCase();
+    return type.includes('wordprocessingml.document') || type.includes('officedocument.wordprocessingml') || title.endsWith('.docx');
   }
 
   notePreviewBlocks(note: TenantCurriculumMaterialNote | null): string[] {
@@ -1593,21 +1645,51 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
       contentType: 'FILE',
       contentId: file.id,
       title: file.originalName || file.fileName,
-      url: file.url,
+      url: this.resolveMediaUrl(file.url) ?? file.url,
       fileContentType: file.contentType,
       sizeBytes: file.sizeBytes,
     };
   }
 
+  private libraryLinkToContent(link: TenantCurriculumMaterialLink): GroupLessonContent {
+    const folder = this.selectedLibraryFolder();
+    const url = this.normalizedExternalUrl(link.url);
+    return {
+      id: `library-link-${link.id}`,
+      curriculumNodeId: folder?.nodeId ?? this.groupId ?? 'group-library',
+      curriculumNodeLabel: folder?.nodeLabel ?? 'Group Library',
+      folderId: folder?.folder.id ?? '',
+      folderName: folder?.folder.name ?? 'Library',
+      contentType: 'LINK',
+      contentId: link.id,
+      title: link.title,
+      url,
+      fileContentType: null,
+      sizeBytes: null,
+    };
+  }
+
   private async loadLibraryPreviewFile(content: GroupLessonContent): Promise<void> {
-    if (!content.url) {
+    const previewUrl = this.resolveMediaUrl(content.url);
+    if (!previewUrl) {
       this.libraryPreviewLoading.set(false);
+      return;
+    }
+    if (this.isPresentationContent(content)) {
+      await this.loadLibraryPresentationPreview(content, previewUrl);
+      return;
+    }
+    if (this.isWordContent(content)) {
+      await this.loadLibraryWordPreview(content, previewUrl);
       return;
     }
 
     this.libraryPreviewLoading.set(true);
     try {
-      const blob = await firstValueFrom(this.http.get(content.url, { responseType: 'blob' }));
+      const responseBlob = await firstValueFrom(this.http.get(previewUrl, { responseType: 'blob' }));
+      const blob = responseBlob.type || !content.fileContentType
+        ? responseBlob
+        : responseBlob.slice(0, responseBlob.size, content.fileContentType);
       const objectUrl = URL.createObjectURL(blob);
       this.libraryPreviewObjectUrl.set(objectUrl);
       this.libraryPreviewSafeObjectUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl));
@@ -1616,6 +1698,113 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
       this.libraryPreviewError.set(error instanceof Error ? error.message : 'Unable to load file preview. Use Open to view this material.');
     } finally {
       this.libraryPreviewLoading.set(false);
+    }
+  }
+
+  private async loadLibraryPresentationPreview(content: GroupLessonContent, previewUrl: string): Promise<void> {
+    this.libraryPreviewLoading.set(true);
+    this.libraryPreviewError.set(null);
+    try {
+      await new Promise((resolve) => setTimeout(resolve));
+      const host = this.libraryPresentationPreviewHost?.nativeElement;
+      if (!host || this.libraryPreviewContent()?.id !== content.id) {
+        return;
+      }
+
+      host.replaceChildren();
+      const [module, arrayBuffer] = await Promise.all([
+        import('pptx-preview'),
+        firstValueFrom(this.http.get(previewUrl, { responseType: 'arraybuffer' })),
+      ]);
+      if (this.libraryPreviewContent()?.id !== content.id) {
+        return;
+      }
+
+      this.destroyLibraryPresentationPreviewer();
+      this.libraryPresentationPreviewer = module.init(host, { width: 960, height: 540, mode: 'list' });
+      await this.libraryPresentationPreviewer.preview(arrayBuffer);
+      this.libraryPreviewError.set(null);
+    } catch {
+      this.libraryPreviewError.set('Unable to preview this presentation inline.');
+    } finally {
+      if (this.libraryPreviewContent()?.id === content.id) {
+        this.libraryPreviewLoading.set(false);
+      }
+    }
+  }
+
+  private async loadLibraryWordPreview(content: GroupLessonContent, previewUrl: string): Promise<void> {
+    this.libraryPreviewLoading.set(true);
+    this.libraryPreviewError.set(null);
+    try {
+      await new Promise((resolve) => setTimeout(resolve));
+      const host = this.libraryDocumentPreviewHost?.nativeElement;
+      if (!host || this.libraryPreviewContent()?.id !== content.id) {
+        return;
+      }
+
+      host.replaceChildren();
+      const [module, arrayBuffer] = await Promise.all([
+        import('docx-preview'),
+        firstValueFrom(this.http.get(previewUrl, { responseType: 'arraybuffer' })),
+      ]);
+      if (this.libraryPreviewContent()?.id !== content.id) {
+        return;
+      }
+
+      await module.renderAsync(arrayBuffer, host, host, {
+        breakPages: true,
+        ignoreWidth: false,
+        ignoreHeight: false,
+        inWrapper: true,
+      });
+      this.libraryPreviewError.set(null);
+    } catch {
+      this.libraryPreviewError.set('Unable to preview this Word document inline.');
+    } finally {
+      if (this.libraryPreviewContent()?.id === content.id) {
+        this.libraryPreviewLoading.set(false);
+      }
+    }
+  }
+
+  private resolveMediaUrl(url: string | null | undefined): string | null {
+    const value = url?.trim();
+    if (!value) {
+      return null;
+    }
+    if (/^(https?:|data:|blob:)/i.test(value)) {
+      return value;
+    }
+    const apiOrigin = environment.apiBaseUrl.replace(/\/api\/v1\/?$/, '');
+    return `${apiOrigin}${value.startsWith('/') ? value : `/${value}`}`;
+  }
+
+  private normalizedExternalUrl(url: string): string {
+    const value = url.trim();
+    if (/^https?:\/\//i.test(value)) {
+      return value;
+    }
+    return `https://${value}`;
+  }
+
+  private youtubeEmbedUrl(url: string): string | null {
+    try {
+      const parsed = new URL(this.normalizedExternalUrl(url));
+      const host = parsed.hostname.replace(/^www\./, '').toLowerCase();
+      let videoId: string | null = null;
+      if (host === 'youtu.be') {
+        videoId = parsed.pathname.split('/').filter(Boolean)[0] ?? null;
+      } else if (host === 'youtube.com' || host === 'm.youtube.com') {
+        if (parsed.pathname.startsWith('/watch')) {
+          videoId = parsed.searchParams.get('v');
+        } else if (parsed.pathname.startsWith('/embed/') || parsed.pathname.startsWith('/shorts/')) {
+          videoId = parsed.pathname.split('/').filter(Boolean)[1] ?? null;
+        }
+      }
+      return videoId ? `https://www.youtube.com/embed/${encodeURIComponent(videoId)}` : null;
+    } catch {
+      return null;
     }
   }
 
@@ -1650,6 +1839,18 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     }
     this.libraryPreviewObjectUrl.set(null);
     this.libraryPreviewSafeObjectUrl.set(null);
+  }
+
+  private destroyLibraryPresentationPreviewer(): void {
+    if (this.libraryPresentationPreviewer) {
+      this.libraryPresentationPreviewer.destroy();
+      this.libraryPresentationPreviewer = null;
+    }
+    this.libraryPresentationPreviewHost?.nativeElement.replaceChildren();
+  }
+
+  private clearLibraryDocumentPreviewHost(): void {
+    this.libraryDocumentPreviewHost?.nativeElement.replaceChildren();
   }
 
   isLessonAssignedToSession(session: GroupSessionRow): boolean {
@@ -2215,10 +2416,6 @@ export class TenantGroupDetailsComponent implements OnInit, AfterViewInit, OnDes
     this.groupExamsLoadedGroupId.set(null);
     this.examSearchTerm.set('');
     this.examPageIndex.set(0);
-  }
-
-  private isScheduledGroupExam(exam: GroupExamRow): boolean {
-    return Boolean(exam.startTime?.trim());
   }
 
   private normalizeExamPageIndex(): void {

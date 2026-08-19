@@ -1,5 +1,6 @@
 import {
   Component,
+  HostListener,
   OnDestroy,
   OnInit,
   computed,
@@ -8,6 +9,7 @@ import {
   signal,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
 import { RouterModule, ActivatedRoute, Router } from "@angular/router";
 import { MatIconModule } from "@angular/material/icon";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
@@ -39,6 +41,19 @@ interface BasicQuestionLoadResult {
   nodeId: string;
 }
 
+interface QuestionMediaPreview {
+  title: string;
+  url: string;
+  previewUrl: string | null;
+  safeUrl: SafeResourceUrl | null;
+  contentType: string | null;
+  fileName: string;
+  sizeLabel: string;
+  kind: "image" | "pdf" | "video" | "file";
+  isLoading: boolean;
+  errorMessage: string | null;
+}
+
 @Component({
   selector: "app-tenant-group-exam-create",
   standalone: true,
@@ -57,6 +72,7 @@ export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly facade = inject(TenantGroupExamCreateFacade);
   private readonly subjectsData = inject(TenantSubjectsDataService);
+  private readonly sanitizer = inject(DomSanitizer);
 
   readonly groupId = this.facade.groupId;
   readonly isSubmitting = this.facade.isSubmitting;
@@ -86,7 +102,10 @@ export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
   readonly basicQuestionsLoading = signal(false);
   readonly basicQuestionsError = signal<string | null>(null);
   readonly examQuestionRows = signal<SessionHomeWorkQuestionRow[]>([]);
+  readonly questionMediaPreview = signal<QuestionMediaPreview | null>(null);
   private hydratedExamQuestionsKey: string | null = null;
+  private questionMediaPreviewBlobUrl: string | null = null;
+  private questionMediaPreviewRequestId = 0;
   readonly sessionQuestionOptions = [
     {
       kind: "insert",
@@ -114,6 +133,8 @@ export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
       this.route.snapshot.queryParamMap.get("examStartTime"),
     );
   readonly isQuestionBasedHomeWork =
+    this.route.snapshot.data["mode"] === "homeWork" ||
+    this.router.url.includes("/home-work") ||
     this.isSessionHomeWork ||
     Boolean(this.route.snapshot.queryParamMap.get("subjectId"));
   readonly isHomeWorkEditRoute =
@@ -200,7 +221,13 @@ export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.revokeQuestionMediaPreviewBlob();
     this.facade.onDestroy(this.router.url);
+  }
+
+  @HostListener("document:keydown.escape")
+  closeQuestionMediaPreviewOnEscape(): void {
+    this.closeQuestionMediaPreview();
   }
 
   onCancel(): void {
@@ -312,9 +339,6 @@ export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
       const nodeId = curriculum
         ? this.collectCurriculumNodeIds(curriculum)[0] ?? null
         : null;
-      if (!nodeId) {
-        throw new Error("Add a curriculum item before uploading question files.");
-      }
 
       const uploadedQuestions: TenantCurriculumQuestion[] = [];
       for (const file of files) {
@@ -367,11 +391,12 @@ export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
       this.uploadFileNames.set([]);
       this.questionOptionsOpen.set(false);
     } catch (error) {
+      const fallbackMessage = "Unable to upload question files. Please try again.";
+      const userMessage = this.subjectsData.toUserMessage(error, fallbackMessage);
       this.questionContextError.set(
-        this.subjectsData.toUserMessage(
-          error,
-          "Unable to upload question files. Please try again.",
-        ),
+        userMessage !== fallbackMessage || !(error instanceof Error)
+          ? userMessage
+          : error.message || fallbackMessage,
       );
     } finally {
       this.uploadingQuestionFiles.set(false);
@@ -397,6 +422,127 @@ export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
       return `${(sizeBytes / 1024).toFixed(1)} KB`;
     }
     return `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  openQuestionMediaPreview(question: SessionHomeWorkQuestionRow): void {
+    if (!question.mediaUrl) {
+      return;
+    }
+
+    this.revokeQuestionMediaPreviewBlob();
+    const mediaUrl =
+      this.subjectsData.mediaUrlToAbsolute(question.mediaUrl) ?? question.mediaUrl;
+    const fileName = question.mediaOriginalName || question.question || "Question file";
+    const kind = this.questionMediaKind(question);
+    const needsBlobPreview = kind === "pdf";
+    this.questionMediaPreview.set({
+      title: question.question || fileName,
+      url: mediaUrl,
+      previewUrl: needsBlobPreview ? null : mediaUrl,
+      safeUrl: needsBlobPreview
+        ? null
+        : this.sanitizer.bypassSecurityTrustResourceUrl(mediaUrl),
+      contentType: question.mediaContentType ?? null,
+      fileName,
+      sizeLabel: this.questionFileSize(question.mediaSizeBytes),
+      kind,
+      isLoading: needsBlobPreview,
+      errorMessage: null,
+    });
+
+    if (needsBlobPreview) {
+      void this.loadQuestionMediaPreviewBlob(mediaUrl);
+    }
+  }
+
+  openQuestionMediaPreviewFromSpace(
+    event: Event,
+    question: SessionHomeWorkQuestionRow,
+  ): void {
+    if (!question.mediaUrl) {
+      return;
+    }
+
+    event.preventDefault();
+    this.openQuestionMediaPreview(question);
+  }
+
+  closeQuestionMediaPreview(): void {
+    this.questionMediaPreviewRequestId += 1;
+    this.revokeQuestionMediaPreviewBlob();
+    this.questionMediaPreview.set(null);
+  }
+
+  private async loadQuestionMediaPreviewBlob(mediaUrl: string): Promise<void> {
+    const requestId = ++this.questionMediaPreviewRequestId;
+    try {
+      const response = await fetch(mediaUrl, {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error(`Unable to load file (${response.status})`);
+      }
+
+      const blob = await response.blob();
+      if (requestId !== this.questionMediaPreviewRequestId) {
+        return;
+      }
+
+      const previewUrl = URL.createObjectURL(blob);
+      this.revokeQuestionMediaPreviewBlob();
+      this.questionMediaPreviewBlobUrl = previewUrl;
+      const current = this.questionMediaPreview();
+      if (!current || current.url !== mediaUrl) {
+        this.revokeQuestionMediaPreviewBlob();
+        return;
+      }
+
+      this.questionMediaPreview.set({
+        ...current,
+        previewUrl,
+        safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(previewUrl),
+        isLoading: false,
+        errorMessage: null,
+      });
+    } catch {
+      if (requestId !== this.questionMediaPreviewRequestId) {
+        return;
+      }
+      const current = this.questionMediaPreview();
+      if (!current || current.url !== mediaUrl) {
+        return;
+      }
+      this.questionMediaPreview.set({
+        ...current,
+        previewUrl: null,
+        safeUrl: null,
+        isLoading: false,
+        errorMessage: "Unable to preview this file. Open it in a new tab instead.",
+      });
+    }
+  }
+
+  private revokeQuestionMediaPreviewBlob(): void {
+    if (!this.questionMediaPreviewBlobUrl) {
+      return;
+    }
+    URL.revokeObjectURL(this.questionMediaPreviewBlobUrl);
+    this.questionMediaPreviewBlobUrl = null;
+  }
+
+  questionMediaKind(question: Pick<SessionHomeWorkQuestionRow, "mediaContentType" | "mediaOriginalName" | "mediaUrl">): "image" | "pdf" | "video" | "file" {
+    const contentType = (question.mediaContentType || "").toLowerCase();
+    const name = `${question.mediaOriginalName || ""} ${question.mediaUrl || ""}`.toLowerCase();
+    if (contentType.startsWith("image/") || /\.(apng|avif|gif|jpe?g|png|svg|webp)(\?|#|$)/.test(name)) {
+      return "image";
+    }
+    if (contentType === "application/pdf" || /\.pdf(\?|#|$)/.test(name)) {
+      return "pdf";
+    }
+    if (contentType.startsWith("video/") || /\.(m4v|mov|mp4|mpeg|ogv|webm)(\?|#|$)/.test(name)) {
+      return "video";
+    }
+    return "file";
   }
 
   closeBasicQuestionsDrawer(): void {
@@ -599,7 +745,7 @@ export class TenantGroupExamCreateComponent implements OnInit, OnDestroy {
         [
           this.groupListRoute,
           this.groupId(),
-          "exam",
+          "home-work",
           "basic-education",
           context.stageId,
           "grades",

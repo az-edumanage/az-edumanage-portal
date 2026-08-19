@@ -122,6 +122,8 @@ export interface StudentExamAnswer {
   description?: string | null;
   mediaUrl?: string | null;
   mediaOriginalName?: string | null;
+  mediaContentType?: string | null;
+  mediaSizeBytes?: number | null;
 }
 
 export interface StudentExamQuestion {
@@ -131,6 +133,8 @@ export interface StudentExamQuestion {
   description?: string | null;
   mediaUrl?: string | null;
   mediaOriginalName?: string | null;
+  mediaContentType?: string | null;
+  mediaSizeBytes?: number | null;
   weight?: number | null;
   answers: StudentExamAnswer[];
 }
@@ -189,6 +193,16 @@ export interface StudentExamQuestionSubmission {
   questionId: string;
   answerId?: string | null;
   answer?: string | null;
+  answerMediaUrl?: string | null;
+  answerMediaOriginalName?: string | null;
+  answerMediaContentType?: string | null;
+  answerMediaSizeBytes?: number | null;
+}
+
+export interface StudentExamQuestionEvaluation {
+  questionId: string;
+  score: number;
+  feedback?: string | null;
 }
 
 export interface StudentExamQuestionReport {
@@ -196,6 +210,10 @@ export interface StudentExamQuestionReport {
   question: string;
   type: string;
   studentAnswer: string;
+  answerMediaUrl?: string | null;
+  answerMediaOriginalName?: string | null;
+  answerMediaContentType?: string | null;
+  answerMediaSizeBytes?: number | null;
   correctAnswer: string;
   score: number;
   maxScore: number;

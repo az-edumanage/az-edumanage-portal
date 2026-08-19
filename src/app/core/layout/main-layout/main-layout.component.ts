@@ -11,11 +11,12 @@ import { I18nService } from '../../services/i18n.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DashboardActionPickerComponent } from '../dashboard-action-picker/dashboard-action-picker.component';
 import { AiChatWidgetComponent } from '../ai-chat-widget/ai-chat-widget.component';
+import { NotificationToastHostComponent } from '../notification-toast-host/notification-toast-host.component';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, SidebarComponent, TopbarComponent, TaskBarComponent, MatIconModule, DashboardActionPickerComponent, AiChatWidgetComponent],
+  imports: [CommonModule, RouterOutlet, SidebarComponent, TopbarComponent, TaskBarComponent, MatIconModule, DashboardActionPickerComponent, AiChatWidgetComponent, NotificationToastHostComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.css'})
 export class MainLayoutComponent {

@@ -27,7 +27,7 @@ export class TenantGroupStudentAddComponent implements OnInit, OnDestroy {
   readonly filteredStudents = this.facade.filteredStudents;
   readonly enrollForm = this.facade.enrollForm;
   readonly studentSearchPageIndex = signal(0);
-  readonly studentSearchPageSize = signal(5);
+  readonly studentSearchPageSize = signal(10);
   readonly studentSearchTotalPages = computed(() =>
     Math.max(1, Math.ceil(this.filteredStudents().length / this.studentSearchPageSize())),
   );
@@ -86,7 +86,7 @@ export class TenantGroupStudentAddComponent implements OnInit, OnDestroy {
 
   setStudentSearchPageSize(value: number | string): void {
     const size = Number(value);
-    this.studentSearchPageSize.set(Number.isFinite(size) && size > 0 ? size : 5);
+    this.studentSearchPageSize.set(Number.isFinite(size) && size > 0 ? size : 10);
     this.studentSearchPageIndex.set(0);
   }
 }

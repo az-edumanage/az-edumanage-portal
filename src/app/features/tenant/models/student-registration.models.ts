@@ -17,8 +17,8 @@ export interface PendingStudentRegistration {
   email: string | null;
   phone: string | null;
   username: string;
-  gender: string;
-  birthDate: string;
+  gender: string | null;
+  birthDate: string | null;
   parentName: string | null;
   parentPhone: string | null;
   educationCategory: 'BASIC_EDUCATION' | 'UNIVERSITY_EDUCATION';
@@ -61,12 +61,7 @@ export interface PublicStudentRegistrationForm {
 
 export interface PublicStudentRegistrationPayload {
   fullName: string;
-  email: string;
   phone: string;
-  username: string;
-  password: string;
-  gender: string;
-  birthDate: string;
   parentName: string;
   parentPhone: string;
   educationCategory: string;

@@ -1467,7 +1467,7 @@ const DEFAULT_COURSES: TenantLmsCoursesSettings = {
                                 <mat-icon>upload</mat-icon>
                                 <strong>Upload a file</strong>
                                 <span>or Drag-n-Drop here</span>
-                                <small>DOC, PDF, XLS, PPT, PPTX, XLSX, DOCX (100 MB)</small>
+                                <small>DOC, PDF, XLS, PPT, PPTX, XLSX, DOCX (1 GB)</small>
                               </label>
                               <button type="button" class="lms-document-source-card" (click)="selectBuilderDocumentSource('slideshare')">
                                 <mat-icon>co_present</mat-icon>
@@ -7676,14 +7676,14 @@ The sun rises in the east.{TRUE}`,
   }
 
   private async applyBuilderAudioFile(file: File): Promise<void> {
-    const maxBytes = 512 * 1024 * 1024;
+    const maxBytes = 1024 * 1024 * 1024;
     if (!file.type.startsWith("audio/")) {
       this.builderUploadError.set("Unsupported audio format. Choose an audio file.");
       this.builderUploadProgress.set(0);
       return;
     }
     if (file.size > maxBytes) {
-      this.builderUploadError.set("The audio file is too large. Maximum size is 512 MB.");
+      this.builderUploadError.set("The audio file is too large. Maximum size is 1 GB.");
       this.builderUploadProgress.set(0);
       return;
     }
@@ -7782,14 +7782,14 @@ The sun rises in the east.{TRUE}`,
   private applyBuilderScormFile(file: File): void {
     const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
     const acceptedExtensions = new Set(["zip", "xapi", "cmi5"]);
-    const maxBytes = 500 * 1024 * 1024;
+    const maxBytes = 1024 * 1024 * 1024;
     if (!acceptedExtensions.has(extension)) {
       this.builderUploadError.set("Unsupported package format. Choose a SCORM, xAPI, or cmi5 package.");
       this.builderUploadProgress.set(0);
       return;
     }
     if (file.size > maxBytes) {
-      this.builderUploadError.set("The package is too large. Maximum size is 500 MB.");
+      this.builderUploadError.set("The package is too large. Maximum size is 1 GB.");
       this.builderUploadProgress.set(0);
       return;
     }
@@ -7816,14 +7816,14 @@ The sun rises in the east.{TRUE}`,
   private async applyBuilderDocumentFile(file: File): Promise<void> {
     const acceptedExtensions = new Set(["doc", "docx", "pdf", "xls", "xlsx", "ppt", "pptx"]);
     const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
-    const maxBytes = 100 * 1024 * 1024;
+    const maxBytes = 1024 * 1024 * 1024;
     if (!acceptedExtensions.has(extension)) {
       this.builderUploadError.set("Unsupported document format. Choose a DOC, PDF, XLS, or PPT file.");
       this.builderUploadProgress.set(0);
       return;
     }
     if (file.size > maxBytes) {
-      this.builderUploadError.set("The document is too large. Maximum size is 100 MB.");
+      this.builderUploadError.set("The document is too large. Maximum size is 1 GB.");
       this.builderUploadProgress.set(0);
       return;
     }

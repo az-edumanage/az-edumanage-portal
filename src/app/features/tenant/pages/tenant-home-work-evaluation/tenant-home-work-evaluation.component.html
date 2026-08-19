@@ -30,6 +30,33 @@
       <span>Groups reviewed</span>
       <strong>{{ summary().groupsReviewed }}</strong>
     </article>
+    <article>
+      <span>Manual answers</span>
+      <strong>{{ summary().manualAnswers }}</strong>
+    </article>
+  </div>
+
+  <div class="tenant-exams-evaluation__tabs" role="tablist" aria-label="Home work correction type">
+    <button
+      type="button"
+      role="tab"
+      [class.active]="activeTab() === 'auto'"
+      [attr.aria-selected]="activeTab() === 'auto'"
+      (click)="setActiveTab('auto')"
+    >
+      <mat-icon>rule</mat-icon>
+      Auto correct
+    </button>
+    <button
+      type="button"
+      role="tab"
+      [class.active]="activeTab() === 'manual'"
+      [attr.aria-selected]="activeTab() === 'manual'"
+      (click)="setActiveTab('manual')"
+    >
+      <mat-icon>grading</mat-icon>
+      Manual correct
+    </button>
   </div>
 
   @if (loading()) {
@@ -50,77 +77,239 @@
           <mat-icon>search</mat-icon>
           <input
             type="search"
-            placeholder="Search home work by student, group, subject or score..."
+            [placeholder]="activeTab() === 'manual' ? 'Search manual answers by student, file, group or question...' : 'Search home work by student, group, subject or score...'"
             [value]="searchTerm()"
             (input)="setSearchTerm($any($event.target).value)"
           />
         </label>
       </div>
 
-      <div class="tenant-exams-evaluation__table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Student</th>
-              <th>Home Work</th>
-              <th>Group</th>
-              <th>Date</th>
-              <th>Completed</th>
-              <th>Score</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of pagedRows(); track row.attemptId) {
+      @if (activeTab() === 'auto') {
+        <div class="tenant-exams-evaluation__table-wrap">
+          <table>
+            <thead>
               <tr>
-                <td>
-                  <strong>{{ row.studentName || '-' }}</strong>
-                  <span>{{ row.studentId || '' }}</span>
-                </td>
-                <td>
-                  <strong>{{ row.title }}</strong>
-                  <span>{{ row.duration || 0 }} min</span>
-                </td>
-                <td>
-                  {{ row.groupName }}
-                  <span>{{ row.subjectName || '-' }}</span>
-                </td>
-                <td>
-                  {{ date(row.date) }}
-                  <span>{{ time(row.startTime) }}</span>
-                </td>
-                <td>
-                  {{ instant(row.completedAt) }}
-                  <span>Started {{ instant(row.startedAt) }}</span>
-                </td>
-                <td>
-                  <span class="tenant-exams-evaluation__score" [class.tenant-exams-evaluation__score--empty]="!(row.maxScore || 0)">
-                    {{ score(row) }} · {{ scorePercent(row) }}%
-                  </span>
-                </td>
-                <td>{{ statusLabel(row.status) }}</td>
-                <td>
-                  <a class="tenant-exams-evaluation__open" [routerLink]="reportRoute(row)">
-                    <mat-icon>visibility</mat-icon>
-                    View
-                  </a>
-                </td>
+                <th>Student</th>
+                <th>Home Work</th>
+                <th>Group</th>
+                <th>Date</th>
+                <th>Completed</th>
+                <th>Score</th>
+                <th>Status</th>
+                <th>Action</th>
               </tr>
-            } @empty {
-              <tr>
-                <td colspan="8" class="tenant-exams-evaluation__empty">
-                  {{ searchTerm() ? 'No home work reports match your search.' : 'No completed home work reports yet.' }}
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              @for (row of pagedRows(); track row.attemptId) {
+                <tr>
+                  <td>
+                    <strong>{{ row.studentName || '-' }}</strong>
+                    <span>{{ row.studentId || '' }}</span>
+                  </td>
+                  <td>
+                    <strong>{{ row.title }}</strong>
+                    <span>{{ row.duration || 0 }} min</span>
+                  </td>
+                  <td>
+                    {{ row.groupName }}
+                    <span>{{ row.subjectName || '-' }}</span>
+                  </td>
+                  <td>
+                    {{ date(row.date) }}
+                    <span>{{ time(row.startTime) }}</span>
+                  </td>
+                  <td>
+                    {{ instant(row.completedAt) }}
+                    <span>Started {{ instant(row.startedAt) }}</span>
+                  </td>
+                  <td>
+                    <span class="tenant-exams-evaluation__score" [class.tenant-exams-evaluation__score--empty]="!(row.maxScore || 0)">
+                      {{ score(row) }} · {{ scorePercent(row) }}%
+                    </span>
+                  </td>
+                  <td>{{ statusLabel(row.status) }}</td>
+                  <td>
+                    <a class="tenant-exams-evaluation__open" [routerLink]="reportRoute(row)">
+                      <mat-icon>visibility</mat-icon>
+                      View
+                    </a>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="tenant-exams-evaluation__empty">
+                    {{ searchTerm() ? 'No home work reports match your search.' : 'No completed home work reports yet.' }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        @if (manualLoading()) {
+          <div class="tenant-exams-evaluation__state">
+            <mat-icon>progress_activity</mat-icon>
+            Loading manual answer files...
+          </div>
+        } @else if (manualError()) {
+          <div class="tenant-exams-evaluation__state tenant-exams-evaluation__state--error">
+            <mat-icon>error</mat-icon>
+            <span>{{ manualError() }}</span>
+            <button type="button" (click)="loadManualRows()">Retry</button>
+          </div>
+        } @else {
+          <div class="tenant-exams-evaluation__manual-layout">
+            <div class="tenant-exams-evaluation__table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Home Work</th>
+                    <th>Question</th>
+                    <th>Answer file</th>
+                    <th>Score</th>
+                    <th>Completed</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of pagedManualRows(); track row.id) {
+                    <tr
+                      class="tenant-exams-evaluation__clickable-row"
+                      [class.active]="selectedManualRowId() === row.id"
+                      tabindex="0"
+                      role="button"
+                      [attr.aria-label]="'Open manual correction for ' + (row.evaluation.studentName || 'student')"
+                      (click)="selectManualRow(row)"
+                      (keydown.enter)="selectManualRow(row)"
+                    >
+                      <td>
+                        <strong>{{ row.evaluation.studentName || '-' }}</strong>
+                        <span>{{ row.evaluation.studentId || '' }}</span>
+                      </td>
+                      <td>
+                        <strong>{{ row.evaluation.title }}</strong>
+                        <span>{{ row.evaluation.groupName }}</span>
+                      </td>
+                      <td>
+                        <strong>{{ row.question.question }}</strong>
+                        <span>{{ row.question.type }}</span>
+                      </td>
+                      <td>
+                        {{ row.question.answerMediaOriginalName || 'Answer file' }}
+                        <span>{{ row.question.answerMediaContentType || '-' }}</span>
+                      </td>
+                      <td>
+                        <span class="tenant-exams-evaluation__score">
+                          {{ questionScore(row) }}
+                        </span>
+                      </td>
+                      <td>{{ instant(row.evaluation.completedAt) }}</td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="6" class="tenant-exams-evaluation__empty">
+                        {{ searchTerm() ? 'No manual answers match your search.' : 'No PDF or image student answers need manual correction yet.' }}
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
 
-      @if (filteredRows().length > 0) {
+            @if (selectedManualRow(); as selected) {
+              <aside class="tenant-exams-evaluation__manual-panel">
+                <header>
+                  <div>
+                    <h3>{{ selected.evaluation.studentName || 'Student answer' }}</h3>
+                    <p>{{ selected.question.answerMediaOriginalName || 'Answer file' }}</p>
+                  </div>
+                  <a class="tenant-exams-evaluation__open" [href]="answerMediaUrl(selected)" target="_blank" rel="noopener">
+                    <mat-icon>open_in_new</mat-icon>
+                    Open
+                  </a>
+                </header>
+
+                <div class="tenant-exams-evaluation__answer-preview">
+                  @if (manualPreviewLoading()) {
+                    <div class="tenant-exams-evaluation__state">
+                      <mat-icon>progress_activity</mat-icon>
+                      Loading answer preview...
+                    </div>
+                  } @else if (manualPreviewError()) {
+                    <div class="tenant-exams-evaluation__state tenant-exams-evaluation__state--error">
+                      <mat-icon>error</mat-icon>
+                      <span>{{ manualPreviewError() }}</span>
+                    </div>
+                  } @else if (answerMediaKind(selected) === 'image') {
+                    <img [src]="answerMediaUrl(selected)" [alt]="selected.question.answerMediaOriginalName || 'Student answer'" />
+                  } @else if (answerMediaKind(selected) === 'pdf') {
+                    @if (manualPreviewSafeUrl(); as previewUrl) {
+                      <iframe [src]="previewUrl" [title]="selected.question.answerMediaOriginalName || 'Student answer PDF'"></iframe>
+                    } @else {
+                      <div class="tenant-exams-evaluation__state">
+                        <mat-icon>draft</mat-icon>
+                        Open this file in a new tab to review it.
+                      </div>
+                    }
+                  } @else {
+                    <div class="tenant-exams-evaluation__state">
+                      <mat-icon>draft</mat-icon>
+                      Open this file in a new tab to review it.
+                    </div>
+                  }
+                </div>
+
+                <div class="tenant-exams-evaluation__manual-question">
+                  <span>Question</span>
+                  <p>{{ selected.question.question }}</p>
+                  @if (selected.question.studentAnswer) {
+                    <span>Student note</span>
+                    <p>{{ selected.question.studentAnswer }}</p>
+                  }
+                </div>
+
+                @if (manualSaveMessage()) {
+                  <div class="tenant-exams-evaluation__notice">{{ manualSaveMessage() }}</div>
+                }
+                @if (manualSaveError()) {
+                  <div class="tenant-exams-evaluation__notice tenant-exams-evaluation__notice--error">{{ manualSaveError() }}</div>
+                }
+
+                <div class="tenant-exams-evaluation__manual-form">
+                  <label>
+                    <span>Degree</span>
+                    <input
+                      type="number"
+                      min="0"
+                      [max]="selected.question.maxScore"
+                      step="0.5"
+                      [ngModel]="manualScore(selected)"
+                      (ngModelChange)="setManualScore(selected, $event)"
+                    />
+                    <small>/ {{ selected.question.maxScore }}</small>
+                  </label>
+                  <label>
+                    <span>Teacher feedback</span>
+                    <textarea
+                      rows="3"
+                      [ngModel]="manualFeedback()[selected.id] || selected.question.feedback || ''"
+                      (ngModelChange)="setManualFeedback(selected, $event)"
+                    ></textarea>
+                  </label>
+                  <button type="button" class="tenant-exams-evaluation__refresh" (click)="saveManualCorrection(selected)" [disabled]="savingManual()">
+                    <mat-icon>{{ savingManual() ? 'hourglass_top' : 'save' }}</mat-icon>
+                    {{ savingManual() ? 'Saving' : 'Save correction' }}
+                  </button>
+                </div>
+              </aside>
+            }
+          </div>
+        }
+      }
+
+      @if (activeRowsCount() > 0) {
         <div class="tenant-exams-evaluation__pagination">
-          <span>Showing {{ rangeStart() }}-{{ rangeEnd() }} of {{ filteredRows().length }} reports</span>
+          <span>Showing {{ rangeStart() }}-{{ rangeEnd() }} of {{ activeRowsCount() }} reports</span>
           <label>
             Rows
             <select [value]="pageSize()" (change)="setPageSize($any($event.target).value)">

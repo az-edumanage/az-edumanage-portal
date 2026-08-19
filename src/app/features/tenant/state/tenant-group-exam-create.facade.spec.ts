@@ -26,7 +26,7 @@ describe('TenantGroupExamCreateFacade', () => {
         selectedExamId: 'exam-1',
         examTitle: 'Physics Midterm',
         date: '2026-07-01',
-        startTime: null,
+        startTime: '09:00',
         duration: 60,
         showResultsImmediately: true,
         allowRetakes: false,
@@ -70,6 +70,40 @@ describe('TenantGroupExamCreateFacade', () => {
   });
 
   it('submits group exam assignment payload without removed options', () => {
+    facade.initialize('group-1', true);
+    facade.examForm.patchValue({
+      selectedExamId: 'exam-1',
+      title: 'Physics Midterm',
+      date: '2026-07-01',
+      startTime: '09:00',
+      duration: 60,
+      instructions: 'Read carefully',
+      showResultsImmediately: true,
+      allowRetakes: false,
+    });
+
+    facade.onSubmit();
+
+    expect(data.saveGroupExamAssignment).toHaveBeenCalledWith(
+      'group-1',
+      {
+        selectedExamId: 'exam-1',
+        date: '2026-07-01',
+        startTime: '09:00',
+        duration: 60,
+        instructions: 'Read carefully',
+        showResultsImmediately: true,
+        allowRetakes: false,
+      },
+      { scope: 'tenant' },
+    );
+    expect(data.saveGroupExamAssignment.mock.calls[0][1]).not.toHaveProperty('saveToCenterBank');
+    expect(data.saveGroupExamAssignment.mock.calls[0][1]).not.toHaveProperty('saveToMyMedia');
+    expect(data.saveGroupExamAssignment.mock.calls[0][1]).not.toHaveProperty('shuffleQuestions');
+  });
+
+  it('allows a regular group exam to be saved for any time of day', () => {
+    facade.initialize('group-1', true);
     facade.examForm.patchValue({
       selectedExamId: 'exam-1',
       title: 'Physics Midterm',
@@ -85,20 +119,35 @@ describe('TenantGroupExamCreateFacade', () => {
 
     expect(data.saveGroupExamAssignment).toHaveBeenCalledWith(
       'group-1',
-      {
+      expect.objectContaining({
         selectedExamId: 'exam-1',
         date: '2026-07-01',
         startTime: null,
-        duration: 60,
-        instructions: 'Read carefully',
-        showResultsImmediately: true,
-        allowRetakes: false,
-      },
+      }),
       { scope: 'tenant' },
     );
-    expect(data.saveGroupExamAssignment.mock.calls[0][1]).not.toHaveProperty('saveToCenterBank');
-    expect(data.saveGroupExamAssignment.mock.calls[0][1]).not.toHaveProperty('saveToMyMedia');
-    expect(data.saveGroupExamAssignment.mock.calls[0][1]).not.toHaveProperty('shuffleQuestions');
+    expect(facade.examForm.controls.startTime.hasError('required')).toBe(false);
+  });
+
+  it('returns to the exams tab after saving a regular group exam', () => {
+    facade.initialize('group-1', true);
+    facade.examForm.patchValue({
+      selectedExamId: 'exam-1',
+      title: 'Physics Midterm',
+      date: '2026-07-01',
+      startTime: '09:00',
+      duration: 60,
+      instructions: 'Read carefully',
+      showResultsImmediately: true,
+      allowRetakes: false,
+    });
+
+    facade.onSubmit();
+
+    expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(
+      ['/tenant/groups', 'group-1'],
+      { queryParams: { tab: 'exams' } },
+    );
   });
 
   it('does not create a bottom draft task while opening session home work questions', () => {
@@ -183,7 +232,7 @@ describe('TenantGroupExamCreateFacade', () => {
       examId: 'exam-1',
       title: 'Physics Midterm',
       date: '2026-07-01',
-      startTime: null,
+      startTime: '09:00',
       duration: 60,
     }));
   });

@@ -1665,6 +1665,85 @@
   white-space: nowrap;
 }
 
+.tenant-group-library-presentation-preview {
+  position: relative;
+  width: 100%;
+  min-height: calc(100dvh - 8rem);
+  overflow: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #f1f5f9;
+}
+
+.tenant-group-library-presentation-host {
+  min-height: calc(100dvh - 8rem);
+  padding: 1rem;
+}
+
+.tenant-group-library-presentation-host.is-loading {
+  opacity: 0;
+}
+
+.tenant-group-library-presentation-preview > .grid {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+}
+
+.tenant-group-library-presentation-host ::ng-deep .pptx-preview-wrapper {
+  max-width: 100%;
+  height: auto !important;
+  margin-inline: auto;
+  overflow: visible !important;
+}
+
+.tenant-group-library-presentation-host ::ng-deep .pptx-wrapper {
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+.tenant-group-library-presentation-host ::ng-deep .pptx-preview-slide-wrapper,
+.tenant-group-library-presentation-host ::ng-deep section,
+.tenant-group-library-presentation-host ::ng-deep .slide {
+  max-width: 100%;
+  box-shadow: 0 12px 30px rgb(15 23 42 / 0.14);
+}
+
+.tenant-group-library-document-preview {
+  position: relative;
+  width: 100%;
+  min-height: calc(100dvh - 8rem);
+  overflow: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #e2e8f0;
+}
+
+.tenant-group-library-document-host {
+  min-height: calc(100dvh - 8rem);
+  padding: 1.25rem 0;
+}
+
+.tenant-group-library-document-host.is-loading {
+  opacity: 0;
+}
+
+.tenant-group-library-document-preview > .grid {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+}
+
+.tenant-group-library-document-host ::ng-deep .docx-wrapper {
+  background: #e2e8f0;
+  padding: 0;
+}
+
+.tenant-group-library-document-host ::ng-deep .docx {
+  margin: 0 auto 1rem;
+  box-shadow: 0 2px 7px rgb(15 23 42 / 0.16);
+}
+
 .tenant-group-lesson-row-action--assign:hover,
 .tenant-group-lesson-row-action--assign:focus-visible {
   background: #16a34a;

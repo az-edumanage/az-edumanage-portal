@@ -8,6 +8,7 @@ import { TenantQuestionSource, TenantQuestionSourceEducationCategory, TenantQues
 import { TenantQuestionType, TenantQuestionTypeSettingsService } from '../../data-access/tenant-question-type-settings.service';
 import { TenantRoomType, TenantRoomTypeSettingsService } from '../../data-access/tenant-room-type-settings.service';
 import { TenantSubscriptionPeriod, TenantSubscriptionPeriodSettingsService } from '../../data-access/tenant-subscription-period-settings.service';
+import { TenantUiSettingsService } from '../../data-access/tenant-ui-settings.service';
 
 @Component({
   selector: 'app-tenant-platform-settings',
@@ -22,6 +23,7 @@ export class TenantPlatformSettingsComponent implements OnInit {
   private readonly tenantSubscriptionPeriodSettings = inject(TenantSubscriptionPeriodSettingsService);
   private readonly tenantQuestionTypeSettings = inject(TenantQuestionTypeSettingsService);
   private readonly tenantQuestionSourceSettings = inject(TenantQuestionSourceSettingsService);
+  private readonly tenantUiSettings = inject(TenantUiSettingsService);
 
   readonly searchQuery = signal('');
   readonly activeTab = signal('general');
@@ -92,6 +94,12 @@ export class TenantPlatformSettingsComponent implements OnInit {
   readonly equipmentFacilityPendingDelete = signal<TenantEquipmentFacility | null>(null);
   readonly equipmentFacilityDeleting = signal(false);
   readonly equipmentFacilityStatusModal = signal<{ title: string; message: string; tone: 'success' | 'error' } | null>(null);
+  readonly sidebarSettingsLoading = signal(false);
+  readonly sidebarSettingsLoaded = signal(false);
+  readonly sidebarSettingsSaving = signal(false);
+  readonly sidebarSettingsLoadError = signal<string | null>(null);
+  readonly sidebarSettingsSaveError = signal<string | null>(null);
+  readonly showUniversityEducationSidebar = signal(true);
 
   readonly settingsTabs = [
     {
@@ -267,6 +275,33 @@ export class TenantPlatformSettingsComponent implements OnInit {
     }
   }
 
+  async openSidebarSettingsScreen(): Promise<void> {
+    this.activeTab.set('sidebar');
+    if (!this.sidebarSettingsLoaded()) {
+      await this.loadSidebarSettings();
+    }
+  }
+
+  async setUniversityEducationSidebarVisibility(visible: boolean): Promise<void> {
+    if (this.sidebarSettingsSaving()) {
+      return;
+    }
+    const previousValue = this.showUniversityEducationSidebar();
+    this.showUniversityEducationSidebar.set(visible);
+    this.sidebarSettingsSaving.set(true);
+    this.sidebarSettingsSaveError.set(null);
+    try {
+      const settings = await this.tenantUiSettings.updateSettings({ showUniversityEducationSidebar: visible });
+      this.showUniversityEducationSidebar.set(settings.showUniversityEducationSidebar);
+      this.sidebarSettingsLoaded.set(true);
+    } catch (error) {
+      this.showUniversityEducationSidebar.set(previousValue);
+      this.sidebarSettingsSaveError.set(this.tenantUiSettings.toUserMessage(error));
+    } finally {
+      this.sidebarSettingsSaving.set(false);
+    }
+  }
+
   openSubscriptionPeriodCreateScreen(): void {
     this.resetSubscriptionPeriodForm();
     this.activeTab.set('subscription-period-create');
@@ -398,6 +433,23 @@ export class TenantPlatformSettingsComponent implements OnInit {
       this.subscriptionPeriodLoadError.set(this.tenantSubscriptionPeriodSettings.toUserMessage(error));
     } finally {
       this.subscriptionPeriodsLoading.set(false);
+    }
+  }
+
+  async loadSidebarSettings(): Promise<void> {
+    if (this.sidebarSettingsLoading()) {
+      return;
+    }
+    this.sidebarSettingsLoading.set(true);
+    this.sidebarSettingsLoadError.set(null);
+    try {
+      const settings = await this.tenantUiSettings.loadSettings();
+      this.showUniversityEducationSidebar.set(settings.showUniversityEducationSidebar);
+      this.sidebarSettingsLoaded.set(true);
+    } catch (error) {
+      this.sidebarSettingsLoadError.set(this.tenantUiSettings.toUserMessage(error));
+    } finally {
+      this.sidebarSettingsLoading.set(false);
     }
   }
 

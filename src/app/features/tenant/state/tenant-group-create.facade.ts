@@ -105,7 +105,8 @@ export class TenantGroupCreateFacade {
     startTime: ['10:00', Validators.required],
     duration: [90, Validators.required],
     daySchedules: this.fb.group({}),
-    fees: [500, Validators.required],
+    fees: [500, [Validators.required, Validators.min(0)]],
+    centerCommission: [0, [Validators.required, Validators.min(0)]],
     paymentMethod: ['', Validators.required],
     paymentMethodId: ['', Validators.required],
     autoInvoice: [true],
@@ -380,6 +381,10 @@ export class TenantGroupCreateFacade {
 
       if (key === 'fees') {
         return fieldValue !== 500;
+      }
+
+      if (key === 'centerCommission') {
+        return fieldValue !== 0;
       }
 
       if (typeof fieldValue === 'boolean') {
@@ -681,9 +686,17 @@ export class TenantGroupCreateFacade {
       return;
     }
 
+    const formValue = this.groupForm.getRawValue();
+    const pricePerStudent = Number(formValue.fees ?? 0);
+    const centerCommission = Number(formValue.centerCommission ?? 0);
+    if (Number.isFinite(pricePerStudent) && Number.isFinite(centerCommission) && centerCommission > pricePerStudent) {
+      this.store.setErrorMessage('Center commission cannot be greater than price per student.');
+      return;
+    }
+
     this.store.setSubmitting(true);
     const payload: TenantGroupPayload = {
-      ...(this.groupForm.getRawValue() as Omit<TenantGroupPayload, 'scheduleDays'>),
+      ...(formValue as Omit<TenantGroupPayload, 'scheduleDays'>),
       scheduleDays: this.selectedDays(),
     };
 
@@ -727,6 +740,7 @@ export class TenantGroupCreateFacade {
       startTime: '10:00',
       duration: 90,
       fees: 500,
+      centerCommission: 0,
       paymentMethod: '',
       paymentMethodId: '',
       autoInvoice: true,
@@ -797,6 +811,7 @@ export class TenantGroupCreateFacade {
       startTime: group.startTime,
       duration: group.duration,
       fees: group.pricePerStudent,
+      centerCommission: group.centerCommissionPerStudent ?? 0,
       autoInvoice: group.autoInvoice,
       allowSelfEnroll: group.allowSelfEnroll,
       hasSpecificDuration: group.hasSpecificDuration,
@@ -1327,6 +1342,7 @@ export class TenantGroupCreateFacade {
     return {
       name: payload.name,
       pricePerStudent: payload.fees,
+      centerCommissionPerStudent: payload.centerCommission,
       ownedByAppUserId: ownerId,
       educationCategory: category,
       stageId: category === 'BASIC_EDUCATION' ? stage?.id ?? null : null,

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { TenantSubjectsDataService } from '../../data-access/tenant-subjects-data.service';
-import { TenantCurriculumQuestion, TenantSubject, TenantSubjectCurriculumNode } from '../../models/tenant-subjects.models';
+import { BloomLevel, QuestionDifficulty, TenantCurriculumQuestion, TenantCurriculumSkill, TenantSubject, TenantSubjectCurriculumNode } from '../../models/tenant-subjects.models';
 
 const ALL_ITEMS_VALUE = '__all__';
 
@@ -23,6 +23,11 @@ interface QuestionBankRow {
   nodeId: string;
   nodeLabel: string;
   answerCount: number;
+  bloomId: string | null;
+  difficultyId: string | null;
+  skillId: string | null;
+  questionSource: string | null;
+  tags: string[];
 }
 
 interface QuestionBankCurriculumChild {
@@ -89,7 +94,7 @@ interface QuestionBankCurriculumChild {
             <input
               type="search"
               class="min-w-0 flex-1 bg-transparent text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-100"
-              placeholder="Search questions..."
+              placeholder="Search question text, tags, source, difficulty, Bloom, skill..."
               [ngModel]="searchQuery()"
               (ngModelChange)="searchQuery.set($event)"
             >
@@ -181,6 +186,13 @@ interface QuestionBankCurriculumChild {
                     <td class="px-5 py-4">
                       <div class="font-semibold text-slate-900 dark:text-slate-100">{{ row.question }}</div>
                       <div class="mt-1 max-w-3xl truncate text-sm text-slate-500 dark:text-slate-400">{{ row.description || 'No description' }}</div>
+                      @if (row.tags.length > 0) {
+                        <div class="mt-2 flex flex-wrap gap-1.5">
+                          @for (tag of row.tags; track tag) {
+                            <span class="inline-flex rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-bold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">{{ tag }}</span>
+                          }
+                        </div>
+                      }
                     </td>
                     <td class="px-5 py-4 text-sm font-medium text-slate-700 dark:text-slate-300">{{ row.type }}</td>
                     <td class="px-5 py-4 text-sm font-medium text-slate-700 dark:text-slate-300">{{ row.nodeLabel }}</td>
@@ -239,6 +251,9 @@ export class TenantQuestionsBankSubjectQuestionsComponent implements OnInit {
   readonly nodeOptions = signal<QuestionBankNodeOption[]>([]);
   readonly selectedNodeId = signal('');
   readonly rows = signal<QuestionBankRow[]>([]);
+  readonly bloomLevels = signal<BloomLevel[]>([]);
+  readonly questionDifficulties = signal<QuestionDifficulty[]>([]);
+  readonly curriculumSkills = signal<TenantCurriculumSkill[]>([]);
   readonly searchQuery = signal('');
   readonly loading = signal(false);
   readonly loadError = signal<string | null>(null);
@@ -279,12 +294,7 @@ export class TenantQuestionsBankSubjectQuestionsComponent implements OnInit {
       return rows;
     }
 
-    return rows.filter((row) =>
-      row.question.toLowerCase().includes(query)
-      || row.description.toLowerCase().includes(query)
-      || row.type.toLowerCase().includes(query)
-      || row.nodeLabel.toLowerCase().includes(query),
-    );
+    return rows.filter((row) => this.questionSearchValues(row).some((value) => value.toLowerCase().includes(query)));
   });
 
   readonly addQuestionLink = computed(() => {
@@ -312,6 +322,29 @@ export class TenantQuestionsBankSubjectQuestionsComponent implements OnInit {
 
   openQuestion(row: QuestionBankRow): void {
     void this.router.navigate(this.questionOverviewLink(row));
+  }
+
+  bloomDisplayName(bloomId: string | null): string {
+    if (!bloomId) {
+      return '-';
+    }
+    const level = this.bloomLevels().find((item) => item.id === bloomId);
+    return level ? `${level.nameEn} ${level.nameAr} ${level.code}` : bloomId;
+  }
+
+  difficultyDisplayName(difficultyId: string | null): string {
+    if (!difficultyId) {
+      return '-';
+    }
+    const difficulty = this.questionDifficulties().find((item) => item.id === difficultyId);
+    return difficulty ? `${difficulty.nameEn} ${difficulty.nameAr} ${difficulty.code}` : difficultyId;
+  }
+
+  skillDisplayName(skillId: string | null): string {
+    if (!skillId) {
+      return '-';
+    }
+    return this.curriculumSkills().find((item) => item.id === skillId)?.name ?? skillId;
   }
 
   async deleteQuestion(row: QuestionBankRow, event: Event): Promise<void> {
@@ -374,12 +407,19 @@ export class TenantQuestionsBankSubjectQuestionsComponent implements OnInit {
     this.loadError.set(null);
 
     try {
-      const subject = await this.data.getSubjectDetails(this.subjectId());
+      const [subject, bloomLevels, questionDifficulties] = await Promise.all([
+        this.data.getSubjectDetails(this.subjectId()),
+        this.data.listBloomLevels(),
+        this.data.listQuestionDifficulties(),
+      ]);
       const root = await this.data.getSubjectCurriculum(subject.id);
       const nodes = this.flattenCurriculumItems(root);
       this.subject.set(subject);
       this.curriculumRoot.set(root);
       this.nodeOptions.set(nodes);
+      this.bloomLevels.set(bloomLevels);
+      this.questionDifficulties.set(questionDifficulties);
+      await this.loadCurriculumSkills(subject.id, root);
       if (!this.selectedNodeId() && nodes.length) {
         this.selectedNodeId.set(ALL_ITEMS_VALUE);
       }
@@ -391,9 +431,44 @@ export class TenantQuestionsBankSubjectQuestionsComponent implements OnInit {
       this.curriculumRoot.set(null);
       this.nodeOptions.set([]);
       this.rows.set([]);
+      this.bloomLevels.set([]);
+      this.questionDifficulties.set([]);
+      this.curriculumSkills.set([]);
     } finally {
       this.loading.set(false);
     }
+  }
+
+  private questionSearchValues(row: QuestionBankRow): string[] {
+    return [
+      row.question,
+      row.description,
+      row.type,
+      row.nodeLabel,
+      this.difficultyDisplayName(row.difficultyId),
+      this.bloomDisplayName(row.bloomId),
+      this.skillDisplayName(row.skillId),
+      row.questionSource ?? '',
+      ...row.tags,
+    ];
+  }
+
+  private async loadCurriculumSkills(subjectId: string, curriculum: TenantSubjectCurriculumNode): Promise<void> {
+    const nodeIds = this.flattenCurriculumItems(curriculum).map((node) => node.id);
+    if (!nodeIds.length) {
+      this.curriculumSkills.set([]);
+      return;
+    }
+
+    const results = await Promise.allSettled(nodeIds.map((nodeId) =>
+      this.isUniversityQuestionsBankRoute()
+        ? this.data.listCurriculumSkillsForCategory(subjectId, nodeId, 'UNIVERSITY_EDUCATION')
+        : this.data.listCurriculumSkills(subjectId, nodeId),
+    ));
+    const skills = results
+      .flatMap((result) => result.status === 'fulfilled' ? result.value : [])
+      .filter((skill, index, all) => all.findIndex((item) => item.id === skill.id) === index);
+    this.curriculumSkills.set(skills);
   }
 
   private async loadNodeQuestions(subjectId: string, node: QuestionBankNodeOption): Promise<QuestionBankRow[]> {
@@ -451,6 +526,11 @@ export class TenantQuestionsBankSubjectQuestionsComponent implements OnInit {
       nodeId: node.id,
       nodeLabel: node.label,
       answerCount: question.answers.length,
+      bloomId: question.bloomId,
+      difficultyId: question.difficultyId,
+      skillId: question.skillId,
+      questionSource: question.questionSource,
+      tags: question.tags ?? [],
     };
   }
 }

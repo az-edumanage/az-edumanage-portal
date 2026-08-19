@@ -4,12 +4,21 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../../../environments/environment';
 import { StudentDashboardDataService } from '../../data-access/student-dashboard-data.service';
 import {
+  StudentExamAnswer,
   StudentExamAttempt,
   StudentExamQuestion,
   StudentExamQuestionSubmission,
 } from '../../models/student-dashboard.models';
+
+interface StudentAnswerMedia {
+  url: string;
+  originalName: string;
+  contentType: string | null;
+  sizeBytes: number;
+}
 
 @Component({
   selector: 'app-student-exam-attempt',
@@ -97,10 +106,20 @@ import {
                   <p class="question-description">{{ question.description }}</p>
                 }
                 @if (question.mediaUrl) {
-                  <a [href]="question.mediaUrl" target="_blank" rel="noopener" class="media-link">
-                    <mat-icon>attach_file</mat-icon>
-                    {{ question.mediaOriginalName || 'Open attachment' }}
-                  </a>
+                  @if (isImageQuestionMedia(question)) {
+                    <figure class="exam-question-media">
+                      <img [src]="mediaUrl(question.mediaUrl)" [alt]="question.mediaOriginalName || 'Question image'" loading="lazy" />
+                      <figcaption>
+                        <mat-icon>image</mat-icon>
+                        {{ question.mediaOriginalName || 'Question image' }}
+                      </figcaption>
+                    </figure>
+                  } @else {
+                    <a [href]="mediaUrl(question.mediaUrl)" target="_blank" rel="noopener" class="media-link">
+                      <mat-icon>attach_file</mat-icon>
+                      {{ question.mediaOriginalName || 'Open attachment' }}
+                    </a>
+                  }
                 }
 
                 @if (isWrittenQuestion(question)) {
@@ -112,6 +131,24 @@ import {
                       (ngModelChange)="writeAnswer(question.id, $event)"
                     ></textarea>
                   </label>
+                  <div class="answer-file-upload">
+                    <label>
+                      <mat-icon>upload_file</mat-icon>
+                      <span>{{ answerMedia()[question.id]?.originalName || 'Upload PDF or image answer' }}</span>
+                      <input
+                        type="file"
+                        accept=".pdf,image/*"
+                        (change)="uploadAnswerFile(question.id, $event)"
+                      />
+                    </label>
+                    @if (answerFileUploading()[question.id]) {
+                      <small>Uploading...</small>
+                    } @else if (answerFileErrors()[question.id]) {
+                      <small class="error">{{ answerFileErrors()[question.id] }}</small>
+                    } @else if (answerMedia()[question.id]) {
+                      <small>{{ fileSize(answerMedia()[question.id].sizeBytes) }}</small>
+                    }
+                  </div>
                 } @else if (question.answers.length > 0) {
                   <div class="answer-list">
                     @for (answer of question.answers; track answer.id) {
@@ -127,6 +164,19 @@ import {
                           <strong>{{ answer.answer }}</strong>
                           @if (answer.description) {
                             <small>{{ answer.description }}</small>
+                          }
+                          @if (answer.mediaUrl) {
+                            @if (isImageAnswerMedia(answer)) {
+                              <span class="exam-answer-media">
+                                <img [src]="mediaUrl(answer.mediaUrl)" [alt]="answer.mediaOriginalName || answer.answer || 'Answer image'" loading="lazy" />
+                                <small>{{ answer.mediaOriginalName || 'Answer image' }}</small>
+                              </span>
+                            } @else {
+                              <a [href]="mediaUrl(answer.mediaUrl)" target="_blank" rel="noopener" class="media-link answer-media-link" (click)="$event.stopPropagation()">
+                                <mat-icon>attach_file</mat-icon>
+                                {{ answer.mediaOriginalName || 'Open attachment' }}
+                              </a>
+                            }
                           }
                         </span>
                       </label>
@@ -192,6 +242,9 @@ export class StudentExamAttemptComponent implements OnInit, OnDestroy {
   readonly currentQuestionIndex = signal(0);
   readonly selectedAnswers = signal<Record<string, string>>({});
   readonly writtenAnswers = signal<Record<string, string>>({});
+  readonly answerMedia = signal<Record<string, StudentAnswerMedia>>({});
+  readonly answerFileUploading = signal<Record<string, boolean>>({});
+  readonly answerFileErrors = signal<Record<string, string>>({});
   private timerId: ReturnType<typeof setInterval> | null = null;
   readonly currentQuestion = computed(() => {
     const exam = this.attempt();
@@ -244,6 +297,36 @@ export class StudentExamAttemptComponent implements OnInit, OnDestroy {
 
   writeAnswer(questionId: string, answer: string): void {
     this.writtenAnswers.update((answers) => ({ ...answers, [questionId]: answer }));
+  }
+
+  async uploadAnswerFile(questionId: string, event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) {
+      return;
+    }
+    this.answerFileUploading.update((items) => ({ ...items, [questionId]: true }));
+    this.answerFileErrors.update((items) => ({ ...items, [questionId]: '' }));
+    try {
+      const uploaded = await firstValueFrom(this.data.uploadAnswerMedia(file));
+      this.answerMedia.update((items) => ({
+        ...items,
+        [questionId]: {
+          url: uploaded.url,
+          originalName: uploaded.originalName || file.name,
+          contentType: uploaded.contentType ?? (file.type || null),
+          sizeBytes: uploaded.sizeBytes ?? file.size,
+        },
+      }));
+    } catch (error) {
+      this.answerFileErrors.update((items) => ({
+        ...items,
+        [questionId]: error instanceof Error ? error.message : 'Unable to upload answer file',
+      }));
+    } finally {
+      this.answerFileUploading.update((items) => ({ ...items, [questionId]: false }));
+      input.value = '';
+    }
   }
 
   goToQuestion(index: number): void {
@@ -334,15 +417,46 @@ export class StudentExamAttemptComponent implements OnInit, OnDestroy {
     if (!this.isWrittenQuestion(question) && question.answers.length > 0) {
       return Boolean(this.selectedAnswers()[question.id]);
     }
-    return Boolean((this.writtenAnswers()[question.id] || '').trim());
+    return Boolean((this.writtenAnswers()[question.id] || '').trim() || this.answerMedia()[question.id]);
+  }
+
+  fileSize(sizeBytes?: number | null): string {
+    if (!sizeBytes || sizeBytes < 1) return 'File uploaded';
+    if (sizeBytes < 1024) return `${sizeBytes} B`;
+    if (sizeBytes < 1024 * 1024) return `${(sizeBytes / 1024).toFixed(1)} KB`;
+    return `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  mediaUrl(url: string | null | undefined): string | null {
+    if (!url) {
+      return null;
+    }
+    if (/^https?:\/\//i.test(url)) {
+      return url;
+    }
+    const apiOrigin = environment.apiBaseUrl.replace(/\/api\/v1\/?$/, '');
+    return `${apiOrigin}${url.startsWith('/') ? url : `/${url}`}`;
+  }
+
+  isImageQuestionMedia(question: StudentExamQuestion): boolean {
+    return this.isImageMedia(question.mediaContentType, question.mediaOriginalName || question.mediaUrl);
+  }
+
+  isImageAnswerMedia(answer: StudentExamAnswer): boolean {
+    return this.isImageMedia(answer.mediaContentType, answer.mediaOriginalName || answer.mediaUrl);
   }
 
   private submissions(exam: StudentExamAttempt): StudentExamQuestionSubmission[] {
     return exam.questions.map((question) => {
       if (this.isWrittenQuestion(question) || question.answers.length === 0) {
+        const media = this.answerMedia()[question.id];
         return {
           questionId: question.id,
           answer: this.writtenAnswers()[question.id] || '',
+          answerMediaUrl: media?.url ?? null,
+          answerMediaOriginalName: media?.originalName ?? null,
+          answerMediaContentType: media?.contentType ?? null,
+          answerMediaSizeBytes: media?.sizeBytes ?? null,
         };
       }
       return {
@@ -374,6 +488,12 @@ export class StudentExamAttemptComponent implements OnInit, OnDestroy {
       clearInterval(this.timerId);
       this.timerId = null;
     }
+  }
+
+  private isImageMedia(contentType: string | null | undefined, nameOrUrl: string | null | undefined): boolean {
+    const type = (contentType || '').toLowerCase();
+    const name = (nameOrUrl || '').toLowerCase();
+    return type.startsWith('image/') || /\.(avif|gif|jpe?g|png|svg|webp)(?:$|\?)/i.test(name);
   }
 
   private updateRemainingSeconds(): void {

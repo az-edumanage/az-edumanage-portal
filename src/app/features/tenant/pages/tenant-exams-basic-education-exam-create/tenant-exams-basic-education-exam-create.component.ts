@@ -30,6 +30,7 @@ interface BasicEducationGradeExam {
   allowRetakes: boolean;
   questionCount: number;
   submissionCount: number;
+  questionSearchValues: string[];
 }
 
 interface ExamQuestionRow {
@@ -528,7 +529,7 @@ function scopeText(gradeName: string, subjectName: string): string {
                         <input
                           type="search"
                           class="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-500 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-indigo-500/60 dark:focus:ring-indigo-500/20"
-                          placeholder="Search questions, curriculum, tags..."
+                          placeholder="Search question text, tags, source, difficulty, Bloom, skill..."
                           [value]="basicQuestionSearchTerm()"
                           (input)="updateBasicQuestionSearch($event)"
                         />
@@ -876,7 +877,7 @@ function scopeText(gradeName: string, subjectName: string): string {
                     <input
                       type="search"
                       class="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-500 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-indigo-500/60 dark:focus:ring-indigo-500/20"
-                      placeholder="Search exams by title or subject..."
+                      placeholder="Search exams, questions, tags, source, difficulty, Bloom, skill..."
                       [value]="examSearchTerm()"
                       (input)="updateExamSearch($event)"
                     />
@@ -1297,12 +1298,7 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
     const status = this.examStatusFilter();
     return this.exams().filter((exam) => {
       const matchesStatus = status === 'All' || exam.status === status;
-      const matchesSearch = !search || [
-        exam.title,
-        exam.subjectName ?? '',
-        exam.date,
-        exam.status,
-      ].some((value) => value.toLowerCase().includes(search));
+      const matchesSearch = !search || this.examListSearchValues(exam).some((value) => value.toLowerCase().includes(search));
       return matchesStatus && matchesSearch;
     });
   });
@@ -1332,6 +1328,7 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
         question.curriculumItem,
         this.questionTypeLabel(question.type),
         this.difficultyDisplayName(question.difficultyId),
+        this.bloomDisplayName(question.bloomId),
         this.skillDisplayName(question.skillId),
         question.questionSource ?? '',
         ...question.tags,
@@ -1542,7 +1539,7 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
             { status: this.toApiExamStatus(nextStatus) },
           );
       const row = this.toGradeExamRow(updated);
-      this.exams.update((exams) => exams.map((item) => item.id === row.id ? row : item));
+      this.exams.update((exams) => exams.map((item) => item.id === row.id ? { ...row, questionSearchValues: item.questionSearchValues } : item));
       if (this.selectedListExamId() === row.id) {
         this.selectedListExamId.set(row.id);
       }
@@ -2222,7 +2219,32 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
       return;
     }
     const exams = await this.subjectsData.listBasicEducationExams(this.stageId(), this.gradeId(), subject.id);
-    this.exams.set(exams.map((exam) => this.toGradeExamRow(exam)));
+    const rows = exams.map((exam) => this.toGradeExamRow(exam));
+    this.exams.set(rows);
+    if (exams.length === 0) {
+      return;
+    }
+
+    try {
+      const curriculum = await this.subjectsData.getSubjectCurriculum(subject.id);
+      await this.loadCurriculumSkills(subject.id, curriculum);
+      const questionResults = await Promise.allSettled(exams.map((exam) =>
+        this.subjectsData.listBasicEducationExamLinkedQuestions(this.stageId(), this.gradeId(), subject.id, exam.id),
+      ));
+      const searchValuesByExamId = new Map<string, string[]>();
+      questionResults.forEach((result, index) => {
+        if (result.status !== 'fulfilled') {
+          return;
+        }
+        searchValuesByExamId.set(
+          exams[index].id,
+          result.value.flatMap((question) => this.examQuestionSearchValues(question, curriculum)),
+        );
+      });
+      this.exams.set(exams.map((exam) => this.toGradeExamRow(exam, searchValuesByExamId.get(exam.id) ?? [])));
+    } catch {
+      this.exams.set(rows);
+    }
   }
 
   private async loadUniversityEducationExams(): Promise<void> {
@@ -2289,7 +2311,33 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
     }
   }
 
-  private toGradeExamRow(exam: TenantBasicEducationExam): BasicEducationGradeExam {
+  private examListSearchValues(exam: BasicEducationGradeExam): string[] {
+    return [
+      exam.title,
+      exam.subjectName ?? '',
+      exam.date,
+      exam.status,
+      ...exam.questionSearchValues,
+    ];
+  }
+
+  private examQuestionSearchValues(question: TenantCurriculumQuestion, curriculum: TenantSubjectCurriculumNode | null): string[] {
+    const nodeId = question.curriculumNodeId ?? null;
+    return [
+      question.question,
+      question.description ?? '',
+      question.answer ?? '',
+      question.type,
+      this.curriculumNodePathLabel(curriculum, nodeId) ?? '',
+      this.difficultyDisplayName(question.difficultyId),
+      this.bloomDisplayName(question.bloomId),
+      this.skillDisplayName(question.skillId),
+      question.questionSource ?? '',
+      ...(question.tags ?? []),
+    ];
+  }
+
+  private toGradeExamRow(exam: TenantBasicEducationExam, questionSearchValues: string[] = []): BasicEducationGradeExam {
     const subject = this.isUniversityEducationContext()
       ? this.universitySubjects().find((item) => item.id === exam.subjectId)
       : this.subjects().find((item) => item.id === exam.subjectId);
@@ -2306,6 +2354,7 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
       allowRetakes: exam.allowRetakes,
       questionCount: exam.questionCount,
       submissionCount: 0,
+      questionSearchValues,
     };
   }
 
@@ -2345,6 +2394,7 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
         allowRetakes: false,
         questionCount: 42,
         submissionCount: 0,
+        questionSearchValues: [],
       },
       {
         id: `${scopeId}-monthly-assessment`,
@@ -2359,6 +2409,7 @@ export class TenantExamsBasicEducationExamCreateComponent implements OnInit {
         allowRetakes: false,
         questionCount: 25,
         submissionCount,
+        questionSearchValues: [],
       },
     ];
   }

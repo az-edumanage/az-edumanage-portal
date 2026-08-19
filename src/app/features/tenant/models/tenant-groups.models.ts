@@ -17,6 +17,7 @@ export interface Group {
   room: string;
   daySchedules?: Record<string, GroupDaySchedule>;
   pricePerStudent?: number;
+  centerCommissionPerStudent?: number;
   ownedBy?: string;
   educationCategory?: 'BASIC_EDUCATION' | 'UNIVERSITY_EDUCATION';
   subscriptionPeriodId?: string | null;

@@ -204,6 +204,7 @@ export class TenantStudentsDataService {
       id: record.id,
       name: record.fullName,
       email: record.email ?? '',
+      phone: record.phone ?? '',
       grade: education.grade,
       stage: education.stage,
       status: 'Active',
