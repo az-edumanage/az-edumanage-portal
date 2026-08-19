@@ -1686,6 +1686,68 @@ video.tenant-group-session-drawer-file-preview {
   height: calc(100dvh - 7rem);
 }
 
+.tenant-group-session-document-preview {
+  position: relative;
+  width: 100%;
+  min-height: calc(100dvh - 8rem);
+  overflow: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #e2e8f0;
+}
+
+.tenant-group-session-document-preview > .tenant-group-session-preview-empty {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  min-height: 100%;
+}
+
+.tenant-group-session-presentation-host {
+  min-height: calc(100dvh - 8rem);
+  padding: 1rem;
+  background: #f1f5f9;
+}
+
+.tenant-group-session-presentation-host.is-loading,
+.tenant-group-session-document-host.is-loading {
+  opacity: 0;
+}
+
+.tenant-group-session-presentation-host ::ng-deep .pptx-preview-wrapper {
+  max-width: 100%;
+  height: auto !important;
+  margin-inline: auto;
+  overflow: visible !important;
+}
+
+.tenant-group-session-presentation-host ::ng-deep .pptx-wrapper {
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+.tenant-group-session-presentation-host ::ng-deep .pptx-preview-slide-wrapper,
+.tenant-group-session-presentation-host ::ng-deep section,
+.tenant-group-session-presentation-host ::ng-deep .slide {
+  max-width: 100%;
+  box-shadow: 0 12px 30px rgb(15 23 42 / 0.14);
+}
+
+.tenant-group-session-document-host {
+  min-height: calc(100dvh - 8rem);
+  padding: 1.25rem 0;
+}
+
+.tenant-group-session-document-host ::ng-deep .docx-wrapper {
+  background: #e2e8f0;
+  padding: 0;
+}
+
+.tenant-group-session-document-host ::ng-deep .docx {
+  margin: 0 auto 1rem;
+  box-shadow: 0 2px 7px rgb(15 23 42 / 0.16);
+}
+
 .tenant-group-session-preview-empty {
   display: grid;
   min-height: calc(100dvh - 8rem);
@@ -2284,6 +2346,7 @@ video.tenant-group-session-drawer-file-preview {
 :host-context(.dark) .tenant-group-session-preview-drawer,
 :host-context(.dark) .tenant-group-session-drawer-file-preview,
 :host-context(.dark) .tenant-group-session-drawer-file-frame,
+:host-context(.dark) .tenant-group-session-document-preview,
 :host-context(.dark) .tenant-group-session-preview-empty,
 :host-context(.dark) .tenant-group-session-note-preview,
 :host-context(.dark) .tenant-group-session-table-more,
@@ -2326,6 +2389,8 @@ video.tenant-group-session-drawer-file-preview {
 :host-context(.dark) .tenant-group-session-preview-drawer,
 :host-context(.dark) .tenant-group-session-preview-empty,
 :host-context(.dark) .tenant-group-session-note-preview,
+:host-context(.dark) .tenant-group-session-presentation-host,
+:host-context(.dark) .tenant-group-session-document-host ::ng-deep .docx-wrapper,
 :host-context(.dark) .tenant-group-session-expansion-row:hover,
 :host-context(.dark) .tenant-group-session-expansion-row--open {
   background: #111827;

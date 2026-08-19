@@ -1252,8 +1252,8 @@
           <p>{{ preview.folderName }}</p>
         </div>
         <div>
-          @if (preview.url) {
-            <a [href]="preview.url" target="_blank" rel="noopener">
+          @if (previewOpenUrl(preview); as openUrl) {
+            <a [href]="openUrl" target="_blank" rel="noopener">
               <mat-icon>open_in_new</mat-icon>
               Open
             </a>
@@ -1265,7 +1265,7 @@
       </header>
 
       <div class="tenant-group-session-preview-body">
-        @if (previewLoading()) {
+        @if (previewLoading() && !isPresentationContent(preview) && !isWordContent(preview)) {
           <div class="tenant-group-session-preview-empty" aria-live="polite">
             <mat-icon class="animate-spin">sync</mat-icon>
             <p>Loading content...</p>
@@ -1281,6 +1281,39 @@
               <p>{{ line }}</p>
             }
           </article>
+        } @else if (preview.contentType === 'LINK' && previewSafeObjectUrl()) {
+          <iframe
+            class="tenant-group-session-drawer-file-frame"
+            [src]="previewSafeObjectUrl()"
+            [title]="preview.title"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+        } @else if (preview.contentType === 'LINK') {
+          <div class="tenant-group-session-preview-empty">
+            <mat-icon>open_in_new</mat-icon>
+            <p>{{ preview.url || 'This link is not available.' }}</p>
+          </div>
+        } @else if (isPresentationContent(preview)) {
+          <div class="tenant-group-session-document-preview">
+            @if (previewLoading()) {
+              <div class="tenant-group-session-preview-empty" aria-live="polite">
+                <mat-icon class="animate-spin">sync</mat-icon>
+                <p>Loading content...</p>
+              </div>
+            }
+            <div #previewPresentationHost class="tenant-group-session-presentation-host" [class.is-loading]="previewLoading()"></div>
+          </div>
+        } @else if (isWordContent(preview)) {
+          <div class="tenant-group-session-document-preview">
+            @if (previewLoading()) {
+              <div class="tenant-group-session-preview-empty" aria-live="polite">
+                <mat-icon class="animate-spin">sync</mat-icon>
+                <p>Loading content...</p>
+              </div>
+            }
+            <div #previewDocumentHost class="tenant-group-session-document-host" [class.is-loading]="previewLoading()"></div>
+          </div>
         } @else if (previewObjectUrl() && isImageContent(preview)) {
           <img class="tenant-group-session-drawer-file-preview" [src]="previewObjectUrl()" [alt]="preview.title" />
         } @else if (previewObjectUrl() && isVideoContent(preview)) {
