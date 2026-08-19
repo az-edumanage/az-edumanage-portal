@@ -27,6 +27,7 @@ import { TenantBarcodeAttendanceScanResponse } from '../../models/tenant-group-a
 import { TenantGroupDetailsDataService } from '../../data-access/tenant-group-details-data.service';
 import { TenantGroupDetailsScope } from '../../state/tenant-group-details.store';
 import { TenantSubjectsDataService } from '../../data-access/tenant-subjects-data.service';
+import { environment } from '../../../../../environments/environment';
 import {
   TenantCurriculumMaterialFile,
   TenantCurriculumMaterialFolder,
@@ -94,6 +95,10 @@ type JsPdfWithAutoTable = jsPDF & {
   lastAutoTable?: { finalY?: number };
 };
 type PendingSessionHomeWorkRow = GroupExamRow;
+type PresentationPreviewer = {
+  preview(file: ArrayBuffer): Promise<unknown>;
+  destroy(): void;
+};
 
 @Component({
   selector: 'app-tenant-group-session-details',
@@ -274,6 +279,13 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
   private routeParamSubscription: Subscription | null = null;
   private routeQuerySubscription: Subscription | null = null;
   private refreshingGroup = false;
+  private previewPresentationPreviewer: PresentationPreviewer | null = null;
+
+  @ViewChild('previewPresentationHost')
+  private previewPresentationHost?: ElementRef<HTMLElement>;
+
+  @ViewChild('previewDocumentHost')
+  private previewDocumentHost?: ElementRef<HTMLElement>;
 
   ngOnInit(): void {
     this.clockIntervalId = setInterval(() => this.currentTime.set(new Date()), 1000);
@@ -309,6 +321,8 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     this.routeParamSubscription?.unsubscribe();
     this.routeQuerySubscription?.unsubscribe();
     this.clearPreviewObjectUrl();
+    this.destroyPreviewPresentationPreviewer();
+    this.clearPreviewDocumentHost();
     this.clearReportPreviewObjectUrl();
   }
 
@@ -939,9 +953,16 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
 
   openSessionLibraryContentPreview(content: GroupSessionLibraryContent): void {
     this.clearPreviewObjectUrl();
+    this.destroyPreviewPresentationPreviewer();
+    this.clearPreviewDocumentHost();
     this.previewContent.set(content);
     this.previewNote.set(null);
     this.previewError.set(null);
+    if (content.contentType === 'LINK') {
+      this.previewSafeObjectUrl.set(content.url ? this.sanitizer.bypassSecurityTrustResourceUrl(this.externalPreviewUrl(content.url)) : null);
+      this.previewLoading.set(false);
+      return;
+    }
     if (content.contentType === 'NOTE') {
       void this.loadSessionLibraryNotePreview(content);
       return;
@@ -1538,9 +1559,16 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
   openLessonContentPreview(lesson: GroupLesson, content: GroupLessonContent): void {
     this.selectLessonContent(lesson, content);
     this.clearPreviewObjectUrl();
+    this.destroyPreviewPresentationPreviewer();
+    this.clearPreviewDocumentHost();
     this.previewContent.set(content);
     this.previewNote.set(null);
     this.previewError.set(null);
+    if (content.contentType === 'LINK') {
+      this.previewSafeObjectUrl.set(content.url ? this.sanitizer.bypassSecurityTrustResourceUrl(this.externalPreviewUrl(content.url)) : null);
+      this.previewLoading.set(false);
+      return;
+    }
     if (content.contentType === 'NOTE') {
       void this.loadPreviewNote(content);
       return;
@@ -1558,6 +1586,8 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     this.previewLoading.set(false);
     this.previewError.set(null);
     this.clearPreviewObjectUrl();
+    this.destroyPreviewPresentationPreviewer();
+    this.clearPreviewDocumentHost();
   }
 
   isSelectedLessonContent(lesson: GroupLesson, content: GroupLessonContent): boolean {
@@ -1565,7 +1595,14 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
   }
 
   canPreviewContent(content: Pick<PreviewableLessonContent, 'url' | 'fileContentType' | 'title'>): boolean {
-    return Boolean(content.url && (this.isImageContent(content) || this.isVideoContent(content) || this.isPdfContent(content)));
+    return Boolean(
+      content.url &&
+      (this.isImageContent(content) ||
+        this.isVideoContent(content) ||
+        this.isPdfContent(content) ||
+        this.isPresentationContent(content) ||
+        this.isWordContent(content)),
+    );
   }
 
   isImageContent(content: Pick<PreviewableLessonContent, 'fileContentType' | 'title'>): boolean {
@@ -1583,6 +1620,28 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
   isPdfContent(content: Pick<PreviewableLessonContent, 'fileContentType' | 'title'>): boolean {
     const type = content.fileContentType?.toLowerCase() ?? '';
     return type.includes('pdf') || content.title.toLowerCase().endsWith('.pdf');
+  }
+
+  isPresentationContent(content: Pick<PreviewableLessonContent, 'fileContentType' | 'title'>): boolean {
+    const type = content.fileContentType?.toLowerCase() ?? '';
+    const title = content.title.toLowerCase();
+    return type.includes('presentation') || type.includes('powerpoint') || /\.(pptx?|odp)$/i.test(title);
+  }
+
+  isWordContent(content: Pick<PreviewableLessonContent, 'fileContentType' | 'title'>): boolean {
+    const type = content.fileContentType?.toLowerCase() ?? '';
+    const title = content.title.toLowerCase();
+    return type.includes('wordprocessingml.document') || type.includes('officedocument.wordprocessingml') || /\.(docx?)$/i.test(title);
+  }
+
+  previewOpenUrl(content: Pick<PreviewableLessonContent, 'contentType' | 'url'>): string | null {
+    if (!content.url) {
+      return null;
+    }
+    if (content.contentType === 'LINK') {
+      return this.normalizedExternalUrl(content.url);
+    }
+    return this.resolveMediaUrl(content.url);
   }
 
   safeContentUrl(content: Pick<PreviewableLessonContent, 'url'>): SafeResourceUrl {
@@ -2073,15 +2132,24 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  private async loadPreviewFile(content: Pick<PreviewableLessonContent, 'url' | 'title' | 'fileContentType'>): Promise<void> {
-    if (!content.url) {
+  private async loadPreviewFile(content: Pick<PreviewableLessonContent, 'id' | 'url' | 'title' | 'fileContentType'>): Promise<void> {
+    const previewUrl = this.resolveMediaUrl(content.url);
+    if (!previewUrl) {
       this.previewLoading.set(false);
+      return;
+    }
+    if (this.isPresentationContent(content)) {
+      await this.loadPresentationPreview(content, previewUrl);
+      return;
+    }
+    if (this.isWordContent(content)) {
+      await this.loadWordPreview(content, previewUrl);
       return;
     }
 
     this.previewLoading.set(true);
     try {
-      const blob = await firstValueFrom(this.http.get(content.url, { responseType: 'blob' }));
+      const blob = await firstValueFrom(this.http.get(previewUrl, { responseType: 'blob' }));
       const objectUrl = URL.createObjectURL(blob);
       this.previewObjectUrl.set(objectUrl);
       this.previewSafeObjectUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl));
@@ -2090,6 +2158,123 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
       this.previewError.set(error instanceof Error ? error.message : 'Unable to load file preview. Use Open to view this material.');
     } finally {
       this.previewLoading.set(false);
+    }
+  }
+
+  private async loadPresentationPreview(
+    content: Pick<PreviewableLessonContent, 'id' | 'url' | 'title' | 'fileContentType'>,
+    previewUrl: string,
+  ): Promise<void> {
+    this.previewLoading.set(true);
+    this.previewError.set(null);
+    try {
+      await new Promise((resolve) => setTimeout(resolve));
+      const host = this.previewPresentationHost?.nativeElement;
+      if (!host || this.previewContent()?.id !== content.id) {
+        return;
+      }
+
+      host.replaceChildren();
+      const [module, arrayBuffer] = await Promise.all([
+        import('pptx-preview'),
+        firstValueFrom(this.http.get(previewUrl, { responseType: 'arraybuffer' })),
+      ]);
+      if (this.previewContent()?.id !== content.id) {
+        return;
+      }
+
+      this.destroyPreviewPresentationPreviewer();
+      this.previewPresentationPreviewer = module.init(host, { width: 960, height: 540, mode: 'list' });
+      await this.previewPresentationPreviewer.preview(arrayBuffer);
+      this.previewError.set(null);
+    } catch {
+      this.previewError.set('Unable to preview this presentation inline.');
+    } finally {
+      if (this.previewContent()?.id === content.id) {
+        this.previewLoading.set(false);
+      }
+    }
+  }
+
+  private async loadWordPreview(
+    content: Pick<PreviewableLessonContent, 'id' | 'url' | 'title' | 'fileContentType'>,
+    previewUrl: string,
+  ): Promise<void> {
+    this.previewLoading.set(true);
+    this.previewError.set(null);
+    try {
+      await new Promise((resolve) => setTimeout(resolve));
+      const host = this.previewDocumentHost?.nativeElement;
+      if (!host || this.previewContent()?.id !== content.id) {
+        return;
+      }
+
+      host.replaceChildren();
+      const [module, arrayBuffer] = await Promise.all([
+        import('docx-preview'),
+        firstValueFrom(this.http.get(previewUrl, { responseType: 'arraybuffer' })),
+      ]);
+      if (this.previewContent()?.id !== content.id) {
+        return;
+      }
+
+      await module.renderAsync(arrayBuffer, host, host, {
+        breakPages: true,
+        ignoreWidth: false,
+        ignoreHeight: false,
+        inWrapper: true,
+      });
+      this.previewError.set(null);
+    } catch {
+      this.previewError.set('Unable to preview this Word document inline.');
+    } finally {
+      if (this.previewContent()?.id === content.id) {
+        this.previewLoading.set(false);
+      }
+    }
+  }
+
+  private externalPreviewUrl(url: string): string {
+    return this.youtubeEmbedUrl(url) ?? this.normalizedExternalUrl(url);
+  }
+
+  private resolveMediaUrl(url: string | null | undefined): string | null {
+    const value = url?.trim();
+    if (!value) {
+      return null;
+    }
+    if (/^(https?:|data:|blob:)/i.test(value)) {
+      return value;
+    }
+    const apiOrigin = environment.apiBaseUrl.replace(/\/api\/v1\/?$/, '');
+    return `${apiOrigin}${value.startsWith('/') ? value : `/${value}`}`;
+  }
+
+  private normalizedExternalUrl(url: string): string {
+    const value = url.trim();
+    if (/^https?:\/\//i.test(value)) {
+      return value;
+    }
+    return `https://${value}`;
+  }
+
+  private youtubeEmbedUrl(url: string): string | null {
+    try {
+      const parsed = new URL(this.normalizedExternalUrl(url));
+      const host = parsed.hostname.replace(/^www\./, '').toLowerCase();
+      let videoId: string | null = null;
+      if (host === 'youtu.be') {
+        videoId = parsed.pathname.split('/').filter(Boolean)[0] ?? null;
+      } else if (host === 'youtube.com' || host === 'm.youtube.com') {
+        if (parsed.pathname.startsWith('/watch')) {
+          videoId = parsed.searchParams.get('v');
+        } else if (parsed.pathname.startsWith('/embed/') || parsed.pathname.startsWith('/shorts/')) {
+          videoId = parsed.pathname.split('/').filter(Boolean)[1] ?? null;
+        }
+      }
+      return videoId ? `https://www.youtube.com/embed/${encodeURIComponent(videoId)}` : null;
+    } catch {
+      return null;
     }
   }
 
@@ -2830,6 +3015,18 @@ export class TenantGroupSessionDetailsComponent implements OnInit, OnDestroy {
     }
     this.previewObjectUrl.set(null);
     this.previewSafeObjectUrl.set(null);
+  }
+
+  private destroyPreviewPresentationPreviewer(): void {
+    if (this.previewPresentationPreviewer) {
+      this.previewPresentationPreviewer.destroy();
+      this.previewPresentationPreviewer = null;
+    }
+    this.previewPresentationHost?.nativeElement.replaceChildren();
+  }
+
+  private clearPreviewDocumentHost(): void {
+    this.previewDocumentHost?.nativeElement.replaceChildren();
   }
 
   private clearReportPreviewObjectUrl(): void {
